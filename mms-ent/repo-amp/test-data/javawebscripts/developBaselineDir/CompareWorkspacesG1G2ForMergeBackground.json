@@ -1,0 +1,7 @@
+{
+    "message": "Diff being processed in background.\nYou will be notified via email when the diff has finished.\n",
+    "email": "admin@alfresco.com",
+    "status": "STARTED",
+    "user": "admin"
+}
+200

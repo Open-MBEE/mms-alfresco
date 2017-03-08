@@ -1,0 +1,218 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "ownerId": "holding_bin",
+            "sysmlId": "too_many_bugs",
+            "type": "Property",
+            "value": [
+                {
+                    "double": null,
+                    "type": "LiteralReal",
+                    "valueExpression": null
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "documentation": "directed_relationship with null values",
+            "name": "directedRelationshipNull",
+            "ownerId": "holding_bin",
+            "source": null,
+            "sysmlId": "directedRelationshipNull",
+            "target": null,
+            "type": "DirectedRelationship"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "contents": null,
+            "documentation": "View with null values",
+            "name": "viewNull",
+            "ownerId": "holding_bin",
+            "sysmlId": "viewNull",
+            "type": "View"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "documentation": "ElementValue with null values",
+            "element": null,
+            "name": "elementValueNull",
+            "ownerId": "holding_bin",
+            "sysmlId": "elementValueNull",
+            "type": "ElementValue"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "documentation": "Property with null values",
+            "isDerived": false,
+            "name": "propertyNull",
+            "ownerId": "holding_bin",
+            "propertyType": null,
+            "sysmlId": "propertyNull",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "documentation": "Viewpoint with null values",
+            "method": null,
+            "name": "viewpointNull",
+            "ownerId": "holding_bin",
+            "sysmlId": "viewpointNull",
+            "type": "Viewpoint"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "documentation": "DurationInterval with null values",
+            "max": null,
+            "min": null,
+            "name": "durationIntervalNull",
+            "ownerId": "holding_bin",
+            "sysmlId": "durationIntervalNull",
+            "type": "DurationInterval"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "defaultValue": null,
+            "documentation": "Parameter with null values",
+            "name": "parameterNull",
+            "ownerId": "holding_bin",
+            "sysmlId": "parameterNull",
+            "type": "Parameter"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": null,
+            "documentation": "Property with missing propertyType and null owner",
+            "isDerived": false,
+            "name": "propertyMissing",
+            "ownerId": "holding_bin",
+            "sysmlId": "propertyMissing",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "connectorKind": "BINDING",
+            "connectorType": null,
+            "connectorValue": {
+                "string": "Ninja Attack!",
+                "type": "LiteralString"
+            },
+            "documentation": "Connector with null values",
+            "name": "connectorNull",
+            "ownerId": "holding_bin",
+            "sourceLower": {
+                "string": "sourceLower!",
+                "type": "LiteralString"
+            },
+            "sourceUpper": {
+                "string": "sourceUpper!",
+                "type": "LiteralString"
+            },
+            "sysmlId": "connectorNull",
+            "targetLower": {
+                "string": "targetLower!",
+                "type": "LiteralString"
+            },
+            "targetUpper": {
+                "string": "targetUpper!",
+                "type": "LiteralString"
+            },
+            "type": "Connector"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "classifier": [
+                "propertyNull"
+            ],
+            "documentation": "InstanceSpecification with null values",
+            "instanceSpecificationSpecification": null,
+            "name": "instanceSpecificationNull",
+            "ownerId": "holding_bin",
+            "slots": [
+                "elementValueNull"
+            ],
+            "sysmlId": "instanceSpecificationNull",
+            "type": "InstanceSpecification"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "documentation": "TimeInterval with null values",
+            "max": null,
+            "min": null,
+            "name": "timeIntervalNull",
+            "ownerId": "holding_bin",
+            "sysmlId": "timeIntervalNull",
+            "type": "TimeInterval"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "documentation": "ValueSpecification with null values",
+            "name": "valueSpecificationNull",
+            "ownerId": "holding_bin",
+            "sysmlId": "valueSpecificationNull",
+            "type": "ValueSpecification",
+            "valueExpression": null
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "123456",
+            "documentation": "InstanceValue with null values",
+            "instance": null,
+            "name": "instanceValueNull",
+            "ownerId": "holding_bin",
+            "sysmlId": "instanceValueNull",
+            "type": "InstanceValue"
+        }
+    ]
+}

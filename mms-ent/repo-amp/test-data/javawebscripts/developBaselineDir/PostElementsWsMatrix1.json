@@ -1,0 +1,179 @@
+{"elements": [
+    {
+        "qualifiedId": "/europa/123456/update_update_gg",
+        "qualifiedName": "/europa/JW_TEST2/update_update_gg",
+        "sysmlid": "update_update_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_update_gg",
+        "owner": "123456",
+        "documentation": "update_update_gg updatedWs1",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/add_none_gg",
+        "qualifiedName": "/europa/JW_TEST2/add_none_gg",
+        "sysmlid": "add_none_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "add_none_gg",
+        "owner": "123456",
+        "documentation": "add_none_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/add_add_gg",
+        "qualifiedName": "/europa/JW_TEST2/add_add_gg",
+        "sysmlid": "add_add_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "add_add_gg",
+        "owner": "123456",
+        "documentation": "add_add_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/add_update_gg",
+        "qualifiedName": "/europa/JW_TEST2/add_update_gg",
+        "sysmlid": "add_update_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "add_update_gg",
+        "owner": "123456",
+        "documentation": "add_update_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/update_none_gg",
+        "qualifiedName": "/europa/JW_TEST2/update_none_gg",
+        "sysmlid": "update_none_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_none_gg",
+        "owner": "123456",
+        "documentation": "update_none_gg updatedWs1",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/update_add_gg",
+        "qualifiedName": "/europa/JW_TEST2/update_add_gg",
+        "sysmlid": "update_add_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_add_gg",
+        "owner": "123456",
+        "documentation": "update_add_gg updatedWs1",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/add_delete_gg",
+        "qualifiedName": "/europa/JW_TEST2/add_delete_gg",
+        "sysmlid": "add_delete_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "add_delete_gg",
+        "owner": "123456",
+        "documentation": "add_delete_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/update_delete_gg",
+        "qualifiedName": "/europa/JW_TEST2/update_delete_gg",
+        "sysmlid": "update_delete_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_delete_gg",
+        "owner": "123456",
+        "documentation": "update_delete_gg updatedWs1",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    }
+]}
+200

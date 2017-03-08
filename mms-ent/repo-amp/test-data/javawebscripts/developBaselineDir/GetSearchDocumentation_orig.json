@@ -1,0 +1,27 @@
+{"elements": [{
+    "siteCharacterizationId": "europa",
+    "qualifiedId": "/europa/123456/300",
+    "qualifiedName": "/europa/JW_TEST2/300",
+    "sysmlid": "300",
+    "editable": true,
+    "creator": "admin",
+    "modified": "2015-09-22T09:40:04.854-0700",
+    "modifier": "admin",
+    "created": "Tue Sep 22 09:40:01 PDT 2015",
+    "name": "300",
+    "owner": "123456",
+    "documentation": "something",
+    "read": "2015-09-22T09:44:20.913-0700",
+    "specialization": {
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [{
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        }],
+        "type": "Property"
+    }
+}]}
+200

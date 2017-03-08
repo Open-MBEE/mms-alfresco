@@ -1,0 +1,64 @@
+{
+  "elements": [
+    {
+      "sysmlId": "update_update_consistent",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "update_update_consistent",
+      "_owner": "123456",
+      "documentation": "update_update_consistent",
+      "propertyType": null,
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "this is updated in conflict",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property"
+    },
+    {
+      "sysmlId": "delete_update_consistent",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "delete_update_consistent",
+      "_owner": "123456",
+      "documentation": "delete_update_consistent",
+      "propertyType": null,
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "this is updated in conflict",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property"
+    },
+    {
+      "sysmlId": "add_add_consistent",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "add_add_consistent",
+      "_owner": "123456",
+      "documentation": "add_add_consistent",
+      "propertyType": null,
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "this is it",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property"
+    }
+  ]
+}

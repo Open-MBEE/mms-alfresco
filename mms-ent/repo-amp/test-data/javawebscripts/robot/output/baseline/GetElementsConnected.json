@@ -1,0 +1,280 @@
+{
+  "elements": [
+    {
+      "_modifier": "admin",
+      "name": "300",
+      "documentation": "something",
+      "_owner": "123456",
+      "sysmlId": "300",
+      "propertyType": null,
+      "isSlot": false,
+      "isDerived": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "302",
+      "documentation": "to",
+      "_owner": "301",
+      "sysmlId": "302",
+      "propertyType": null,
+      "isSlot": false,
+      "isDerived": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "301",
+      "documentation": "else",
+      "_owner": "300",
+      "sysmlId": "301",
+      "view2view": [
+        {
+          "childrenViews": [
+            "301",
+            "302"
+          ],
+          "sysmlId": "301"
+        }
+      ],
+      "childrenViews": [
+        "304"
+      ],
+      "displayedElements": [
+        "301",
+        "302",
+        "303"
+      ],
+      "allowedElements": [
+        "301",
+        "302",
+        "303"
+      ],
+      "noSections": [
+        "302"
+      ],
+      "contains": [
+        {
+          "sourceType": "reference",
+          "source": "301",
+          "sourceProperty": "documentation",
+          "type": "Paragraph"
+        }
+      ],
+      "type": "Product",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "304",
+      "documentation": "about",
+      "_owner": "303",
+      "sysmlId": "304",
+      "propertyType": null,
+      "isSlot": false,
+      "isDerived": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "303",
+      "documentation": "talk",
+      "_owner": "302",
+      "sysmlId": "303",
+      "propertyType": null,
+      "isSlot": false,
+      "isDerived": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "JW_TEST",
+      "_owner": null,
+      "sysmlId": "123456",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "dlam",
+      "documentation": "to make compatible with value specs (this is just a Element)",
+      "_owner": "123456",
+      "sysmlId": "dlam",
+      "type": "Element",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "400",
+      "documentation": "4something",
+      "_owner": "123456",
+      "sysmlId": "4000",
+      "propertyType": null,
+      "isSlot": false,
+      "isDerived": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "500",
+      "documentation": "directed_relationship",
+      "_owner": "300",
+      "sysmlId": "500",
+      "source": "302",
+      "target": "303",
+      "type": "DirectedRelationship",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "404",
+      "documentation": "4about",
+      "_owner": "403",
+      "sysmlId": "404",
+      "propertyType": null,
+      "isSlot": false,
+      "isDerived": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "401",
+      "documentation": "4else",
+      "_owner": "4000",
+      "sysmlId": "401",
+      "view2view": [
+        {
+          "childrenViews": [
+            "401",
+            "402"
+          ],
+          "sysmlId": "401"
+        }
+      ],
+      "childrenViews": [
+        "404"
+      ],
+      "displayedElements": [
+        "401",
+        "402",
+        "403"
+      ],
+      "allowedElements": [
+        "401",
+        "402",
+        "403"
+      ],
+      "noSections": [
+        "402"
+      ],
+      "contains": [
+        {
+          "sourceType": "reference",
+          "source": "401",
+          "sourceProperty": "documentation",
+          "type": "Paragraph"
+        }
+      ],
+      "type": "Product",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "403",
+      "documentation": "4talk",
+      "_owner": "402",
+      "sysmlId": "403",
+      "propertyType": null,
+      "isSlot": false,
+      "isDerived": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "name": "402",
+      "documentation": "4to",
+      "_owner": "401",
+      "sysmlId": "402",
+      "propertyType": null,
+      "isSlot": false,
+      "isDerived": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property",
+      "_editable": true,
+      "_creator": "admin"
+    }
+  ]
+}

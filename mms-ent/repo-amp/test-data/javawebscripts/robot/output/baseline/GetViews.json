@@ -1,0 +1,55 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "300",
+            "allowedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "childrenViews": [
+                "304"
+            ],
+            "contains": [
+                {
+                    "source": "301",
+                    "sourceProperty": "documentation",
+                    "sourceType": "reference",
+                    "type": "Paragraph"
+                }
+            ],
+            "displayedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "documentation": "else",
+            "isDerived": false,
+            "name": "301",
+            "noSections": [
+                "302"
+            ],
+            "ownerId": "holding_bin",
+            "sysmlId": "301",
+            "type": "Product",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ],
+            "view2view": [
+                {
+                    "childrenViews": [
+                        "301",
+                        "302"
+                    ],
+                    "sysmlId": "301"
+                }
+            ]
+        }
+    ]
+}

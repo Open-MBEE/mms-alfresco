@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title i18n:translate="asciimath_popup_title">Add ASCIIMath Formula</title>
+    <script type="text/javascript" src="../../tiny_mce_popup.js"></script>
+    <script type="text/javascript" src="js/ASCIIMathML.js"></script>
+    <script type="text/javascript" src="js/ampopup.js"></script>
+</head>
+<body>
+    <div class="dialog-wrapper" id="content">
+
+        <form onsubmit="insertASCIIMath();return false;" action="#">
+            <div class="field">
+                <label i18n:translate="asciimath_enter_formula">Enter your formula:</label>
+
+                <textarea onkeyup="displayMathML()" onblur="displayMathML()" cols="40" rows="2" id="inputText"></textarea>
+
+            </div>
+
+            <div class="field">
+                <label i18n:translate="asciimath_enter_formula">Preview:</label>
+
+                <div id="outputNode"></div>
+
+            </div>
+
+            <div class="field">
+                <input type="submit" value="Insert formula" i18n:translate="asciimath_insert_formula"/>
+            </div>
+
+        </form>
+
+
+        <h3 i18n:translate="heading_help">Examples
+            (<a href="http://www1.chapman.edu/~jipsen/mathml/asciimathsyntax.html" target="_blank">Detailed Syntax</a>)
+        </h3>
+        <p><em>Note:</em> enclose long variable names with double quotes (e.g., "mass").</p>
+        
+            <table class="listing" style="float: left; margin-right: 1em;">
+                <tr>
+                    <th>ASCIIMath</th>
+                    <th>MathML</th>
+                </tr>
+                <tr>
+                    <td>(x+1)/(x-1)</td>
+                    <td><span class="AM">`(x+1)/(x-1)`</span></td>
+                </tr>
+                <tr>
+                    <td>x^(m+n)</td>
+                    <td><span class="AM">`x^(m+n)`</span></td>
+                </tr>
+                <tr>
+                    <td>dy/dx</td>
+                    <td><span class="AM">`dy/dx`</span></td>
+                </tr>
+            </table>
+
+            <table class="listing" style="float: left; margin-right: 1em;">
+                <tr>
+                    <th>ASCIIMath</th>
+                    <th>MathML</th>
+                </tr>
+                <tr>
+                    <td>sqrt(x)</td>
+                    <td><span class="AM">`sqrt(x)`</span></td>
+                </tr>
+                <tr>
+                    <td>root(n)(x)</td>
+                    <td><span class="AM">`root(n)(x)`</span></td>
+                </tr>
+                <tr>
+                    <td>sum_(n=1)^oo</td>
+                    <td><span class="AM">`sum_(n=1)^oo`</span></td>
+                </tr>
+            </table>
+
+            <table class="listing" style="float: left; margin-right: 1em;">
+                <tr>
+                    <th>ASCIIMath</th>
+                    <th>MathML</th>
+                </tr>
+                <tr>
+                    <td>int_a^b f(x)dx</td>
+                    <td><span class="AM">`int_a^b f(x)dx`</span></td>
+                </tr>
+                <tr>
+                    <td>[[a,b],[c,d]]</td>
+                    <td><span class="AM">`[[a,b],[c,d]]`</span></td>
+                </tr>
+                <tr>
+                    <td>((n),(k))</td>
+                    <td><span class="AM">`((n),(k))`</span></td>
+                </tr>
+            </table>
+
+
+    </div>
+    
+
+</body>
+</html>

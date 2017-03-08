@@ -1,0 +1,15 @@
+{
+  "workspace1": {
+    "name": "master",
+    "elements": []
+  },
+  "workspace2": {
+    "deletedElements": [],
+    "addedElements": [],
+    "conflictedElements": [],
+    "updatedElements": [],
+    "name": "master",
+    "movedElements": []
+  }
+}
+

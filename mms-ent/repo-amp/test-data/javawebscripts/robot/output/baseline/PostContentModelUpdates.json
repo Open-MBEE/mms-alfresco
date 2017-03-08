@@ -1,0 +1,257 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/connectorSource",
+            "_qualifiedName": "//JW_TEST/connectorSource",
+            "_siteCharacterizationId": "europa",
+            "documentation": "Connector source",
+            "lower": {
+                "string": "lower!",
+                "type": "LiteralString"
+            },
+            "name": "connectorSource",
+            "ownerId": "123456",
+            "sysmlId": "connectorSource",
+            "type": "Property",
+            "upper": {
+                "string": "upper!",
+                "type": "LiteralString"
+            }
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/sourceId",
+            "_qualifiedName": "//JW_TEST/sourceId",
+            "_siteCharacterizationId": "europa",
+            "documentation": "source",
+            "name": "sourceId",
+            "ownerId": "123456",
+            "sysmlId": "sourceId",
+            "type": "Property"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/targetId",
+            "_qualifiedName": "//JW_TEST/targetId",
+            "_siteCharacterizationId": "europa",
+            "documentation": "target",
+            "name": "targetId",
+            "ownerId": "123456",
+            "sysmlId": "targetId",
+            "type": "Property"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/hasAppliedMetatype1",
+            "_qualifiedName": "//JW_TEST/hasAppliedMetatype1",
+            "_siteCharacterizationId": "europa",
+            "appliedMetatypes": [
+                "metatype"
+            ],
+            "documentation": "hasAppliedMetatype",
+            "name": "hasAppliedMetatype1",
+            "ownerId": "123456",
+            "sysmlId": "hasAppliedMetatype1"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/connectorTarget",
+            "_qualifiedName": "//JW_TEST/connectorTarget",
+            "_siteCharacterizationId": "europa",
+            "documentation": "Connector target",
+            "name": "connectorTarget",
+            "ownerId": "123456",
+            "sysmlId": "connectorTarget",
+            "type": "Property"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/association",
+            "_qualifiedName": "//JW_TEST/association",
+            "_siteCharacterizationId": "europa",
+            "documentation": "association",
+            "name": "association",
+            "ownedEnd": [
+                "AssocOwnedEnd"
+            ],
+            "ownerId": "123456",
+            "source": "sourceId",
+            "sourceAggregation": "COMPOSITE",
+            "sysmlId": "association",
+            "target": "targetId",
+            "targetAggregation": "SHARED",
+            "type": "Association"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/viewWithContents",
+            "_qualifiedName": "//JW_TEST/viewWithContents",
+            "_siteCharacterizationId": "europa",
+            "contents": "viewContents",
+            "documentation": "View updates",
+            "name": "viewWithContents",
+            "ownerId": "123456",
+            "sysmlId": "viewWithContents",
+            "type": "View"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/literalSet",
+            "_qualifiedName": "//JW_TEST/literalSet",
+            "_siteCharacterizationId": "europa",
+            "documentation": "LiteralSet",
+            "name": "literalSet",
+            "ownerId": "123456",
+            "set": [
+                {
+                    "string": "I",
+                    "type": "LiteralString"
+                },
+                {
+                    "string": "Love",
+                    "type": "LiteralString"
+                },
+                {
+                    "string": "Bears",
+                    "type": "LiteralString"
+                }
+            ],
+            "setOperand": {
+                "string": "Bears",
+                "type": "LiteralString"
+            },
+            "sysmlId": "literalSet",
+            "type": "LiteralSet"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/characterizes",
+            "_qualifiedName": "//JW_TEST/characterizes",
+            "_siteCharacterizationId": "europa",
+            "documentation": "Characterizes",
+            "name": "characterizes",
+            "ownerId": "123456",
+            "source": "sourceId",
+            "sysmlId": "characterizes",
+            "target": "targetId",
+            "type": "Characterizes"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/connector",
+            "_qualifiedName": "//JW_TEST/connector",
+            "_siteCharacterizationId": "europa",
+            "connectorKind": "BINDING",
+            "connectorType": "association",
+            "connectorValue": {
+                "string": "Ninja Attack!",
+                "type": "LiteralString"
+            },
+            "documentation": "Connector updates",
+            "name": "connector",
+            "ownerId": "123456",
+            "sourceLower": {
+                "string": "sourceLower!",
+                "type": "LiteralString"
+            },
+            "sourcePath": [
+                "connectorSource"
+            ],
+            "sourceUpper": {
+                "string": "sourceUpper!",
+                "type": "LiteralString"
+            },
+            "sysmlId": "connector",
+            "targetLower": {
+                "string": "targetLower!",
+                "type": "LiteralString"
+            },
+            "targetPath": [
+                "connectorTarget"
+            ],
+            "targetUpper": {
+                "string": "targetUpper!",
+                "type": "LiteralString"
+            },
+            "type": "Connector"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/md",
+            "_qualifiedName": "//JW_TEST/md",
+            "_siteCharacterizationId": "europa",
+            "documentation": "Magic Draw Meta-Data",
+            "mdData": "A blob of meta-data",
+            "name": "md",
+            "ownerId": "123456",
+            "sysmlId": "md",
+            "type": "MagicDrawData"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/AssocOwnedEnd",
+            "_qualifiedName": "//JW_TEST/AssocOwnedEnd",
+            "_siteCharacterizationId": "europa",
+            "documentation": "Associations's owned end",
+            "name": "AssocOwnedEnd",
+            "ownerId": "123456",
+            "sysmlId": "AssocOwnedEnd",
+            "type": "Property"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/metatype1",
+            "_qualifiedName": "//JW_TEST/metatype1",
+            "_siteCharacterizationId": "europa",
+            "documentation": "metatype",
+            "isMetatype": true,
+            "metatypes": [
+                "target",
+                "source"
+            ],
+            "name": "metatype1",
+            "ownerId": "123456",
+            "sysmlId": "metatype1"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/viewContents",
+            "_qualifiedName": "//JW_TEST/viewContents",
+            "_siteCharacterizationId": "europa",
+            "documentation": "View content",
+            "name": "viewContents",
+            "ownerId": "123456",
+            "sysmlId": "viewContents",
+            "type": "Expression"
+        }
+    ]
+}

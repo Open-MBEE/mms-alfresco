@@ -1,0 +1,132 @@
+{
+    "workspace1": {
+        "qualifiedName": "master/ws2",
+        "name": "ws2",
+        "elements": [
+            {
+                "qualifiedName": "/europa/JW_TEST2/400/401/402",
+                "sysmlid": "402",
+                "editable": true,
+                "version": "1.2",
+                "name": "402",
+                "documentation": "4to",
+                "owner": "401",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "name": "holding_bin",
+                "qualifiedName": "/no_site/no_site_no_project/holding_bin",
+                "sysmlid": "holding_bin_no_site_no_project",
+                "owner": "no_site_no_project",
+                "specialization": {"type": "Package"},
+                "editable": true,
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST2/400/401",
+                "sysmlid": "401",
+                "editable": true,
+                "name": "401",
+                "owner": "4000",
+                "documentation": "4else",
+                "specialization": {
+                    "displayedElements": [
+                        "401",
+                        "402",
+                        "403"
+                    ],
+                    "childrenViews": ["404"],
+                    "view2view": [{
+                        "childrenViews": [
+                            "401",
+                            "402"
+                        ],
+                        "sysmlid": "401"
+                    }],
+                    "allowedElements": [
+                        "401",
+                        "402",
+                        "403"
+                    ],
+                    "contains": [{
+                        "sourceType": "reference",
+                        "source": "401",
+                        "sourceProperty": "documentation",
+                        "type": "Paragraph"
+                    }],
+                    "noSections": ["402"],
+                    "type": "Product"
+                }
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST2/400",
+                "sysmlid": "4000",
+                "editable": true,
+                "name": "400",
+                "owner": "123456",
+                "documentation": "4something",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            }
+        ]
+    },
+    "workspace2": {
+        "deletedElements": [],
+        "addedElements": [{
+            "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+            "owner": "holding_bin_no_site_no_project",
+            "documentation": "x is x",
+            "sysmlid": "newElement",
+            "specialization": {
+                "propertyType": null,
+                "isDerived": false,
+                "isSlot": false,
+                "value": [{
+                    "valueExpression": null,
+                    "string": "the element added to ws1",
+                    "type": "LiteralString"
+                }],
+                "type": "Property"
+            },
+            "editable": true,
+        }],
+        "conflictedElements": [],
+        "updatedElements": [{
+            "name": "402",
+            "qualifiedName": "/europa/JW_TEST2/400/401/402",
+            "owner": "401",
+            "documentation": "x is x",
+            "sysmlid": "402",
+            "specialization": {
+                "value": [{
+                    "valueExpression": null,
+                    "string": "the x value",
+                    "type": "LiteralString"
+                }],
+                "type": "Property"
+            }
+        }],
+        "qualifiedName": "master/ws1",
+        "name": "ws1",
+        "movedElements": []
+    }
+}
+200

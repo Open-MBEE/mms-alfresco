@@ -1,0 +1,85 @@
+{"elements": [
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/300",
+        "name": "300",
+        "qualifiedName": "/europa/JW_TEST/300",
+        "documentation": "something",
+        "owner": "123456",
+        "sysmlid": "300",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/300/301/302",
+        "name": "302",
+        "qualifiedName": "/europa/JW_TEST/300/301/302",
+        "documentation": "to",
+        "owner": "301",
+        "sysmlid": "302",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/300/301/302/303",
+        "name": "303",
+        "qualifiedName": "/europa/JW_TEST/300/301/302/303",
+        "documentation": "talk",
+        "owner": "302",
+        "sysmlid": "303",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/300/500",
+        "name": "500",
+        "qualifiedName": "/europa/JW_TEST/300/500",
+        "documentation": "directed_relationship",
+        "owner": "300",
+        "sysmlid": "500",
+        "specialization": {
+            "source": "302",
+            "target": "303",
+            "type": "DirectedRelationship"
+        },
+        "editable": true,
+        "creator": "admin"
+    }
+]}
+200

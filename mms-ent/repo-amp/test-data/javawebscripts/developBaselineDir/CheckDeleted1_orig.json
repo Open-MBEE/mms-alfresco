@@ -1,0 +1,96 @@
+{"workspaces": [
+    {
+        "qualifiedId": "master",
+        "id": "master",
+        "workspaceOperationsPermission": true,
+        "qualifiedName": "master",
+        "name": "master"
+    },
+    {
+        "qualifiedId": "master/f8aa9d2e-b65f-4b7c-982b-fe22a01b319e",
+        "id": "f8aa9d2e-b65f-4b7c-982b-fe22a01b319e",
+        "created": "2015-03-27T09:03:33.291-0700",
+        "description": "modified the workspace name and desc",
+        "qualifiedName": "master/modifiedWorkspaceName",
+        "name": "modifiedWorkspaceName",
+        "parent": "master",
+        "permission": "read",
+        "modified": "2015-03-27T09:03:33.652-0700",
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "master/d15f1b45-0588-4d67-b87c-7b3b9c9cf2bd",
+        "id": "d15f1b45-0588-4d67-b87c-7b3b9c9cf2bd",
+        "created": "2015-03-27T09:03:48.874-0700",
+        "description": "",
+        "qualifiedName": "master/wsG1",
+        "name": "wsG1",
+        "parent": "master",
+        "permission": "read",
+        "modified": "2015-03-27T09:03:48.874-0700",
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "master/3a7f329f-2c5e-4e52-aeff-6398f1807aff",
+        "id": "3a7f329f-2c5e-4e52-aeff-6398f1807aff",
+        "created": "2015-03-27T09:03:49.122-0700",
+        "description": "",
+        "qualifiedName": "master/wsG2",
+        "name": "wsG2",
+        "parent": "master",
+        "permission": "read",
+        "modified": "2015-03-27T09:03:52.940-0700",
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "master/5d875e01-0f81-47a4-a827-2e083ce6a27f/99bf0308-cb01-4a1d-a5b4-15e847e1a75d",
+        "id": "99bf0308-cb01-4a1d-a5b4-15e847e1a75d",
+        "created": "2015-03-27T09:03:32.916-0700",
+        "description": "",
+        "qualifiedName": "master/wsA/wsB",
+        "name": "wsB",
+        "parent": "5d875e01-0f81-47a4-a827-2e083ce6a27f",
+        "permission": "read",
+        "modified": "2015-03-27T09:03:34.555-0700",
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "master/5d875e01-0f81-47a4-a827-2e083ce6a27f/4fbbfb5d-5735-4603-80d6-8c587abdf95b",
+        "id": "4fbbfb5d-5735-4603-80d6-8c587abdf95b",
+        "created": "2015-03-27T09:03:36.779-0700",
+        "description": "",
+        "qualifiedName": "master/wsA/wsT",
+        "name": "wsT",
+        "parent": "5d875e01-0f81-47a4-a827-2e083ce6a27f",
+        "permission": "read",
+        "branched": "2015-03-27T09:03:34.749-0700",
+        "modified": "2015-03-27T09:03:37.999-0700",
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "master/5d875e01-0f81-47a4-a827-2e083ce6a27f/7187c6f3-4bd4-4320-9f7c-600fb9fa30dd",
+        "id": "7187c6f3-4bd4-4320-9f7c-600fb9fa30dd",
+        "created": "2015-03-27T09:03:46.530-0700",
+        "description": "",
+        "qualifiedName": "master/wsA/wsT2",
+        "name": "wsT2",
+        "parent": "5d875e01-0f81-47a4-a827-2e083ce6a27f",
+        "permission": "read",
+        "branched": "2015-03-27T09:06:09.000-0700",
+        "modified": "2015-03-27T09:03:46.530-0700",
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "master/5d875e01-0f81-47a4-a827-2e083ce6a27f",
+        "id": "5d875e01-0f81-47a4-a827-2e083ce6a27f",
+        "created": "2015-03-27T09:03:32.446-0700",
+        "description": "",
+        "qualifiedName": "master/wsA",
+        "name": "wsA",
+        "parent": "master",
+        "permission": "read",
+        "modified": "2015-03-27T09:03:46.544-0700",
+        "creator": "admin"
+    }
+]}
+200

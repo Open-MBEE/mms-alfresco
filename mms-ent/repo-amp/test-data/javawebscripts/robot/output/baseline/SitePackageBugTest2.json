@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {
+      "sysmlId": "packageB2",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "packageB2",
+      "_owner": "packageC2",
+      "documentation": "A site package",
+      "type": "Package",
+      "isSite": true
+    }
+  ]
+}

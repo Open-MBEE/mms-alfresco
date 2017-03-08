@@ -1,0 +1,16 @@
+{
+  "elements": [
+    {
+      "sysmlId": "y",
+      "documentation": "y is y",
+      "ownerId": "302",
+        "type": "Property",
+        "value": [
+          {
+            "string": "the y value",
+            "type": "LiteralString"
+          }
+        ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "workspace1": {
+    "qualifiedName": "master/wsMerge1",
+    "name": "wsMerge1",
+    "elements": [{
+      "qualifiedName": "/europa/JW_TEST2/update_delete_consistent",
+      "sysmlid": "update_delete_consistent",
+      "editable": true,
+      "creator": "admin",
+      "modifier": "admin",
+      "name": "update_delete_consistent",
+      "owner": "123456",
+      "documentation": "update_delete_consistent",
+      "specialization": {
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [{
+          "valueExpression": null,
+          "string": "this is it",
+          "type": "LiteralString"
+        }],
+        "type": "Property"
+      }
+    }]
+  },
+  "workspace2": {
+    "deletedElements": [{
+      "qualifiedName": "/europa/JW_TEST2/update_delete_consistent",
+      "name": "update_delete_consistent",
+      "sysmlid": "update_delete_consistent",
+      "owner": "123456",
+      "specialization": {"type": "Property"},
+      "creator": "admin",
+    }],
+    "addedElements": [],
+    "conflictedElements": [],
+    "updatedElements": [],
+    "qualifiedName": "master/wsMerge1",
+    "name": "wsMerge1",
+    "movedElements": []
+  }
+}
+200

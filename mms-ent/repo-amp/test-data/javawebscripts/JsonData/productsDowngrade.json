@@ -1,0 +1,25 @@
+{
+  "elements": [
+    {
+      "sysmlId": "54321",
+      "type": "Product",
+      "displayedElements": [
+        "301",
+        "302",
+        "303"
+      ],
+      "view2view": [
+        {
+          "sysmlId": "301",
+          "childrenViews": [
+            "301",
+            "302"
+          ]
+        }
+      ],
+      "noSections": [
+        "302"
+      ]
+    }
+  ]
+}

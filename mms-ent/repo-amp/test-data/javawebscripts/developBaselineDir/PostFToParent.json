@@ -1,0 +1,20 @@
+{"elements": [{
+    "owner": "holding_bin_no_site_no_project",
+    "creator": "admin",
+    "read": "2015-08-10T16:45:03.360-0700",
+    "created": "Mon Aug 10 16:45:03 PDT 2015",
+    "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+    "editable": true,
+    "modifier": "admin",
+    "documentation": "f is f",
+    "siteCharacterizationId": "no_site",
+    "sysmlid": "f",
+    "qualifiedId": "/no_site/no_site_no_project/holding_bin_no_site_no_project/f",
+    "modified": "2015-08-10T16:45:03.218-0700",
+    "specialization": {
+        "source": null,
+        "type": "Expose",
+        "target": null
+    }
+}]}
+200

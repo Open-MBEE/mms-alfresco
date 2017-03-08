@@ -1,0 +1,12 @@
+{
+    "elements": [{
+        "sysmlId": "_18_0_5_407019f_1466704592925_553155_14624",
+        "name": "View B",
+        "type": "View",
+        "childViews": [{
+            "aggregation": "COMPOSITE",
+            "sysmlId": "_18_0_5_407019f_1466704590650_411603_14577",
+            "name": "View E"
+        }]
+    }]
+}

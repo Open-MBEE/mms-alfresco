@@ -1,0 +1,42 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/null/_18_0_5_407019f_1466704588878_781465_14530",
+            "_qualifiedName": "/holding_bin/View D",
+            "_siteCharacterizationId": "null",
+            "childViews": [
+                {
+                    "aggregation": "COMPOSITE",
+                    "id": "_18_0_5_407019f_1466704658028_771482_14847",
+                    "name": "View F"
+                }
+            ],
+            "name": "View D",
+            "ownerId": "holding_bin",
+            "sysmlId": "_18_0_5_407019f_1466704588878_781465_14530",
+            "type": "View"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/null/_18_0_5_407019f_1466704592925_553155_14624",
+            "_qualifiedName": "/holding_bin/View B",
+            "_siteCharacterizationId": "null",
+            "childViews": [
+                {
+                    "aggregation": "COMPOSITE",
+                    "id": "_18_0_5_407019f_1466704590650_411603_14577",
+                    "name": "View E"
+                }
+            ],
+            "name": "View B",
+            "ownerId": "holding_bin",
+            "sysmlId": "_18_0_5_407019f_1466704592925_553155_14624",
+            "type": "View"
+        }
+    ]
+}

@@ -1,0 +1,30 @@
+{
+  "elements": [
+    {
+      "_modifier": "admin",
+      "evaluationResult": 2,
+      "_owner": "holding_bin_no_site_no_project",
+      "valueExpression": null,
+      "type": "Expression",
+      "operand": [
+        {
+          "element": "Plus",
+          "valueExpression": null,
+          "type": "ElementValue"
+        },
+        {
+          "valueExpression": null,
+          "integer": 1,
+          "type": "LiteralInteger"
+        },
+        {
+          "valueExpression": null,
+          "integer": 1,
+          "type": "LiteralInteger"
+        }
+      ],
+      "_editable": true,
+      "_creator": "admin"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/300",
+            "_qualifiedName": "//JW_TEST/300",
+            "_siteCharacterizationId": "europa",
+            "documentation": "something",
+            "isDerived": false,
+            "name": "300",
+            "ownerId": "123456",
+            "sysmlId": "300",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/4000",
+            "_qualifiedName": "//JW_TEST/400",
+            "_siteCharacterizationId": "europa",
+            "documentation": "4something",
+            "isDerived": false,
+            "name": "400",
+            "ownerId": "123456",
+            "sysmlId": "4000",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/dlam",
+            "_qualifiedName": "//JW_TEST/dlam",
+            "_siteCharacterizationId": "europa",
+            "documentation": "to make compatible with value specs (this is just a Element)",
+            "name": "dlam",
+            "ownerId": "123456",
+            "sysmlId": "dlam"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/holding_bin_123456",
+            "_qualifiedName": "//JW_TEST/Holding Bin",
+            "_siteCharacterizationId": "europa",
+            "name": "Holding Bin",
+            "ownerId": "123456",
+            "sysmlId": "holding_bin_123456",
+            "type": "Package"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456",
+            "_qualifiedName": "//JW_TEST",
+            "_siteCharacterizationId": "europa",
+            "name": "JW_TEST",
+            "sysmlId": "123456",
+            "type": "Project"
+        }
+    ]
+}

@@ -1,0 +1,2 @@
+{"message": "[ERROR]: Found another element with the same sysml name: testName type: Property parent: {type=null, id=123456_pkg, cm_name=123456_pkg, sysml_name=JW_TEST, qualified name=/JW_TEST, workspace=null} as the element trying to be posted\n[ERROR]: Found another element with the same sysml name: testName type: Property parent: {type=null, id=123456_pkg, cm_name=123456_pkg, sysml_name=JW_TEST, qualified name=/JW_TEST, workspace=null} as the element trying to be posted\n"}
+400

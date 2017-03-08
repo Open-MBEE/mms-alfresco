@@ -1,0 +1,21 @@
+{"configurations": [
+  {
+    "id": "b43cf453-5e47-4226-8ee9-14aa6c5fb498",
+    "timestamp": "2014-08-09T09:03:45.834-0700",
+    "description": "updating description",
+    "name": "ThiTests_1",
+  },
+  {
+    "id": "da80fb79-7c8e-4757-95f1-489358058782",
+    "timestamp": "2014-08-09T09:03:45.834-0700",
+    "description": "updating description",
+    "name": "ThiTest",
+  },
+  {
+    "id": "64c3539d-27d0-43d3-a486-0b460bd307ce",
+    "timestamp": "2014-06-09T09:04:45.834-0700",
+    "description": "updating description",
+    "name": "product test 2",
+  }
+]}
+200

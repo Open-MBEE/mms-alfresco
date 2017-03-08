@@ -1,0 +1,15 @@
+{"products": [{
+  "qualifiedId": "/europa/123456/package/holding_bin_package_123456/elementInPkg",
+  "qualifiedName": "/europa/JW_TEST2/package/holding_bin/elementInPkg",
+  "name": "elementInPkg",
+  "owner": "holding_bin_package_123456",
+  "documentation": "Element to post to a site package",
+  "sysmlid": "elementInPkg",
+  "specialization": {
+    "contents": null,
+    "type": "Product"
+  },
+  "editable": true,
+  "creator": "admin"
+}]}
+200

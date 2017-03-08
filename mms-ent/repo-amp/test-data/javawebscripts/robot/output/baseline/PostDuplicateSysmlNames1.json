@@ -1,0 +1,16 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/testCmed416",
+            "_qualifiedName": "//JW_TEST/testName",
+            "_siteCharacterizationId": "europa",
+            "name": "testName",
+            "ownerId": "123456",
+            "sysmlId": "testCmed416",
+            "type": "Property"
+        }
+    ]
+}

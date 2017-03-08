@@ -1,0 +1,28 @@
+{"views": [{
+    "qualifiedId": "/europa/123456/_17_0_2_3_e610336_1394148311476_17302_29388",
+    "qualifiedName": "/europa/JW_TEST/Components",
+    "sysmlid": "_17_0_2_3_e610336_1394148311476_17302_29388",
+    "editable": true,
+    "creator": "admin",
+    "modifier": "admin",
+    "name": "Components",
+    "owner": "123456",
+    "documentation": "",
+    "specialization": {
+        "displayedElements": ["_17_0_2_4_f3a0363_1394142290412_487571_28478"],
+        "childrenViews": [],
+        "allowedElements": ["_17_0_2_4_f3a0363_1394142290412_487571_28478"],
+        "contains": [{
+            "ordered": false,
+            "list": [[{
+                "sourceType": "reference",
+                "source": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+                "sourceProperty": "name",
+                "type": "Paragraph"
+            }]],
+            "type": "List"
+        }],
+        "type": "View"
+    }
+}]}
+200

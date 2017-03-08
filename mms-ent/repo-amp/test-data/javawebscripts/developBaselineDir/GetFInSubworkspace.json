@@ -1,0 +1,16 @@
+{"elements": [{
+    "qualifiedId": "/no_site/no_site_no_project/holding_bin_no_site_no_project/f",
+    "modifier": "admin",
+    "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+    "owner": "holding_bin_no_site_no_project",
+    "documentation": "f is f",
+    "sysmlid": "f",
+    "specialization": {
+        "source": null,
+        "target": null,
+        "type": "Expose"
+    },
+    "editable": true,
+    "creator": "admin"
+}]}
+200

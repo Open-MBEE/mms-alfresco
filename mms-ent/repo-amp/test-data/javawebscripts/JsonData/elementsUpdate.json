@@ -1,0 +1,32 @@
+{
+  "elements": [
+    {
+      "documentation": "update documentation",
+      "sysmlId": "301",
+      "name": "301",
+      "ownerId": "300",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "dlam_string"
+        }
+      ]
+    },
+    {
+      "documentation": "update to 302",
+      "sysmlId": "302",
+      "name": "302",
+      "ownerId": "301",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "dlam_string"
+        }
+      ]
+    }
+  ]
+}

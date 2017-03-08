@@ -1,0 +1,188 @@
+{"elements": [
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "",
+
+        "owner": "e_32169",
+
+        "qualifiedId": "/123456/e_32169/constraint_32165",
+
+        "qualifiedName": "/JW_TEST/e_32169/",
+
+        "specialization": {
+
+            "type": "Constraint"
+
+        },
+
+        "sysmlid": "constraint_32165"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "y",
+
+        "owner": "op_ev_31835",
+
+        "qualifiedId": "/123456/e_31828/op_ev_31835/op_param_31869",
+
+        "qualifiedName": "/JW_TEST/e_31828/GreaterEquals/y",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "op_param_31869"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "GreaterEquals",
+
+        "owner": "e_31828",
+
+        "qualifiedId": "/123456/e_31828/op_ev_31835",
+
+        "qualifiedName": "/JW_TEST/e_31828/GreaterEquals",
+
+        "specialization": {
+
+            "parameters": [
+
+                "op_param_31867",
+
+                "op_param_31868",
+
+                "op_param_31869"
+
+            ],
+
+            "type": "Operation"
+
+        },
+
+        "sysmlid": "op_ev_31835"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "",
+
+        "owner": "e_32169",
+
+        "qualifiedId": "/123456/e_32169/expr_32165",
+
+        "qualifiedName": "/JW_TEST/e_32169/",
+
+        "specialization": {
+
+            "operand": [
+
+                {
+
+                    "element": "op_ev_31835",
+
+                    "type": "ElementValue"
+
+                },
+
+                {
+
+                    "element": "arg_ev_38307_1",
+
+                    "type": "ElementValue"
+
+                },
+
+                {
+
+                    "element": "arg_ev_33001",
+
+                    "type": "ElementValue"
+
+                }
+
+            ],
+
+            "type": "Expression"
+
+        },
+
+        "sysmlid": "expr_32165"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "x",
+
+        "owner": "op_ev_31835",
+
+        "qualifiedId": "/123456/e_31828/op_ev_31835/op_param_31868",
+
+        "qualifiedName": "/JW_TEST/e_31828/GreaterEquals/x",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "op_param_31868"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "result",
+
+        "owner": "op_ev_31835",
+
+        "qualifiedId": "/123456/e_31828/op_ev_31835/op_param_31867",
+
+        "qualifiedName": "/JW_TEST/e_31828/GreaterEquals/result",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "op_param_31867"
+
+    }
+
+]}
+
+200
+

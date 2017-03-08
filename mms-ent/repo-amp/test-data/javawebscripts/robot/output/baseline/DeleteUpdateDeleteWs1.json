@@ -1,0 +1,43 @@
+{
+  "workspace1": {
+    "name": "wsMerge1",
+    "elements": [
+      {
+        "sysmlId": "update_delete_consistent",
+        "_editable": true,
+        "_creator": "admin",
+        "_modifier": "admin",
+        "name": "update_delete_consistent",
+        "_owner": "123456",
+        "documentation": "update_delete_consistent",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "this is it",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      }
+    ]
+  },
+  "workspace2": {
+    "deletedElements": [
+      {
+        "name": "update_delete_consistent",
+        "sysmlId": "update_delete_consistent",
+        "_owner": "123456",
+          "type": "Property",
+        "_creator": "admin"
+      }
+    ],
+    "addedElements": [],
+    "conflictedElements": [],
+    "updatedElements": [],
+    "name": "wsMerge1",
+    "movedElements": []
+  }
+}

@@ -1,0 +1,224 @@
+{"views": [{
+    "qualifiedId": "/demo3site/PROJECT-71724d08-6d79-42b2-b9ec-dc39f20a3660/connectorViewDataFolder/_17_0_2_3_e610336_1394148311476_17302_29388_X",
+    "qualifiedName": "/demo3site/BikeProject/Connector View Data Folder/Components",
+    "sysmlid": "_17_0_2_3_e610336_1394148311476_17302_29388_X",
+    "editable": true,
+    "creator": "admin",
+    "modifier": "admin",
+    "name": "Components",
+    "owner": "connectorViewDataFolder",
+    "documentation": "",
+    "specialization": {
+        "displayedElements": [
+            "_17_0_2_42401aa_1411482807482_973738_13332",
+            "_17_0_2_42401aa_1411483039183_503050_13560",
+            "_17_0_2_42401aa_1411483105513_255900_13692",
+            "_17_0_2_42401aa_1411482889955_443201_13398",
+            "_17_0_2_42401aa_1411483215127_692656_14009"
+        ],
+        "childrenViews": [],
+        "allowedElements": [
+            "_17_0_2_42401aa_1411482807482_973738_13332",
+            "_17_0_2_42401aa_1411483039183_503050_13560",
+            "_17_0_2_42401aa_1411483105513_255900_13692",
+            "_17_0_2_42401aa_1411482889955_443201_13398",
+            "_17_0_2_42401aa_1411483215127_692656_14009"
+        ],
+        "contains": [
+            {
+                "ordered": false,
+                "list": [[
+                    {
+                        "sourceType": "reference",
+                        "source": "_17_0_2_42401aa_1411483215127_692656_14009",
+                        "sourceProperty": "name",
+                        "type": "Paragraph"
+                    },
+                    {
+                        "ordered": false,
+                        "list": [[
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411482807482_973738_13332",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            },
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411482889955_443201_13398",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            }
+                        ]],
+                        "type": "List"
+                    },
+                    {
+                        "ordered": false,
+                        "list": [[
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411483105513_255900_13692",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            },
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411483039183_503050_13560",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            }
+                        ]],
+                        "type": "List"
+                    }
+                ]],
+                "type": "List"
+            },
+            {
+                "ordered": false,
+                "list": [[
+                    {
+                        "sourceType": "reference",
+                        "source": "_17_0_2_42401aa_1411483215127_692656_14009",
+                        "sourceProperty": "name",
+                        "type": "Paragraph"
+                    },
+                    {
+                        "ordered": false,
+                        "list": [[
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411482807482_973738_13332",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            },
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411482889955_443201_13398",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            }
+                        ]],
+                        "type": "List"
+                    },
+                    {
+                        "ordered": false,
+                        "list": [[
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411483105513_255900_13692",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            },
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411483039183_503050_13560",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            }
+                        ]],
+                        "type": "List"
+                    }
+                ]],
+                "type": "List"
+            },
+            {
+                "ordered": false,
+                "list": [[
+                    {
+                        "sourceType": "reference",
+                        "source": "_17_0_2_42401aa_1411483215127_692656_14009",
+                        "sourceProperty": "name",
+                        "type": "Paragraph"
+                    },
+                    {
+                        "ordered": false,
+                        "list": [[
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411482807482_973738_13332",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            },
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411482889955_443201_13398",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            }
+                        ]],
+                        "type": "List"
+                    },
+                    {
+                        "ordered": false,
+                        "list": [[
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411483105513_255900_13692",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            },
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411483039183_503050_13560",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            }
+                        ]],
+                        "type": "List"
+                    }
+                ]],
+                "type": "List"
+            },
+            {
+                "ordered": false,
+                "list": [[
+                    {
+                        "sourceType": "reference",
+                        "source": "_17_0_2_42401aa_1411483215127_692656_14009",
+                        "sourceProperty": "name",
+                        "type": "Paragraph"
+                    },
+                    {
+                        "ordered": false,
+                        "list": [[
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411482807482_973738_13332",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            },
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411482889955_443201_13398",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            }
+                        ]],
+                        "type": "List"
+                    },
+                    {
+                        "ordered": false,
+                        "list": [[
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411483105513_255900_13692",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            },
+                            {
+                                "sourceType": "reference",
+                                "source": "_17_0_2_42401aa_1411483039183_503050_13560",
+                                "sourceProperty": "name",
+                                "type": "Paragraph"
+                            }
+                        ]],
+                        "type": "List"
+                    }
+                ]],
+                "type": "List"
+            }
+        ],
+        "type": "View"
+    }
+}]}
+200

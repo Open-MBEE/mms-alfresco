@@ -1,0 +1,237 @@
+{"elements": [
+    {
+        "siteCharacterizationId": "europa",
+        "qualifiedId": "/europa/123456/300/MMS_1431989835114_62e5d0db-911c-4c2c-b73e-88a3a114d612",
+        "modifier": "admin",
+        "created": "Mon May 18 15:57:15 PDT 2015",
+        "qualifiedName": "/europa/JW_TEST2/300/null",
+        "owner": "300",
+        "sysmlid": "MMS_1431989835114_62e5d0db-911c-4c2c-b73e-88a3a114d612",
+        "read": "2015-05-18T16:06:56.180-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:57:15.116-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "europa",
+        "qualifiedId": "/europa/123456/300/301/302/MMS_1431989835296_1ef8706d-a5b1-4f74-9bd0-c63daa95e5dd",
+        "modifier": "admin",
+        "created": "Mon May 18 15:57:15 PDT 2015",
+        "qualifiedName": "/europa/JW_TEST2/300/301/302/null",
+        "owner": "302",
+        "sysmlid": "MMS_1431989835296_1ef8706d-a5b1-4f74-9bd0-c63daa95e5dd",
+        "read": "2015-05-18T16:06:56.184-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:57:15.297-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "europa",
+        "qualifiedId": "/europa/123456/4000/401/402/403/404/MMS_1431989836300_d7f1f73f-b741-4c90-8495-e728092babbb",
+        "modifier": "admin",
+        "created": "Mon May 18 15:57:16 PDT 2015",
+        "qualifiedName": "/europa/JW_TEST2/400/401/402/403/404/null",
+        "owner": "404",
+        "sysmlid": "MMS_1431989836300_d7f1f73f-b741-4c90-8495-e728092babbb",
+        "read": "2015-05-18T16:06:56.189-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:57:16.307-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "europa",
+        "qualifiedId": "/europa/123456/300/301/302/303/304/MMS_1431989835489_0a5d15b7-d46e-40e8-8f60-81030bd8f8dc",
+        "modifier": "admin",
+        "created": "Mon May 18 15:57:15 PDT 2015",
+        "qualifiedName": "/europa/JW_TEST2/300/301/302/303/304/null",
+        "owner": "304",
+        "sysmlid": "MMS_1431989835489_0a5d15b7-d46e-40e8-8f60-81030bd8f8dc",
+        "read": "2015-05-18T16:06:56.196-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:57:15.496-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "europa",
+        "qualifiedId": "/europa/123456/4000/MMS_1431989835950_4d330b8f-c735-4a40-a486-86f0b8e1e399",
+        "modifier": "admin",
+        "created": "Mon May 18 15:57:15 PDT 2015",
+        "qualifiedName": "/europa/JW_TEST2/400/null",
+        "owner": "4000",
+        "sysmlid": "MMS_1431989835950_4d330b8f-c735-4a40-a486-86f0b8e1e399",
+        "read": "2015-05-18T16:06:56.203-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:57:15.952-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "europa",
+        "qualifiedId": "/europa/123456/300/301/MMS_1431989835205_a79cd687-0f26-40af-be88-60835998c80e",
+        "modifier": "admin",
+        "created": "Mon May 18 15:57:15 PDT 2015",
+        "qualifiedName": "/europa/JW_TEST2/300/301/null",
+        "owner": "301",
+        "sysmlid": "MMS_1431989835205_a79cd687-0f26-40af-be88-60835998c80e",
+        "read": "2015-05-18T16:06:56.206-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:57:15.207-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "no_site",
+        "qualifiedId": "/no_site/no_site_no_project/holding_bin_no_site_no_project/propertyMissing/MMS_1431989893543_25538d36-99e7-4eb8-8288-80e3a132b3a7",
+        "modifier": "admin",
+        "created": "Mon May 18 15:58:13 PDT 2015",
+        "qualifiedName": "/no_site/no_site_no_project/holding_bin/propertyMissing/null",
+        "owner": "propertyMissing",
+        "sysmlid": "MMS_1431989893543_25538d36-99e7-4eb8-8288-80e3a132b3a7",
+        "read": "2015-05-18T16:06:56.211-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:58:13.552-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "no_site",
+        "qualifiedId": "/no_site/no_site_no_project/holding_bin_no_site_no_project/305/MMS_1431989835658_d0a7ed7e-00ce-4b9d-aaf9-f286503c53fe",
+        "modifier": "admin",
+        "created": "Mon May 18 15:57:15 PDT 2015",
+        "qualifiedName": "/no_site/no_site_no_project/holding_bin/305/null",
+        "owner": "305",
+        "sysmlid": "MMS_1431989835658_d0a7ed7e-00ce-4b9d-aaf9-f286503c53fe",
+        "read": "2015-05-18T16:06:56.215-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:57:15.665-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "europa",
+        "qualifiedId": "/europa/123456/propertyNull/MMS_1431989893463_7bb8c94b-edcc-416e-998b-fdb599b53af6",
+        "modifier": "admin",
+        "created": "Mon May 18 15:58:13 PDT 2015",
+        "qualifiedName": "/europa/JW_TEST2/propertyNull/null",
+        "owner": "propertyNull",
+        "sysmlid": "MMS_1431989893463_7bb8c94b-edcc-416e-998b-fdb599b53af6",
+        "read": "2015-05-18T16:06:56.219-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:58:13.469-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "europa",
+        "qualifiedId": "/europa/123456/300/301/302/303/MMS_1431989835391_234dcda9-3763-4402-b10e-9d5d455d7037",
+        "modifier": "admin",
+        "created": "Mon May 18 15:57:15 PDT 2015",
+        "qualifiedName": "/europa/JW_TEST2/300/301/302/303/null",
+        "owner": "303",
+        "sysmlid": "MMS_1431989835391_234dcda9-3763-4402-b10e-9d5d455d7037",
+        "read": "2015-05-18T16:06:56.223-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:57:15.393-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "europa",
+        "qualifiedId": "/europa/123456/4000/401/MMS_1431989836038_e8fc05d2-9455-47eb-bf05-9801e4062c75",
+        "modifier": "admin",
+        "created": "Mon May 18 15:57:16 PDT 2015",
+        "qualifiedName": "/europa/JW_TEST2/400/401/null",
+        "owner": "401",
+        "sysmlid": "MMS_1431989836038_e8fc05d2-9455-47eb-bf05-9801e4062c75",
+        "read": "2015-05-18T16:06:56.229-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:57:16.039-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "europa",
+        "qualifiedId": "/europa/123456/4000/401/402/MMS_1431989836125_6c8ca81b-f878-47e8-9bd1-45652395f5f3",
+        "modifier": "admin",
+        "created": "Mon May 18 15:57:16 PDT 2015",
+        "qualifiedName": "/europa/JW_TEST2/400/401/402/null",
+        "owner": "402",
+        "sysmlid": "MMS_1431989836125_6c8ca81b-f878-47e8-9bd1-45652395f5f3",
+        "read": "2015-05-18T16:06:56.233-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:57:16.127-0700",
+        "creator": "admin"
+    },
+    {
+        "siteCharacterizationId": "europa",
+        "qualifiedId": "/europa/123456/4000/401/402/403/MMS_1431989836213_2a8470b3-36d2-4ea7-932c-447a8c203e61",
+        "modifier": "admin",
+        "created": "Mon May 18 15:57:16 PDT 2015",
+        "qualifiedName": "/europa/JW_TEST2/400/401/402/403/null",
+        "owner": "403",
+        "sysmlid": "MMS_1431989836213_2a8470b3-36d2-4ea7-932c-447a8c203e61",
+        "read": "2015-05-18T16:06:56.238-0700",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "modified": "2015-05-18T15:57:16.215-0700",
+        "creator": "admin"
+    }
+]}
+200

@@ -1,0 +1,12 @@
+{"elements": [{
+    "qualifiedId": "no_project/300/_comment_300",
+    "name": "New test",
+    "qualifiedName": "/New test",
+    "documentation": "change testing commnets",
+    "owner": "300",
+    "specialization": {"type": "Comment"},
+    "editable": true,
+    "creator": "admin",
+    "modified": "Thu Aug 07 14:07:20 PDT 2014"
+}]}
+200

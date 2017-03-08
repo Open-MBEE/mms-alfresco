@@ -1,0 +1,56 @@
+{
+  "workspace1": {
+    "name": "wsA",
+    "elements": [
+      {
+        "sysmlId": "x",
+        "_editable": true,
+        "version": "1.1",
+        "name": "300",
+        "documentation": "something",
+        "_owner": "holding_bin_no_site_no_project",
+        "propertyType": null,
+        "isSlot": false,
+        "isDerived": false,
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property"
+      },
+      {
+        "name": "holding_bin",
+        "_owner": "no_site_no_project",
+        "sysmlId": "holding_bin_no_site_no_project",
+        "type": "Package",
+        "_editable": true
+      }
+    ]
+  },
+  "workspace2": {
+    "deletedElements": [],
+    "addedElements": [],
+    "conflictedElements": [],
+    "updatedElements": [
+      {
+        "name": "300",
+        "_owner": "holding_bin_no_site_no_project",
+        "documentation": "x is x",
+        "sysmlId": "x",
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "the x value",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property"
+      }
+    ],
+    "name": "wsB",
+    "movedElements": []
+  }
+}

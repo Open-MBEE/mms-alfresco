@@ -1,0 +1,11 @@
+{
+  "message": "[ERROR]: Owner was not found: notFound2\n[ERROR]: Owner was not found: notFound\n",
+  "ownersNotFound": [
+    {
+      "sysmlId": "notFound2"
+    },
+    {
+      "sysmlId": "notFound"
+    }
+  ]
+}

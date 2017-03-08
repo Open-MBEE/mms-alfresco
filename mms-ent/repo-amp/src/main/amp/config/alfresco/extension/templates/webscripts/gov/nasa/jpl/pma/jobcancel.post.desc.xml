@@ -1,0 +1,11 @@
+<webscript>
+	<shortname>cancel jobs</shortname>
+    <description>
+    	cancel jobs
+	</description>
+  	<url>/refs/{workspaceId}/jobs/{jobId}/cancel</url>
+  	<format default="json">argument</format>
+  	<authentication>user</authentication>
+  	<transaction>required</transaction>
+  	<family>MMS REST API</family>
+ </webscript>

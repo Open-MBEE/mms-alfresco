@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript> 
+  <shortname>Get Project</shortname> 
+  <description>
+    Retrieves the project information in the following format:
+    {elements:[{
+            "sysmlid": projectId,
+            "name": projectName,
+            "specialization":{"type":"Project",
+                              "projectVersion": projectVersion if there is a version
+                             }
+                            
+     }]} 
+  </description>
+  <url>/projects/{projectId}/refs/{refId}/projects/{projectId}</url>
+  <format default="json">argument</format> 
+  <authentication>user</authentication> 
+  <transaction>required</transaction>
+  <family>MMS REST API</family>
+  <args>
+  </args>
+</webscript>

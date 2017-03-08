@@ -1,0 +1,47 @@
+{
+  "elements": [
+    {
+      "sysmlId": "onBothWorkspaces2",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "onBothWorkspaces2",
+      "_owner": "123456",
+      "documentation": "",
+      "valueExpression": null,
+      "type": "Expression",
+      "operand": [
+        {
+          "element": "300",
+          "valueExpression": null,
+          "type": "ElementValue"
+        },
+        {
+          "element": "302",
+          "valueExpression": null,
+          "type": "ElementValue"
+        }
+      ]
+    },
+    {
+      "sysmlId": "onBothWorkspaces1",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "onBothWorkspaces1",
+      "_owner": "123456",
+      "documentation": "",
+      "propertyType": null,
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "gg_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property"
+    }
+  ]
+}

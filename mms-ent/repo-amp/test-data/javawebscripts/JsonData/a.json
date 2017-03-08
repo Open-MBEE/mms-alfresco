@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {
+      "sysmlId": "a",
+      "documentation": "a is a",
+        "type": "Property",
+        "value": [
+          {
+            "string": "the a value",
+            "type": "LiteralString"
+          }
+        ]
+      }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/update_delete_consistent",
+            "_qualifiedName": "//JW_TEST/update_delete_consistent",
+            "_siteCharacterizationId": "europa",
+            "documentation": "update_delete_consistent",
+            "isDerived": false,
+            "name": "update_delete_consistent",
+            "ownerId": "123456",
+            "sysmlId": "update_delete_consistent",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "this is update 1",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/add_add_consistent",
+            "_qualifiedName": "//JW_TEST/add_add_consistent",
+            "_siteCharacterizationId": "europa",
+            "documentation": "add_add_consistent",
+            "isDerived": false,
+            "name": "add_add_consistent",
+            "ownerId": "123456",
+            "sysmlId": "add_add_consistent",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "this is it",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/update_update_consistent",
+            "_qualifiedName": "//JW_TEST/update_update_consistent",
+            "_siteCharacterizationId": "europa",
+            "documentation": "update_update_consistent",
+            "isDerived": false,
+            "name": "update_update_consistent",
+            "ownerId": "123456",
+            "sysmlId": "update_update_consistent",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "this is update 1",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,167 @@
+{"elements": [
+    {
+        "qualifiedId": "/europa/123456/op_ev_31835/op_param_31868",
+        "name": "x",
+        "qualifiedName": "/europa/JW_TEST/GreaterEquals/x",
+        "sysmlid": "op_param_31868",
+        "documentation": "",
+        "owner": "op_ev_31835",
+        "read": "2015-03-27T09:04:14.423-0700",
+        "specialization": {"type": "Element"},
+        "editable": true,
+        "creator": "admin",
+        "modified": "2015-03-27T09:04:09.688-0700"
+    },
+    {
+        "qualifiedId": "/europa/123456/arg_ev_33001",
+        "name": "initialDuration",
+        "qualifiedName": "/europa/JW_TEST/initialDuration",
+        "sysmlid": "arg_ev_33001",
+        "documentation": "",
+        "owner": "123456",
+        "read": "2015-03-27T09:04:14.424-0700",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "integer": -1145811380,
+                "type": "LiteralInteger"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2015-03-27T09:04:14.394-0700"
+    },
+    {
+        "qualifiedId": "/europa/123456/op_ev_31835/op_param_31869",
+        "name": "y",
+        "qualifiedName": "/europa/JW_TEST/GreaterEquals/y",
+        "sysmlid": "op_param_31869",
+        "documentation": "",
+        "owner": "op_ev_31835",
+        "read": "2015-03-27T09:04:14.428-0700",
+        "specialization": {"type": "Element"},
+        "editable": true,
+        "creator": "admin",
+        "modified": "2015-03-27T09:04:09.720-0700"
+    },
+    {
+        "qualifiedId": "/europa/123456/op_ev_31835/op_param_31867",
+        "name": "result",
+        "qualifiedName": "/europa/JW_TEST/GreaterEquals/result",
+        "sysmlid": "op_param_31867",
+        "documentation": "",
+        "owner": "op_ev_31835",
+        "read": "2015-03-27T09:04:14.430-0700",
+        "specialization": {"type": "Element"},
+        "editable": true,
+        "creator": "admin",
+        "modified": "2015-03-27T09:04:09.658-0700"
+    },
+    {
+        "qualifiedId": "/europa/123456/op_ev_31835",
+        "name": "GreaterEquals",
+        "qualifiedName": "/europa/JW_TEST/GreaterEquals",
+        "sysmlid": "op_ev_31835",
+        "documentation": "",
+        "owner": "123456",
+        "read": "2015-03-27T09:04:14.431-0700",
+        "specialization": {
+            "parameters": [
+                "op_param_31867",
+                "op_param_31868",
+                "op_param_31869"
+            ],
+            "type": "Operation"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2015-03-27T09:04:09.608-0700"
+    },
+    {
+        "qualifiedId": "/europa/123456/constraint_32165",
+        "name": "",
+        "qualifiedName": "/europa/JW_TEST/",
+        "sysmlid": "constraint_32165",
+        "documentation": "",
+        "owner": "123456",
+        "read": "2015-03-27T09:04:14.435-0700",
+        "specialization": {
+            "specification": {
+                "valueExpression": null,
+                "operand": [
+                    {
+                        "element": "op_ev_31835",
+                        "valueExpression": null,
+                        "type": "ElementValue"
+                    },
+                    {
+                        "element": "arg_ev_38307_1",
+                        "valueExpression": null,
+                        "type": "ElementValue"
+                    },
+                    {
+                        "element": "arg_ev_33001",
+                        "valueExpression": null,
+                        "type": "ElementValue"
+                    }
+                ],
+                "type": "Expression"
+            },
+            "type": "Constraint"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2015-03-27T09:04:09.180-0700"
+    },
+    {
+        "qualifiedId": "/europa/123456/arg_ev_38307_1",
+        "name": "duration_1",
+        "qualifiedName": "/europa/JW_TEST/duration_1",
+        "sysmlid": "arg_ev_38307_1",
+        "documentation": "",
+        "owner": "123456",
+        "read": "2015-03-27T09:04:14.444-0700",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "integer": 10,
+                "type": "LiteralInteger"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2015-03-27T09:04:09.399-0700"
+    },
+    {
+        "qualifiedId": "/europa/123456/arg_ev_38307",
+        "name": "duration",
+        "qualifiedName": "/europa/JW_TEST/duration",
+        "sysmlid": "arg_ev_38307",
+        "documentation": "",
+        "owner": "123456",
+        "read": "2015-03-27T09:04:14.448-0700",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "integer": 22,
+                "type": "LiteralInteger"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2015-03-27T09:04:09.511-0700"
+    }
+]}
+200

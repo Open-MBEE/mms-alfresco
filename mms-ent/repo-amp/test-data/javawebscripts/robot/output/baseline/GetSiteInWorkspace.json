@@ -1,0 +1,15 @@
+{
+  "sites": [
+    {
+      "name": "Sample: Web Site Design Project",
+      "sysmlId": "swsdp",
+      "isCharacterization": false
+    },
+    {
+      "name": "europa",
+      "sysmlId": "europa",
+      "isCharacterization": false
+    }
+  ]
+}
+

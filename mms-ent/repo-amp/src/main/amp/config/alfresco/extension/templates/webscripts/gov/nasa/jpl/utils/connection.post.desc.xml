@@ -1,0 +1,14 @@
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>configure connection</shortname>
+    <description>
+        configure connection
+    </description>
+    <url>/connection/jms</url>
+    <url>/connection/jmswl</url>
+    <url>/connection/rest</url>
+      <format default="json">argument</format>
+      <authentication>user</authentication>
+      <transaction>required</transaction>
+      <family>MMS REST API</family>
+ </webscript>

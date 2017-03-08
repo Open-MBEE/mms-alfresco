@@ -1,0 +1,33 @@
+{"elements": [{
+    "qualifiedId": "/europa/123456/_17_0_5_1_407019f_1402422718524_458809_16434",
+    "modifier": "admin",
+    "qualifiedName": "/europa/JW_TEST2/D no ",
+    "name": "D no ",
+    "owner": "123456",
+    "sysmlid": "_17_0_5_1_407019f_1402422718524_458809_16434",
+    "properties": [{
+        "qualifiedId": "/europa/123456/_17_0_5_1_407019f_1402422718524_458809_16434/_17_0_5_1_407019f_1402422739233_300950_16458",
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/D no /real55",
+        "name": "real55",
+        "owner": "_17_0_5_1_407019f_1402422718524_458809_16434",
+        "sysmlid": "_17_0_5_1_407019f_1402422739233_300950_16458",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "value": [{
+                "valueExpression": null,
+                "double": 34.5,
+                "type": "LiteralReal"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    }],
+    "specialization": {"type": "Element"},
+    "editable": true,
+    "creator": "admin"
+}]}
+200

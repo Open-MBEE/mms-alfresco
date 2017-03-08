@@ -1,0 +1,344 @@
+{
+
+    "elements": [
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "",
+
+            "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+            "qualifiedName": "/",
+
+            "specialization": {
+
+                "source": "_17_0_2_3_e610336_1394148311476_17302_29388",
+
+                "target": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+
+                "type": "Expose"
+
+            },
+
+        },
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "Components",
+
+            "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+            "qualifiedName": "/Components",
+
+            "specialization": {
+
+                "allowedElements": [],
+
+                "childrenViews": [],
+
+                "contains": [],
+
+                "displayedElements": [],
+
+                "type": "View"
+
+            },
+
+        },
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "exposed",
+
+            "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+            "qualifiedName": "/exposed",
+
+            "specialization": {"type": "Parameter"},
+
+        },
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "ComponentViewPoint",
+
+            "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+            "qualifiedName": "/ComponentViewPoint",
+
+            "specialization": {"type": "Viewpoint"},
+
+        },
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "viewpoint_op",
+
+            "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+            "qualifiedName": "/viewpoint_op",
+
+            "specialization": {
+
+                "expression": "vp_expression",
+
+                "parameters": ["exposed_id"],
+
+                "type": "Operation"
+
+            },
+
+        },
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "List",
+
+            "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+            "qualifiedName": "/List",
+
+            "specialization": {"type": "Operation"},
+
+        },
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "",
+
+            "owner": "_17_0_2_3_e610336_1394148311476_17302_29388",
+
+            "qualifiedName": "/Components/",
+
+            "specialization": {
+
+                "source": "_17_0_2_3_e610336_1394148311476_17302_29388",
+
+                "target": "_17_0_2_3_e610336_1394148449252_91190_29556",
+
+                "type": "Conform"
+
+            },
+
+        },
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "BLUCam CubeSat A",
+
+            "owner": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+
+            "qualifiedName": "/BLUCam CubeSat A",
+
+            "specialization": {"type": "Package"},
+
+        },
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "Name",
+
+            "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+            "qualifiedName": "/Name",
+
+            "specialization": {"type": "Operation"},
+
+        },
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "",
+
+            "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+            "qualifiedName": "/",
+
+            "specialization": {
+
+                "operand": [
+
+                    {
+
+                        "element": "op_list",
+
+                        "type": "ElementValue"
+
+                    },
+
+                    {
+
+                        "operand": [
+
+                            {
+
+                                "element": "op_map",
+
+                                "type": "ElementValue"
+
+                            },
+
+                            {
+
+                                "element": "exposed_id",
+
+                                "type": "ElementValue"
+
+                            },
+
+                            {
+
+                                "element": "op_name_arg",
+
+                                "type": "ElementValue"
+
+                            }
+
+                        ],
+
+                        "type": "Expression"
+
+                    }
+
+                ],
+
+                "type": "Expression"
+
+            },
+
+        },
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "",
+
+            "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+            "qualifiedName": "/",
+
+            "specialization": {
+
+                "operand": [
+
+                    {
+
+                        "element": "op_map",
+
+                        "type": "ElementValue"
+
+                    },
+
+                    {
+
+                        "element": "exposed_id",
+
+                        "type": "ElementValue"
+
+                    },
+
+                    {
+
+                        "element": "op_name_arg",
+
+                        "type": "ElementValue"
+
+                    }
+
+                ],
+
+                "type": "Expression"
+
+            },
+
+        },
+
+        {
+
+            "creator": "admin",
+
+            "documentation": "",
+
+            "editable": true,
+
+            "name": "map",
+
+            "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+            "qualifiedName": "/map",
+
+            "specialization": {"type": "Operation"},
+
+        }
+
+    ],
+
+}
+
+200
+

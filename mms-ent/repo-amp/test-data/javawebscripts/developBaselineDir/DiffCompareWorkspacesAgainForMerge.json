@@ -1,0 +1,17 @@
+{
+    "workspace1": {
+        "qualifiedName": "master/ws2",
+        "name": "ws2",
+        "elements": []
+    },
+    "workspace2": {
+        "deletedElements": [],
+        "addedElements": [],
+        "conflictedElements": [],
+        "updatedElements": [],
+        "qualifiedName": "master/ws1",
+        "name": "ws1",
+        "movedElements": []
+    }
+}
+200

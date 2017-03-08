@@ -1,0 +1,38 @@
+{
+  "configurations": [{
+    "timestamp": "2014-06-09T09:03:45.834-0700",
+    "description": "updating description",
+    "name": "product test",
+    "snapshots": [],
+  }],
+  "products": [
+    {
+      "name": "301",
+      "snapshots": [
+        {
+          "tag": "",
+          "creator": "admin"
+        },
+        {
+          "tag": "",
+          "creator": "admin"
+        }
+      ]
+    },
+    {
+      "name": "401",
+      "snapshots": [
+        {
+          "tag": "",
+          "creator": "admin"
+        },
+        {
+          "tag": "product test",
+          "creator": "admin"
+        }
+      ]
+    }
+  ]
+}
+
+200

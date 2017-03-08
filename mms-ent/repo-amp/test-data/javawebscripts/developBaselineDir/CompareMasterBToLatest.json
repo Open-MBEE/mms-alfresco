@@ -1,0 +1,27 @@
+{
+    "workspace1": {"elements": []},
+    "workspace2": {
+        "deletedElements": [],
+        "moved": [],
+        "addedElements": [{
+            "modifier": "admin",
+            "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+            "owner": "holding_bin_no_site_no_project",
+            "documentation": "d is d",
+            "sysmlid": "d",
+            "specialization": {
+                "propertyType": null,
+                "isDerived": false,
+                "isSlot": false,
+                "type": "Property"
+            },
+            "editable": true,
+            "creator": "admin",
+        }],
+        "conflictedElements": [],
+        "updatedElements": [],
+        "conflicted": [],
+        "movedElements": []
+    }
+}
+200

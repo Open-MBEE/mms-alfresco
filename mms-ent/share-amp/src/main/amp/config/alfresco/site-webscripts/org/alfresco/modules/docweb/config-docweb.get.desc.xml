@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+  <shortname>DocWeb Config Module</shortname>
+  <description>Configuration dialog for DocWeb dashlet</description>
+  <url>/modules/docweb/config</url>
+</webscript>

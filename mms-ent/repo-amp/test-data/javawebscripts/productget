@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo productget $1 $2
+echo curl -w "\n%{http_code}\n" -X GET -u admin:admin -H "Content-Type:application/json" "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/products/$1"
+curl -w "\n%{http_code}\n" -X GET -u admin:admin -H "Content-Type:application/json" "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/products/$1"

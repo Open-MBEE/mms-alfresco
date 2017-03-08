@@ -1,0 +1,92 @@
+{"products": [{
+
+    "creator": "admin",
+
+    "documentation": "else",
+
+    "editable": true,
+
+    "name": "301",
+
+    "owner": "300",
+
+    "qualifiedId": "no_project/holding_bin_no_site_no_project/300/301",
+
+    "qualifiedName": "/300/301",
+
+    "specialization": {
+
+        "allowedElements": [
+
+            "301",
+
+            "302",
+
+            "303"
+
+        ],
+
+        "childrenViews": ["304"],
+
+        "contains": [{
+
+            "source": "301",
+
+            "sourceProperty": "documentation",
+
+            "sourceType": "reference",
+
+            "type": "Paragraph"
+
+        }],
+
+        "displayedElements": [
+
+            "301",
+
+            "302",
+
+            "303"
+
+        ],
+
+        "isDerived": false,
+
+        "isSlot": false,
+
+        "noSections": ["302"],
+
+        "type": "Product",
+
+        "value": [{
+
+            "string": "dlam_string",
+
+            "type": "LiteralString"
+
+        }],
+
+        "view2view": [{
+
+            "childrenViews": [
+
+                "301",
+
+                "302"
+
+            ],
+
+            "sysmlid": "301"
+
+        }]
+
+    },
+
+    "sysmlid": "301"
+
+}]}
+
+
+
+200
+

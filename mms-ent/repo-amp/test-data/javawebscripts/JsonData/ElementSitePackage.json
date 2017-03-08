@@ -1,0 +1,10 @@
+{
+  "elements": [
+    {
+      "documentation": "Element to post to a site package",
+      "sysmlId": "elementInPkg",
+      "name": "elementInPkg",
+      "type": "Product"
+    }
+  ]
+}

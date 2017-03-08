@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Specification for diffing two workspaces, WS1 and WS2, where WS1 is original and WS2 are deltas to get to WS2.",
+    "properties": {
+        "workspace1": {
+            "type": "object",
+            "description": "Specification of WS1. This contains the original element hierarchy.",
+            "$ref": "file:///../workspaces.json#/definitions/Workspace"
+        },
+        "workspace2": {
+            "type": "object",
+            "description": "Specification of WS2. This contains all the deltas, so updated, moved, deleted, and added.",
+            "$ref": "file:///../workspaces.json#/definitions/Workspace"
+        },
+        "status": 
+        {
+            "type": "string",
+            "description": "Indicates the status of the diff- STARTED, GENERATING, OUTDATED or COMPLETED (Read-Only)"
+        },
+        "user": 
+        {
+            "type": "string",
+            "description": "The user that started the diff (Read-Only)"
+        },
+        "email": 
+        {
+            "type": "string",
+            "description": "The email address of the user that started the diff (Read-Only)"
+        },
+        "sequence": {
+            "type": "integer",
+            "description": "Sequence ID so OSB knows what order messages should appear in"
+        },
+        "message": {
+                    "type": "string",
+                    "description": "The response message for this transaction if it is non-empty."
+        }
+    }
+}

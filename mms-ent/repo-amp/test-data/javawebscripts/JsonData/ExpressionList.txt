@@ -1,0 +1,544 @@
+{"elements": [
+    {"specialization": {
+        "element": "WooPigSooie",
+        "type": "ElementValue"
+    }},
+    {"specialization": {
+        "integer": 1,
+        "type": "LiteralInteger"
+    }},
+    {"specialization": {
+        "string": "Razorbacks!",
+        "type": "LiteralString"
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Plus",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Minus",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Times",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Divide",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Modulo",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "LTE",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            },
+            {
+                "integer": 9,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "GTE",
+                "type": "ElementValue"
+            },
+            {
+                "element": "z",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 100,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "LT",
+                "type": "ElementValue"
+            },
+            {
+                "element": "z",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 0,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "GT",
+                "type": "ElementValue"
+            },
+            {
+                "element": "z",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 100,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "EQ",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 100,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "NotEQ",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 90,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "IsIn",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 100,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "NotIn",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 5,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Subset",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 10000,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Psubset",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 100000,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Union",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 5,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Inter",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "element": "o",
+                "type": "ElementValue"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "And",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "element": "y",
+                "type": "ElementValue"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "And",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "type": "Expression",
+                "operand": [
+                    {
+                        "element": "And",
+                        "type": "ElementValue"
+                    },
+                    {
+                        "element": "y",
+                        "type": "ElementValue"
+                    },
+                    {
+                        "element": "z",
+                        "type": "ElementValue"
+                    }
+                ]
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Or",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "element": "y",
+                "type": "ElementValue"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Or",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "type": "Expression",
+                "operand": [
+                    {
+                        "element": "Or",
+                        "type": "ElementValue"
+                    },
+                    {
+                        "element": "y",
+                        "type": "ElementValue"
+                    },
+                    {
+                        "element": "z",
+                        "type": "ElementValue"
+                    }
+                ]
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Concat",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 100000,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Minus",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Not",
+                "type": "ElementValue"
+            },
+            {
+                "element": "x",
+                "type": "ElementValue"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "type": "Expression",
+                "operand": [{
+                    "type": "Expression",
+                    "operand": [
+                        {
+                            "element": "Plus",
+                            "type": "ElementValue"
+                        },
+                        {
+                            "element": "y",
+                            "type": "ElementValue"
+                        },
+                        {
+                            "integer": 100,
+                            "type": "LiteralInteger"
+                        }
+                    ]
+                }]
+            },
+            {
+                "type": "Expression",
+                "operand": [{
+                    "type": "Expression",
+                    "operand": [
+                        {
+                            "element": "Plus",
+                            "type": "ElementValue"
+                        },
+                        {
+                            "element": "z",
+                            "type": "ElementValue"
+                        },
+                        {
+                            "integer": 30,
+                            "type": "LiteralInteger"
+                        }
+                    ]
+                }]
+            },
+            {
+                "type": "Expression",
+                "operand": [
+                    {
+                        "element": "EQ",
+                        "type": "ElementValue"
+                    },
+                    {
+                        "element": "x",
+                        "type": "ElementValue"
+                    },
+                    {
+                        "integer": 5,
+                        "type": "LiteralInteger"
+                    }
+                ]
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [{
+            "element": "x",
+            "type": "ElementValue"
+        }]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "integer": 1,
+                "type": "LiteralInteger"
+            }
+        ]
+    }},
+    {"specialization": {
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "x",
+                "type": "ElementValue"
+            },
+            {
+                "type": "Expression",
+                "operand": [
+                    {
+                        "integer": 1,
+                        "type": "LiteralInteger"
+                    },
+                    {
+                        "element": "x",
+                        "type": "ElementValue"
+                    }
+                ]
+            }
+        ]
+    }}
+]}

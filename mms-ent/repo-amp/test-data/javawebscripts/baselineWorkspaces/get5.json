@@ -1,0 +1,70 @@
+BADDDDDD
+{
+    "status" : 
+  {
+    "code" : 500,
+    "name" : "Internal Error",
+    "description" : "An error inside the HTTP server which prevented it from fulfilling the request."
+  },  
+  
+  "message" : "06220026 Wrapped Exception (with status template): 06220099 Error during processing of the template 'Expression res is undefined on line 1, column 3 in gov\/nasa\/jpl\/mms\/workspaces\/elements\/comments.get.json.ftl.'. Please contact your system administrator.",  
+  "exception" : "org.springframework.extensions.webscripts.WebScriptException - 06220026 Wrapped Exception (with status template): 06220099 Error during processing of the template 'Expression res is undefined on line 1, column 3 in gov\/nasa\/jpl\/mms\/workspaces\/elements\/comments.get.json.ftl.'. Please contact your system administrator.",
+  
+  "callstack" : 
+  [ 
+        ""      ,"freemarker.core.InvalidReferenceException: Expression res is undefined on line 1, column 3 in gov\/nasa\/jpl\/mms\/workspaces\/elements\/comments.get.json.ftl."
+      ,"freemarker.core.TemplateObject.assertNonNull(TemplateObject.java:125)"
+      ,"freemarker.core.Expression.getStringValue(Expression.java:118)"
+      ,"freemarker.core.Expression.getStringValue(Expression.java:93)"
+      ,"freemarker.core.DollarVariable.accept(DollarVariable.java:76)"
+      ,"freemarker.core.Environment.visit(Environment.java:221)"
+      ,"freemarker.core.Environment.process(Environment.java:199)"
+      ,"org.alfresco.repo.template.FreeMarkerProcessor.process(FreeMarkerProcessor.java:218)"
+      ,"org.springframework.extensions.webscripts.AbstractWebScript.renderTemplate(AbstractWebScript.java:896)"
+      ,"org.springframework.extensions.webscripts.DeclarativeWebScript.renderFormatTemplate(DeclarativeWebScript.java:267)"
+      ,"org.springframework.extensions.webscripts.DeclarativeWebScript.execute(DeclarativeWebScript.java:147)"
+      ,"org.alfresco.repo.web.scripts.RepositoryContainer$3.execute(RepositoryContainer.java:422)"
+      ,"org.alfresco.repo.transaction.RetryingTransactionHelper.doInTransaction(RetryingTransactionHelper.java:452)"
+      ,"org.alfresco.repo.web.scripts.RepositoryContainer.transactionedExecute(RepositoryContainer.java:491)"
+      ,"org.alfresco.repo.web.scripts.RepositoryContainer.transactionedExecuteAs(RepositoryContainer.java:529)"
+      ,"org.alfresco.repo.web.scripts.RepositoryContainer.executeScript(RepositoryContainer.java:341)"
+      ,"org.springframework.extensions.webscripts.AbstractRuntime.executeScript(AbstractRuntime.java:378)"
+      ,"org.springframework.extensions.webscripts.AbstractRuntime.executeScript(AbstractRuntime.java:209)"
+      ,"org.springframework.extensions.webscripts.servlet.WebScriptServlet.service(WebScriptServlet.java:132)"
+      ,"javax.servlet.http.HttpServlet.service(HttpServlet.java:728)"
+      ,"org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:305)"
+      ,"org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)"
+      ,"net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:208)"
+      ,"net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:181)"
+      ,"org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243)"
+      ,"org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)"
+      ,"org.alfresco.web.app.servlet.GlobalLocalizationFilter.doFilter(GlobalLocalizationFilter.java:61)"
+      ,"org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243)"
+      ,"org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)"
+      ,"org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:222)"
+      ,"org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:123)"
+      ,"org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:472)"
+      ,"org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)"
+      ,"org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:99)"
+      ,"org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:936)"
+      ,"org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:118)"
+      ,"org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:407)"
+      ,"org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1004)"
+      ,"org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:589)"
+      ,"org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:310)"
+      ,"java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)"
+      ,"java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)"
+      ,"java.lang.Thread.run(Thread.java:744)"
+      ,"org.alfresco.service.cmr.repository.TemplateException: 06220099 Error during processing of the template 'Expression res is undefined on line 1, column 3 in gov\/nasa\/jpl\/mms\/workspaces\/elements\/comments.get.json.ftl.'. Please contact your system administrator."
+      ,"org.alfresco.repo.template.FreeMarkerProcessor.process(FreeMarkerProcessor.java:222)"
+      ,"org.springframework.extensions.webscripts.WebScriptException: 06220026 Wrapped Exception (with status template): 06220099 Error during processing of the template 'Expression res is undefined on line 1, column 3 in gov\/nasa\/jpl\/mms\/workspaces\/elements\/comments.get.json.ftl.'. Please contact your system administrator."
+      ,"org.springframework.extensions.webscripts.AbstractWebScript.createStatusException(AbstractWebScript.java:1067)"
+ 
+  ],
+  
+  "server" : "Community v4.2.0 (r56674-b4848) schema 6,033",
+  "time" : "Jul 22, 2014 10:17:19 AM"
+}
+
+
+500

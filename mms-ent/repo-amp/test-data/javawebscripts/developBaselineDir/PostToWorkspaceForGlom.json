@@ -1,0 +1,23 @@
+{"elements": [{
+    "qualifiedId": "/europa/123456/glomPost",
+    "qualifiedName": "/europa/JW_TEST/glomPost",
+    "sysmlid": "glomPost",
+    "editable": true,
+    "creator": "admin",
+    "modifier": "admin",
+    "name": "glomPost",
+    "owner": "123456",
+    "documentation": "glomPost",
+    "specialization": {
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [{
+            "valueExpression": null,
+            "string": "on a shoe",
+            "type": "LiteralString"
+        }],
+        "type": "Property"
+    }
+}]}
+200

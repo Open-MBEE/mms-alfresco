@@ -1,0 +1,17 @@
+{"elements": [{
+    "qualifiedId": "/europa/123456/300/500",
+    "qualifiedName": "/europa/JW_TEST/300/500",
+    "sysmlid": "500",
+    "editable": true,
+    "creator": "admin",
+    "modifier": "admin",
+    "name": "500",
+    "owner": "300",
+    "documentation": "directed_relationship2",
+    "specialization": {
+        "source": "303",
+        "target": "304",
+        "type": "DirectedRelationship"
+    }
+}]}
+200

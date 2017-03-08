@@ -1,0 +1,21 @@
+{"elements": [{
+    "siteCharacterizationId": "europa",
+    "qualifiedId": "/europa/123456/300/500",
+    "qualifiedName": "/europa/JW_TEST/300/500",
+    "sysmlid": "500",
+    "editable": true,
+    "creator": "admin",
+    "modified": "2015-09-22T09:40:11.658-0700",
+    "modifier": "admin",
+    "created": "Tue Sep 22 09:40:02 PDT 2015",
+    "name": "500",
+    "owner": "300",
+    "documentation": "directed_relationship2",
+    "read": "2015-09-22T09:40:12.028-0700",
+    "specialization": {
+        "source": "303",
+        "target": "304",
+        "type": "DirectedRelationship"
+    }
+}]}
+200

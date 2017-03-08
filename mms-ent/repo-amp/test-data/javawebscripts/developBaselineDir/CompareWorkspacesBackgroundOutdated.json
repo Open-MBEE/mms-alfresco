@@ -1,0 +1,63 @@
+{
+    "email": "admin@alfresco.com",
+    "status": "OUTDATED",
+    "user": "admin",
+    "workspace1": {
+        "name": "wsA",
+        "qualifiedName": "master/wsA",
+        "elements": [
+            {
+                "qualifiedName": "/no_site/no_site_no_project/holding_bin/300",
+                "sysmlid": "x",
+                "editable": true,
+                "version": "1.1",
+                "name": "300",
+                "owner": "holding_bin_no_site_no_project",
+                "documentation": "something",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedName": "/no_site/no_site_no_project/holding_bin",
+                "sysmlid": "holding_bin_no_site_no_project",
+                "editable": true,
+                "name": "holding_bin",
+                "owner": "no_site_no_project",
+                "specialization": {"type": "Package"}
+            }
+        ]
+    },
+    "workspace2": {
+        "deletedElements": [],
+        "addedElements": [],
+        "conflictedElements": [],
+        "updatedElements": [{
+            "qualifiedName": "/no_site/no_site_no_project/holding_bin/300",
+            "name": "300",
+            "sysmlid": "x",
+            "documentation": "x is x",
+            "owner": "holding_bin_no_site_no_project",
+            "specialization": {
+                "value": [{
+                    "valueExpression": null,
+                    "string": "the x value",
+                    "type": "LiteralString"
+                }],
+                "type": "Property"
+            }
+        }],
+        "name": "wsB",
+        "qualifiedName": "master/wsA/wsB",
+        "movedElements": []
+    }
+}
+200

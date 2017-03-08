@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+    <bean id="repo-amp_dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/module/${project.artifactId}/model/viewModel.xml</value>
+                <value>alfresco/module/${project.artifactId}/model/sysmlModel.xml</value>
+                <value>alfresco/module/${project.artifactId}/model/emsModel.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="webscript.gov.nasa.jpl.utils.loginticket.get" class="gov.nasa.jpl.view_repo.webscripts.util.LoginTicket"
+          parent="webscript">
+        <property name="ticketComponent" ref="ticketComponent"/>
+    </bean>
+
+    <!-- add in the Actions -->
+    <bean id="modelLoad" class="gov.nasa.jpl.view_repo.actions.ModelLoadActionExecuter" parent="action-executer">
+        <property name="services" ref="ServiceRegistry"/>
+        <property name="repository" ref="repositoryHelper"/>
+    </bean>
+
+    <bean id="workspaceDiff" class="gov.nasa.jpl.view_repo.actions.WorkspaceDiffActionExecuter"
+          parent="action-executer">
+        <property name="services" ref="ServiceRegistry"/>
+        <property name="repository" ref="repositoryHelper"/>
+    </bean>
+
+    <bean id="configurationGeneration" class="gov.nasa.jpl.view_repo.actions.ConfigurationGenerationActionExecuter"
+          parent="action-executer">
+        <property name="services" ref="ServiceRegistry"/>
+        <property name="repository" ref="repositoryHelper"/>
+    </bean>
+
+    <bean id="htmlToPdf" class="gov.nasa.jpl.view_repo.actions.HtmlToPdfActionExecuter" parent="action-executer">
+        <property name="services" ref="ServiceRegistry"/>
+        <property name="repository" ref="repositoryHelper"/>
+    </bean>
+
+    <bean id="extendPermissionModel" parent="permissionModelBootstrap">
+        <property name="model" value="alfresco/extension/permissionDefinitionsExtension.xml"/>
+    </bean>
+
+    <!--  Definitions for static methods -->
+    <bean id="emsConfig" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.EmsConfig.setProperties"/>
+        <property name="arguments" value="mms.properties"/>
+    </bean>
+
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="gov.nasa.jpl.view_repo.webscripts.util.ShareUtils.setServices"/>
+        <property name="arguments" ref="ServiceRegistry"/>
+    </bean>
+
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.NodeUtil.setServices"/>
+        <property name="arguments" ref="ServiceRegistry"/>
+    </bean>
+
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.CommitUtil.setJmsConnection"/>
+        <property name="arguments" ref="jmsConnection"/>
+    </bean>
+
+    <bean id="svgToPng" class="gov.nasa.jpl.view_repo.actions.SvgToPngActionExecuter" parent="action-executer">
+        <property name="services" ref="ServiceRegistry"/>
+        <property name="repository" ref="repositoryHelper"/>
+    </bean>
+
+    <!-- Definitions for sending active sync messages -->
+    <bean id="jmsConnection" class="gov.nasa.jpl.view_repo.connections.JmsConnection">
+    </bean>
+
+</beans>

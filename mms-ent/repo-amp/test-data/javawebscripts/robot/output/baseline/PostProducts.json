@@ -1,0 +1,110 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/300/301",
+            "_qualifiedName": "//JW_TEST/300/301",
+            "_siteCharacterizationId": "europa",
+            "allowedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "childrenViews": [
+                "304"
+            ],
+            "contains": [
+                {
+                    "source": "301",
+                    "sourceProperty": "documentation",
+                    "sourceType": "reference",
+                    "type": "Paragraph"
+                }
+            ],
+            "displayedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "documentation": "else",
+            "isDerived": false,
+            "name": "301",
+            "noSections": [
+                "302"
+            ],
+            "ownerId": "300",
+            "sysmlId": "301",
+            "type": "Product",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ],
+            "view2view": [
+                {
+                    "childrenViews": [
+                        "301",
+                        "302"
+                    ],
+                    "sysmlId": "301"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/4000/401",
+            "_qualifiedName": "//JW_TEST/400/401",
+            "_siteCharacterizationId": "europa",
+            "allowedElements": [
+                "401",
+                "402",
+                "403"
+            ],
+            "childrenViews": [
+                "404"
+            ],
+            "contains": [
+                {
+                    "source": "401",
+                    "sourceProperty": "documentation",
+                    "sourceType": "reference",
+                    "type": "Paragraph"
+                }
+            ],
+            "displayedElements": [
+                "401",
+                "402",
+                "403"
+            ],
+            "documentation": "4else",
+            "isDerived": false,
+            "name": "401",
+            "noSections": [
+                "402"
+            ],
+            "ownerId": "4000",
+            "sysmlId": "401",
+            "type": "Product",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ],
+            "view2view": [
+                {
+                    "childrenViews": [
+                        "401",
+                        "402"
+                    ],
+                    "sysmlId": "401"
+                }
+            ]
+        }
+    ]
+}

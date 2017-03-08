@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo curl -w "%{http_code}\n" -X POST -u admin:admin -H "Content-Type:application/json" --data @JsonData/$1 "http://localhost:8080/view-repo/service/javawebscripts/products"
+curl -w "%{http_code}\n" -X POST -u admin:admin -H "Content-Type:application/json" --data @JsonData/$1 "http://localhost:8080/view-repo/service/javawebscripts/products"
+
+
+echo curl -w "%{http_code}\n" -X POST -u admin:admin -H "Content-Type:application/json" --data @JsonData/$1 "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/products"
+curl -w "%{http_code}\n" -X POST -u admin:admin -H "Content-Type:application/json" --data @JsonData/$1 "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/products"

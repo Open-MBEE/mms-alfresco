@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Workspaces listing specification",
+    "properties": {
+        "workspaces": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {"$ref": "#/definitions/Workspaces"}
+                ]
+            }
+        }
+    },
+
+    "definitions": {
+        "Workspaces": {
+            "properties": {
+              "creator": {
+                "type": "string",
+                "description": "Creator of the workspace"
+              },
+              "created": {
+                "type": "string",
+                "description": "Time of creation of workspace"
+              },
+              "id": {
+                "type": "string",
+                "description": "The Alfresco id used for URL resolution, this is unique. master is reserved for the trunk workspace (e.g., root level of all sites)"
+              },
+              "name": {
+                "type": "string",
+                "description": "Human readable name for the workspace"
+              }
+            }
+        }
+    }
+}

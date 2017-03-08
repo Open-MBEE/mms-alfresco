@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Sites listing specification",
+    "properties": {
+        "sites": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {"$ref": "#/definitions/Sites"}
+                ]
+            }
+        }
+    },
+
+    "definitions": {
+        "Sites": {
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Human readable name for the site"
+              },
+              "sysmlid": {
+                "type": "string",
+                "description": "If applicable, the symlid of the site element"
+              },
+              "parent": {
+                "type": "string",
+                "description": "SysML ID of the parent site (Read-Only)"
+              },
+              "isCharacterization": {
+                "type": "boolean",
+                "description": "Set to true if it is a site characterization (Read-Only)"
+              }
+            }
+        }
+    }
+}

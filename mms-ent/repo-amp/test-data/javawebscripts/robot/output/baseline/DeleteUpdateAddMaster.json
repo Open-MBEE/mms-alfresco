@@ -1,0 +1,43 @@
+{
+  "workspace1": {
+    "name": "master",
+    "elements": [
+      {
+        "sysmlId": "update_add_gg",
+        "_editable": true,
+        "_creator": "admin",
+        "_modifier": "admin",
+        "name": "update_add_gg",
+        "_owner": "123456",
+        "documentation": "update_add_gg",
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "on a shoe",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property"
+      }
+    ]
+  },
+  "workspace2": {
+    "deletedElements": [
+      {
+        "name": "update_add_gg",
+        "_owner": "123456",
+        "sysmlId": "update_add_gg",
+        "type": "Property",
+        "_creator": "admin"
+      }
+    ],
+    "addedElements": [],
+    "conflictedElements": [],
+    "updatedElements": [],
+    "name": "master",
+    "movedElements": []
+  }
+}

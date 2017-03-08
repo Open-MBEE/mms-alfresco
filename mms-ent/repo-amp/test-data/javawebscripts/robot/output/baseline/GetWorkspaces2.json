@@ -1,0 +1,39 @@
+{
+  "workspaces": [
+    {
+      "name": "master",
+    },
+    {
+      "_creator": "admin",
+      "name": "wsB",
+    },
+    {
+      "_creator": "admin",
+      "name": "wsT",
+    },
+    {
+      "_creator": "admin",
+      "name": "wsA",
+    },
+    {
+      "_creator": "admin",
+      "name": "ws2",
+    },
+    {
+      "_creator": "admin",
+      "name": "w1",
+    },
+    {
+      "_creator": "admin",
+      "name": "ws1",
+    },
+    {
+      "_creator": "admin",
+      "name": "ws4",
+    },
+    {
+      "_creator": "admin",
+      "name": "ws3",
+    }
+  ]
+}

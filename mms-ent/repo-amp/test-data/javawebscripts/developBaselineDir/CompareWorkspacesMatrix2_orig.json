@@ -1,0 +1,335 @@
+{
+    "workspace1": {
+        "qualifiedId": "master",
+        "id": "master",
+        "qualifiedName": "master",
+        "name": "master",
+        "elements": [
+            {
+                "modifier": "admin",
+                "qualifiedId": "/europa/123456/delete_update_poo",
+                "siteCharacterizationId": "europa",
+                "created": "Mon Sep 21 13:53:58 PDT 2015",
+                "name": "delete_update_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_update_poo",
+                "documentation": "delete_update_poo",
+                "owner": "123456",
+                "sysmlid": "delete_update_poo",
+                "read": "2015-09-21T13:54:01.588-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+                "modified": "2015-09-21T13:54:01.406-0700",
+                "creator": "admin"
+            },
+            {
+                "modifier": "admin",
+                "qualifiedId": "/europa/123456/delete_delete_poo",
+                "siteCharacterizationId": "europa",
+                "created": "Mon Sep 21 13:53:57 PDT 2015",
+                "name": "delete_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_delete_poo",
+                "documentation": "delete_delete_poo",
+                "owner": "123456",
+                "sysmlid": "delete_delete_poo",
+                "read": "2015-09-21T13:54:02.042-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+                "modified": "2015-09-21T13:54:01.858-0700",
+                "creator": "admin"
+            },
+            {
+                "modifier": "admin",
+                "qualifiedId": "/europa/123456/delete_none_poo",
+                "siteCharacterizationId": "europa",
+                "created": "Mon Sep 21 13:53:57 PDT 2015",
+                "name": "delete_none_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_none_poo",
+                "documentation": "delete_none_poo",
+                "owner": "123456",
+                "sysmlid": "delete_none_poo",
+                "read": "2015-09-21T13:54:02.488-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+                "modified": "2015-09-21T13:54:02.300-0700",
+                "creator": "admin"
+            },
+            {
+                "qualifiedId": "/europa/123456/update_delete_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/update_delete_poo",
+                "sysmlid": "update_delete_poo",
+                "editable": true,
+                "version": "1.1",
+                "creator": "admin",
+                "modified": "2015-09-21T13:53:59.410-0700",
+                "modifier": "admin",
+                "id": "3b6ab098-20ef-4659-a4fa-4c86572826f9",
+                "created": "Mon Sep 21 13:53:58 PDT 2015",
+                "name": "update_delete_poo",
+                "documentation": "update_delete_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:06.036-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/update_none_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/update_none_poo",
+                "sysmlid": "update_none_poo",
+                "editable": true,
+                "version": "1.1",
+                "creator": "admin",
+                "modified": "2015-09-21T13:53:58.374-0700",
+                "modifier": "admin",
+                "id": "df09a465-6b44-47b6-9cdf-b842e532ce9e",
+                "created": "Mon Sep 21 13:53:57 PDT 2015",
+                "name": "update_none_poo",
+                "documentation": "update_none_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:06.061-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/update_update_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/update_update_poo",
+                "sysmlid": "update_update_poo",
+                "editable": true,
+                "version": "1.1",
+                "creator": "admin",
+                "modified": "2015-09-21T13:53:59.292-0700",
+                "modifier": "admin",
+                "id": "9f7a625d-345d-4725-8e64-dfc3fd3c67a8",
+                "created": "Mon Sep 21 13:53:58 PDT 2015",
+                "name": "update_update_poo",
+                "documentation": "update_update_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:06.088-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/update_add_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/update_add_poo",
+                "sysmlid": "update_add_poo",
+                "editable": true,
+                "version": "1.1",
+                "creator": "admin",
+                "modified": "2015-09-21T13:54:06.709-0700",
+                "modifier": "admin",
+                "id": "58b3b81a-67d7-4a91-9015-84c42cfb8131",
+                "created": "Mon Sep 21 13:53:58 PDT 2015",
+                "name": "update_add_poo",
+                "documentation": "update_add_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:06.743-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            }
+        ]
+    },
+    "workspace2": {
+        "qualifiedId": "master/60e7279b-681d-4ba3-a412-fd82491f45f3",
+        "id": "60e7279b-681d-4ba3-a412-fd82491f45f3",
+        "deletedElements": [
+            {
+                "qualifiedId": "/europa/123456/delete_update_poo",
+                "name": "delete_update_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_update_poo",
+                "owner": "123456",
+                "sysmlid": "delete_update_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "qualifiedId": "/europa/123456/delete_delete_poo",
+                "name": "delete_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_delete_poo",
+                "owner": "123456",
+                "sysmlid": "delete_delete_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "qualifiedId": "/europa/123456/delete_none_poo",
+                "name": "delete_none_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_none_poo",
+                "owner": "123456",
+                "sysmlid": "delete_none_poo",
+                "specialization": {"type": "Property"}
+            }
+        ],
+        "addedElements": [
+            {
+                "qualifiedId": "/europa/123456/add_add_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/add_add_poo",
+                "sysmlid": "add_add_poo",
+                "editable": true,
+                "creator": "admin",
+                "modified": "2015-09-21T13:54:04.959-0700",
+                "modifier": "admin",
+                "created": "Mon Sep 21 13:54:03 PDT 2015",
+                "name": "add_add_poo",
+                "documentation": "add_add_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:06.110-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/add_none_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/add_none_poo",
+                "sysmlid": "add_none_poo",
+                "editable": true,
+                "creator": "admin",
+                "modified": "2015-09-21T13:54:05.827-0700",
+                "modifier": "admin",
+                "created": "Mon Sep 21 13:54:04 PDT 2015",
+                "name": "add_none_poo",
+                "documentation": "add_none_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:06.169-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/update_add_poo",
+                "name": "update_add_poo",
+                "qualifiedName": "/europa/JW_TEST2/update_add_poo",
+                "owner": "123456",
+                "documentation": "update_add_poo updatedWs1",
+                "sysmlid": "update_add_poo",
+                "specialization": {"type": "Property"}
+            }
+        ],
+        "conflictedElements": [{
+            "qualifiedId": "/europa/123456/update_add_poo",
+            "qualifiedName": "/europa/JW_TEST2/update_add_poo",
+            "name": "update_add_poo",
+            "sysmlid": "update_add_poo",
+            "documentation": "update_add_poo updatedWs1",
+            "owner": "123456",
+            "specialization": {"type": "Property"}
+        }],
+        "updatedElements": [
+            {
+                "qualifiedId": "/europa/123456/update_delete_poo",
+                "name": "update_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/update_delete_poo",
+                "owner": "123456",
+                "documentation": "update_delete_poo updatedWs1",
+                "sysmlid": "update_delete_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "qualifiedId": "/europa/123456/update_none_poo",
+                "name": "update_none_poo",
+                "qualifiedName": "/europa/JW_TEST2/update_none_poo",
+                "owner": "123456",
+                "documentation": "update_none_poo updatedWs1",
+                "sysmlid": "update_none_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "qualifiedId": "/europa/123456/update_update_poo",
+                "name": "update_update_poo",
+                "qualifiedName": "/europa/JW_TEST2/update_update_poo",
+                "owner": "123456",
+                "documentation": "update_update_poo updatedWs1",
+                "sysmlid": "update_update_poo",
+                "specialization": {"type": "Property"}
+            }
+        ],
+        "qualifiedName": "master/wsMatrix1",
+        "name": "wsMatrix1",
+        "movedElements": []
+    }
+}
+200

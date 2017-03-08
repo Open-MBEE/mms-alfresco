@@ -1,0 +1,23 @@
+{"elements": [{
+    "qualifiedId": "/europa/123456/300",
+    "qualifiedName": "/europa/JW_TEST2/300",
+    "sysmlid": "300",
+    "editable": true,
+    "creator": "admin",
+    "modifier": "admin",
+    "name": "300",
+    "owner": "123456",
+    "documentation": "something",
+    "specialization": {
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [{
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        }],
+        "type": "Property"
+    }
+}]}
+200

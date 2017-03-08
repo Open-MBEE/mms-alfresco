@@ -1,0 +1,22 @@
+{
+    "products": [
+        {
+            "_creator": "admin",
+            "_modifier": "admin",
+            "documentation": "else",
+            "_qualifiedId": "/europa/123456/300/301",
+            "_qualifiedName": "//JW_TEST/300/301",
+            "isDerived": false,
+            "name": "301",
+            "ownerId": "300",
+            "sysmlId": "301",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}

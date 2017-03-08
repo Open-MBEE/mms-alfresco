@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ "$#" -eq 1 ]; then     # the json file is imported into the project
+
+echo  curl -w "\n%{http_code}\n" -u admin:admin -X POST -H "Content-Type:application/json" --data @JsonData/$1 "http://localhost:8080/alfresco/service/workspaces/master/elements"
+curl -w "\n%{http_code}\n" -u admin:admin -X POST -H "Content-Type:application/json" --data @JsonData/$1 "http://localhost:8080/alfresco/service/workspaces/master/elements"
+
+else      # 
+
+echo curl -w "\n%{http_code}\n" -X POST -u admin:admin -H Content-Type:application/json --data @JsonData/$2 http://localhost:8080/alfresco/service/workspaces/$1/elements
+curl -w "\n%{http_code}\n" -X POST -u admin:admin -H Content-Type:application/json --data @JsonData/$2 http://localhost:8080/alfresco/service/workspaces/$1/elements
+fi;

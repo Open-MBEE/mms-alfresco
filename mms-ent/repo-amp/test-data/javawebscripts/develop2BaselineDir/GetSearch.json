@@ -1,0 +1,82 @@
+{"elements": [
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "something",
+
+        "editable": true,
+
+        "name": "300",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/300",
+
+        "qualifiedName": "/JW_TEST/300",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "string": "dlam_string",
+
+                "type": "LiteralString"
+
+            }]
+
+        },
+
+        "sysmlid": "300"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "something",
+
+        "editable": true,
+
+        "name": "300",
+
+        "owner": "holding_bin_no_site_no_project",
+
+        "qualifiedId": "/no_project/holding_bin_no_site_no_project/x",
+
+        "qualifiedName": "/no_project/holding_bin/300",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "string": "dlam_string",
+
+                "type": "LiteralString"
+
+            }]
+
+        },
+
+        "sysmlid": "x"
+
+    }
+
+]}
+
+200
+

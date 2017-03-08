@@ -1,0 +1,16 @@
+{"elements": [{
+    "qualifiedId": "/europa/123456/packageA2/packageC2/packageB2",
+    "qualifiedName": "/europa/JW_TEST2/packageA2/packageC2/packageB2",
+    "sysmlid": "packageB2",
+    "editable": true,
+    "creator": "admin",
+    "modifier": "admin",
+    "name": "packageB2",
+    "owner": "packageC2",
+    "documentation": "A site package",
+    "specialization": {
+        "type": "Package",
+        "isSite": true
+    }
+}]}
+200

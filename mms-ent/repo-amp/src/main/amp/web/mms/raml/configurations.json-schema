@@ -1,0 +1,82 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Configurations listing specification",
+    "properties": {
+        "configurations": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {"$ref": "#/definitions/Configuration"}
+                ]
+            }
+        },
+        "message": {
+                    "type": "string",
+                    "description": "The response message for this transaction if it is non-empty."
+        }
+    },
+
+    "definitions": {
+        "Configuration": {
+            "required": [ "name" ],
+            "properties": {
+                "created": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The time for the configuration set - that will be referenced by the snapshots"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the configuration set"
+                },
+                "id": {
+                    "type": "string",
+                    "description": "Alfresco node reference ID, which is immutable, used only for updates"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "last modified time of the configuration set"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human readable name for the configuration set"
+                },
+               "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "time of the configuration, the time point specifying the versions of the documents that snapshots are taken"
+                },
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "Sysml IDs of products to be generated. This is mutually exclusive with products."
+                    }
+                },
+                "snapshots": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definition/Snapshot"
+                    }
+                }
+            }
+        },
+        
+        "Snapshot": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Product name of the snapshot"
+                },
+                "id": {
+                    "type": "string",
+                    "description": "Alfresco Node ID for the snapshot"
+                } 
+            }
+        }
+    }
+}

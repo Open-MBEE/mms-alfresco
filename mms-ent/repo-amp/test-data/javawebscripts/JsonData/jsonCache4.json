@@ -1,0 +1,18 @@
+{
+  "elements": [
+    {
+      "documentation": "",
+      "sysmlId": "jsonTest4",
+      "name": "jsonTest4",
+      "ownerId": "123456",
+      "type": "Constraint",
+      "specification": {
+        "type": "OpaqueExpression",
+        "expressionBody": [
+          "hello",
+          "there"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{"elements": [
+    {
+        "creator": "admin",
+        "documentation": "else",
+        "editable": true,
+        "modifier": "admin",
+        "name": "301",
+        "owner": "300",
+        "qualifiedId": "/europa/123456/300/301",
+        "qualifiedName": "/europa/JW_TEST/300/301",
+        "specialization": {
+            "allowedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "childrenViews": ["304"],
+            "contains": [{
+                "source": "301",
+                "sourceProperty": "documentation",
+                "sourceType": "reference",
+                "type": "Paragraph"
+            }],
+            "displayedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "type": "View"
+        },
+        "sysmlid": "301"
+    },
+    {
+        "creator": "admin",
+        "documentation": "4else",
+        "editable": true,
+        "modifier": "admin",
+        "name": "401",
+        "owner": "4000",
+        "qualifiedId": "/europa/123456/4000/401",
+        "qualifiedName": "/europa/JW_TEST/400/401",
+        "specialization": {
+            "allowedElements": [
+                "401",
+                "402",
+                "403"
+            ],
+            "childrenViews": ["404"],
+            "contains": [{
+                "source": "401",
+                "sourceProperty": "documentation",
+                "sourceType": "reference",
+                "type": "Paragraph"
+            }],
+            "displayedElements": [
+                "401",
+                "402",
+                "403"
+            ],
+            "type": "View"
+        },
+        "sysmlid": "401"
+    }
+]}
+200

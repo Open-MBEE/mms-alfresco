@@ -1,0 +1,330 @@
+{
+
+    "workspace1": {
+
+        "elements": [
+
+            {
+
+                "creator": "admin",
+
+                "documentation": "4something",
+
+                "editable": true,
+
+                "name": "400",
+
+                "owner": "123456",
+
+                "qualifiedName": "/JW_TEST2/400",
+
+                "specialization": {
+
+                    "isDerived": false,
+
+                    "isSlot": false,
+
+                    "type": "Property",
+
+                    "value": [{
+
+                        "string": "dlam_string",
+
+                        "type": "LiteralString"
+
+                    }]
+
+                },
+
+                "sysmlid": "4000"
+
+            },
+
+            {
+
+                "creator": "admin",
+
+                "documentation": "4else",
+
+                "editable": true,
+
+                "name": "401",
+
+                "owner": "4000",
+
+                "qualifiedName": "/JW_TEST2/400/401",
+
+                "specialization": {
+
+                    "allowedElements": [
+
+                        "401",
+
+                        "402",
+
+                        "403"
+
+                    ],
+
+                    "childrenViews": ["404"],
+
+                    "contains": [{
+
+                        "source": "401",
+
+                        "sourceProperty": "documentation",
+
+                        "sourceType": "reference",
+
+                        "type": "Paragraph"
+
+                    }],
+
+                    "displayedElements": [
+
+                        "401",
+
+                        "402",
+
+                        "403"
+
+                    ],
+
+                    "noSections": ["402"],
+
+                    "type": "Product",
+
+                    "view2view": [{
+
+                        "childrenViews": [
+
+                            "401",
+
+                            "402"
+
+                        ],
+
+                        "sysmlid": "401"
+
+                    }]
+
+                },
+
+                "sysmlid": "401"
+
+            },
+
+            {
+
+                "creator": "admin",
+
+                "documentation": "4to",
+
+                "editable": true,
+
+                "name": "402",
+
+                "owner": "401",
+
+                "qualifiedName": "/JW_TEST2/400/401/402",
+
+                "specialization": {
+
+                    "isDerived": false,
+
+                    "isSlot": false,
+
+                    "type": "Property",
+
+                    "value": [{
+
+                        "string": "dlam_string",
+
+                        "type": "LiteralString"
+
+                    }]
+
+                },
+
+                "sysmlid": "402"
+
+            },
+
+            {
+
+                "creator": "admin",
+
+                "editable": true,
+
+                "owner": "arg_ev_38307",
+
+                "qualifiedName": "/JW_TEST2/e_38304/duration/null",
+
+                "specialization": {
+
+                    "integer": 22,
+
+                    "type": "LiteralInteger"
+
+                },
+
+                "sysmlid": "MMS_1418234120366_c4dd1b99-2f5c-4f3b-bded-42760ccf03d7"
+
+            },
+
+            {
+
+                "creator": "admin",
+
+                "documentation": "",
+
+                "editable": true,
+
+                "name": "duration",
+
+                "owner": "e_38304",
+
+                "qualifiedName": "/JW_TEST2/e_38304/duration",
+
+                "specialization": {
+
+                    "isDerived": false,
+
+                    "isSlot": false,
+
+                    "type": "Property",
+
+                    "value": [{
+
+                        "integer": 22,
+
+                        "type": "LiteralInteger"
+
+                    }]
+
+                },
+
+                "sysmlid": "arg_ev_38307"
+
+            },
+
+            {
+
+                "creator": "admin",
+
+                "editable": true,
+
+                "name": "e_38304",
+
+                "owner": "123456",
+
+                "qualifiedName": "/JW_TEST2/e_38304",
+
+                "specialization": {"type": "Element"},
+
+                "sysmlid": "e_38304"
+
+            },
+
+            {
+
+                "creator": "admin",
+
+                "editable": true,
+
+                "name": "holding_bin",
+
+                "owner": "no_project",
+
+                "qualifiedName": "/no_project/holding_bin",
+
+                "specialization": {"type": "Package"},
+
+                "sysmlid": "holding_bin_no_site_no_project"
+
+            }
+
+        ],
+
+        "name": "ws2",
+
+        "qualifiedName": "master/ws2"
+
+    },
+
+    "workspace2": {
+
+        "addedElements": [{
+
+            "creator": "admin",
+
+            "documentation": "x is x",
+
+            "editable": true,
+
+            "owner": "holding_bin_no_site_no_project",
+
+            "qualifiedName": "/no_project/holding_bin/null",
+
+            "specialization": {
+
+                "isDerived": false,
+
+                "isSlot": false,
+
+                "type": "Property",
+
+                "value": [{
+
+                    "string": "the element added to ws1",
+
+                    "type": "LiteralString"
+
+                }]
+
+            },
+
+            "sysmlid": "newElement"
+
+        }],
+
+        "conflictedElements": [
+
+            {},
+
+            {}
+
+        ],
+
+        "deletedElements": [],
+
+        "movedElements": [],
+
+        "name": "ws1",
+
+        "qualifiedName": "master/ws1",
+
+        "updatedElements": [{
+
+            "creator": "admin",
+
+            "documentation": "x is x",
+
+            "specialization": {"value": [{
+
+                "string": "the x value",
+
+                "type": "LiteralString"
+
+            }]},
+
+            "sysmlid": "402"
+
+        }]
+
+    }
+
+}
+
+200
+

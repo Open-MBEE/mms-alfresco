@@ -1,0 +1,32 @@
+{
+  "elements": [
+    {
+      "documentation": "add_update_gg",
+      "sysmlId": "add_update_gg",
+      "name": "add_update_gg",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "on a shoe"
+        }
+      ]
+    },
+    {
+      "documentation": "add_delete_gg",
+      "sysmlId": "add_delete_gg",
+      "name": "add_delete_gg",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "on a shoe"
+        }
+      ]
+    }
+  ]
+}

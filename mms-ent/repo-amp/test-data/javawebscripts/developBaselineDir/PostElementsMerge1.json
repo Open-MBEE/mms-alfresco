@@ -1,0 +1,91 @@
+{"elements": [
+    {
+        "qualifiedId": "/europa/123456/delete_delete_consistent",
+        "qualifiedName": "/europa/JW_TEST2/delete_delete_consistent",
+        "sysmlid": "delete_delete_consistent",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "delete_delete_consistent",
+        "owner": "123456",
+        "documentation": "delete_delete_consistent",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "this is it",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/update_delete_consistent",
+        "qualifiedName": "/europa/JW_TEST2/update_delete_consistent",
+        "sysmlid": "update_delete_consistent",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_delete_consistent",
+        "owner": "123456",
+        "documentation": "update_delete_consistent",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "this is it",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/update_update_consistent",
+        "qualifiedName": "/europa/JW_TEST2/update_update_consistent",
+        "sysmlid": "update_update_consistent",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_update_consistent",
+        "owner": "123456",
+        "documentation": "update_update_consistent",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "this is it",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/delete_update_consistent",
+        "qualifiedName": "/europa/JW_TEST2/delete_update_consistent",
+        "sysmlid": "delete_update_consistent",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "delete_update_consistent",
+        "owner": "123456",
+        "documentation": "delete_update_consistent",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "this is it",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    }
+]}
+200

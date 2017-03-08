@@ -1,0 +1,336 @@
+{"elements": [
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/4000",
+        "name": "400",
+        "qualifiedName": "/400",
+        "sysmlid": "4000",
+        "documentation": "4something",
+        "owner": "holding_bin_no_site_no_project",
+        "read": "2014-09-12T15:29:04.751-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:01.307-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/6666",
+        "name": "6666_name",
+        "qualifiedName": "/6666_name",
+        "sysmlid": "6666",
+        "documentation": "",
+        "owner": "holding_bin_no_site_no_project",
+        "read": "2014-09-12T15:29:04.773-0700",
+        "specialization": {
+            "type": "Expression",
+            "operand": [
+                {
+                    "element": "300",
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "302",
+                    "type": "ElementValue"
+                }
+            ]
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:00.938-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/4000/401/402",
+        "name": "402",
+        "qualifiedName": "/400/401/402",
+        "sysmlid": "402",
+        "documentation": "4to",
+        "owner": "401",
+        "read": "2014-09-12T15:29:04.801-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:01.577-0700"
+    },
+    {
+        "qualifiedId": "no_project/999/305",
+        "name": "305",
+        "qualifiedName": "/305",
+        "sysmlid": "305",
+        "documentation": "no owner",
+        "owner": "999",
+        "read": "2014-09-12T15:29:04.835-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:00.635-0700"
+    },
+    {
+        "qualifiedId": "no_project/cdelp/dlam",
+        "name": "dlam",
+        "qualifiedName": "/dlam",
+        "sysmlid": "dlam",
+        "documentation": "to make compatible with value specs (this is just a Element)",
+        "owner": "cdelp",
+        "read": "2014-09-12T15:29:04.853-0700",
+        "specialization": {"type": "Element"},
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:00.857-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/4000/401",
+        "name": "401",
+        "qualifiedName": "/400/401",
+        "sysmlid": "401",
+        "documentation": "4else",
+        "owner": "4000",
+        "read": "2014-09-12T15:29:04.864-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:01.450-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/300/301/302/303",
+        "name": "303",
+        "qualifiedName": "/300/301/302/303",
+        "sysmlid": "303",
+        "documentation": "talk",
+        "owner": "302",
+        "read": "2014-09-12T15:29:04.894-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:04.712-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/300",
+        "name": "300",
+        "qualifiedName": "/300",
+        "sysmlid": "300",
+        "documentation": "something",
+        "owner": "holding_bin_no_site_no_project",
+        "read": "2014-09-12T15:29:04.931-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:28:59.640-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/300/301/302",
+        "name": "302",
+        "qualifiedName": "/300/301/302",
+        "sysmlid": "302",
+        "documentation": "to",
+        "owner": "301",
+        "read": "2014-09-12T15:29:04.952-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:04.649-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/300/500",
+        "name": "500",
+        "qualifiedName": "/300/500",
+        "sysmlid": "500",
+        "documentation": "directed_relationship",
+        "owner": "300",
+        "read": "2014-09-12T15:29:04.981-0700",
+        "specialization": {
+            "source": "302",
+            "target": "303",
+            "type": "DirectedRelationship"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:00.541-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/600",
+        "name": "600",
+        "qualifiedName": "/600",
+        "sysmlid": "600",
+        "documentation": "element values",
+        "owner": "holding_bin_no_site_no_project",
+        "read": "2014-09-12T15:29:05.004-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [
+                {
+                    "element": "300",
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "302",
+                    "type": "ElementValue"
+                }
+            ],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:28:59.271-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/300/301/302/303/304",
+        "name": "304",
+        "qualifiedName": "/300/301/302/303/304",
+        "sysmlid": "304",
+        "documentation": "about",
+        "owner": "303",
+        "read": "2014-09-12T15:29:05.042-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:00.371-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/4000/401/402/403",
+        "name": "403",
+        "qualifiedName": "/400/401/402/403",
+        "sysmlid": "403",
+        "documentation": "4talk",
+        "owner": "402",
+        "read": "2014-09-12T15:29:05.075-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:01.731-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/300/301",
+        "name": "301",
+        "qualifiedName": "/300/301",
+        "sysmlid": "301",
+        "documentation": "else",
+        "owner": "300",
+        "read": "2014-09-12T15:29:05.109-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:28:59.770-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/4000/401/402/403/404",
+        "name": "404",
+        "qualifiedName": "/400/401/402/403/404",
+        "sysmlid": "404",
+        "documentation": "4about",
+        "owner": "403",
+        "read": "2014-09-12T15:29:05.135-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:01.955-0700"
+    },
+    {
+        "qualifiedId": "no_project/holding_bin_no_site_no_project/x",
+        "name": "300",
+        "qualifiedName": "/300",
+        "sysmlid": "x",
+        "documentation": "something",
+        "owner": "holding_bin_no_site_no_project",
+        "read": "2014-09-12T15:29:05.170-0700",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "2014-09-12T15:29:02.169-0700"
+    }
+]}n200n

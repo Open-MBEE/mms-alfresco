@@ -1,0 +1,16 @@
+{
+  "elements": [
+    {
+      "_owner": "holding_bin_no_site_no_project",
+      "_creator": "admin",
+      "read": "2015-08-10T16:45:03.360-0700",
+      "_editable": true,
+      "_modifier": "admin",
+      "documentation": "f is f",
+      "sysmlId": "f",
+      "source": null,
+      "type": "Expose",
+      "target": null
+    }
+  ]
+}

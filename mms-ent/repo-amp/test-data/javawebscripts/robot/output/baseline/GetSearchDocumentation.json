@@ -1,0 +1,24 @@
+{
+  "elements": [
+    {
+      "sysmlId": "300",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "300",
+      "_owner": "123456",
+      "documentation": "something",
+      "propertyType": null,
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property"
+    }
+  ]
+}

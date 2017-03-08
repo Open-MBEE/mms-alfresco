@@ -1,0 +1,13 @@
+{"elements": [{
+    "qualifiedId": "/europa/123456/conflict",
+    "qualifiedName": "/europa/JW_TEST/conflict",
+    "sysmlid": "conflict",
+    "editable": true,
+    "creator": "admin",
+    "modifier": "admin",
+    "name": "conflict",
+    "owner": "123456",
+    "documentation": "this will create a conflict!",
+    "specialization": {"type": "Element"}
+}]}
+200

@@ -1,0 +1,64 @@
+{
+  "elements": [
+    {
+      "_modifier": "admin",
+      "name": "steroetyped eleme",
+      "_owner": "123456",
+      "sysmlId": "_17_0_5_1_407019f_1402422786854_789914_16487",
+      "properties": [
+        {
+          "_modifier": "admin",
+          "_owner": "_17_0_5_1_407019f_1402422826468_433871_16515",
+          "sysmlId": "_17_0_5_1_407019f_1402422826468_433871_16515-slot-_17_0_5_1_407019f_1402422797514_105511_16509",
+          "propertyType": "_17_0_5_1_407019f_1402422797514_105511_16509",
+          "isSlot": true,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "double": 5,
+              "type": "LiteralReal"
+            },
+            {
+              "valueExpression": null,
+              "double": 5.39,
+              "type": "LiteralReal"
+            }
+          ],
+          "type": "Property",
+          "_editable": true,
+          "_creator": "admin"
+        },
+        {
+          "_modifier": "admin",
+          "_owner": "_17_0_5_1_407019f_1402422826468_433871_16515_2",
+          "sysmlId": "_17_0_5_1_407019f_1402422826468_433871_16515_2-slot-_17_0_5_1_407019f_1402422797514_105511_16509",
+          "propertyType": "_17_0_5_1_407019f_1402422797514_105511_16509",
+          "isSlot": true,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "double": 15,
+              "type": "LiteralReal"
+            },
+            {
+              "valueExpression": null,
+              "double": 15.39,
+              "type": "LiteralReal"
+            }
+          ],
+          "type": "Property",
+          "_editable": true,
+          "_creator": "admin"
+        }
+      ],
+      "specialization": {
+        "type": "Element"
+      },
+      "_editable": true,
+      "_creator": "admin"
+    }
+  ]
+}
+

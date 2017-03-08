@@ -1,0 +1,68 @@
+{"elements": [{
+    "qualifiedId": "/europa/123456/_17_0_5_1_407019f_1402422786854_789914_16487",
+    "modifier": "admin",
+    "qualifiedName": "/europa/JW_TEST2/steroetyped eleme",
+    "name": "steroetyped eleme",
+    "owner": "123456",
+    "sysmlid": "_17_0_5_1_407019f_1402422786854_789914_16487",
+    "properties": [
+        {
+            "qualifiedId": "/europa/123456/_17_0_5_1_407019f_1402422786854_789914_16487/_17_0_5_1_407019f_1402422826468_433871_16515/_17_0_5_1_407019f_1402422826468_433871_16515-slot-_17_0_5_1_407019f_1402422797514_105511_16509",
+            "modifier": "admin",
+            "qualifiedName": "/europa/JW_TEST2/steroetyped eleme/null/null",
+            "owner": "_17_0_5_1_407019f_1402422826468_433871_16515",
+            "sysmlid": "_17_0_5_1_407019f_1402422826468_433871_16515-slot-_17_0_5_1_407019f_1402422797514_105511_16509",
+            "specialization": {
+                "propertyType": "_17_0_5_1_407019f_1402422797514_105511_16509",
+                "isSlot": true,
+                "isDerived": false,
+                "value": [
+                    {
+                        "valueExpression": null,
+                        "double": 5,
+                        "type": "LiteralReal"
+                    },
+                    {
+                        "valueExpression": null,
+                        "double": 5.39,
+                        "type": "LiteralReal"
+                    }
+                ],
+                "type": "Property"
+            },
+            "editable": true,
+            "creator": "admin"
+        },
+        {
+            "qualifiedId": "/europa/123456/_17_0_5_1_407019f_1402422786854_789914_16487/_17_0_5_1_407019f_1402422826468_433871_16515_2/_17_0_5_1_407019f_1402422826468_433871_16515_2-slot-_17_0_5_1_407019f_1402422797514_105511_16509",
+            "modifier": "admin",
+            "qualifiedName": "/europa/JW_TEST2/steroetyped eleme/null/null",
+            "owner": "_17_0_5_1_407019f_1402422826468_433871_16515_2",
+            "sysmlid": "_17_0_5_1_407019f_1402422826468_433871_16515_2-slot-_17_0_5_1_407019f_1402422797514_105511_16509",
+            "specialization": {
+                "propertyType": "_17_0_5_1_407019f_1402422797514_105511_16509",
+                "isSlot": true,
+                "isDerived": false,
+                "value": [
+                    {
+                        "valueExpression": null,
+                        "double": 15,
+                        "type": "LiteralReal"
+                    },
+                    {
+                        "valueExpression": null,
+                        "double": 15.39,
+                        "type": "LiteralReal"
+                    }
+                ],
+                "type": "Property"
+            },
+            "editable": true,
+            "creator": "admin"
+        }
+    ],
+    "specialization": {"type": "Element"},
+    "editable": true,
+    "creator": "admin"
+}]}
+200

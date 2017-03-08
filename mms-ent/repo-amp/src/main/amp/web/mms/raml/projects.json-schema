@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Projects listing specification",
+    "properties": {
+        "elements": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {"$ref": "#/definitions/Project"}
+                ]
+            }
+        },
+        "message": {
+                    "type": "string",
+                    "description": "The response message for this transaction if it is non-empty."
+        }
+    },
+
+    "definitions": {
+        "Project": {
+            "properties": {
+                "sysmlid": {
+                    "type": "string",
+                    "description": "Unique sysml identifier of the project"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Human readable name of the project"
+                },
+                "specialization": {
+                    "properties": {
+                        "type": { "enum": ["Project"] },
+                        "projectVersion": {
+                            "type": "string",
+                            "description": "MD project version last exported. TODO: may go away"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

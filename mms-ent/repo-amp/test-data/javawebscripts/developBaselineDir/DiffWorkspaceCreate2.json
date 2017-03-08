@@ -1,0 +1,8 @@
+{"workspaces": [{
+    "description": "",
+    "qualifiedName": "master/ws2",
+    "name": "ws2",
+    "parent": "master",
+    "creator": "admin"
+}]}
+200

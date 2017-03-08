@@ -1,0 +1,20 @@
+{
+  "message": "Warning! No WRITE priveleges to some_cm_name.  Warning! No WRITE priveleges to some_cm_name.  ",
+  "workspace1": {
+    "qualifiedId": "master",
+    "qualifiedName": "master",
+    "name": "master",
+    "elements": []
+  },
+  "workspace2": {
+    "qualifiedId": "master",
+    "deletedElements": [],
+    "addedElements": [],
+    "conflictedElements": [],
+    "updatedElements": [],
+    "qualifiedName": "master",
+    "name": "master",
+    "movedElements": []
+  }
+}
+403

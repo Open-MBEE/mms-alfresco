@@ -1,0 +1,14 @@
+{"workspaces": [{
+    "qualifiedId": "master/60abbd63-012c-499d-903b-b4e141b180e6/4ee42f98-0c07-45ab-b449-62460205066d",
+    "id": "4ee42f98-0c07-45ab-b449-62460205066d",
+    "created": "2015-09-22T09:40:13.454-0700",
+    "description": "",
+    "qualifiedName": "master/wsA/wsB",
+    "name": "wsB",
+    "parent": "60abbd63-012c-499d-903b-b4e141b180e6",
+    "permission": "read",
+    "branched": "2015-09-22T09:40:15.000-0700",
+    "modified": "2015-09-22T09:40:13.454-0700",
+    "creator": "admin"
+}]}
+200

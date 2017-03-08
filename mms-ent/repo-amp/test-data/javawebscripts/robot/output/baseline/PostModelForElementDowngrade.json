@@ -1,0 +1,13 @@
+{
+  "message": "[WARNING]: The type supplied Element is different than the stored type View\n",
+  "elements": [
+    {
+      "_modifier": "admin",
+      "sysmlId": "54321",
+      "_owner": "holding_bin_no_site_no_project",
+      "type": "Element",
+      "_editable": true,
+      "_creator": "admin"
+    }
+  ]
+}

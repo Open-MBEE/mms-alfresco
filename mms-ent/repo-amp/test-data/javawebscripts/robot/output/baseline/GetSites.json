@@ -1,0 +1,10 @@
+{
+    "sites": [
+        {
+            "_editable": true,
+            "isCharacterization": false,
+            "name": "europa",
+            "sysmlId": "europa"
+        }
+    ]
+}

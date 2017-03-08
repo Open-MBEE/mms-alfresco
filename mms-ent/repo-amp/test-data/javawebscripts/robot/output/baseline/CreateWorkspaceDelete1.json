@@ -1,0 +1,11 @@
+{
+    "workspaces": [
+        {
+            "creator": "admin",
+            "description": "",
+            "name": "AA",
+            "permission": "read",
+            "qualifiedName": "master/AA"
+        }
+    ]
+}

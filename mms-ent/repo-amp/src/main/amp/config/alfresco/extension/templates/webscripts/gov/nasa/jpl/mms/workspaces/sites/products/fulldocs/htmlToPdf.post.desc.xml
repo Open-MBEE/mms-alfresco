@@ -1,0 +1,11 @@
+<webscript>
+    <shortname>post HTML to be converted to PDF</shortname>
+    <description>
+        post HTML to be converted to PDF
+    </description>
+    <url>/projects/{projectId}/refs/{refId}/sites/{siteId}/documents/{documentId}/htmlToPdf/{dummyId}</url>
+    <format default="json">argument</format>
+    <authentication>user</authentication>
+    <transaction>required</transaction>
+    <family>MMS REST API</family>
+ </webscript>

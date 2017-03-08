@@ -1,0 +1,46 @@
+{
+  "workspace1": {
+    "name": "master",
+    "elements": [
+      {
+        "sysmlId": "6666",
+        "_editable": true,
+        "_creator": "admin",
+        "_modifier": "admin",
+        "name": "6666_name",
+        "_owner": "holding_bin_no_site_no_project",
+        "documentation": "",
+          "valueExpression": null,
+          "type": "Expression",
+          "operand": [
+            {
+              "element": "300",
+              "valueExpression": null,
+              "type": "ElementValue"
+            },
+            {
+              "element": "302",
+              "valueExpression": null,
+              "type": "ElementValue"
+            }
+          ]
+        }
+    ]
+  },
+  "workspace2": {
+    "deletedElements": [
+      {
+        "name": "6666_name",
+        "_owner": "holding_bin_no_site_no_project",
+        "sysmlId": "6666",
+          "type": "Expression",
+        "_creator": "admin"
+      }
+    ],
+    "addedElements": [],
+    "conflictedElements": [],
+    "updatedElements": [],
+    "name": "master",
+    "movedElements": []
+  }
+}

@@ -1,0 +1,16 @@
+{"elements": [{
+    "qualifiedId": "/no_site/no_site_no_project/holding_bin_no_site_no_project/e",
+    "modifier": "admin",
+    "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+    "owner": "holding_bin_no_site_no_project",
+    "documentation": "e is e",
+    "sysmlid": "e",
+    "specialization": {
+        "source": null,
+        "target": null,
+        "type": "DirectedRelationship"
+    },
+    "editable": true,
+    "creator": "admin"
+}]}
+200

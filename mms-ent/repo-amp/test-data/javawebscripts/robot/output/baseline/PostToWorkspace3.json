@@ -1,0 +1,19 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "documentation": "z is z",
+            "ownerId": "302",
+            "sysmlId": "z",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "the z value",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,223 @@
+{"elements": [
+    {
+        "qualifiedId": "/europa/123456/update_update_gg",
+        "qualifiedName": "/europa/JW_TEST2/update_update_gg",
+        "sysmlid": "update_update_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_update_gg",
+        "owner": "123456",
+        "documentation": "update_update_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/delete_delete_gg",
+        "qualifiedName": "/europa/JW_TEST2/delete_delete_gg",
+        "sysmlid": "delete_delete_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "delete_delete_gg",
+        "owner": "123456",
+        "documentation": "delete_delete_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/update_delete_gg",
+        "qualifiedName": "/europa/JW_TEST2/update_delete_gg",
+        "sysmlid": "update_delete_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_delete_gg",
+        "owner": "123456",
+        "documentation": "update_delete_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/delete_update_gg",
+        "qualifiedName": "/europa/JW_TEST2/delete_update_gg",
+        "sysmlid": "delete_update_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "delete_update_gg",
+        "owner": "123456",
+        "documentation": "delete_update_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/update_add_gg",
+        "qualifiedName": "/europa/JW_TEST2/update_add_gg",
+        "sysmlid": "update_add_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_add_gg",
+        "owner": "123456",
+        "documentation": "update_add_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/none_delete_gg",
+        "qualifiedName": "/europa/JW_TEST2/none_delete_gg",
+        "sysmlid": "none_delete_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "none_delete_gg",
+        "owner": "123456",
+        "documentation": "none_delete_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/delete_none_gg",
+        "qualifiedName": "/europa/JW_TEST2/delete_none_gg",
+        "sysmlid": "delete_none_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "delete_none_gg",
+        "owner": "123456",
+        "documentation": "delete_none_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/update_none_gg",
+        "qualifiedName": "/europa/JW_TEST2/update_none_gg",
+        "sysmlid": "update_none_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_none_gg",
+        "owner": "123456",
+        "documentation": "update_none_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/none_update_gg",
+        "qualifiedName": "/europa/JW_TEST2/none_update_gg",
+        "sysmlid": "none_update_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "none_update_gg",
+        "owner": "123456",
+        "documentation": "none_update_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/delete_add_gg",
+        "qualifiedName": "/europa/JW_TEST2/delete_add_gg",
+        "sysmlid": "delete_add_gg",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "delete_add_gg",
+        "owner": "123456",
+        "documentation": "delete_add_gg",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "on a shoe",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    }
+]}
+200

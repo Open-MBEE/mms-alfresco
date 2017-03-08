@@ -1,0 +1,40 @@
+{
+  "sequence": 27,
+  "workspace1": {
+    "qualifiedName": "master/ws1",
+    "name": "ws1",
+    "elements": [{
+      "name": "duration",
+      "qualifiedName": "/europa/JW_TEST2/duration",
+      "sysmlid": "arg_ev_38307",
+      "documentation": "",
+      "owner": "123456",
+      "specialization": {
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [{
+          "valueExpression": null,
+          "integer": 22,
+          "type": "LiteralInteger"
+        }],
+        "type": "Property"
+      },
+      "editable": true,
+      "creator": "admin",
+    }]
+  },
+  "workspace2": {
+    "deletedElements": [{
+      "sysmlid": "arg_ev_38307",
+      "creator": "admin",
+    }],
+    "addedElements": [],
+    "conflictedElements": [],
+    "updatedElements": [],
+    "qualifiedName": "master/ws1",
+    "name": "ws1",
+    "movedElements": []
+  }
+}
+200

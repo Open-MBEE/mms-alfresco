@@ -1,0 +1,13 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "documentation": "c is c",
+            "ownerId": "holding_bin",
+            "sysmlId": "c",
+            "type": "Untyped"
+        }
+    ]
+}

@@ -1,0 +1,26 @@
+{
+
+    "elements": [{
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "holding_bin_no_site_no_project",
+
+        "qualifiedId": "/no_project/holding_bin_no_site_no_project/54321",
+
+        "qualifiedName": "/no_project/holding_bin/null",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "54321"
+
+    }],
+
+    "message": "[WARNING]: The type supplied Element is different than the stored type View\n"
+
+}
+
+200
+

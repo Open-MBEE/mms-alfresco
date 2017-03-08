@@ -1,0 +1,110 @@
+{
+  "elements": [
+    {
+      "documentation": "",
+      "sysmlId": "constraint_32165",
+      "name": "",
+      "ownerId": "123456",
+      "type": "Constraint",
+      "specification": {
+        "type": "Expression",
+        "symbol": "",
+        "operand": [
+          {
+            "type": "ElementValue",
+            "element": "op_ev_31835"
+          },
+          {
+            "type": "ElementValue",
+            "element": "arg_ev_38307_1"
+          },
+          {
+            "type": "ElementValue",
+            "element": "arg_ev_33001"
+          }
+        ]
+      }
+    },
+    {
+      "documentation": "",
+      "sysmlId": "op_ev_31835",
+      "name": "GreaterEquals",
+      "ownerId": "123456",
+      "type": "Operation",
+      "parameters": [
+        "op_param_31867",
+        "op_param_31868",
+        "op_param_31869"
+      ]
+    },
+    {
+      "documentation": "",
+      "sysmlId": "op_param_31867",
+      "name": "result",
+      "ownerId": "op_ev_31835",
+      "type": "Element",
+      "parameterDirection": "return"
+    },
+    {
+      "documentation": "",
+      "sysmlId": "op_param_31868",
+      "name": "x",
+      "ownerId": "op_ev_31835",
+      "type": "Element",
+      "parameterDirection": "in"
+    },
+    {
+      "documentation": "",
+      "sysmlId": "op_param_31869",
+      "name": "y",
+      "ownerId": "op_ev_31835",
+      "type": "Element",
+      "parameterDirection": "in"
+    },
+    {
+      "documentation": "",
+      "sysmlId": "arg_ev_38307",
+      "name": "duration",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "type": "LiteralInteger",
+          "integer": 22
+        }
+      ]
+    },
+    {
+      "documentation": "",
+      "sysmlId": "arg_ev_38307_1",
+      "name": "duration_1",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "type": "LiteralInteger",
+          "integer": 10
+        }
+      ]
+    },
+    {
+      "documentation": "",
+      "sysmlId": "arg_ev_33001",
+      "name": "initialDuration",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "type": "LiteralInteger",
+          "integer": 11
+        }
+      ]
+    }
+  ]
+}

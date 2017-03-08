@@ -1,0 +1,40 @@
+{"elements": [{
+
+    "creator": "admin",
+
+    "documentation": "x is x",
+
+    "editable": true,
+
+    "name": "402",
+
+    "owner": "401",
+
+    "qualifiedId": "/123456/4000/401/402",
+
+    "qualifiedName": "/JW_TEST2/400/401/402",
+
+    "specialization": {
+
+        "isDerived": false,
+
+        "isSlot": false,
+
+        "type": "Property",
+
+        "value": [{
+
+            "string": "the x value",
+
+            "type": "LiteralString"
+
+        }]
+
+    },
+
+    "sysmlid": "402"
+
+}]}
+
+200
+

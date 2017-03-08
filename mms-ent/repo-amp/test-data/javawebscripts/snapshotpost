@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ "$#" -eq 1 ]; then
+  echo curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/products/$1/snapshots"
+  curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/products/$1/snapshots"
+else
+  echo curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1/sites/europa/products/$2/snapshots"
+  curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1/sites/europa/products/$2/snapshots"
+fi;

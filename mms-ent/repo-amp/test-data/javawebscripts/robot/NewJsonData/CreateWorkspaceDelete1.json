@@ -1,0 +1,8 @@
+{
+    "workspaces": [{
+        "name": "CreateWorkspaceDelete1",
+        "description": "<p>This is a workspace that will be delete.</p>\n",
+        "permission": "read",
+        "parent": "master"
+    }]
+}

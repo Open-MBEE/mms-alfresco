@@ -1,0 +1,487 @@
+{
+    "workspace1": {
+        "timestamp": "2015-09-21T13:54:00.156-0700",
+        "qualifiedId": "master",
+        "id": "master",
+        "qualifiedName": "master",
+        "name": "master",
+        "elements": [
+            {
+                "qualifiedId": "/europa/123456/update_add_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/update_add_poo",
+                "sysmlid": "update_add_poo",
+                "editable": true,
+                "version": "1.1",
+                "creator": "admin",
+                "modified": "2015-09-21T13:54:06.709-0700",
+                "modifier": "admin",
+                "id": "58b3b81a-67d7-4a91-9015-84c42cfb8131",
+                "created": "Mon Sep 21 13:53:58 PDT 2015",
+                "name": "update_add_poo",
+                "documentation": "update_add_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:06.743-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/delete_add_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/delete_add_poo",
+                "sysmlid": "delete_add_poo",
+                "editable": true,
+                "version": "1.1",
+                "creator": "admin",
+                "modified": "2015-09-21T13:54:06.957-0700",
+                "modifier": "admin",
+                "id": "160b7ce1-0ebc-4db8-a49a-30160277c93e",
+                "created": "Mon Sep 21 13:53:57 PDT 2015",
+                "name": "delete_add_poo",
+                "documentation": "delete_add_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:06.989-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "modifier": "admin",
+                "qualifiedId": "/europa/123456/add_delete_poo",
+                "siteCharacterizationId": "europa",
+                "created": "Mon Sep 21 13:54:07 PDT 2015",
+                "name": "add_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/add_delete_poo",
+                "documentation": "add_delete_poo",
+                "owner": "123456",
+                "sysmlid": "add_delete_poo",
+                "read": "2015-09-21T13:54:08.562-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+                "modified": "2015-09-21T13:54:08.358-0700",
+                "creator": "admin"
+            },
+            {
+                "modifier": "admin",
+                "qualifiedId": "/europa/123456/update_delete_poo",
+                "siteCharacterizationId": "europa",
+                "created": "Mon Sep 21 13:53:58 PDT 2015",
+                "name": "update_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/update_delete_poo",
+                "documentation": "update_delete_poo",
+                "owner": "123456",
+                "sysmlid": "update_delete_poo",
+                "read": "2015-09-21T13:54:09.409-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+                "modified": "2015-09-21T13:54:09.226-0700",
+                "creator": "admin"
+            },
+            {
+                "modifier": "admin",
+                "qualifiedId": "/europa/123456/delete_delete_poo",
+                "siteCharacterizationId": "europa",
+                "created": "Mon Sep 21 13:53:57 PDT 2015",
+                "name": "delete_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_delete_poo",
+                "documentation": "delete_delete_poo",
+                "owner": "123456",
+                "sysmlid": "delete_delete_poo",
+                "read": "2015-09-21T13:54:09.873-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+                "modified": "2015-09-21T13:54:09.689-0700",
+                "creator": "admin"
+            },
+            {
+                "modifier": "admin",
+                "qualifiedId": "/europa/123456/none_delete_poo",
+                "siteCharacterizationId": "europa",
+                "created": "Mon Sep 21 13:53:57 PDT 2015",
+                "name": "none_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/none_delete_poo",
+                "documentation": "none_delete_poo",
+                "owner": "123456",
+                "sysmlid": "none_delete_poo",
+                "read": "2015-09-21T13:54:10.345-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+                "modified": "2015-09-21T13:54:10.163-0700",
+                "creator": "admin"
+            },
+            {
+                "qualifiedId": "/europa/123456/add_update_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/add_update_poo",
+                "sysmlid": "add_update_poo",
+                "editable": true,
+                "version": "1.1",
+                "creator": "admin",
+                "modified": "2015-09-21T13:54:07.438-0700",
+                "modifier": "admin",
+                "id": "08802ee3-2976-4b4c-836c-aaa041ff8788",
+                "created": "Mon Sep 21 13:54:07 PDT 2015",
+                "name": "add_update_poo",
+                "documentation": "add_update_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:13.804-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/delete_update_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/delete_update_poo",
+                "sysmlid": "delete_update_poo",
+                "editable": true,
+                "version": "1.1",
+                "creator": "admin",
+                "modified": "2015-09-21T13:53:59.166-0700",
+                "modifier": "admin",
+                "id": "3db6a949-f569-46ff-bc15-b06c7cf007ab",
+                "created": "Mon Sep 21 13:53:58 PDT 2015",
+                "name": "delete_update_poo",
+                "documentation": "delete_update_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:13.861-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/none_update_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/none_update_poo",
+                "sysmlid": "none_update_poo",
+                "editable": true,
+                "version": "1.1",
+                "creator": "admin",
+                "modified": "2015-09-21T13:53:58.920-0700",
+                "modifier": "admin",
+                "id": "32e634ee-78ba-43db-a2f5-356619de921e",
+                "created": "Mon Sep 21 13:53:57 PDT 2015",
+                "name": "none_update_poo",
+                "documentation": "none_update_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:13.887-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/update_update_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/update_update_poo",
+                "sysmlid": "update_update_poo",
+                "editable": true,
+                "version": "1.1",
+                "creator": "admin",
+                "modified": "2015-09-21T13:53:59.292-0700",
+                "modifier": "admin",
+                "id": "9f7a625d-345d-4725-8e64-dfc3fd3c67a8",
+                "created": "Mon Sep 21 13:53:58 PDT 2015",
+                "name": "update_update_poo",
+                "documentation": "update_update_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:13.941-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            }
+        ]
+    },
+    "workspace2": {
+        "qualifiedId": "master/e2ff98ef-c9ea-4e35-aa67-6c8daa83b04e",
+        "id": "e2ff98ef-c9ea-4e35-aa67-6c8daa83b04e",
+        "deletedElements": [
+            {
+                "qualifiedId": "/europa/123456/add_delete_poo",
+                "name": "add_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/add_delete_poo",
+                "owner": "123456",
+                "sysmlid": "add_delete_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "qualifiedId": "/europa/123456/update_delete_poo",
+                "name": "update_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/update_delete_poo",
+                "owner": "123456",
+                "sysmlid": "update_delete_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "qualifiedId": "/europa/123456/delete_delete_poo",
+                "name": "delete_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_delete_poo",
+                "owner": "123456",
+                "sysmlid": "delete_delete_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "qualifiedId": "/europa/123456/none_delete_poo",
+                "name": "none_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/none_delete_poo",
+                "owner": "123456",
+                "sysmlid": "none_delete_poo",
+                "specialization": {"type": "Property"}
+            }
+        ],
+        "addedElements": [
+            {
+                "qualifiedId": "/europa/123456/update_add_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/update_add_poo",
+                "sysmlid": "update_add_poo",
+                "editable": true,
+                "creator": "admin",
+                "modified": "2015-09-21T13:54:13.630-0700",
+                "modifier": "admin",
+                "created": "Mon Sep 21 13:54:11 PDT 2015",
+                "name": "update_add_poo",
+                "documentation": "update_add_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:14.056-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/delete_add_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/delete_add_poo",
+                "sysmlid": "delete_add_poo",
+                "editable": true,
+                "creator": "admin",
+                "modified": "2015-09-21T13:54:12.962-0700",
+                "modifier": "admin",
+                "created": "Mon Sep 21 13:54:11 PDT 2015",
+                "name": "delete_add_poo",
+                "documentation": "delete_add_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:14.002-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/add_update_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/add_update_poo",
+                "sysmlid": "add_update_poo",
+                "editable": true,
+                "creator": "admin",
+                "modified": "2015-09-21T13:54:07.438-0700",
+                "modifier": "admin",
+                "created": "Mon Sep 21 13:54:07 PDT 2015",
+                "name": "add_update_poo",
+                "documentation": "add_update_poo updatedWs2",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:07.705-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/add_add_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/add_add_poo",
+                "sysmlid": "add_add_poo",
+                "editable": true,
+                "creator": "admin",
+                "modified": "2015-09-21T13:54:12.570-0700",
+                "modifier": "admin",
+                "created": "Mon Sep 21 13:54:11 PDT 2015",
+                "name": "add_add_poo",
+                "documentation": "add_add_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:13.964-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedId": "/europa/123456/none_add_poo",
+                "siteCharacterizationId": "europa",
+                "qualifiedName": "/europa/JW_TEST2/none_add_poo",
+                "sysmlid": "none_add_poo",
+                "editable": true,
+                "creator": "admin",
+                "modified": "2015-09-21T13:54:12.373-0700",
+                "modifier": "admin",
+                "created": "Mon Sep 21 13:54:10 PDT 2015",
+                "name": "none_add_poo",
+                "documentation": "none_add_poo",
+                "owner": "123456",
+                "read": "2015-09-21T13:54:14.028-0700",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            }
+        ],
+        "conflictedElements": [],
+        "updatedElements": [
+            {
+                "qualifiedId": "/europa/123456/delete_update_poo",
+                "name": "delete_update_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_update_poo",
+                "owner": "123456",
+                "documentation": "delete_update_poo updatedWs2",
+                "sysmlid": "delete_update_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "qualifiedId": "/europa/123456/none_update_poo",
+                "name": "none_update_poo",
+                "qualifiedName": "/europa/JW_TEST2/none_update_poo",
+                "owner": "123456",
+                "documentation": "none_update_poo updatedWs2",
+                "sysmlid": "none_update_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "qualifiedId": "/europa/123456/update_update_poo",
+                "name": "update_update_poo",
+                "qualifiedName": "/europa/JW_TEST2/update_update_poo",
+                "owner": "123456",
+                "documentation": "update_update_poo updatedWs2",
+                "sysmlid": "update_update_poo",
+                "specialization": {"type": "Property"}
+            }
+        ],
+        "qualifiedName": "master/wsMatrix2",
+        "name": "wsMatrix2",
+        "movedElements": []
+    }
+}
+200

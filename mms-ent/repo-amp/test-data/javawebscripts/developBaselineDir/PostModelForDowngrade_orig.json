@@ -1,0 +1,37 @@
+{"elements": [{
+    "modifier": "admin",
+    "qualifiedId": "/no_site/no_site_no_project/holding_bin_no_site_no_project/54321",
+    "siteCharacterizationId": "no_site",
+    "created": "Tue Sep 22 09:42:32 PDT 2015",
+    "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+    "sysmlid": "54321",
+    "owner": "holding_bin_no_site_no_project",
+    "read": "2015-09-22T09:42:33.078-0700",
+    "specialization": {
+        "view2view": [{
+            "childrenViews": [
+                "301",
+                "302"
+            ],
+            "sysmlid": "301"
+        }],
+        "displayedElements": [
+            "301",
+            "302",
+            "303"
+        ],
+        "childrenViews": [],
+        "allowedElements": [
+            "301",
+            "302",
+            "303"
+        ],
+        "noSections": ["302"],
+        "contains": [],
+        "type": "Product"
+    },
+    "editable": true,
+    "creator": "admin",
+    "modified": "2015-09-22T09:42:32.946-0700"
+}]}
+200

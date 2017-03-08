@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>delete product with {productId}</shortname>
+    <description>
+        delete product with {productId}
+    </description>
+      <url>/projects/{projectId}/refs/{refId}/sites/{siteId}/products/{productId}</url>
+      <format default="json">argument</format>
+      <authentication>user</authentication>
+      <transaction>required</transaction>
+      <family>MMS REST API</family>
+ </webscript>

@@ -1,0 +1,64 @@
+{
+  "elements": [
+    {
+      "sysmlId": "302",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "302",
+      "_owner": "301",
+      "documentation": "to",
+      "propertyType": null,
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property"
+    },
+    {
+      "sysmlId": "304",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "304",
+      "_owner": "303",
+      "documentation": "about",
+      "propertyType": null,
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property"
+    },
+    {
+      "sysmlId": "303",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "303",
+      "_owner": "302",
+      "documentation": "talk",
+      "propertyType": null,
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property"
+    }
+  ]
+}

@@ -1,0 +1,449 @@
+{
+  "workspace1": {
+    "name": "wsMatrix1",
+    "elements": [
+      {
+        "sysmlId": "update_add_gg",
+        "_editable": true,
+        "version": "1.1",
+        "name": "update_add_gg",
+        "_owner": "123456",
+        "documentation": "update_add_gg updatedWs1",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "sysmlId": "add_delete_gg",
+        "_editable": true,
+        "name": "add_delete_gg",
+        "_owner": "123456",
+        "documentation": "add_delete_gg",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "name": "update_delete_gg",
+        "sysmlId": "update_delete_gg",
+        "documentation": "update_delete_gg updatedWs1",
+        "_owner": "123456",
+          "type": "Property"
+      },
+      {
+        "name": "none_delete_gg",
+        "documentation": "none_delete_gg",
+        "_owner": "123456",
+        "sysmlId": "none_delete_gg",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property",
+        "_editable": true,
+      },
+      {
+        "sysmlId": "add_update_gg",
+        "_editable": true,
+        "name": "add_update_gg",
+        "_owner": "123456",
+        "documentation": "add_update_gg",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "sysmlId": "none_update_gg",
+        "_editable": true,
+        "version": "1.1",
+        "name": "none_update_gg",
+        "documentation": "none_update_gg",
+        "_owner": "123456",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "sysmlId": "update_update_gg",
+        "_editable": true,
+        "version": "1.1",
+        "name": "update_update_gg",
+        "_owner": "123456",
+        "documentation": "update_update_gg updatedWs1",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "sysmlId": "delete_add_gg",
+        "_editable": true,
+        "version": "1.1",
+        "name": "delete_add_gg",
+        "documentation": "delete_add_gg",
+        "_owner": "123456",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "sysmlId": "update_none_gg",
+        "_editable": true,
+        "version": "1.1",
+        "name": "update_none_gg",
+        "_owner": "123456",
+        "documentation": "update_none_gg updatedWs1",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "name": "delete_none_gg",
+        "documentation": "delete_none_gg",
+        "_owner": "123456",
+        "sysmlId": "delete_none_gg",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property",
+        "_editable": true,
+      },
+      {
+        "sysmlId": "delete_update_gg",
+        "_editable": true,
+        "version": "1.1",
+        "name": "delete_update_gg",
+        "documentation": "delete_update_gg",
+        "_owner": "123456",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "sysmlId": "add_none_gg",
+        "_editable": true,
+        "name": "add_none_gg",
+        "_owner": "123456",
+        "documentation": "add_none_gg",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      }
+    ]
+  },
+  "workspace2": {
+    "deletedElements": [
+      {
+        "name": "add_delete_gg",
+        "documentation": "add_delete_gg",
+        "_owner": "123456",
+        "sysmlId": "add_delete_gg",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property",
+        "_editable": true,
+      },
+      {
+        "name": "update_delete_gg",
+        "_owner": "123456",
+        "documentation": "update_delete_gg updatedWs1",
+        "sysmlId": "update_delete_gg",
+          "type": "Property"
+      },
+      {
+        "name": "none_delete_gg",
+        "_owner": "123456",
+        "sysmlId": "none_delete_gg",
+          "type": "Property"
+      },
+      {
+        "name": "add_none_gg",
+        "documentation": "add_none_gg",
+        "_owner": "123456",
+        "sysmlId": "add_none_gg",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property",
+        "_editable": true
+      }
+    ],
+    "addedElements": [
+      {
+        "sysmlId": "delete_add_gg",
+        "_editable": true,
+        "name": "delete_add_gg",
+        "_owner": "123456",
+        "documentation": "delete_add_gg",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "sysmlId": "none_add_gg",
+        "_editable": true,
+        "name": "none_add_gg",
+        "_owner": "123456",
+        "documentation": "none_add_gg",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "name": "delete_update_gg",
+        "sysmlId": "delete_update_gg",
+        "documentation": "delete_update_gg updatedWs2",
+        "_owner": "123456",
+          "type": "Property"
+      },
+      {
+        "sysmlId": "delete_none_gg",
+        "_editable": true,
+        "name": "delete_none_gg",
+        "documentation": "delete_none_gg",
+        "_owner": "123456",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      }
+    ],
+    "conflictedElements": [
+      {
+        "name": "update_delete_gg",
+        "sysmlId": "update_delete_gg",
+        "documentation": "update_delete_gg updatedWs1",
+        "_owner": "123456",
+          "type": "Property"
+      },
+      {
+        "sysmlId": "delete_add_gg",
+        "_editable": true,
+        "version": "1.1",
+        "name": "delete_add_gg",
+        "documentation": "delete_add_gg",
+        "_owner": "123456",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "name": "delete_update_gg",
+        "_owner": "123456",
+        "documentation": "delete_update_gg updatedWs2",
+        "sysmlId": "delete_update_gg",
+          "type": "Property"
+      },
+      {
+        "name": "add_update_gg",
+        "_owner": "123456",
+        "sysmlId": "add_update_gg",
+        "documentation": "add_update_gg updatedWs2",
+          "type": "Property",
+        "version": "1.1"
+      },
+      {
+        "name": "update_update_gg",
+        "_owner": "123456",
+        "sysmlId": "update_update_gg",
+        "documentation": "update_update_gg updatedWs2",
+          "type": "Property"
+      },
+      {
+        "name": "update_add_gg",
+        "_owner": "123456",
+        "sysmlId": "update_add_gg",
+        "documentation": "update_add_gg",
+          "type": "Property"
+      },
+      {
+        "sysmlId": "add_delete_gg",
+        "_editable": true,
+        "name": "add_delete_gg",
+        "_owner": "123456",
+        "documentation": "add_delete_gg",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "on a shoe",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      }
+    ],
+    "updatedElements": [
+      {
+        "name": "update_add_gg",
+        "_owner": "123456",
+        "documentation": "update_add_gg",
+        "sysmlId": "update_add_gg",
+          "type": "Property"
+      },
+      {
+        "name": "add_update_gg",
+        "_owner": "123456",
+        "documentation": "add_update_gg updatedWs2",
+        "sysmlId": "add_update_gg",
+          "type": "Property",
+        "version": "1.1"
+      },
+      {
+        "name": "none_update_gg",
+        "_owner": "123456",
+        "documentation": "none_update_gg updatedWs2",
+        "sysmlId": "none_update_gg",
+          "type": "Property"
+      },
+      {
+        "name": "update_update_gg",
+        "_owner": "123456",
+        "documentation": "update_update_gg updatedWs2",
+        "sysmlId": "update_update_gg",
+          "type": "Property"
+      },
+      {
+        "name": "update_none_gg",
+        "_owner": "123456",
+        "documentation": "update_none_gg",
+        "sysmlId": "update_none_gg",
+          "type": "Property"
+      }
+    ],
+    "name": "wsMatrix2",
+    "movedElements": []
+  }
+}

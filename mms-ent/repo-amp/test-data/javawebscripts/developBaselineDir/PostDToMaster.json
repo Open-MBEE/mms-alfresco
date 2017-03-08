@@ -1,0 +1,17 @@
+{"elements": [{
+    "modifier": "admin",
+    "qualifiedId": "/no_site/no_site_no_project/holding_bin_no_site_no_project/d",
+    "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+    "sysmlid": "d",
+    "documentation": "d is d",
+    "owner": "holding_bin_no_site_no_project",
+    "specialization": {
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "type": "Property"
+    },
+    "editable": true,
+    "creator": "admin",
+}]}
+200

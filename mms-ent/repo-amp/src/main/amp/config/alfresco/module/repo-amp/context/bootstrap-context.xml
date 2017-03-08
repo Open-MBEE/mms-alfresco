@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+    <!-- Bootstrap -->
+    
+    <beans>
+    <bean id="view_repo_bootstrapSpaces" class="org.alfresco.repo.module.ImporterModuleComponent" parent="module.baseComponent">
+        <property name="moduleId" value="view-repo" />
+        <property name="name" value="view-repo.bootstrapSpaces" />
+        <property name="description" value="Initial data requirements" />
+        <property name="sinceVersion" value="1.0" />
+        <property name="appliesFromVersion" value="1.0" />
+        <property name="executeOnceOnly" value="true" />
+        <property name="importer" ref="spacesBootstrap"/>
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                     <prop key="path">/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates</prop>
+                     <prop key="location">alfresco/bootstrap/notification/discussionNotifyEmailTemplate.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+    </beans>

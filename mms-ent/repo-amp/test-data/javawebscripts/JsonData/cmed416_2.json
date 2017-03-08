@@ -1,0 +1,10 @@
+{
+  "elements": [
+    {
+      "sysmlId": "testCmed416_2",
+      "ownerId": "123456",
+      "name": "testName",
+      "type": "Property"
+    }
+  ]
+}

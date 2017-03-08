@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE view>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+   xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0"
+   xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns="">
+
+   <cm:folder view:childName="app:snapshots">
+      <view:properties>
+         <sys:store-protocol>workspace</sys:store-protocol>
+         <sys:store-identifier>SpacesStore</sys:store-identifier>
+         <sys:node-uuid>snapshots</sys:node-uuid>
+         <cm:name>snapshots</cm:name>
+         <cm:title>snapshots</cm:title>
+         <cm:description>global directory for storing snapshots</cm:description>
+      </view:properties>
+      
+      <!-- By default, anyone can add children (new credentials), and read existing ones, -->
+      <!--  but not edit or delete other's credentials -->
+      <view:acl view:inherit="false">
+          <view:ace view:access="ALLOWED">
+              <view:authority>GROUP_EVERYONE</view:authority>
+              <view:permission>Read</view:permission>
+          </view:ace>
+          <view:ace view:access="ALLOWED">
+              <view:authority>GROUP_EVERYONE</view:authority>
+              <view:permission>AddChildren</view:permission>
+          </view:ace>
+          <view:ace view:access="ALLOWED">
+              <view:authority>ROLE_OWNER</view:authority>
+              <view:permission>FullControl</view:permission>
+          </view:ace>
+      </view:acl>
+   </cm:folder>
+
+   <cm:folder view:childName="app:Jobs">
+      <view:properties>
+         <sys:store-protocol>workspace</sys:store-protocol>
+         <sys:store-identifier>SpacesStore</sys:store-identifier>
+         <sys:node-uuid>Jobs</sys:node-uuid>
+         <cm:name>Jobs</cm:name>
+         <cm:title>Jobs</cm:title>
+         <cm:description>global directory for storing Jobs</cm:description>
+      </view:properties>
+      
+      <!-- By default, anyone can add children (new credentials), and read existing ones, -->
+      <!--  but not edit or delete other's credentials -->
+      <view:acl view:inherit="false">
+          <view:ace view:access="ALLOWED">
+              <view:authority>GROUP_EVERYONE</view:authority>
+              <view:permission>Read</view:permission>
+          </view:ace>
+          <view:ace view:access="ALLOWED">
+              <view:authority>GROUP_EVERYONE</view:authority>
+              <view:permission>AddChildren</view:permission>
+          </view:ace>
+          <view:ace view:access="ALLOWED">
+              <view:authority>ROLE_OWNER</view:authority>
+              <view:permission>FullControl</view:permission>
+          </view:ace>
+      </view:acl>
+   </cm:folder>
+
+   <cm:folder view:childName="app:Test">
+      <view:properties>
+         <sys:store-protocol>workspace</sys:store-protocol>
+         <sys:store-identifier>SpacesStore</sys:store-identifier>
+         <sys:node-uuid>Test</sys:node-uuid>
+         <cm:name>Test</cm:name>
+         <cm:title>Test</cm:title>
+         <cm:description>global directory for storing Test</cm:description>
+      </view:properties>
+      
+      <!-- By default, anyone can add children (new credentials), and read existing ones, -->
+      <!--  but not edit or delete other's credentials -->
+      <view:acl view:inherit="false">
+          <view:ace view:access="ALLOWED">
+              <view:authority>GROUP_EVERYONE</view:authority>
+              <view:permission>Read</view:permission>
+          </view:ace>
+          <view:ace view:access="ALLOWED">
+              <view:authority>GROUP_EVERYONE</view:authority>
+              <view:permission>AddChildren</view:permission>
+          </view:ace>
+          <view:ace view:access="ALLOWED">
+              <view:authority>ROLE_OWNER</view:authority>
+              <view:permission>FullControl</view:permission>
+          </view:ace>
+      </view:acl>
+   </cm:folder>
+
+</view:view>
+      

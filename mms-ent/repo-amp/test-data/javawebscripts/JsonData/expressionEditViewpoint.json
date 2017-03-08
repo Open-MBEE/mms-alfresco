@@ -1,0 +1,169 @@
+{
+  "elements": [
+    {
+      "sysmlId": "edit_expression_viewpoint",
+      "name": "ComponentViewPoint",
+      "documentation": "A view can expose an expression or a property whose value is an expression, and that expression will be editable from the view.  The result of that expression will generate the rest of the view.",
+      "ownerId": "123456",
+      "type": "Package"
+    },
+    {
+      "sysmlId": "EditExpressionViewpoint",
+      "name": "EditExpressionViewpoint",
+      "documentation": "A view conforming to this viewpoint can expose an expression or a property whose value is an expression, and that expression will be editable from the view.  The result of that expression will generate the rest of the view.",
+      "ownerId": "edit_expression_viewpoint",
+      "method": "EditExpressionViewpointMethod",
+      "type": "Viewpoint"
+    },
+    {
+      "sysmlId": "_17_0_2_3_expression_view_29388",
+      "name": "ExpressionView",
+      "documentation": "A view to conform to the EditExpressionViewpoint",
+      "ownerId": "edit_expression_viewpoint",
+      "type": "Product"
+    },
+    {
+      "sysmlId": "propertyWithTextExpression_39393",
+      "name": "PropertyWithExpression",
+      "documentation": "A string Property with a text expression that produces view/presentation elements when evaluated.",
+      "ownerId": "edit_expression_viewpoint",
+      "type": "Property",
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "Name(propertyWithTextExpression_39393)"
+        }
+      ]
+    },
+    {
+      "sysmlId": "EditExpressionViewpointMethod",
+      "name": "viewpoint_op",
+      "documentation": "Passing in a Property with a string value produces a view where the string may be edited and evaluated to produce the remaining part of the view",
+      "ownerId": "edit_expression_viewpoint",
+      "parameters": [
+        "exposed_id"
+      ],
+      "type": "Operation",
+      "expression": {
+        "type": "Expression",
+        "operand": [
+          {
+            "type": "ElementValue",
+            "element": "op_list"
+          },
+          {
+            "type": "Expression",
+            "operand": [
+              {
+                "type": "ElementValue",
+                "element": "op_value"
+              },
+              {
+                "type": "ElementValue",
+                "element": "exposed_id"
+              }
+            ]
+          },
+          {
+            "type": "Expression",
+            "operand": [
+              {
+                "type": "ElementValue",
+                "element": "op_evaluate"
+              },
+              {
+                "type": "ElementValue",
+                "element": "exposed_id"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "sysmlId": "exposed_id",
+      "name": "exposed",
+      "documentation": "a parameter to an operation representing elements exposed by a view",
+      "ownerId": "edit_expression_viewpoint",
+      "type": "Parameter"
+    },
+    {
+      "sysmlId": "example_editable_op_23333",
+      "name": "ExampleEditableOperation",
+      "documentation": "",
+      "ownerId": "edit_expression_viewpoint",
+      "parameters": [
+        "c_param_23333"
+      ],
+      "type": "Operation",
+      "expression": {
+        "type": "Expression",
+        "operand": [
+          {
+            "type": "ElementValue",
+            "element": "op_name"
+          },
+          {
+            "type": "ElementValue",
+            "element": "example_editable_op_23333"
+          }
+        ]
+      }
+    },
+    {
+      "sysmlId": "c_param_23333",
+      "name": "exposed",
+      "documentation": "a parameter to an operation representing elements exposed by a view",
+      "ownerId": "edit_expression_viewpoint",
+      "type": "Parameter"
+    },
+    {
+      "sysmlId": "op_name",
+      "name": "Name",
+      "documentation": "",
+      "ownerId": "edit_expression_viewpoint",
+      "type": "Operation"
+    },
+    {
+      "sysmlId": "op_list",
+      "name": "List",
+      "documentation": "",
+      "ownerId": "edit_expression_viewpoint",
+      "type": "Operation"
+    },
+    {
+      "sysmlId": "op_value",
+      "name": "Value",
+      "documentation": "A presentation element for viewing/editing the value of a property.",
+      "ownerId": "edit_expression_viewpoint",
+      "type": "Operation"
+    },
+    {
+      "sysmlId": "op_evaluate",
+      "name": "Evaluate",
+      "documentation": "Evaluate the K/Java text expression of the input element and return the result.  This operation is defined by a Java method, EmsSystemModel.evaluate().",
+      "ownerId": "edit_expression_viewpoint",
+      "type": "Operation"
+    },
+    {
+      "sysmlId": "conform_29608",
+      "name": "conform relationship",
+      "documentation": "",
+      "ownerId": "edit_expression_viewpoint",
+      "type": "Conform",
+      "source": "_17_0_2_3_expression_view_29388",
+      "target": "EditExpressionViewpoint"
+    },
+    {
+      "sysmlId": "expose_29758",
+      "name": "expose relationship",
+      "documentation": "",
+      "ownerId": "edit_expression_viewpoint",
+      "type": "Expose",
+      "source": "_17_0_2_3_expression_view_29388",
+      "target": "propertyWithTextExpression_39393"
+    }
+  ]
+}
+
+

@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE model>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="view:viewEditorModel">
+    <description>Extension model</description>
+    <author>JPL</author>
+    <version>1.0</version>
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+    </imports>
+    <namespaces>
+        <namespace uri="http://jpl.nasa.gov/model/view/1.0" prefix="view"/>
+    </namespaces>
+    <data-types/>
+    <constraints/>
+    <types>        
+        <type name="view:ModelElement">
+            <parent>cm:content</parent>
+            <properties>
+                <property name="view:documentation">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <atomic>false</atomic>
+                        <stored>false</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+                <property name="view:author"> <!--  this is here because if people export from magicdraw their user isn't logged in yet -->
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+                <property name="view:lastModified"> <!-- in case of comments people made in magicdraw, the modified time may not be the same as repository modified time, but i think this can go away in the future and use the version info instead -->
+                    <type>d:datetime</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+                <property name="view:mdid">
+                    <type>d:text</type>
+                    <mandatory enforced="true">true</mandatory>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="view:name"> <!-- cm:name has to be unique in a folder, where model names aren't, the id is used for cm:name -->
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <atomic>false</atomic>
+                        <stored>false</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects>
+                <aspect>cm:versionable</aspect>
+                <aspect>cm:taggable</aspect>
+                <aspect>cm:titled</aspect>
+           <!--       <aspect>cm:lockable</aspect> -->
+            </mandatory-aspects>
+        </type>
+        <type name="view:Comment">
+            <parent>view:ModelElement</parent>
+            <properties>
+                <property name="view:committed">
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+                <property name="view:deleted">
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+            </properties>
+  <!--      <associations> replies not used right now (for comment threading)
+                <association name="view:replies">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>view:Comment</class>
+                        <mandatory enforced="false">false</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
+            </associations> -->
+            <overrides/>
+            <mandatory-aspects/>
+         </type>
+        <type name="view:Volume">
+            <parent>view:ModelElement</parent>
+            <properties>
+                <property name="view:rootVolume">
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+            </properties>
+            <associations>
+                <association name="view:volumes">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>view:Volume</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
+                <association name="view:documents">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>view:DocumentView</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
+            </associations>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+        <type name="view:View">
+            <parent>view:ModelElement</parent>
+            <properties>
+                <property name="view:noSection">
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+                <property name="view:viewsJson">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+                <property name="view:containsJson">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+                <property name="view:sourcesJson">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+            </properties>
+            <associations>
+                <association name="view:views">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>view:View</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
+                <association name="view:comments">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>view:Comment</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
+            </associations>
+            <overrides/>
+            <mandatory-aspects>
+                <aspect>view:Orderable</aspect>
+            </mandatory-aspects>
+        </type>
+         <type name="view:DocumentView">
+            <parent>view:View</parent>
+            <properties>
+                <property name="view:product">
+                    <type>d:boolean</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+                <property name="view:view2viewJson">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+                <property name="view:noSectionsJson">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+            </properties>
+            <associations>
+                <association name="view:snapshots">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>view:Snapshot</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </association>
+            </associations>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+        <type name="view:Snapshot">
+            <parent>cm:content</parent>
+            <properties>
+                <property name="view:productJson">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+            </properties>
+            <associations>
+                <association name="view:html">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>cm:content</class>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
+            </associations>
+            <overrides/>
+            <mandatory-aspects>
+                <aspect>cm:versionable</aspect>
+                <aspect>cm:taggable</aspect>
+            </mandatory-aspects>
+        </type>
+        <type name="view:Property">
+            <parent>view:ModelElement</parent>
+            <properties>
+                <property name="view:defaultValue">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <atomic>false</atomic>
+                        <stored>false</stored>
+                        <tokenised>true</tokenised>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+    </types>
+    <aspects>
+        <aspect name="view:Orderable">
+            <properties>
+                <property name="view:index">
+                    <type>d:int</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false"/>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+        <aspect name="view:Checksummable">
+            <properties>
+                <property name="view:cs">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+    </aspects>
+</model>

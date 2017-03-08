@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+    <!-- Bean definitions for all the Java backed webscripts -->
+
+    <bean id="webscript.gov.nasa.jpl.javawebscripts.hostname.get"
+        class="gov.nasa.jpl.view_repo.webscripts.HostnameGet" parent="webscript"
+        singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
+    
+    <!-- Connection configuration services -->
+    <bean id="webscript.gov.nasa.jpl.utils.connection.get"
+        class="gov.nasa.jpl.view_repo.webscripts.util.ConnectionGet" parent="webscript"
+        singleton="false"/>
+
+    <bean id="webscript.gov.nasa.jpl.utils.connection.post"
+        class="gov.nasa.jpl.view_repo.webscripts.util.ConnectionPost" parent="webscript"
+        singleton="false"/>
+    
+    <!-- Create proxies for the service beans: Interceptors don't work... -->
+    <!-- 
+    <bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="beanNames">
+            <value>webscript.gov.nasa.jpl.javawebscripts.model.post</value>
+            <value>webscript.gov.nasa.jpl.javawebscripts.element.post</value>
+            <value>webscript.gov.nasa.jpl.javawebscripts.element.get</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <value>performanceAdvisor</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="performanceInterceptor" class="gov.nasa.jpl.view_repo.aspects.PerformanceInterceptor" />
+    <bean id="performanceAdvisor" class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+        <property name="advice" ref="performanceInterceptor" />
+        <property name="patterns">
+            <list>
+                <value>.*find.*</value>
+                <value>.*updateOrCreate.*</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="performanceAdvisor"
+        class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice" ref="performanceInterceptor" />
+        <property name="mappedNames">
+            <list>
+                <value>findNodeRefByName</value>
+                <value>findScriptNodeByName</value>
+                <value>handleElementHierarchy</value>
+                <value>handleElements</value>
+                <value>handleElementValues</value>
+                <value>handleElementRelationships</value>
+                <value>handlePropertyTypes</value>
+                <value>updateOrCreateElement</value>
+                <value>updateOrCreateElementHierarchy</value>
+                <value>updateOrCreateElementValues</value>
+                <value>updateOrCreatePropertyType</value>
+                <value>updateOrCreateRelationships</value>
+                <value>updateOrCreateProject</value>
+            </list>
+        </property>
+    </bean>
+ 
+    <bean id="view.post.proxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="target">
+            <ref bean="webscript.gov.nasa.jpl.javawebscripts.view.post" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="performanceAdvisor" />
+            </list>
+        </property>
+    </bean>
+    <bean id="model.post.proxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="target">
+            <ref bean="webscript.gov.nasa.jpl.javawebscripts.model.post" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="performanceAdvisor" />
+            </list>
+        </property>
+    </bean>
+    <bean id="project.post.proxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="target">
+            <ref bean="webscript.gov.nasa.jpl.javawebscripts.project.post" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="performanceAdvisor" />
+            </list>
+        </property>
+    </bean>
+    <bean id="model.get.proxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="target">
+            <ref bean="webscript.gov.nasa.jpl.javawebscripts.element.get" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="performanceAdvisor" />
+            </list>
+        </property>
+    </bean>
+         -->    
+</beans>

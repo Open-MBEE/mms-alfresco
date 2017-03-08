@@ -1,0 +1,135 @@
+{"elements": [
+    {
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/300/null",
+        "owner": "300",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/400/401/402/null",
+        "owner": "402",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/300/301/null",
+        "owner": "301",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/400/null",
+        "owner": "4000",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/300/301/302/303/304/null",
+        "owner": "304",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/400/401/402/403/404/null",
+        "owner": "404",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedName": "/no_site/no_site_no_project/holding_bin/305/null",
+        "owner": "305",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/300/301/302/303/null",
+        "owner": "303",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/400/401/null",
+        "owner": "401",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/400/401/402/403/null",
+        "owner": "403",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/300/301/302/null",
+        "owner": "302",
+        "specialization": {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+    }
+]}
+200

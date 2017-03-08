@@ -1,0 +1,13 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "name": "JW_TEST",
+            "sysmlId": "123456",
+            "type": "Project"
+        }
+    ],
+    "message": "[WARNING]: Bad depth specified, returning depth 0\n"
+}

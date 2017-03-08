@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Snapshots listing specification",
+    "properties": {
+        "snapshots": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {"$ref": "#/definitions/Snapshots"}
+                ]
+            }
+        }
+    },
+
+    "definitions": {
+        "Snapshots": {
+            "properties": {
+                "created": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Last modified time of snapshot"
+                },
+                "creator": {
+                    "type": "string",
+                    "description": "Username of creator of snapshot"
+                },
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier of the snapshot."
+                },
+                "sysmlid": {
+                    "type": "string",
+                    "description": "Sysml identifier of the document the snapshot is for"
+                },
+                "configuration": {
+                    "type": "string",
+                    "description": "Shows associated configuration set, if any: TODO: maybe make an array"
+                }
+            }
+        }
+    }
+}

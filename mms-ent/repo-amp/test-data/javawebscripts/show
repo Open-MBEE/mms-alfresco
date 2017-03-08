@@ -1,0 +1,7 @@
+#!/bin/bash
+
+./modelget zero
+./modelget twenty
+./modelget var1
+./modelget var2
+

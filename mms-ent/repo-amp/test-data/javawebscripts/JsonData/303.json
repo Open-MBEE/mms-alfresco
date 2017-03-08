@@ -1,0 +1,9 @@
+{ "elements" : [
+
+{
+ "sysmlId" : "303",
+ "documentation" : "CY is really sick!",
+   "type": "Property",
+   "value" : [{ "string" : "really, really sick!!!!",
+                "type" : "LiteralString"}]}
+]}

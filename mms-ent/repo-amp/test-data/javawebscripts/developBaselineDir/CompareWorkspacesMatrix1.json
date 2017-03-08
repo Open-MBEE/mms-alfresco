@@ -1,0 +1,365 @@
+{
+    "workspace1": {
+        "timestamp": "2015-09-21T13:54:00.156-0700",
+        "qualifiedName": "master",
+        "name": "master",
+        "elements": [
+            {
+                "qualifiedName": "/europa/JW_TEST2/update_add_poo",
+                "sysmlid": "update_add_poo",
+                "editable": true,
+                "version": "1.1",
+                "name": "update_add_poo",
+                "documentation": "update_add_poo",
+                "owner": "123456",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST2/delete_add_poo",
+                "sysmlid": "delete_add_poo",
+                "editable": true,
+                "version": "1.1",
+                "name": "delete_add_poo",
+                "documentation": "delete_add_poo",
+                "owner": "123456",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "name": "add_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/add_delete_poo",
+                "documentation": "add_delete_poo",
+                "owner": "123456",
+                "sysmlid": "add_delete_poo",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+            },
+            {
+                "name": "update_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/update_delete_poo",
+                "documentation": "update_delete_poo",
+                "owner": "123456",
+                "sysmlid": "update_delete_poo",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+            },
+            {
+                "name": "delete_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_delete_poo",
+                "documentation": "delete_delete_poo",
+                "owner": "123456",
+                "sysmlid": "delete_delete_poo",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+            },
+            {
+                "name": "none_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/none_delete_poo",
+                "documentation": "none_delete_poo",
+                "owner": "123456",
+                "sysmlid": "none_delete_poo",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST2/add_update_poo",
+                "sysmlid": "add_update_poo",
+                "editable": true,
+                "version": "1.1",
+                "name": "add_update_poo",
+                "documentation": "add_update_poo",
+                "owner": "123456",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST2/delete_update_poo",
+                "sysmlid": "delete_update_poo",
+                "editable": true,
+                "version": "1.1",
+                "name": "delete_update_poo",
+                "documentation": "delete_update_poo",
+                "owner": "123456",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST2/none_update_poo",
+                "sysmlid": "none_update_poo",
+                "editable": true,
+                "version": "1.1",
+                "name": "none_update_poo",
+                "documentation": "none_update_poo",
+                "owner": "123456",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST2/update_update_poo",
+                "sysmlid": "update_update_poo",
+                "editable": true,
+                "version": "1.1",
+                "name": "update_update_poo",
+                "documentation": "update_update_poo",
+                "owner": "123456",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            }
+        ]
+    },
+    "workspace2": {
+        "deletedElements": [
+            {
+                "name": "add_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/add_delete_poo",
+                "owner": "123456",
+                "sysmlid": "add_delete_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "name": "update_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/update_delete_poo",
+                "owner": "123456",
+                "sysmlid": "update_delete_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "name": "delete_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_delete_poo",
+                "owner": "123456",
+                "sysmlid": "delete_delete_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "name": "none_delete_poo",
+                "qualifiedName": "/europa/JW_TEST2/none_delete_poo",
+                "owner": "123456",
+                "sysmlid": "none_delete_poo",
+                "specialization": {"type": "Property"}
+            }
+        ],
+        "addedElements": [
+            {
+                "qualifiedName": "/europa/JW_TEST2/update_add_poo",
+                "sysmlid": "update_add_poo",
+                "editable": true,
+                "name": "update_add_poo",
+                "documentation": "update_add_poo",
+                "owner": "123456",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST2/delete_add_poo",
+                "sysmlid": "delete_add_poo",
+                "editable": true,
+                "name": "delete_add_poo",
+                "documentation": "delete_add_poo",
+                "owner": "123456",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST2/add_update_poo",
+                "sysmlid": "add_update_poo",
+                "editable": true,
+                "name": "add_update_poo",
+                "documentation": "add_update_poo updatedWs2",
+                "owner": "123456",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST2/add_add_poo",
+                "sysmlid": "add_add_poo",
+                "editable": true,
+                "name": "add_add_poo",
+                "documentation": "add_add_poo",
+                "owner": "123456",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST2/none_add_poo",
+                "sysmlid": "none_add_poo",
+                "editable": true,
+                "name": "none_add_poo",
+                "documentation": "none_add_poo",
+                "owner": "123456",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "on a shoe",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            }
+        ],
+        "conflictedElements": [],
+        "updatedElements": [
+            {
+                "name": "delete_update_poo",
+                "qualifiedName": "/europa/JW_TEST2/delete_update_poo",
+                "owner": "123456",
+                "documentation": "delete_update_poo updatedWs2",
+                "sysmlid": "delete_update_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "name": "none_update_poo",
+                "qualifiedName": "/europa/JW_TEST2/none_update_poo",
+                "owner": "123456",
+                "documentation": "none_update_poo updatedWs2",
+                "sysmlid": "none_update_poo",
+                "specialization": {"type": "Property"}
+            },
+            {
+                "name": "update_update_poo",
+                "qualifiedName": "/europa/JW_TEST2/update_update_poo",
+                "owner": "123456",
+                "documentation": "update_update_poo updatedWs2",
+                "sysmlid": "update_update_poo",
+                "specialization": {"type": "Property"}
+            }
+        ],
+        "qualifiedName": "master/wsMatrix2",
+        "name": "wsMatrix2",
+        "movedElements": []
+    }
+}
+200

@@ -1,0 +1,16 @@
+{
+    "elements": [{
+        "sysmlId": "view-c1",
+        "owner": "_18_0_5_407019f_1466704587594_239414_14483",
+        "name": "View c1",
+        "documentation": "",
+        "type": "View"
+    }, {
+        "sysmlId": "_18_0_5_407019f_1466704587594_239414_14483",
+        "type": "View",
+        "childViews": [{
+            "aggregation": "COMPOSITE",
+            "id": "view-c1"
+        }]
+    }]
+}

@@ -1,0 +1,54 @@
+{
+
+  "message": "[WARNING]: createOrUpdateModel deltas not posted properly\n",
+
+  "sequence": 0,
+
+  "workspace1": {
+
+    "elements": [],
+
+    "name": "ws1",
+
+    "qualifiedName": "master/ws1",
+
+  },
+
+  "workspace2": {
+
+    "addedElements": [],
+
+    "conflictedElements": [],
+
+    "deletedElements": [
+
+      {
+
+        "creator": "admin",
+
+      },
+
+      {
+
+        "creator": "admin",
+
+        "sysmlid": "arg_ev_38307"
+
+      }
+
+    ],
+
+    "movedElements": [],
+
+    "name": "ws1",
+
+    "qualifiedName": "master/ws1",
+
+    "updatedElements": []
+
+  }
+
+}
+
+200
+

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>get sites</shortname>
+    <description> Return all sites in the workspace
+    {"sites": [
+      {
+          "sysmlid": sysmlid,
+          "name": name,
+          "parent": parent
+      }, ...
+    ]}
+      </description>
+      <url>/projects/{projectId}/refs/{refId}/sites</url>
+      <url>/projects/{projectId}/refs/{refId}/groups</url>
+      <format default="json">argument</format>
+      <authentication>user</authentication>
+      <transaction>required</transaction>
+      <family>MMS REST API</family>
+ </webscript>

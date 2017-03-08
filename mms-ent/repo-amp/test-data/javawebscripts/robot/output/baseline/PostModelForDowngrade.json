@@ -1,0 +1,32 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/null/54321",
+            "_qualifiedName": "/holding_bin/",
+            "_siteCharacterizationId": "null",
+            "displayedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "noSections": [
+                "302"
+            ],
+            "ownerId": "holding_bin",
+            "sysmlId": "54321",
+            "type": "Product",
+            "view2view": [
+                {
+                    "childrenViews": [
+                        "301",
+                        "302"
+                    ],
+                    "sysmlId": "301"
+                }
+            ]
+        }
+    ]
+}

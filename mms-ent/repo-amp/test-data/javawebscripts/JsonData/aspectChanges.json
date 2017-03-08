@@ -1,0 +1,12 @@
+{
+  "elements": [
+    {
+      "sysmlId": "element_zzz",
+      "type": "Untyped"
+    },
+    {
+      "sysmlId": "directed_relationship_zzz",
+      "type": "Conform"
+    }
+  ]
+}

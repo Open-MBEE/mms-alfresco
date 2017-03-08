@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Specification for merging one workspace into another.",
+    "properties": {
+        "sourceWorkspace": {
+            "type": "object",
+            "description": "Workspace that we are merging from",
+            "$ref": "#/definitions/Branch"
+        },
+        "mergedWorkspace": {
+            "type": "object",
+            "description": "The merged branch.",
+            "$ref": "#/definitions/Branch"
+        },
+        
+        "definitions":
+        {
+            "Branch":
+            {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "name of the workspace"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "unique identifier of the workspace"
+                    },
+                    "time": {
+                        "type": "date",
+                        "description": "time of the workspace in question (e.g., from whence we branched)"
+                    }
+                }
+            }
+        }
+    }
+}

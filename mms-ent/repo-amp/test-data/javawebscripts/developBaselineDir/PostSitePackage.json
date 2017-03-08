@@ -1,0 +1,18 @@
+{
+    "elements": [{
+        "creator": "admin",
+        "documentation": "A site package",
+        "editable": true,
+        "name": "package",
+        "owner": "123456",
+        "qualifiedId": "/europa/123456/package",
+        "qualifiedName": "/europa/JW_TEST2/package",
+        "specialization": {
+            "isSite": true,
+            "type": "Package"
+        },
+        "sysmlid": "package"
+    }],
+    "message": "[ERROR]: Site node is null\n"
+}
+400

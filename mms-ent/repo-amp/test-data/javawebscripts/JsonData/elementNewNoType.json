@@ -1,0 +1,14 @@
+{
+  "elements": [
+    {
+      "sysmlId": "newwww666",
+      "documentation": "new documentation!",
+      "value": [
+        {
+          "string": "new string!!!",
+          "type": "LiteralString"
+        }
+      ]
+    }
+  ]
+}

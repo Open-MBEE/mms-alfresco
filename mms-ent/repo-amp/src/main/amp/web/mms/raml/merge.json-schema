@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Specification for branching from one workspace to another.",
+    "properties": {
+        "sourceWorkspace": {
+            "type": "object",
+            "description": "Workspace that we are branching from.",
+            "$ref": "#/definitions/Branch"
+        },
+        "createdWorkspace": {
+            "type": "object",
+            "description": "The created branch.",
+            "$ref": "#/definitions/Branch"
+        },
+        
+        "definitions":
+        {
+            "Branch":
+            {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "name of the workspace"
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "unique identifier of the workspace"
+                    },
+                    "time": {
+                        "type": "date",
+                        "description": "time of the workspace in question (e.g., from whence we branched)"
+                    }
+                }
+            }
+        }
+    }
+}

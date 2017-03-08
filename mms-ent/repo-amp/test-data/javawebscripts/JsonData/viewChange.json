@@ -1,0 +1,24 @@
+{
+    "views": [{
+        "sysmlId": "301",
+        "displayedElements": [
+            "301",
+            "302",
+            "303"
+        ],
+        "allowedElements": [
+            "301",
+            "302",
+            "303"
+        ],
+        "childrenViews": [
+            "304"
+        ],
+        "contains": [{
+            "type": "Paragraph",
+            "sourceType": "reference",
+            "source": "303",
+            "sourceProperty": "documentation"
+        }]
+    }]
+}

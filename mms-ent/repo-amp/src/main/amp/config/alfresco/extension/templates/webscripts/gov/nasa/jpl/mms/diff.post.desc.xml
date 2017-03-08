@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>post diffs</shortname>
+    <description>
+        Post the passed diff json changes to the target workspace.  In the json file, assumes the target workspace is workspace1, and the source workspace is workspace2.
+    </description>
+      <url>/projects/{projectId}/diff?timestamp1={timestamp1}&amp;timestamp2={timestamp2}</url>
+      <format default="json">argument</format>
+      <authentication>user</authentication>
+    <transaction>required</transaction>
+      <family>MMS REST API</family>
+ </webscript>

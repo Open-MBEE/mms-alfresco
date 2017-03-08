@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>get elements</shortname>
+    <description>
+        get elements
+    </description>
+      <url>/projects/{projectId}/refs/{refId}/views/{viewId}/elements</url>
+      <format default="json">argument</format>
+      <authentication>user</authentication>
+      <transaction>required</transaction>
+      <family>MMS REST API</family>
+ </webscript>

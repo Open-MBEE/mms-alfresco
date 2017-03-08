@@ -1,0 +1,173 @@
+{
+  "elements": [
+    {
+      "documentation": "View updates",
+      "sysmlId": "viewWithContents",
+      "name": "viewWithContents",
+      "ownerId": "123456",
+        "type": "View",
+        "contents": "viewContents"
+    },
+    {
+      "documentation": "View content",
+      "sysmlId": "viewContents",
+      "name": "viewContents",
+      "ownerId": "123456",
+        "type": "Expression"
+    },
+    {
+      "documentation": "LiteralSet",
+      "sysmlId": "literalSet",
+      "name": "literalSet",
+      "ownerId": "123456",
+        "type": "LiteralSet",
+        "set": [
+          {
+            "type": "LiteralString",
+            "string": "I"
+          },
+          {
+            "type": "LiteralString",
+            "string": "Love"
+          },
+          {
+            "type": "LiteralString",
+            "string": "Bears"
+          }
+        ],
+        "setOperand": {
+          "type": "LiteralString",
+          "string": "Bears"
+        }
+    },
+    {
+      "documentation": "Magic Draw Meta-Data",
+      "sysmlId": "md",
+      "name": "md",
+      "ownerId": "123456",
+        "type": "MagicDrawData",
+        "mdData": "A blob of meta-data"
+    },
+    {
+      "documentation": "Connector updates",
+      "sysmlId": "connector",
+      "name": "connector",
+      "ownerId": "123456",
+        "type": "Connector",
+        "targetLower": {
+          "type": "LiteralString",
+          "string": "targetLower!"
+        },
+        "targetUpper": {
+          "type": "LiteralString",
+          "string": "targetUpper!"
+        },
+        "sourceLower": {
+          "type": "LiteralString",
+          "string": "sourceLower!"
+        },
+        "sourceUpper": {
+          "type": "LiteralString",
+          "string": "sourceUpper!"
+        },
+        "sourcePath": [
+          "connectorSource"
+        ],
+        "targetPath": [
+          "connectorTarget"
+        ],
+        "connectorKind": "BINDING",
+        "connectorType": "association",
+        "connectorValue": {
+          "type": "LiteralString",
+          "string": "Ninja Attack!"
+        }
+    },
+    {
+      "documentation": "Connector source",
+      "sysmlId": "connectorSource",
+      "name": "connectorSource",
+      "ownerId": "123456",
+        "type": "Property",
+        "lower": {
+          "type": "LiteralString",
+          "string": "lower!"
+        },
+        "upper": {
+          "type": "LiteralString",
+          "string": "upper!"
+        }
+    },
+    {
+      "documentation": "Connector target",
+      "sysmlId": "connectorTarget",
+      "name": "connectorTarget",
+      "ownerId": "123456",
+        "type": "Property"
+    },
+    {
+      "documentation": "association",
+      "sysmlId": "association",
+      "name": "association",
+      "ownerId": "123456",
+        "type": "Association",
+        "ownedEnd": [
+          "AssocOwnedEnd"
+        ],
+        "source": "sourceId",
+        "target": "targetId",
+        "sourceAggregation": "COMPOSITE",
+        "targetAggregation": "SHARED"
+    },
+    {
+      "documentation": "Associations's owned end",
+      "sysmlId": "AssocOwnedEnd",
+      "name": "AssocOwnedEnd",
+      "ownerId": "123456",
+        "type": "Property"
+    },
+    {
+      "documentation": "Characterizes",
+      "sysmlId": "characterizes",
+      "name": "characterizes",
+      "ownerId": "123456",
+        "type": "Characterizes",
+        "source": "sourceId",
+        "target": "targetId"
+    },
+    {
+      "documentation": "source",
+      "sysmlId": "sourceId",
+      "name": "sourceId",
+      "ownerId": "123456",
+        "type": "Property"
+    },
+    {
+      "documentation": "target",
+      "sysmlId": "targetId",
+      "name": "targetId",
+      "ownerId": "123456",
+        "type": "Property"
+    },
+    {
+      "documentation": "metatype",
+      "sysmlId": "metatype1",
+      "name": "metatype1",
+      "ownerId": "123456",
+      "isMetatype": true,
+      "metatypes": [
+        "target",
+        "source"
+      ]
+    },
+    {
+      "documentation": "hasAppliedMetatype",
+      "sysmlId": "hasAppliedMetatype1",
+      "name": "hasAppliedMetatype1",
+      "ownerId": "123456",
+      "appliedMetatypes": [
+        "metatype"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {
+      "name": "conflict",
+      "sysmlId": "conflict",
+      "ownerId": "123456",
+      "documentation": "",
+      "type": "Element"
+    }
+  ]
+}

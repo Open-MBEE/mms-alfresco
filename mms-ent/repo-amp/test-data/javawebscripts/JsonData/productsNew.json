@@ -1,0 +1,32 @@
+{
+  "products": [
+    {
+      "sysmlId": "301",
+        "noSections": [
+          "302"
+        ],
+        "view2view": [
+          {
+            "sysmlId": "3301",
+            "childrenViews": [
+              "302"
+            ]
+          }
+        ]
+    },
+    {
+      "sysmlId": "401",
+        "noSections": [
+          "402"
+        ],
+        "view2view": [
+          {
+            "sysmlId": "4401",
+            "childrenViews": [
+              "402"
+            ]
+          }
+        ]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Snapshots listing specification",
+    "properties": {
+        "snapshots": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {"$ref": "#/definitions/Snapshots"}
+                ]
+            }
+        },
+        "message": {
+                    "type": "string",
+                    "description": "The response message for this transaction if it is non-empty."
+        }
+    },
+
+    "definitions": {
+        "Snapshots": {
+            "properties": {
+	            "created": {
+	                "type": "string",
+	                "format": "date-time",
+	                "description": "Last modified time of snapshot (Read-Only)"
+	            },
+	            "creator": {
+	                "type": "string",
+	                "description": "Username of creator of snapshot (Read-Only)"
+	            },
+                "id": {
+                    "type": "string",
+                    "description": "Unique identifier of the snapshot. (Read-Only)"
+                },
+	            "sysmlid": {
+	                "type": "string",
+	                "description": "Sysml identifier of the document the snapshot is for"
+	            },
+	            "sysmlname": {
+	               "type": "string",
+	               "description": "Sysml name of the document the snapshot is for"
+	            },
+	            "configuration": {
+	                "type": "array",
+	                "items": {
+	                    "description": "Shows associated configuration set, if any: TODO: maybe make an array",
+	                    "type": "string"
+                    }
+	            }
+            }
+        }
+    }
+}

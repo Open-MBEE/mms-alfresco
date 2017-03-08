@@ -1,0 +1,28 @@
+{
+  "elements": [
+    {
+      "documentation": "A site package",
+      "sysmlId": "packageA2",
+      "name": "packageA2",
+      "ownerId": "123456",
+      "type": "Package",
+      "isSite": true
+    },
+    {
+      "documentation": "A site package",
+      "sysmlId": "packageB2",
+      "name": "packageB2",
+      "ownerId": "packageA2",
+      "type": "Package",
+      "isSite": true
+    },
+    {
+      "documentation": "A site package",
+      "sysmlId": "packageC2",
+      "name": "packageC2",
+      "ownerId": "packageA2",
+      "type": "Package",
+      "isSite": false
+    }
+  ]
+}

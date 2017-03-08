@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE alfresco-config>
+<alfresco-config>
+   <config evaluator="string-compare" condition="Advanced Search">
+      <advanced-search>
+         <content-types>
+            <type name="view:ModelElement"/>
+         </content-types>
+         <custom-properties>
+            <meta-data type="view:ModelElement" property="view:name" />
+            <meta-data type="view:ModelElement" property="view:mdid" />
+            <meta-data type="view:ModelElement" property="view:documentation" />
+         </custom-properties>
+      </advanced-search>
+   </config>
+   
+    <config evaluator="string-compare" condition="Action Wizards">
+        <subtypes>
+            <type name="fm:post"/>
+            <type name="fm:topic"/>
+        </subtypes>
+    </config>
+   
+   <config>
+      <client>
+         <simple-search-additional-attributes>
+            <qname>{http://jpl.nasa.gov/model/view/1.0}name</qname>
+            <qname>{http://jpl.nasa.gov/model/view/1.0}mdid</qname>
+            <qname>{http://jpl.nasa.gov/model/view/1.0}documentation</qname>
+         </simple-search-additional-attributes>
+      </client>
+   </config>
+</alfresco-config>

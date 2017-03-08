@@ -1,0 +1,40 @@
+{
+
+    "elements": [{
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "holding_bin_no_site_no_project",
+
+        "qualifiedId": "/no_project/holding_bin_no_site_no_project/54321",
+
+        "qualifiedName": "/no_project/holding_bin/null",
+
+        "specialization": {
+
+            "displayedElements": [
+
+                "301",
+
+                "302",
+
+                "303"
+
+            ],
+
+            "type": "View"
+
+        },
+
+        "sysmlid": "54321"
+
+    }],
+
+    "message": "[WARNING]: The type supplied View is different than the stored type Product\n"
+
+}
+
+200
+

@@ -1,0 +1,18 @@
+{
+  "elements": [
+    {
+      "documentation": "",
+      "sysmlId": "notInThePast",
+      "name": "notInThePast",
+      "ownerId": "123456",
+      "type": "Constraint",
+      "specification": {
+        "type": "OpaqueExpression",
+        "expressionBody": [
+          "foo8"
+        ]
+      }
+    }
+  ]
+}
+

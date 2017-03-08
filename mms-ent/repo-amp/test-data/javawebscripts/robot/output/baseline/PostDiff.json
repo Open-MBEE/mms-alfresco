@@ -1,0 +1,78 @@
+{
+  "sequence": 51,
+  "workspace1": {
+    "name": "ws2",
+    "elements": [
+      {
+        "sysmlId": "402",
+        "_editable": true,
+        "version": "1.2",
+        "_creator": "admin",
+        "_modifier": "admin",
+        "name": "402",
+        "_owner": "401",
+        "documentation": "4to",
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property"
+      }
+    ]
+  },
+  "workspace2": {
+    "deletedElements": [],
+    "addedElements": [
+      {
+        "_modifier": "admin",
+        "sysmlId": "newElement",
+        "documentation": "x is x",
+        "_owner": "holding_bin_no_site_no_project",
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "the element added to ws1",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property",
+        "_editable": true,
+        "_creator": "admin"
+      }
+    ],
+    "conflictedElements": [],
+    "updatedElements": [
+      {
+        "sysmlId": "402",
+        "_editable": true,
+        "_creator": "admin",
+        "_modifier": "admin",
+        "name": "402",
+        "_owner": "401",
+        "documentation": "x is x",
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "the x value",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property"
+      }
+    ],
+    "name": "ws2",
+    "movedElements": []
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "elements": [
+    {
+      "sysmlId": "conflict",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "conflict",
+      "_owner": "123456",
+      "documentation": "this will create a conflict!",
+      "type": "Element"
+    }
+  ]
+}

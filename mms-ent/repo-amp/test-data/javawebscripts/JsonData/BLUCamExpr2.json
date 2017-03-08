@@ -1,0 +1,2322 @@
+{"elements": [
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149326068_576740_30029",
+        "source": "_17_0_2_3_e610336_1394148266274_887688_29360",
+        "name": "",
+        "target": "_17_0_2_3_e610336_1394148443742_79128_29536",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148266274_887688_29360",
+        "type": "Conform"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141845089_115460_28389",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "ionosphere",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140377374_900991_27624",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399082859815_806410_28215",
+        "name": "definition1",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399082611722_728316_28208",
+        "type": "Constraint",
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141831980_671275_28387",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "radiation",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140377374_900991_27624",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142595221_553514_29055",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144907082_94265_30004",
+        "name": "NO",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394146191190_827815_30405",
+        "name": "NO...",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148012268_657257_29147",
+        "name": "BLUCamUserGuide",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078698098_861393_28034",
+        "name": "Make Stuff",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Viewpoint"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394146030348_183558_30354",
+        "name": "Docked?",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148365514_322792_29471",
+        "propertyType": "_17_0_2_3_e610336_1394148311476_17302_29388",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149094416_418960_29814",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148986587_784571_29766",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149253329_388695_29980",
+        "source": "_17_0_2_3_e610336_1394148266274_887688_29360",
+        "name": "",
+        "target": "_17_0_2_4_f3a0363_1394142107742_302897_28431",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Expose"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297852_455437_29480",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_364054_29445",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148603731_390989_29687",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148572236_426004_29624",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145665259_179589_30252",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145431840_19184_30160",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078877045_608424_28086",
+        "name": "operations",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140818165_563290_27952",
+        "name": "Environment",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144199122_641307_29807",
+        "name": "Bring to correct attitude A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148084317_999095_29188-slot-_17_0_2_3_f4a035d_1366702935947_453687_36949",
+        "propertyType": "_17_0_2_3_f4a035d_1366702935947_453687_36949",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230340_633236_24246"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_999095_29188",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148986587_721210_29765",
+        "name": "ContextViewpoint",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148986587_784571_29766",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_767949_29448",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144165279_142583_29803",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141399783_943327_28357-slot-_11_5EAPbeta_be00301_1147431377925_245593_1615",
+        "propertyType": "_11_5EAPbeta_be00301_1147431377925_245593_1615",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230315_7922_24190"],
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141399783_943327_28357",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148367691_391441_29494",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399081659468_588600_28167",
+        "name": "result",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399080032253_662356_28139",
+        "type": "Element",
+        "parameterDirection": "in"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "name": "The Document",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141407314_117584_28364",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142346786_597782_28659",
+        "name": "ACS A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145772102_305822_30265",
+        "name": "Initiate Docking Procedure",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149086531_571265_29806",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148986587_784571_29766",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148344635_370771_29420",
+        "propertyType": "_17_0_2_3_e610336_1394148107514_405218_29268",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399084882350_517408_29567",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "val",
+        "value": ["_17_0_2_3_e81034b_1399084945498_465485_29569"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078877045_608424_28086",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148344635_236152_29421",
+        "propertyType": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148344635_565516_29419",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142595221_477687_29056",
+        "propertyType": "_17_0_2_4_f3a0363_1394142347646_268884_28698",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078726896_173708_28057",
+        "source": "_17_0_2_3_e81034b_1399078605227_767466_27947",
+        "name": "",
+        "target": "_17_0_2_3_e81034b_1399078698098_861393_28034",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078605227_767466_27947",
+        "type": "Conform"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144312699_830184_29843",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148084317_999095_29188-slot-_17_0_2_3_e9f034d_1375464993159_319060_29362",
+        "propertyType": "_17_0_2_3_e9f034d_1375464993159_319060_29362",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230338_268245_24238"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_999095_29188",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140393592_649798_27702",
+        "name": "Sun",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148363443_788955_29448",
+        "propertyType": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148363442_841658_29446",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394146128363_664095_30385",
+        "name": "Communicate success!!",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140800415_530952_27883",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143396085_797755_29673",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297868_830125_29500",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_986213_29454",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145860085_127450_30311",
+        "name": "Yes",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145404888_898606_30137",
+        "propertyType": "_17_0_2_4_f3a0363_1394142353880_627005_28815",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394145323170_250986_30049",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078656127_693273_28012",
+        "propertyType": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078656126_265953_28010",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078698098_156160_28035-slot-_17_0_2_3_e81034b_1399078471243_130311_27943",
+        "propertyType": "_17_0_2_3_e81034b_1399078471243_130311_27943",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399085074109_83967_29572"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078698098_156160_28035",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145431840_747500_30162",
+        "propertyType": "_17_0_2_4_f3a0363_1394145323170_250986_30049",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394145431840_19184_30160",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142595221_529898_29057",
+        "propertyType": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142595221_553514_29055",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_653334_29444",
+        "name": "C&DH B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148986599_367578_29777",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148986587_721210_29765",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399080784914_969313_28151",
+        "operationParameter": ["_17_0_2_3_e81034b_1399081002428_509189_28156"],
+        "name": "List",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078877045_608424_28086",
+        "type": "Operation"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297852_449135_29478",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_334346_29440",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148363442_841658_29446",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142589955_327924_28985",
+        "propertyType": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142589955_287368_28983",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399082611722_728316_28208",
+        "operationParameter": ["_17_0_2_3_e81034b_1399082644141_966115_28209"],
+        "name": "doIt",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078877045_608424_28086",
+        "type": "Operation"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394150100221_637043_30297",
+        "name": "StakeholdersAndConcerns",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Package"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148589917_62197_29672",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148572236_426004_29624",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145438637_455404_30185",
+        "propertyType": "_17_0_2_4_f3a0363_1394142348458_330000_28737",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394145323170_250986_30049",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140800415_188202_27884",
+        "propertyType": "_17_0_2_4_f3a0363_1394140389936_755409_27663",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394152907873_24683_30671-slot-_17_0_1_244d03ea_1319491307068_218609_23569",
+        "propertyType": "_17_0_1_244d03ea_1319491307068_218609_23569",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230309_568230_24172"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394152907873_24683_30671",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394152907872_316389_30670",
+        "name": "Block",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148572236_426004_29624",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_910462_29456",
+        "name": "CubeSat B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142340021_472609_28542",
+        "name": "PROP A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148986587_784571_29766",
+        "name": "ContextViewpoint",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148443742_79128_29536",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297852_929850_29479",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_490028_29441",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149765240_260584_30264",
+        "name": "Stakeholder",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394146108488_792919_30376",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_547176_29442",
+        "name": "ACS B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140389936_755409_27663",
+        "name": "ISS",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144552602_686408_29857",
+        "name": "Determine correct attitude B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142599017_912189_29104",
+        "propertyType": "_17_0_2_4_f3a0363_1394142353880_627005_28815",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078425422_67974_27939",
+        "propertyType": "_9_0_62a020a_1105704884807_371561_7741",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "base_Element",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078425412_704834_27937",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140806743_980579_27932",
+        "propertyType": "_17_0_2_4_f3a0363_1394140393592_649798_27702",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148759911_783211_29758",
+        "source": "_17_0_2_3_e610336_1394148311476_17302_29388",
+        "name": "",
+        "target": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Expose"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "name": "CubeSat B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140670120_849052_27832",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "albedo",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140377374_900991_27624",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394146162237_321229_30398",
+        "name": "YES!",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142599017_808631_29105",
+        "propertyType": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142599017_677571_29103",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148365514_109293_29472",
+        "propertyType": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148365514_689669_29470",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297852_89582_29477",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_547176_29442",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142601064_649235_29128",
+        "propertyType": "_17_0_2_4_f3a0363_1394142348458_330000_28737",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140698635_785360_27836",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "surface",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140377374_900991_27624",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149099048_902451_29829",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148986587_784571_29766",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144596226_895069_29871",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143696394_437737_29727",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148614018_176658_29707",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148572236_426004_29624",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394152907873_24683_30671",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394152907872_316389_30670",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145994052_446838_30340",
+        "name": "Check docking success",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145438637_897662_30184",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297868_608869_29496",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_331494_29450",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399081634631_157569_28166",
+        "name": "element2",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399080032253_662356_28139",
+        "type": "Element",
+        "parameterDirection": "in"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141407314_679740_28365",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141407314_117584_28364",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145802929_9262_30278",
+        "name": "Wait",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_334346_29440",
+        "name": "PROP B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399080061359_421238_28140",
+        "name": "element1",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399080032253_662356_28139",
+        "type": "Element",
+        "parameterDirection": "in"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399079746685_850166_28130",
+        "name": "getNames",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149840523_780502_30270",
+        "name": "Concern",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142592127_208719_29009",
+        "propertyType": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142592127_181567_29007",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394150184145_508593_30358",
+        "name": "NASA HQ",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394150100221_637043_30297",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145627900_258175_30238",
+        "name": "Fire Thrusters to slow down",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "name": "DeploymentAnd Docking",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142085258_695259_28430",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148464681_90735_29608",
+        "source": "_17_0_2_3_e610336_1394148311476_17302_29388",
+        "name": "",
+        "target": "_17_0_2_3_e610336_1394148449252_91190_29556",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148311476_17302_29388",
+        "type": "Conform"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140803853_240517_27907",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141399767_974166_28353",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141399767_819313_28352",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141938635_451377_28412",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "name": "Environment",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Package"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148367691_580553_29496",
+        "propertyType": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148367691_391441_29494",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145186969_592126_30041",
+        "name": "YES",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148344635_565516_29419",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145506652_727767_30229",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_322995_29455",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148608346_909382_29702",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148572236_426004_29624",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_986213_29454",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078924260_653224_28087",
+        "name": "operations",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078877045_608424_28086",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148572249_468784_29635",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148572235_506873_29623",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140800415_504487_27885",
+        "propertyType": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140800415_530952_27883",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140626043_596153_27830",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "temperature",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140377374_900991_27624",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148622491_141482_29716",
+        "name": "ComponentName",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148589917_62197_29672",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148084317_999095_29188-slot-_17_0_2_3_e9f034d_1375464914291_213939_29352",
+        "propertyType": "_17_0_2_3_e9f034d_1375464914291_213939_29352",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230339_197294_24244"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_999095_29188",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148012316_269554_29158",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148012268_657257_29147",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_919503_29452",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297868_688435_29484",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_653334_29444",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141938635_660369_28413",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141938635_451377_28412",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148572236_426004_29624",
+        "name": "ComponentViewPoint",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148449252_91190_29556",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078924267_612867_28098",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078924260_653224_28087",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140377374_900991_27624",
+        "name": "Earth",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_982006_29449",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148582116_231309_29664",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148572236_426004_29624",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_490028_29441",
+        "name": "Comm B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141326112_917030_28177",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141326112_44599_28166",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399080974142_817267_28155",
+        "name": "y",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399080953405_524084_28153",
+        "type": "Element",
+        "parameterDirection": "in"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145450090_828043_30210",
+        "propertyType": "_17_0_2_4_f3a0363_1394145323170_250986_30049",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394145450090_931162_30208",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078471243_130311_27943",
+        "propertyType": "_12_0_be00301_1164123483951_695645_2041",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "method",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078425412_704834_27937",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140803853_105199_27908",
+        "propertyType": "_17_0_2_4_f3a0363_1394140377374_900991_27624",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141938635_533015_28417",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141938635_996396_28414",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143090167_624717_29362",
+        "name": "Determine correct attitude A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140818165_857529_27963",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140818165_563290_27952",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145810898_351308_30292",
+        "name": "No",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145323170_250986_30049",
+        "name": "NavPropSystem",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399084627073_339706_29565",
+        "name": "Express",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145125469_421951_30023",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141121583_434600_28141",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "PPOD",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140389936_755409_27663",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140326296_809805_27600",
+        "name": "Context",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148622492_269270_29717",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148622491_141482_29716",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394146290720_10385_30438",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148233838_91795_29332",
+        "name": "Context",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142601064_1478_29127",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142353036_245337_28776",
+        "name": "BLUECam A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145431840_744158_30161",
+        "propertyType": "_17_0_2_4_f3a0363_1394142340021_472609_28542",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394145323170_250986_30049",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399081033816_599182_28157",
+        "name": "element",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399080797025_20290_28152",
+        "type": "Element",
+        "parameterDirection": "in"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144734506_569167_29962",
+        "name": "Fire Thrusters",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148084317_999095_29188-slot-_17_0_2_3_f4a035d_1366647903994_370992_36997",
+        "propertyType": "_17_0_2_3_f4a035d_1366647903994_370992_36997",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230337_205938_24234"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_999095_29188",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399080965718_126047_28154",
+        "name": "x",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399080953405_524084_28153",
+        "type": "Element",
+        "parameterDirection": "in"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145732055_588209_30257",
+        "name": "Within 5 cm?",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145438637_81446_30186",
+        "propertyType": "_17_0_2_4_f3a0363_1394145323170_250986_30049",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394145438637_897662_30184",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399082265996_740832_28192",
+        "propertyType": "_17_0_2_3_e81034b_1399078877045_608424_28086",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "method",
+        "value": ["_17_0_2_3_e81034b_1399082525212_863287_28207"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078877045_608424_28086",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394150942710_820971_29274",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148589917_62197_29672",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141336487_209685_28250",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "Altitude > 370 km",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149857917_595932_30276",
+        "name": "hasConcern",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141399783_943327_28357",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141399767_974166_28353",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148461465_93174_29599",
+        "source": "_17_0_2_3_e610336_1394148233838_91795_29332",
+        "name": "",
+        "target": "_17_0_2_3_e610336_1394148443742_79128_29536",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148233838_91795_29332",
+        "type": "Conform"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148667704_96887_29733",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148572236_426004_29624",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149765242_174035_30266",
+        "propertyType": "_9_0_62a020a_1105704884807_371561_7741",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "base_Element",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394149765240_260584_30264",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399080953405_524084_28153",
+        "operationParameter": [
+            "_17_0_2_3_e81034b_1399080965718_126047_28154",
+            "_17_0_2_3_e81034b_1399080974142_817267_28155"
+        ],
+        "name": "eq",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078877045_608424_28086",
+        "type": "Operation"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142107742_528845_28443",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_302897_28431",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_563822_29443",
+        "name": "Docking Mechanism B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148572235_506873_29623",
+        "name": "ComponentViewPoint",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148572236_426004_29624",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140806743_654858_27933",
+        "propertyType": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140806743_924583_27931",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148084317_999095_29188-slot-_17_0_2_3_e9f034d_1375464775176_680884_29346",
+        "propertyType": "_17_0_2_3_e9f034d_1375464775176_680884_29346",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230339_158875_24242"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_999095_29188",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145912725_887057_30322",
+        "name": "Engage electromagnets",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140708604_407442_27838",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "altitude",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140389936_755409_27663",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142353880_627005_28815",
+        "name": "Nav A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399080032253_662356_28139",
+        "operationParameter": [
+            "_17_0_2_3_e81034b_1399080061359_421238_28140",
+            "_17_0_2_3_e81034b_1399081634631_157569_28166",
+            "_17_0_2_3_e81034b_1399081659468_588600_28167"
+        ],
+        "name": "getNames",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078877045_608424_28086",
+        "type": "Operation"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142085258_695259_28430",
+        "name": "Activities",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Package"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140806743_924583_27931",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297868_339965_29497",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_240575_29451",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394150227310_469105_30397",
+        "name": "NASA Concern",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394150100221_637043_30297",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141938635_996396_28414",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141938635_451377_28412",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145404888_820248_30138",
+        "propertyType": "_17_0_2_4_f3a0363_1394145323170_250986_30049",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394145404888_275326_30136",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "name": "BLUCam CubeSat B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Package"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142601064_381379_29129",
+        "propertyType": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142601064_1478_29127",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143710050_199348_29742",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142587299_423224_28959",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142592127_479449_29008",
+        "propertyType": "_17_0_2_4_f3a0363_1394142345849_305554_28620",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140326312_321943_27611",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140326296_809805_27600",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145175812_175426_30027",
+        "name": "Fine Navigation",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "name": "CubeSat A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394150252067_529863_30434",
+        "source": "_17_0_2_3_e610336_1394150184145_508593_30358",
+        "name": "",
+        "target": "_17_0_2_3_e610336_1394150227310_469105_30397",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394150100221_637043_30297",
+        "type": "Dependency"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141944635_25129_28425",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141944619_77477_28424",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148363443_9729_29447",
+        "propertyType": "_17_0_2_3_e610336_1394148233838_91795_29332",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148084317_999095_29188",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144278183_538783_29825",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141944619_77477_28424",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142592127_181567_29007",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144626648_617014_29898",
+        "name": "Bring to correct attitude B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141326112_44599_28166",
+        "name": "Constraints",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297868_199710_29494",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_767949_29448",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394146263767_439192_30411",
+        "name": "Maintain correct attitude",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148084317_999095_29188-slot-_17_0_2_3_e9f034d_1375464942934_241960_29357",
+        "propertyType": "_17_0_2_3_e9f034d_1375464942934_241960_29357",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230337_964651_24236"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_999095_29188",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145852523_752184_30306",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141904557_218759_28394",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "Facing Sun",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145925912_796029_30336",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142587299_626704_28961",
+        "propertyType": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142587299_423224_28959",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394150164306_645015_30300",
+        "name": "Concerns",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394150100221_637043_30297",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148311476_17302_29388",
+        "name": "Components",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297852_560682_29481",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_563822_29443",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142764937_460034_29196",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142347646_268884_28698",
+        "name": "Docking Mechanism A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141938635_533015_28417-slot-_11_5EAPbeta_be00301_1147431377925_245593_1615",
+        "propertyType": "_11_5EAPbeta_be00301_1147431377925_245593_1615",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230308_440263_24170"],
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141938635_533015_28417",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148622492_269270_29717-slot-_17_0_2_3_407019f_1375478178682_543537_29439",
+        "propertyType": "_17_0_2_3_407019f_1375478178682_543537_29439",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230293_773442_24160"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148622492_269270_29717",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142747703_461148_29185",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149232050_812146_29911",
+        "source": "_17_0_2_3_e610336_1394148233838_91795_29332",
+        "name": "",
+        "target": "_17_0_2_4_f3a0363_1394140326296_809805_27600",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Expose"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142775781_166935_29205",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "name": "BLUCam project",
+        "documentation": "",
+        "ownerId": "null",
+        "type": "Package"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140684589_122172_27834",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "gravity",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140377374_900991_27624",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078425412_704834_27937",
+        "name": "Viewpoint",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148367691_950312_29495",
+        "propertyType": "_17_0_2_3_e610336_1394148266274_887688_29360",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144352870_717748_29850",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141944635_146958_28426",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141944619_77477_28424",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148365514_689669_29470",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078656126_460983_28011",
+        "propertyType": "_17_0_2_3_e81034b_1399078605227_767466_27947",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_280624_29187",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142348458_330000_28737",
+        "name": "C&DH A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148674548_687433_29740",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148572236_426004_29624",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394146063504_727135_30362",
+        "name": "Check docking",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142587299_925757_28960",
+        "propertyType": "_17_0_2_4_f3a0363_1394142346786_597782_28659",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144806348_191667_29980",
+        "name": "within 5 m",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141792700_522936_28385",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "Comm",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140389936_755409_27663",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148107514_405218_29268",
+        "name": "Introduction",
+        "documentation": "The purpose of this project is to demonstrate two cubsats in LEO.",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144213059_515989_29821",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078605227_767466_27947",
+        "name": "New Stuff",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394150946052_933516_29280",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148589917_62197_29672",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149840524_630231_30272",
+        "propertyType": "_9_0_62a020a_1105704884807_371561_7741",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "base_Element",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394149840523_780502_30270",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140803853_25476_27909",
+        "propertyType": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140803853_240517_27907",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142345849_305554_28620",
+        "name": "Comm A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142315880_679747_28479",
+        "name": "CubeSat A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144764974_822229_29976",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142593799_532762_29031",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142593799_283568_29032",
+        "propertyType": "_17_0_2_4_f3a0363_1394142353036_245337_28776",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399080395294_30385_28144",
+        "name": "definition",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399080032253_662356_28139",
+        "type": "Constraint",
+        "constraintSpecification": "_17_0_2_3_e81034b_1399080510084_78732_28147"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142768156_137704_29199",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142593799_270595_29033",
+        "propertyType": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142593799_532762_29031",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148084317_999095_29188-slot-_17_0_2_3_f4a035d_1366647903995_472834_36999",
+        "propertyType": "_17_0_2_3_f4a035d_1366647903995_472834_36999",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230336_474201_24232"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_999095_29188",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145404888_275326_30136",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297868_350217_29502",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_910462_29456",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145450090_619333_30209",
+        "propertyType": "_17_0_2_4_f3a0363_1394142346786_597782_28659",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394145323170_250986_30049",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399082644141_966115_28209",
+        "name": "result",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399082611722_728316_28208",
+        "type": "Element",
+        "parameterDirection": "in"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "name": "Environment",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142815671_771255_29214",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394140747260_408150_27842",
+        "propertyType": "null",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "energy",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140393592_649798_27702",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297868_392597_29483",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_948150_29446",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148449252_91190_29556",
+        "name": "ComponentViewPoint",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Viewpoint"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297868_642703_29501",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_322995_29455",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142589955_287368_28983",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078656126_265953_28010",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142589955_409786_28984",
+        "propertyType": "_17_0_2_4_f3a0363_1394142340021_472609_28542",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142339052_914641_28503",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144831176_976955_29991",
+        "name": "Coarse navigation",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "name": "BLUCam CubeSat A",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Package"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297868_625121_29495",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_982006_29449",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142789140_47736_29208",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399080797025_20290_28152",
+        "operationParameter": ["_17_0_2_3_e81034b_1399081033816_599182_28157"],
+        "name": "Name",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078877045_608424_28086",
+        "type": "Operation"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394144674647_398397_29912",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142315880_549529_28490",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142315880_679747_28479",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394149896550_37893_30283",
+        "propertyType": "_9_0_62a020a_1105704885833_713624_8075",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "base_Dependency",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394149857917_595932_30276",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141399767_819313_28352",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140783150_426788_27844",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148266274_887688_29360",
+        "name": "Docking Procedure",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145891444_400095_30318",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399081002428_509189_28156",
+        "name": "viewables",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399080784914_969313_28151",
+        "type": "Element",
+        "parameterDirection": "in"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394151337040_245061_30652",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148572236_426004_29624",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394150164319_689998_30311",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394150164306_645015_30300",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142107742_302897_28431",
+        "name": "DeploymentAnd Docking",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141399767_83068_28354",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141399767_819313_28352",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_364054_29445",
+        "name": "BLUECam B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_240575_29451",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e81034b_1399078698098_156160_28035",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e81034b_1399078698098_861393_28034",
+        "type": "InstanceSpecification"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145117235_449368_30018",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "name": "Document",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+        "type": "Package"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297868_894107_29498",
+        "propertyType": "_17_0_2_4_f3a0363_1394143297837_789411_29439",
+        "isDerived": false,
+        "isSlot": false,
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_919503_29452",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_948150_29446",
+        "name": "Nav B",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148084317_999095_29188-slot-_17_0_2_3_f4a035d_1366647903992_983742_36991",
+        "propertyType": "_17_0_2_3_f4a035d_1366647903992_983742_36991",
+        "isDerived": false,
+        "isSlot": true,
+        "name": "",
+        "value": ["_17_0_2_3_e81034b_1399075230338_503035_24240"],
+        "documentation": "",
+        "ownerId": "_17_0_2_3_e610336_1394148084317_999095_29188",
+        "type": "Property"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394141407314_193699_28366",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394141407314_117584_28364",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394145450090_931162_30208",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394143297837_331494_29450",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394143297837_196606_29438",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_3_e610336_1394148443742_79128_29536",
+        "name": "ContextViewpoint",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "type": "Viewpoint"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394142599017_677571_29103",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "type": "Element"
+    },
+    {
+        "sysmlId": "_17_0_2_4_f3a0363_1394146121285_737921_30381",
+        "name": "",
+        "documentation": "",
+        "ownerId": "_17_0_2_4_f3a0363_1394142107742_559409_28432",
+        "type": "Element"
+    }
+]}

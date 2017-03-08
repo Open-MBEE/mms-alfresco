@@ -1,0 +1,96 @@
+{"elements": [
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/aspect_history_zzz/directed_relationship_zzz",
+        "qualifiedName": "/europa/JW_TEST2/null/null",
+        "sysmlid": "directed_relationship_zzz",
+        "documentation": "d is d",
+        "owner": "aspect_history_zzz",
+        "specialization": {
+            "source": null,
+            "target": null,
+            "type": "DirectedRelationship"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/aspect_history_zzz/untyped_no_doc_zzz",
+        "qualifiedName": "/europa/JW_TEST2/null/null",
+        "sysmlid": "untyped_no_doc_zzz",
+        "owner": "aspect_history_zzz",
+        "specialization": {"type": "Untyped"},
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/aspect_history_zzz/untyped_doc_zzz",
+        "qualifiedName": "/europa/JW_TEST2/null/null",
+        "sysmlid": "untyped_doc_zzz",
+        "documentation": "d is d",
+        "owner": "aspect_history_zzz",
+        "specialization": {"type": "Untyped"},
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/aspect_history_zzz/property_zzz",
+        "qualifiedName": "/europa/JW_TEST2/null/null",
+        "sysmlid": "property_zzz",
+        "documentation": "p is p",
+        "owner": "aspect_history_zzz",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "the p value",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/aspect_history_zzz/expose_no_doc_zzz",
+        "qualifiedName": "/europa/JW_TEST2/null/null",
+        "sysmlid": "expose_no_doc_zzz",
+        "owner": "aspect_history_zzz",
+        "specialization": {
+            "source": null,
+            "target": null,
+            "type": "Expose"
+        },
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/aspect_history_zzz",
+        "qualifiedName": "/europa/JW_TEST2/null",
+        "sysmlid": "aspect_history_zzz",
+        "documentation": "a place to put stuff for the aspect history tests",
+        "owner": "123456",
+        "specialization": {"type": "Package"},
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/aspect_history_zzz/element_zzz",
+        "qualifiedName": "/europa/JW_TEST2/null/null",
+        "sysmlid": "element_zzz",
+        "documentation": "e is e",
+        "owner": "aspect_history_zzz",
+        "specialization": {"type": "Element"},
+        "editable": true,
+        "creator": "admin",
+    }
+]}
+200

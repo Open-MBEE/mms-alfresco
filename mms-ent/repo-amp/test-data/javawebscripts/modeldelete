@@ -1,0 +1,11 @@
+#!/bin/bash
+
+
+if [ "$#" -eq 1 ]; then
+  echo curl -w "%{http_code}\n" -X DELETE -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/elements/$1"
+  curl -w "%{http_code}\n" -X DELETE -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/elements/$1"
+else
+  echo curl -w "%{http_code}\n" -X DELETE -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1/elements/$2"
+  curl -w "%{http_code}\n" -X DELETE -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1/elements/$2"
+fi;
+

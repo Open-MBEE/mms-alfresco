@@ -1,0 +1,42 @@
+{
+  "workspace1": {
+    "qualifiedName": "master",
+    "name": "master",
+    "elements": [{
+      "qualifiedName": "/europa/JW_TEST2/null/null",
+      "sysmlid": "property_zzz",
+      "editable": true,
+      "creator": "admin",
+      "modifier": "admin",
+      "owner": "aspect_history_zzz",
+      "documentation": "p is p",
+      "specialization": {
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [{
+          "valueExpression": null,
+          "string": "the p value",
+          "type": "LiteralString"
+        }],
+        "type": "Property"
+      }
+    }]
+  },
+  "workspace2": {
+    "deletedElements": [{
+      "qualifiedName": "/europa/JW_TEST2/null/null",
+      "sysmlid": "property_zzz",
+      "owner": "aspect_history_zzz",
+      "specialization": {"type": "Property"},
+      "creator": "admin",
+    }],
+    "addedElements": [],
+    "conflictedElements": [],
+    "updatedElements": [],
+    "qualifiedName": "master",
+    "name": "master",
+    "movedElements": []
+  }
+}
+200

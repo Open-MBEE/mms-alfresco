@@ -1,0 +1,10 @@
+{
+  "workspaces": [
+    {
+      "description": "",
+      "name": "wsMerge1",
+      "parent": "master",
+      "_creator": "admin"
+    }
+  ]
+}

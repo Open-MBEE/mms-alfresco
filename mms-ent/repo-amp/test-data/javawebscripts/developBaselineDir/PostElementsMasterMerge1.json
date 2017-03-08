@@ -1,0 +1,69 @@
+{"elements": [
+    {
+        "qualifiedId": "/europa/123456/add_add_consistent",
+        "qualifiedName": "/europa/JW_TEST2/add_add_consistent",
+        "sysmlid": "add_add_consistent",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "add_add_consistent",
+        "owner": "123456",
+        "documentation": "add_add_consistent",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "this is it",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/update_delete_consistent",
+        "qualifiedName": "/europa/JW_TEST2/update_delete_consistent",
+        "sysmlid": "update_delete_consistent",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_delete_consistent",
+        "owner": "123456",
+        "documentation": "update_delete_consistent",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "this is update 1",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/update_update_consistent",
+        "qualifiedName": "/europa/JW_TEST2/update_update_consistent",
+        "sysmlid": "update_update_consistent",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "update_update_consistent",
+        "owner": "123456",
+        "documentation": "update_update_consistent",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "this is update 1",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    }
+]}
+200

@@ -1,0 +1,45 @@
+{"elements": [
+    {
+        "qualifiedId": "/europa/123456/300",
+        "qualifiedName": "/europa/JW_TEST/300",
+        "name": "300",
+        "owner": "123456",
+        "documentation": "something",
+        "sysmlid": "300",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/no_site/no_site_no_project/holding_bin_no_site_no_project/x",
+        "qualifiedName": "/no_site/no_site_no_project/holding_bin/300",
+        "name": "300",
+        "owner": "holding_bin_no_site_no_project",
+        "documentation": "something",
+        "sysmlid": "x",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    }
+]}
+200

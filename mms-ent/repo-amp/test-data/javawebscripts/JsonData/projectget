@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo curl -w "\n%{http_code}\n" -u admin:admin -X GET "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/projects/$1"
+
+curl -w "\n%{http_code}\n" -u admin:admin -X GET "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/projects/$1"

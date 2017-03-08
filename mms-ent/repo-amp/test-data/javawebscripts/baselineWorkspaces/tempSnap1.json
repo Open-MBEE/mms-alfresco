@@ -1,0 +1,64 @@
+BADDDDDD
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <title>Web Script Status 404 - Not Found</title>
+      <link rel="stylesheet" href="/alfresco/css/webscripts.css" type="text/css" />
+   </head>
+   <body>
+      <div>
+         <table>
+            <tr>
+               <td><img src="/alfresco/images/logo/AlfrescoLogo32.png" alt="Alfresco" /></td>
+               <td><span class="title">Web Script Status 404 - Not Found</span></td>
+            </tr>
+         </table>
+         <br/>
+         <table>
+            <tr><td>The Web Script <a href="%2Falfresco%2Fservice%2Fui%2Fviews%2F301%2Fsnapshot">/alfresco/service/ui/views/301/snapshot</a> has responded with a status of 404 - Not Found.</td></tr>
+         </table>
+         <br/>
+         <table>
+            <tr><td><b>404 Description:</b></td><td> Requested resource is not available.</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td><b>Message:</b></td><td>06220029 Script url /ui/views/301/snapshot does not map to a Web Script.</td></tr>
+            <tr><td></td><td>&nbsp;</td></tr>
+   <tr><td><b>Exception:</b></td><td>org.springframework.extensions.webscripts.WebScriptException - 06220029 Script url /ui/views/301/snapshot does not map to a Web Script.</td></tr>
+   <tr><td></td><td>&nbsp;</td></tr>
+         <tr><td></td><td>org.springframework.extensions.webscripts.AbstractRuntime.executeScript(AbstractRuntime.java:173)</td></tr>
+         <tr><td></td><td>org.springframework.extensions.webscripts.servlet.WebScriptServlet.service(WebScriptServlet.java:132)</td></tr>
+         <tr><td></td><td>javax.servlet.http.HttpServlet.service(HttpServlet.java:728)</td></tr>
+         <tr><td></td><td>org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:305)</td></tr>
+         <tr><td></td><td>org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)</td></tr>
+         <tr><td></td><td>net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:208)</td></tr>
+         <tr><td></td><td>net.bull.javamelody.MonitoringFilter.doFilter(MonitoringFilter.java:181)</td></tr>
+         <tr><td></td><td>org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243)</td></tr>
+         <tr><td></td><td>org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)</td></tr>
+         <tr><td></td><td>org.alfresco.web.app.servlet.GlobalLocalizationFilter.doFilter(GlobalLocalizationFilter.java:61)</td></tr>
+         <tr><td></td><td>org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:243)</td></tr>
+         <tr><td></td><td>org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:210)</td></tr>
+         <tr><td></td><td>org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:222)</td></tr>
+         <tr><td></td><td>org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:123)</td></tr>
+         <tr><td></td><td>org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:472)</td></tr>
+         <tr><td></td><td>org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:171)</td></tr>
+         <tr><td></td><td>org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:99)</td></tr>
+         <tr><td></td><td>org.apache.catalina.valves.AccessLogValve.invoke(AccessLogValve.java:936)</td></tr>
+         <tr><td></td><td>org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:118)</td></tr>
+         <tr><td></td><td>org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:407)</td></tr>
+         <tr><td></td><td>org.apache.coyote.http11.AbstractHttp11Processor.process(AbstractHttp11Processor.java:1004)</td></tr>
+         <tr><td></td><td>org.apache.coyote.AbstractProtocol$AbstractConnectionHandler.process(AbstractProtocol.java:589)</td></tr>
+         <tr><td></td><td>org.apache.tomcat.util.net.JIoEndpoint$SocketProcessor.run(JIoEndpoint.java:310)</td></tr>
+         <tr><td></td><td>java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)</td></tr>
+         <tr><td></td><td>java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)</td></tr>
+         <tr><td></td><td>java.lang.Thread.run(Thread.java:744)</td></tr>
+   <tr><td></td><td>&nbsp;</td></tr>
+            <tr><td><b>Server</b>:</td><td>Community v4.2.0 (r56674-b4848) schema 6,033</td></tr>
+            <tr><td><b>Time</b>:</td><td>Jul 22, 2014 10:17:20 AM</td></tr>
+            <tr><td></td><td>&nbsp;</td></tr>
+         </table>
+      </div>
+   </body>
+</html>
+
+
+404

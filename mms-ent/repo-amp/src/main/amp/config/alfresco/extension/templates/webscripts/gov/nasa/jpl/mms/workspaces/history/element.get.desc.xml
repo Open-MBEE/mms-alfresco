@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>get element version history with {elementId}</shortname>
+    <description>
+        get element version history with {elementId}
+    </description>
+    <url>/projects/{projectId}/refs/{refId}/history/{elementId}</url>
+    <format default="json">argument</format>
+    <authentication>user</authentication>
+    <transaction>required</transaction>
+    <family>MMS REST API</family>
+</webscript>

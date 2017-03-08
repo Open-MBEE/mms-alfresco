@@ -1,0 +1,12 @@
+{"elements": [{
+    "modifier": "admin",
+    "qualifiedId": "/no_site/no_site_no_project/holding_bin_no_site_no_project/c",
+    "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+    "sysmlid": "c",
+    "documentation": "c is c",
+    "owner": "holding_bin_no_site_no_project",
+    "specialization": {"type": "Untyped"},
+    "editable": true,
+    "creator": "admin",
+}]}
+200

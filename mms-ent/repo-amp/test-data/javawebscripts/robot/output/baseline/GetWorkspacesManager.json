@@ -1,0 +1,53 @@
+{
+  "workspaces": [
+    {
+      "name": "master",
+      "siteManagerPermission": true
+    },
+    {
+      "description": "modified the workspace name and desc",
+      "name": "modifiedWorkspaceName",
+      "_creator": "admin"
+    },
+    {
+      "description": "",
+      "name": "wsG1",
+      "_creator": "admin"
+    },
+    {
+      "description": "",
+      "name": "wsG2",
+      "_creator": "admin"
+    },
+    {
+      "description": "",
+      "name": "wsB",
+      "_creator": "admin"
+    },
+    {
+      "description": "",
+      "name": "wsT",
+      "_creator": "admin"
+    },
+    {
+      "description": "",
+      "name": "wsT2",
+      "_creator": "admin"
+    },
+    {
+      "description": "",
+      "name": "wsA",
+      "_creator": "admin"
+    },
+    {
+      "description": "",
+      "name": "ws1",
+      "_creator": "admin"
+    },
+    {
+      "description": "",
+      "name": "ws2",
+      "_creator": "admin"
+    }
+  ]
+}

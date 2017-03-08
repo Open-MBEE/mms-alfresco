@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>post configurations</shortname>
+    <description>
+        post configurations
+    </description>
+      <url>/projects/{projectId}/refs/{refId}/configurations</url>
+      <format default="json">argument</format>
+      <authentication>user</authentication>
+      <transaction>required</transaction>
+      <family>MMS REST API</family>
+ </webscript>

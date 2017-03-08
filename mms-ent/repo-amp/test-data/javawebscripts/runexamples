@@ -1,0 +1,40 @@
+# Example curl command for excercising the MMS REST API
+
+    ./projectpost project.json        
+    ./projectget 123456
+    ./modelpost elementsNew.json
+    ./modelget 123456 recursive
+    ./modelget 303 
+    ./viewpost viewsNew.json
+    ./viewget 301
+    ./viewpost viewChange.json
+    ./viewget 301
+    ./productpost productsNew.json
+    ./projectpost blu
+    ./modelpost BluCamNameListExpr.json
+    ./viewget _17_0_2_3_e610336_1394148311476_17302_29388
+    ./modelpost BLUCamTest.json
+    ./viewget _17_0_2_3_e610336_1394148233838_91795_29332
+    ./wspost ws1
+    ./wspost ws2 ws1
+    ./wsget
+    ./wsget ws1
+    ./modelpost ws1 303.json
+    ./modelpost ws2 no_id.json
+    ./wsdiff master ws1
+    ./wsdiff ws2 master
+    ./wsdiff ws1 ws2
+    # now edit 303.json and compare ws1 at the two times
+    # put pause in
+    ./modelpost ws1 303.json
+    ./wsdiff ws1 ws1 2014-08-28T07:22:00.000-0800 2014-08-28T07:23:00.000-0800
+    ./modelmerge ws1
+    ./wsdiff master ws1 
+    ./exppost operation.json
+    ./modelget arg_ev_33001
+    ./modelget arg_ev_38307_1
+    ./fixconstraint expressionElementsNew.json
+    ./modelget arg_ev_33001
+    ./modelget arg_ev_38307_1
+    ./expeval arg_ev_33001
+    ./expeval arg_ev_38307_1

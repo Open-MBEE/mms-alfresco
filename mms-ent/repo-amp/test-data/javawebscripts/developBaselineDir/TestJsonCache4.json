@@ -1,0 +1,23 @@
+{"elements": [{
+    "qualifiedId": "/europa/123456/jsonTest4",
+    "qualifiedName": "/europa/JW_TEST2/jsonTest4",
+    "sysmlid": "jsonTest4",
+    "editable": true,
+    "creator": "admin",
+    "modifier": "admin",
+    "name": "jsonTest4",
+    "owner": "123456",
+    "documentation": "",
+    "specialization": {
+        "specification": {
+            "valueExpression": null,
+            "expressionBody": [
+                "hello",
+                "there"
+            ],
+            "type": "OpaqueExpression"
+        },
+        "type": "Constraint"
+    }
+}]}
+200

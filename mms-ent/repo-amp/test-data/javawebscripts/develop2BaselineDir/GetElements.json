@@ -1,0 +1,2186 @@
+{"elements": [
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "y",
+
+        "owner": "op_ev_31835",
+
+        "qualifiedId": "/123456/e_31828/op_ev_31835/op_param_31869",
+
+        "qualifiedName": "/JW_TEST2/e_31828/GreaterEquals/y",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "op_param_31869"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "x",
+
+        "owner": "op_ev_31835",
+
+        "qualifiedId": "/123456/e_31828/op_ev_31835/op_param_31868",
+
+        "qualifiedName": "/JW_TEST2/e_31828/GreaterEquals/x",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "op_param_31868"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "result",
+
+        "owner": "op_ev_31835",
+
+        "qualifiedId": "/123456/e_31828/op_ev_31835/op_param_31867",
+
+        "qualifiedName": "/JW_TEST2/e_31828/GreaterEquals/result",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "op_param_31867"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "viewpoint_op",
+
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394146455624_407543_30441/name_list",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441/viewpoint_op",
+
+        "specialization": {
+
+            "expression": "vp_expression",
+
+            "parameters": ["exposed_id"],
+
+            "type": "Operation"
+
+        },
+
+        "sysmlid": "name_list"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "name": "e_32169",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/e_32169",
+
+        "qualifiedName": "/JW_TEST2/e_32169",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "e_32169"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "connector",
+
+        "qualifiedName": "/JW_TEST2/connector/null",
+
+        "specialization": {
+
+            "string": "targetLower!",
+
+            "type": "LiteralString"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "qualifiedName": "/null",
+
+        "specialization": {
+
+            "element": "op_name_arg",
+
+            "type": "ElementValue"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "4something",
+
+        "editable": true,
+
+        "name": "400",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/4000",
+
+        "qualifiedName": "/JW_TEST2/400",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "string": "dlam_string",
+
+                "type": "LiteralString"
+
+            }]
+
+        },
+
+        "sysmlid": "4000"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "op_map_arg",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441//null",
+
+        "specialization": {
+
+            "element": "op_name_arg",
+
+            "type": "ElementValue"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "duration_1",
+
+        "owner": "e_38304",
+
+        "qualifiedId": "/123456/e_38304/arg_ev_38307_1",
+
+        "qualifiedName": "/JW_TEST2/e_38304/duration_1",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "integer": 10,
+
+                "type": "LiteralInteger"
+
+            }]
+
+        },
+
+        "sysmlid": "arg_ev_38307_1"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "op_map_arg",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441//null",
+
+        "specialization": {
+
+            "element": "op_map",
+
+            "type": "ElementValue"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "qualifiedName": "/null",
+
+        "specialization": {
+
+            "element": "exposed_id",
+
+            "type": "ElementValue"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "op_map_arg",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441//null",
+
+        "specialization": {
+
+            "element": "exposed_id",
+
+            "type": "ElementValue"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "something",
+
+        "editable": true,
+
+        "name": "300",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/300",
+
+        "qualifiedName": "/JW_TEST2/300",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "string": "dlam_string",
+
+                "type": "LiteralString"
+
+            }]
+
+        },
+
+        "sysmlid": "300"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "expr_32165",
+
+        "qualifiedName": "/JW_TEST2/e_32169//null",
+
+        "specialization": {
+
+            "element": "arg_ev_38307_1",
+
+            "type": "ElementValue"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "to",
+
+        "editable": true,
+
+        "name": "302",
+
+        "owner": "301",
+
+        "qualifiedId": "/123456/300/301/302",
+
+        "qualifiedName": "/JW_TEST2/300/301/302",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "string": "dlam_string",
+
+                "type": "LiteralString"
+
+            }]
+
+        },
+
+        "sysmlid": "302"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "association",
+
+        "editable": true,
+
+        "name": "association",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/association",
+
+        "qualifiedName": "/JW_TEST2/association",
+
+        "specialization": {
+
+            "ownedEnd": ["AssocOwnedEnd"],
+
+            "source": "sourceId",
+
+            "sourceAggregation": "COMPOSITE",
+
+            "target": "targetId",
+
+            "targetAggregation": "SHARED",
+
+            "type": "Association"
+
+        },
+
+        "sysmlid": "association"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "else",
+
+        "editable": true,
+
+        "name": "301",
+
+        "owner": "300",
+
+        "qualifiedId": "/123456/300/301",
+
+        "qualifiedName": "/JW_TEST2/300/301",
+
+        "specialization": {
+
+            "allowedElements": [
+
+                "301",
+
+                "302",
+
+                "303"
+
+            ],
+
+            "childrenViews": ["304"],
+
+            "contains": [{
+
+                "source": "301",
+
+                "sourceProperty": "documentation",
+
+                "sourceType": "reference",
+
+                "type": "Paragraph"
+
+            }],
+
+            "displayedElements": [
+
+                "301",
+
+                "302",
+
+                "303"
+
+            ],
+
+            "noSections": ["302"],
+
+            "type": "Product",
+
+            "view2view": [{
+
+                "childrenViews": [
+
+                    "301",
+
+                    "302"
+
+                ],
+
+                "sysmlid": "301"
+
+            }]
+
+        },
+
+        "sysmlid": "301"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "about",
+
+        "editable": true,
+
+        "name": "304",
+
+        "owner": "303",
+
+        "qualifiedId": "/123456/300/301/302/303/304",
+
+        "qualifiedName": "/JW_TEST2/300/301/302/303/304",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "string": "dlam_string",
+
+                "type": "LiteralString"
+
+            }]
+
+        },
+
+        "sysmlid": "304"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "",
+
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441/",
+
+        "specialization": {
+
+            "source": "_17_0_2_3_e610336_1394148311476_17302_29388",
+
+            "target": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+
+            "type": "Expose"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "qualifiedName": "/null",
+
+        "specialization": {
+
+            "element": "op_map",
+
+            "type": "ElementValue"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "connector",
+
+        "qualifiedName": "/JW_TEST2/connector/null",
+
+        "specialization": {
+
+            "string": "sourceLower!",
+
+            "type": "LiteralString"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "literalSet",
+
+        "qualifiedName": "/JW_TEST2/literalSet/null",
+
+        "specialization": {
+
+            "string": "Love",
+
+            "type": "LiteralString"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "talk",
+
+        "editable": true,
+
+        "name": "303",
+
+        "owner": "302",
+
+        "qualifiedId": "/123456/300/301/302/303",
+
+        "qualifiedName": "/JW_TEST2/300/301/302/303",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "string": "dlam_string",
+
+                "type": "LiteralString"
+
+            }]
+
+        },
+
+        "sysmlid": "303"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "ComponentViewPoint",
+
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394146455624_407543_30441/_17_0_2_3_e610336_1394148449252_91190_29556",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441/ComponentViewPoint",
+
+        "specialization": {"type": "Viewpoint"},
+
+        "sysmlid": "_17_0_2_3_e610336_1394148449252_91190_29556"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "target",
+
+        "editable": true,
+
+        "name": "targetId",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/targetId",
+
+        "qualifiedName": "/JW_TEST2/targetId",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property"
+
+        },
+
+        "sysmlid": "targetId"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "name": "e_38304",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/e_38304",
+
+        "qualifiedName": "/JW_TEST2/e_38304",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "e_38304"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "directed_relationship2",
+
+        "editable": true,
+
+        "name": "500",
+
+        "owner": "300",
+
+        "qualifiedId": "/123456/300/500",
+
+        "qualifiedName": "/JW_TEST2/300/500",
+
+        "specialization": {
+
+            "source": "303",
+
+            "target": "304",
+
+            "type": "DirectedRelationship"
+
+        },
+
+        "sysmlid": "500"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "List",
+
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394146455624_407543_30441/op_list",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441/List",
+
+        "specialization": {"type": "Operation"},
+
+        "sysmlid": "op_list"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "4about",
+
+        "editable": true,
+
+        "name": "404",
+
+        "owner": "403",
+
+        "qualifiedId": "/123456/4000/401/402/403/404",
+
+        "qualifiedName": "/JW_TEST2/400/401/402/403/404",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "string": "dlam_string",
+
+                "type": "LiteralString"
+
+            }]
+
+        },
+
+        "sysmlid": "404"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "connector",
+
+        "qualifiedName": "/JW_TEST2/connector/null",
+
+        "specialization": {
+
+            "string": "Ninja Attack!",
+
+            "type": "LiteralString"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "4else",
+
+        "editable": true,
+
+        "name": "401",
+
+        "owner": "4000",
+
+        "qualifiedId": "/123456/4000/401",
+
+        "qualifiedName": "/JW_TEST2/400/401",
+
+        "specialization": {
+
+            "allowedElements": [
+
+                "401",
+
+                "402",
+
+                "403"
+
+            ],
+
+            "childrenViews": ["404"],
+
+            "contains": [{
+
+                "source": "401",
+
+                "sourceProperty": "documentation",
+
+                "sourceType": "reference",
+
+                "type": "Paragraph"
+
+            }],
+
+            "displayedElements": [
+
+                "401",
+
+                "402",
+
+                "403"
+
+            ],
+
+            "noSections": ["402"],
+
+            "type": "Product",
+
+            "view2view": [{
+
+                "childrenViews": [
+
+                    "401",
+
+                    "402"
+
+                ],
+
+                "sysmlid": "401"
+
+            }]
+
+        },
+
+        "sysmlid": "401"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "Connector updates",
+
+        "editable": true,
+
+        "name": "connector",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/connector",
+
+        "qualifiedName": "/JW_TEST2/connector",
+
+        "specialization": {
+
+            "connectorKind": "BINDING",
+
+            "connectorValue": {
+
+                "string": "Ninja Attack!",
+
+                "type": "LiteralString"
+
+            },
+
+            "sourceLower": {
+
+                "string": "sourceLower!",
+
+                "type": "LiteralString"
+
+            },
+
+            "sourcePath": ["connectorSource"],
+
+            "sourceUpper": {
+
+                "string": "sourceUpper!",
+
+                "type": "LiteralString"
+
+            },
+
+            "targetLower": {
+
+                "string": "targetLower!",
+
+                "type": "LiteralString"
+
+            },
+
+            "targetPath": ["connectorTarget"],
+
+            "targetUpper": {
+
+                "string": "targetUpper!",
+
+                "type": "LiteralString"
+
+            },
+
+            "type": "Connector"
+
+        },
+
+        "sysmlid": "connector"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "BLUCam CubeSat A",
+
+        "owner": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394140430311_23731_27741/_17_0_2_4_f3a0363_1394142290412_487571_28478",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394140430311_23731_27741/BLUCam CubeSat A",
+
+        "specialization": {"type": "Package"},
+
+        "sysmlid": "_17_0_2_4_f3a0363_1394142290412_487571_28478"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "4talk",
+
+        "editable": true,
+
+        "name": "403",
+
+        "owner": "402",
+
+        "qualifiedId": "/123456/4000/401/402/403",
+
+        "qualifiedName": "/JW_TEST2/400/401/402/403",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "string": "dlam_string",
+
+                "type": "LiteralString"
+
+            }]
+
+        },
+
+        "sysmlid": "403"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "4to",
+
+        "editable": true,
+
+        "name": "402",
+
+        "owner": "401",
+
+        "qualifiedId": "/123456/4000/401/402",
+
+        "qualifiedName": "/JW_TEST2/400/401/402",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "string": "dlam_string",
+
+                "type": "LiteralString"
+
+            }]
+
+        },
+
+        "sysmlid": "402"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "View content",
+
+        "editable": true,
+
+        "name": "viewContents",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/viewContents",
+
+        "qualifiedName": "/JW_TEST2/viewContents",
+
+        "specialization": {"type": "Expression"},
+
+        "sysmlid": "viewContents"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "map",
+
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394146455624_407543_30441/op_map",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441/map",
+
+        "specialization": {"type": "Operation"},
+
+        "sysmlid": "op_map"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "",
+
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394146455624_407543_30441/op_map_arg",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441/",
+
+        "specialization": {
+
+            "operand": [
+
+                {
+
+                    "element": "op_map",
+
+                    "type": "ElementValue"
+
+                },
+
+                {
+
+                    "element": "exposed_id",
+
+                    "type": "ElementValue"
+
+                },
+
+                {
+
+                    "element": "op_name_arg",
+
+                    "type": "ElementValue"
+
+                }
+
+            ],
+
+            "type": "Expression"
+
+        },
+
+        "sysmlid": "op_map_arg"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "",
+
+        "owner": "_17_0_2_3_e610336_1394148311476_17302_29388",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394146455624_407543_30441/_17_0_2_3_e610336_1394148311476_17302_29388/_17_0_2_3_e610336_1394148464681_90735_29608",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441/Components/",
+
+        "specialization": {
+
+            "source": "_17_0_2_3_e610336_1394148311476_17302_29388",
+
+            "target": "_17_0_2_3_e610336_1394148449252_91190_29556",
+
+            "type": "Conform"
+
+        },
+
+        "sysmlid": "_17_0_2_3_e610336_1394148464681_90735_29608"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "name": "testName",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/testCmed416",
+
+        "qualifiedName": "/JW_TEST2/testName",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property"
+
+        },
+
+        "sysmlid": "testCmed416"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "Name",
+
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394146455624_407543_30441/op_name_arg",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441/Name",
+
+        "specialization": {"type": "Operation"},
+
+        "sysmlid": "op_name_arg"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "",
+
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394146455624_407543_30441/vp_expression",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441/",
+
+        "specialization": {
+
+            "operand": [
+
+                {
+
+                    "element": "op_list",
+
+                    "type": "ElementValue"
+
+                },
+
+                {
+
+                    "operand": [
+
+                        {
+
+                            "element": "op_map",
+
+                            "type": "ElementValue"
+
+                        },
+
+                        {
+
+                            "element": "exposed_id",
+
+                            "type": "ElementValue"
+
+                        },
+
+                        {
+
+                            "element": "op_name_arg",
+
+                            "type": "ElementValue"
+
+                        }
+
+                    ],
+
+                    "type": "Expression"
+
+                }
+
+            ],
+
+            "type": "Expression"
+
+        },
+
+        "sysmlid": "vp_expression"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "GreaterEquals",
+
+        "owner": "e_31828",
+
+        "qualifiedId": "/123456/e_31828/op_ev_31835",
+
+        "qualifiedName": "/JW_TEST2/e_31828/GreaterEquals",
+
+        "specialization": {
+
+            "parameters": [
+
+                "op_param_31867",
+
+                "op_param_31868",
+
+                "op_param_31869"
+
+            ],
+
+            "type": "Operation"
+
+        },
+
+        "sysmlid": "op_ev_31835"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "name": "e_31828",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/e_31828",
+
+        "qualifiedName": "/JW_TEST2/e_31828",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "e_31828"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "source",
+
+        "editable": true,
+
+        "name": "sourceId",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/sourceId",
+
+        "qualifiedName": "/JW_TEST2/sourceId",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property"
+
+        },
+
+        "sysmlid": "sourceId"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "Magic Draw Meta-Data",
+
+        "editable": true,
+
+        "name": "md",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/md",
+
+        "qualifiedName": "/JW_TEST2/md",
+
+        "specialization": {
+
+            "mdData": "A blob of meta-data",
+
+            "type": "MagicDrawData"
+
+        },
+
+        "sysmlid": "md"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "Characterizes",
+
+        "editable": true,
+
+        "name": "characterizes",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/characterizes",
+
+        "qualifiedName": "/JW_TEST2/characterizes",
+
+        "specialization": {
+
+            "source": "sourceId",
+
+            "target": "targetId",
+
+            "type": "Characterizes"
+
+        },
+
+        "sysmlid": "characterizes"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "literalSet",
+
+        "qualifiedName": "/JW_TEST2/literalSet/null",
+
+        "specialization": {
+
+            "string": "Bears",
+
+            "type": "LiteralString"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "literalSet",
+
+        "qualifiedName": "/JW_TEST2/literalSet/null",
+
+        "specialization": {
+
+            "string": "Bears",
+
+            "type": "LiteralString"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "vp_expression",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441//null",
+
+        "specialization": {
+
+            "element": "op_list",
+
+            "type": "ElementValue"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "connector",
+
+        "qualifiedName": "/JW_TEST2/connector/null",
+
+        "specialization": {
+
+            "string": "targetUpper!",
+
+            "type": "LiteralString"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "vp_expression",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441//null",
+
+        "specialization": {
+
+            "operand": [
+
+                {
+
+                    "element": "op_map",
+
+                    "type": "ElementValue"
+
+                },
+
+                {
+
+                    "element": "exposed_id",
+
+                    "type": "ElementValue"
+
+                },
+
+                {
+
+                    "element": "op_name_arg",
+
+                    "type": "ElementValue"
+
+                }
+
+            ],
+
+            "type": "Expression"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "expr_32165",
+
+        "qualifiedName": "/JW_TEST2/e_32169//null",
+
+        "specialization": {
+
+            "element": "op_ev_31835",
+
+            "type": "ElementValue"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "Components",
+
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394146455624_407543_30441/_17_0_2_3_e610336_1394148311476_17302_29388",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441/Components",
+
+        "specialization": {"type": "View"},
+
+        "sysmlid": "_17_0_2_3_e610336_1394148311476_17302_29388"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "View updates",
+
+        "editable": true,
+
+        "name": "viewWithContents",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/viewWithContents",
+
+        "qualifiedName": "/JW_TEST2/viewWithContents",
+
+        "specialization": {
+
+            "contents": "viewContents",
+
+            "type": "View"
+
+        },
+
+        "sysmlid": "viewWithContents"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "name": "JW_TEST2",
+
+        "owner": "null",
+
+        "qualifiedId": "/123456",
+
+        "qualifiedName": "/JW_TEST2",
+
+        "sysmlid": "123456"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "name": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "_17_0_2_4_f3a0363_1394146455624_407543_30441"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "duration",
+
+        "owner": "e_38304",
+
+        "qualifiedId": "/123456/e_38304/arg_ev_38307",
+
+        "qualifiedName": "/JW_TEST2/e_38304/duration",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "integer": 22,
+
+                "type": "LiteralInteger"
+
+            }]
+
+        },
+
+        "sysmlid": "arg_ev_38307"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "LiteralSet",
+
+        "editable": true,
+
+        "name": "literalSet",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/literalSet",
+
+        "qualifiedName": "/JW_TEST2/literalSet",
+
+        "specialization": {
+
+            "set": [
+
+                {
+
+                    "string": "I",
+
+                    "type": "LiteralString"
+
+                },
+
+                {
+
+                    "string": "Love",
+
+                    "type": "LiteralString"
+
+                },
+
+                {
+
+                    "string": "Bears",
+
+                    "type": "LiteralString"
+
+                }
+
+            ],
+
+            "setOperand": {
+
+                "string": "Bears",
+
+                "type": "LiteralString"
+
+            },
+
+            "type": "LiteralSet"
+
+        },
+
+        "sysmlid": "literalSet"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "name": "_17_0_2_4_f3a0363_1394140430311_23731_27741",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394140430311_23731_27741",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394140430311_23731_27741",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "_17_0_2_4_f3a0363_1394140430311_23731_27741"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "",
+
+        "owner": "e_32169",
+
+        "qualifiedId": "/123456/e_32169/constraint_32165",
+
+        "qualifiedName": "/JW_TEST2/e_32169/",
+
+        "specialization": {
+
+            "specification": "workspace://SpacesStore/ff4304bb-e2aa-48f5-8fdc-ccdfa3cfd218",
+
+            "type": "Constraint"
+
+        },
+
+        "sysmlid": "constraint_32165"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "Connector target",
+
+        "editable": true,
+
+        "name": "connectorTarget",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/connectorTarget",
+
+        "qualifiedName": "/JW_TEST2/connectorTarget",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property"
+
+        },
+
+        "sysmlid": "connectorTarget"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "connector",
+
+        "qualifiedName": "/JW_TEST2/connector/null",
+
+        "specialization": {
+
+            "string": "sourceUpper!",
+
+            "type": "LiteralString"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "exposed",
+
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+
+        "qualifiedId": "/123456/_17_0_2_4_f3a0363_1394146455624_407543_30441/exposed_id",
+
+        "qualifiedName": "/JW_TEST2/_17_0_2_4_f3a0363_1394146455624_407543_30441/exposed",
+
+        "specialization": {"type": "Parameter"},
+
+        "sysmlid": "exposed_id"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "literalSet",
+
+        "qualifiedName": "/JW_TEST2/literalSet/null",
+
+        "specialization": {
+
+            "string": "I",
+
+            "type": "LiteralString"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "Associations's owned end",
+
+        "editable": true,
+
+        "name": "AssocOwnedEnd",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/AssocOwnedEnd",
+
+        "qualifiedName": "/JW_TEST2/AssocOwnedEnd",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property"
+
+        },
+
+        "sysmlid": "AssocOwnedEnd"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "owner": "expr_32165",
+
+        "qualifiedName": "/JW_TEST2/e_32169//null",
+
+        "specialization": {
+
+            "element": "arg_ev_33001",
+
+            "type": "ElementValue"
+
+        },
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "",
+
+        "owner": "e_32169",
+
+        "qualifiedId": "/123456/e_32169/expr_32165",
+
+        "qualifiedName": "/JW_TEST2/e_32169/",
+
+        "specialization": {
+
+            "operand": [
+
+                {
+
+                    "element": "op_ev_31835",
+
+                    "type": "ElementValue"
+
+                },
+
+                {
+
+                    "element": "arg_ev_38307_1",
+
+                    "type": "ElementValue"
+
+                },
+
+                {
+
+                    "element": "arg_ev_33001",
+
+                    "type": "ElementValue"
+
+                }
+
+            ],
+
+            "type": "Expression"
+
+        },
+
+        "sysmlid": "expr_32165"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "Connector source",
+
+        "editable": true,
+
+        "name": "connectorSource",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/connectorSource",
+
+        "qualifiedName": "/JW_TEST2/connectorSource",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "lower": {
+
+                "string": "lower!",
+
+                "type": "LiteralString"
+
+            },
+
+            "type": "Property",
+
+            "upper": {
+
+                "string": "lower!",
+
+                "type": "LiteralString"
+
+            }
+
+        },
+
+        "sysmlid": "connectorSource"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "editable": true,
+
+        "name": "e_38263",
+
+        "owner": "123456",
+
+        "qualifiedId": "/123456/e_38263",
+
+        "qualifiedName": "/JW_TEST2/e_38263",
+
+        "specialization": {"type": "Element"},
+
+        "sysmlid": "e_38263"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "documentation": "",
+
+        "editable": true,
+
+        "name": "initialDuration",
+
+        "owner": "e_38263",
+
+        "qualifiedId": "/123456/e_38263/arg_ev_33001",
+
+        "qualifiedName": "/JW_TEST2/e_38263/initialDuration",
+
+        "specialization": {
+
+            "isDerived": false,
+
+            "isSlot": false,
+
+            "type": "Property",
+
+            "value": [{
+
+                "integer": -1145811380,
+
+                "type": "LiteralInteger"
+
+            }]
+
+        },
+
+        "sysmlid": "arg_ev_33001"
+
+    }
+
+]}
+
+200
+

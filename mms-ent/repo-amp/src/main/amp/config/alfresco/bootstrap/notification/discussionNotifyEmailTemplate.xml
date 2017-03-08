@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE view>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
+  <view:metadata>
+    <view:exportBy>admin</view:exportBy>
+    <view:exportDate>2014-08-20T22:04:28.481-07:00</view:exportDate>
+    <view:exporterVersion>4.2.0 (r56674-b4848)</view:exporterVersion>
+    <view:exportOf>/app:company_home/app:dictionary/app:email_templates/app:notify_email_templates</view:exportOf>
+  </view:metadata>
+  <cm:content xmlns="" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:sysml="http://jpl.nasa.gov/model/sysml-lite/1.0" xmlns:download="http://www.alfresco.org/model/download/1.0" xmlns:twitter="http://www.alfresco.org/model/publishing/twitter/1.0" xmlns:fm="http://www.alfresco.org/model/forum/1.0" xmlns:facebook="http://www.alfresco.org/model/publishing/facebook/1.0" xmlns:wcm="http://www.alfresco.org/model/wcmmodel/1.0" xmlns:youtube="http://www.alfresco.org/model/publishing/youtube/1.0" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:st="http://www.alfresco.org/model/site/1.0" xmlns:surf="http://www.alfresco.org/model/surf/1.0" xmlns:custom="custom.model" xmlns:exif="http://www.alfresco.org/model/exif/1.0" xmlns:qshare="http://www.alfresco.org/model/qshare/1.0" xmlns:alfcmis="http://www.alfresco.org/model/cmis/1.0/alfcmis" xmlns:pub="http://www.alfresco.org/model/publishing/1.0" xmlns:wca="http://www.alfresco.org/model/wcmappmodel/1.0" xmlns:inwf="http://www.alfresco.org/model/workflow/invite/nominated/1.0" xmlns:flickr="http://www.alfresco.org/model/publishing/flickr/1.0" xmlns:view2="http://jpl.nasa.gov/model/view/2.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:imap="http://www.alfresco.org/model/imap/1.0" xmlns:ver2="http://www.alfresco.org/model/versionstore/2.0" xmlns:stcp="http://www.alfresco.org/model/sitecustomproperty/1.0" xmlns:imwf="http://www.alfresco.org/model/workflow/invite/moderated/1.0" xmlns:view="http://jpl.nasa.gov/model/view/1.0" xmlns:cmisext="http://www.alfresco.org/model/cmis/1.0/cs01ext" xmlns:wf="http://www.alfresco.org/model/workflow/1.0" xmlns:trx="http://www.alfresco.org/model/transfer/1.0" xmlns:slideshare="http://www.alfresco.org/model/publishing/slideshare/1.0" xmlns:rn="http://www.alfresco.org/model/rendition/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:lnk="http://www.alfresco.org/model/linksmodel/1.0" xmlns:webdav="http://www.alfresco.org/model/webdav/1.0" xmlns:pubwf="http://www.alfresco.org/model/publishingworkflow/1.0" xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" xmlns:cmiscustom="http://www.alfresco.org/model/cmis/custom" xmlns:rc="http://www.alfresco.org/model/remotecredentials/1.0" xmlns:ems="http://jpl.nasa.gov/model/ems/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:emailserver="http://www.alfresco.org/model/emailserver/1.0" xmlns:ia="http://www.alfresco.org/model/calendar" xmlns:rule="http://www.alfresco.org/model/rule/1.0" xmlns:dl="http://www.alfresco.org/model/datalist/1.0" xmlns:usr="http://www.alfresco.org/model/user/1.0" xmlns:dp="http://www.alfresco.org/model/distributionpolicies/1.0/model" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:module="http://www.alfresco.org/system/modules/1.0" xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:blg="http://www.alfresco.org/model/blogintegration/1.0" xmlns:audio="http://www.alfresco.org/model/audio/1.0" xmlns:linkedin="http://www.alfresco.org/model/publishing/linkedin/1.0" xmlns:alf="http://www.alfresco.org" xmlns:cmis="http://www.alfresco.org/model/cmis/1.0/cs01" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" xmlns:reg="http://www.alfresco.org/system/registry/1.0" xmlns:wcmwf="http://www.alfresco.org/model/wcmworkflow/1.0" xmlns:act="http://www.alfresco.org/model/action/1.0" view:childName="cm:discussion-email.html.ftl">
+    <view:aspects>
+      <cm:auditable></cm:auditable>
+      <sys:referenceable></sys:referenceable>
+      <cm:titled></cm:titled>
+      <cm:author></cm:author>
+      <sys:localized></sys:localized>
+      <app:inlineeditable></app:inlineeditable>
+    </view:aspects>
+    <view:acl></view:acl>
+    <view:properties>
+      <cm:name>discussion-email.html.ftl</cm:name>
+      <sys:node-dbid>2272</sys:node-dbid>
+      <sys:store-identifier>SpacesStore</sys:store-identifier>
+      <sys:locale>en_US_</sys:locale>
+      <cm:content>contentUrl=discussionNotifyEmailTemplate/content0.html|mimetype=text/html|size=514|encoding=UTF-8|locale=en_US_</cm:content>
+      <cm:title>
+        <view:mlvalue view:locale="en">discussion-email.html.ftl</view:mlvalue>
+      </cm:title>
+      <cm:modified>2014-08-20T22:02:59.228-07:00</cm:modified>
+      <cm:author></cm:author>
+      <sys:node-uuid>c6ddc6b5-2c5d-4d6a-806c-42ddca84d934</sys:node-uuid>
+      <app:editInline>true</app:editInline>
+      <cm:created>2014-08-20T21:38:41.394-07:00</cm:created>
+      <sys:store-protocol>workspace</sys:store-protocol>
+      <cm:creator>admin</cm:creator>
+      <cm:description>
+        <view:mlvalue view:locale="en"></view:mlvalue>
+      </cm:description>
+      <cm:modifier>admin</cm:modifier>
+    </view:properties>
+  </cm:content>
+</view:view>

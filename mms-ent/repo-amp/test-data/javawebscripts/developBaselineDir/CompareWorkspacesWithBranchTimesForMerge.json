@@ -1,0 +1,169 @@
+{
+    "workspace1": {
+        "qualifiedName": "master/wsA/wsT",
+        "name": "wsT",
+        "elements": [
+            {
+                "qualifiedName": "/europa/JW_TEST/300/301/302/303",
+                "sysmlid": "303",
+                "editable": true,
+                "version": "1.4",
+                "name": "303",
+                "documentation": "talk",
+                "owner": "302",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "name": "conflict",
+                "qualifiedName": "/europa/JW_TEST/conflict",
+                "documentation": "this will create a conflict!",
+                "owner": "123456",
+                "sysmlid": "conflict",
+                "specialization": {"type": "Element"},
+                "editable": true,
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST/300/301/302",
+                "sysmlid": "302",
+                "editable": true,
+                "name": "302",
+                "owner": "301",
+                "documentation": "to",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST/300/301",
+                "sysmlid": "301",
+                "editable": true,
+                "name": "301",
+                "owner": "300",
+                "documentation": "else",
+                "specialization": {
+                    "displayedElements": [
+                        "301",
+                        "302",
+                        "303"
+                    ],
+                    "childrenViews": ["304"],
+                    "view2view": [{
+                        "childrenViews": [
+                            "301",
+                            "302"
+                        ],
+                        "sysmlid": "301"
+                    }],
+                    "allowedElements": [
+                        "301",
+                        "302",
+                        "303"
+                    ],
+                    "contains": [{
+                        "sourceType": "reference",
+                        "source": "301",
+                        "sourceProperty": "documentation",
+                        "type": "Paragraph"
+                    }],
+                    "noSections": ["302"],
+                    "type": "Product"
+                }
+            },
+            {
+                "qualifiedName": "/europa/JW_TEST/300",
+                "sysmlid": "300",
+                "editable": true,
+                "name": "300",
+                "owner": "123456",
+                "documentation": "something",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            }
+        ]
+    },
+    "workspace2": {
+        "deletedElements": [],
+        "addedElements": [{
+            "qualifiedName": "/europa/JW_TEST/300/301/302/null",
+            "owner": "302",
+            "documentation": "z is z",
+            "sysmlid": "z",
+            "specialization": {
+                "propertyType": null,
+                "isDerived": false,
+                "isSlot": false,
+                "value": [{
+                    "valueExpression": null,
+                    "string": "the z value",
+                    "type": "LiteralString"
+                }],
+                "type": "Property"
+            },
+            "editable": true,
+        }],
+        "conflictedElements": [{
+            "qualifiedName": "/europa/JW_TEST/conflict",
+            "sysmlid": "conflict",
+            "name": "conflict",
+            "owner": "123456",
+            "documentation": "",
+            "specialization": {"type": "Element"}
+        }],
+        "updatedElements": [
+            {
+                "name": "conflict",
+                "qualifiedName": "/europa/JW_TEST/conflict",
+                "owner": "123456",
+                "documentation": "",
+                "sysmlid": "conflict",
+                "specialization": {"type": "Element"},
+            },
+            {
+                "name": "303",
+                "qualifiedName": "/europa/JW_TEST/300/301/302/303",
+                "owner": "302",
+                "documentation": "talk modified",
+                "sysmlid": "303",
+                "specialization": {
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "dlam_string modified",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            }
+        ],
+        "qualifiedName": "master/wsA/wsT2",
+        "name": "wsT2",
+        "movedElements": []
+    }
+}
+200

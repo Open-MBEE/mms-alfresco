@@ -1,0 +1,109 @@
+{
+    "workspace1": {
+        "qualifiedName": "master/wsG1",
+        "name": "wsG1",
+        "elements": [
+            {
+                "name": "302",
+                "qualifiedName": "/europa/JW_TEST/300/301/302",
+                "documentation": "to",
+                "owner": "301",
+                "sysmlid": "302",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+            },
+            {
+                "name": "301",
+                "qualifiedName": "/europa/JW_TEST/300/301",
+                "documentation": "else",
+                "owner": "300",
+                "sysmlid": "301",
+                "specialization": {
+                    "view2view": [{
+                        "childrenViews": [
+                            "301",
+                            "302"
+                        ],
+                        "sysmlid": "301"
+                    }],
+                    "childrenViews": ["304"],
+                    "displayedElements": [
+                        "301",
+                        "302",
+                        "303"
+                    ],
+                    "allowedElements": [
+                        "301",
+                        "302",
+                        "303"
+                    ],
+                    "noSections": ["302"],
+                    "contains": [{
+                        "sourceType": "reference",
+                        "source": "301",
+                        "sourceProperty": "documentation",
+                        "type": "Paragraph"
+                    }],
+                    "type": "Product"
+                },
+                "editable": true,
+            },
+            {
+                "name": "300",
+                "qualifiedName": "/europa/JW_TEST/300",
+                "documentation": "something",
+                "owner": "123456",
+                "sysmlid": "300",
+                "specialization": {
+                    "propertyType": null,
+                    "isSlot": false,
+                    "isDerived": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+            }
+        ]
+    },
+    "workspace2": {
+        "deletedElements": [],
+        "addedElements": [{
+            "qualifiedName": "/europa/JW_TEST/300/301/302/null",
+            "owner": "302",
+            "documentation": "z is z",
+            "sysmlid": "z",
+            "specialization": {
+                "propertyType": null,
+                "isDerived": false,
+                "isSlot": false,
+                "value": [{
+                    "valueExpression": null,
+                    "string": "the z value",
+                    "type": "LiteralString"
+                }],
+                "type": "Property"
+            },
+            "editable": true,
+        }],
+        "conflictedElements": [],
+        "updatedElements": [],
+        "qualifiedName": "master/wsG2",
+        "name": "wsG2",
+        "movedElements": []
+    }
+}
+200

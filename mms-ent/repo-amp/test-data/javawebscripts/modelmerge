@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo curl -w %{http_code}\n -X POST -u admin:admin http://localhost:8080/alfresco/service/workspaces/$1
+curl -w %{http_code}\n -X POST -u admin:admin http://localhost:8080/alfresco/service/workspaces/$1

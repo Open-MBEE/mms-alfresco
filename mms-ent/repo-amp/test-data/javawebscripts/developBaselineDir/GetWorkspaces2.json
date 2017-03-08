@@ -1,0 +1,94 @@
+{"workspaces": [
+
+    {
+
+        "name": "master",
+
+        "qualifiedName": "master"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "wsB",
+
+        "qualifiedName": "master/wsA/wsB"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "wsT",
+
+        "qualifiedName": "master/wsA/wsT"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "wsA",
+
+        "qualifiedName": "master/wsA"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "ws2",
+
+        "qualifiedName": "master/ws2"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "w1",
+
+        "qualifiedName": "master/w1"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "ws1",
+
+        "qualifiedName": "master/ws1"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "ws4",
+
+        "qualifiedName": "master/ws4"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "ws3",
+
+        "qualifiedName": "master/ws3"
+
+    }
+
+]}
+
+200
+

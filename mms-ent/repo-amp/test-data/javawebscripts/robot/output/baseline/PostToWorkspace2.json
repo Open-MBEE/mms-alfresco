@@ -1,0 +1,23 @@
+{
+  "elements": [
+    {
+      "_creator": "admin",
+      "documentation": "x is x",
+      "_editable": true,
+      "name": "300",
+      "_owner": "holding_bin_no_site_no_project",
+      "isDerived": false,
+      "isSlot": false,
+      "type": "Property",
+      "value": [
+        {
+          "string": "the x value",
+          "type": "LiteralString"
+        }
+      ],
+      "sysmlId": "x"
+    }
+  ],
+  "message": "[WARNING]: createOrUpdateModel deltas not posted properly\n"
+}
+

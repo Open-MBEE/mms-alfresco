@@ -1,0 +1,29 @@
+{"views": [{
+    "qualifiedId": "/europa/123456/_17_0_2_3_e610336_1394148311476_17302_29388",
+    "name": "Components",
+    "qualifiedName": "/europa/JW_TEST/Components",
+    "sysmlid": "_17_0_2_3_e610336_1394148311476_17302_29388",
+    "documentation": "",
+    "owner": "123456",
+    "read": "2015-03-27T09:04:17.168-0700",
+    "specialization": {
+        "displayedElements": ["_17_0_2_4_f3a0363_1394142290412_487571_28478"],
+        "childrenViews": [],
+        "allowedElements": ["_17_0_2_4_f3a0363_1394142290412_487571_28478"],
+        "contains": [{
+            "ordered": false,
+            "list": [[{
+                "sourceType": "reference",
+                "source": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+                "sourceProperty": "name",
+                "type": "Paragraph"
+            }]],
+            "type": "List"
+        }],
+        "type": "View"
+    },
+    "editable": true,
+    "creator": "admin",
+    "modified": "2015-03-27T09:04:16.966-0700"
+}]}
+200

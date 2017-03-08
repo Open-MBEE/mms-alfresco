@@ -1,0 +1,112 @@
+{"elements": [
+    {
+        "qualifiedId": "no_project/300/MMS_1407445681350_7662b9e9-1b12-4940-b5f8-8dc898748722",
+        "qualifiedName": "/300/null",
+        "sysmlid": "MMS_1407445681350_7662b9e9-1b12-4940-b5f8-8dc898748722",
+        "owner": "300",
+        "specialization": {
+            "string": "dlam_string",
+            "type": "LiteralString"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "Thu Aug 07 14:08:01 PDT 2014"
+    },
+    {
+        "qualifiedId": "no_project/300/MMS_1407445620729_c1a7472d-4af8-498d-8fd9-65f125c94cf2",
+        "name": "500",
+        "qualifiedName": "/500",
+        "sysmlid": "MMS_1407445620729_c1a7472d-4af8-498d-8fd9-65f125c94cf2",
+        "documentation": "directed_relationship",
+        "owner": "300",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "Thu Aug 07 14:07:13 PDT 2014"
+    },
+    {
+        "qualifiedId": "no_project/300",
+        "name": "300",
+        "qualifiedName": "/300",
+        "sysmlid": "300",
+        "documentation": "something",
+        "owner": "no_project",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Product"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "Thu Aug 07 15:23:34 PDT 2014"
+    },
+    {
+        "qualifiedId": "no_project/300/MMS_1407450207718_9cc91d1c-b28a-4e35-985a-9fbe9462124c",
+        "name": "500",
+        "qualifiedName": "/300/500",
+        "sysmlid": "MMS_1407450207718_9cc91d1c-b28a-4e35-985a-9fbe9462124c",
+        "documentation": "directed_relationship",
+        "owner": "300",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "Thu Aug 07 15:23:39 PDT 2014"
+    },
+    {
+        "qualifiedId": "no_project/300/MMS_1407445620661_214d17e4-e9d1-408e-ac9d-3b29f8108fc9",
+        "name": "301",
+        "qualifiedName": "/301",
+        "sysmlid": "MMS_1407445620661_214d17e4-e9d1-408e-ac9d-3b29f8108fc9",
+        "documentation": "else",
+        "owner": "300",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "Thu Aug 07 14:07:14 PDT 2014"
+    },
+    {
+        "qualifiedId": "no_project/300/MMS_1407450207652_bbfb55ea-50d5-475c-840b-d5399da26778",
+        "name": "301",
+        "qualifiedName": "/300/301",
+        "sysmlid": "MMS_1407450207652_bbfb55ea-50d5-475c-840b-d5399da26778",
+        "documentation": "else",
+        "owner": "300",
+        "specialization": {
+            "isDerived": false,
+            "isSlot": false,
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin",
+        "modified": "Thu Aug 07 15:23:40 PDT 2014"
+    },
+    {
+        "qualifiedId": "no_project/300/_comment_300",
+        "name": "New test",
+        "qualifiedName": "/New test",
+        "sysmlid": "_comment_300",
+        "documentation": "change testing commnets",
+        "owner": "300",
+        "specialization": {"type": "Comment"},
+        "editable": true,
+        "creator": "admin",
+        "modified": "Thu Aug 07 14:07:20 PDT 2014"
+    }
+]}
+200

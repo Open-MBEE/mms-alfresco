@@ -1,0 +1,11 @@
+{
+  "elements": [
+    {
+      "documentation": "directed_relationship2",
+      "sysmlId": "500",
+      "type": "DirectedRelationship",
+      "source": "303",
+      "target": "304"
+    }
+  ]
+}

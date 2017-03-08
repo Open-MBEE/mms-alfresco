@@ -1,0 +1,111 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "isDerived": false,
+            "isSlot": false,
+            "name": "real55",
+            "ownerId": "_17_0_5_1_407019f_1402422718524_458809_16434",
+            "propertyType": null,
+            "sysmlId": "_17_0_5_1_407019f_1402422739233_300950_16458",
+            "type": "Property",
+            "value": [
+                {
+                    "double": 34.5,
+                    "type": "LiteralReal"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "isDerived": false,
+            "isSlot": true,
+            "ownerId": "_17_0_5_1_407019f_1402422826468_433871_16515",
+            "propertyType": "_17_0_5_1_407019f_1402422797514_105511_16509",
+            "sysmlId": "_17_0_5_1_407019f_1402422826468_433871_16515-slot-_17_0_5_1_407019f_1402422797514_105511_16509",
+            "type": "Property",
+            "value": [
+                {
+                    "double": 5,
+                    "type": "LiteralReal"
+                },
+                {
+                    "double": 5.39,
+                    "type": "LiteralReal"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "ownerId": "_17_0_5_1_407019f_1402422786854_789914_16487",
+            "sysmlId": "_17_0_5_1_407019f_1402422826468_433871_16515_2",
+            "type": "InstanceSpecification"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "name": "D no ",
+            "ownerId": "123456",
+            "sysmlId": "_17_0_5_1_407019f_1402422718524_458809_16434",
+            "type": "Element"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "isDerived": false,
+            "isSlot": false,
+            "name": "real",
+            "ownerId": "123456",
+            "propertyType": null,
+            "sysmlId": "_17_0_5_1_407019f_1402422797514_105511_16509",
+            "type": "Property",
+            "value": []
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "ownerId": "_17_0_5_1_407019f_1402422786854_789914_16487",
+            "sysmlId": "_17_0_5_1_407019f_1402422826468_433871_16515",
+            "type": "InstanceSpecification"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "isDerived": false,
+            "isSlot": true,
+            "ownerId": "_17_0_5_1_407019f_1402422826468_433871_16515_2",
+            "propertyType": "_17_0_5_1_407019f_1402422797514_105511_16509",
+            "sysmlId": "_17_0_5_1_407019f_1402422826468_433871_16515_2-slot-_17_0_5_1_407019f_1402422797514_105511_16509",
+            "type": "Property",
+            "value": [
+                {
+                    "double": 15,
+                    "type": "LiteralReal"
+                },
+                {
+                    "double": 15.39,
+                    "type": "LiteralReal"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "name": "steroetyped eleme",
+            "ownerId": "123456",
+            "sysmlId": "_17_0_5_1_407019f_1402422786854_789914_16487",
+            "type": "Element"
+        }
+    ]
+}

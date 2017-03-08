@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>get orgs</shortname>
+    <description> Return all sites in the workspace
+        {"orgs": [
+        {
+        "sysmlid": sysmlid,
+        "name": name
+        }, ...
+        ]}
+    </description>
+    <url>/orgs</url>
+    <format default="json">argument</format>
+    <authentication>user</authentication>
+    <transaction>required</transaction>
+    <family>MMS REST API</family>
+</webscript>

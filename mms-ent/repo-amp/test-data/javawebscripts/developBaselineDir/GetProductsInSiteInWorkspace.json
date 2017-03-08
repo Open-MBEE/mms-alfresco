@@ -1,0 +1,81 @@
+{"products": [
+  {
+    "modifier": "admin",
+    "qualifiedId": "/europa/123456/300/301",
+    "name": "301",
+    "qualifiedName": "/europa/JW_TEST/300/301",
+    "documentation": "else",
+    "owner": "300",
+    "sysmlid": "301",
+    "specialization": {
+      "view2view": [{
+        "childrenViews": [
+          "301",
+          "302"
+        ],
+        "sysmlid": "301"
+      }],
+      "childrenViews": ["304"],
+      "displayedElements": [
+        "301",
+        "302",
+        "303"
+      ],
+      "allowedElements": [
+        "301",
+        "302",
+        "303"
+      ],
+      "noSections": ["302"],
+      "contains": [{
+        "sourceType": "reference",
+        "source": "301",
+        "sourceProperty": "documentation",
+        "type": "Paragraph"
+      }],
+      "type": "Product"
+    },
+    "editable": true,
+    "creator": "admin"
+  },
+  {
+    "modifier": "admin",
+    "qualifiedId": "/europa/123456/4000/401",
+    "name": "401",
+    "qualifiedName": "/europa/JW_TEST/400/401",
+    "documentation": "4else",
+    "owner": "4000",
+    "sysmlid": "401",
+    "specialization": {
+      "view2view": [{
+        "childrenViews": [
+          "401",
+          "402"
+        ],
+        "sysmlid": "401"
+      }],
+      "childrenViews": ["404"],
+      "displayedElements": [
+        "401",
+        "402",
+        "403"
+      ],
+      "allowedElements": [
+        "401",
+        "402",
+        "403"
+      ],
+      "noSections": ["402"],
+      "contains": [{
+        "sourceType": "reference",
+        "source": "401",
+        "sourceProperty": "documentation",
+        "type": "Paragraph"
+      }],
+      "type": "Product"
+    },
+    "editable": true,
+    "creator": "admin"
+  }
+]}
+200

@@ -1,0 +1,9 @@
+{
+  "elements": [
+    {
+      "sysmlId": "e",
+      "documentation": "e is e",
+      "type": "DirectedRelationship"
+    }
+  ]
+}

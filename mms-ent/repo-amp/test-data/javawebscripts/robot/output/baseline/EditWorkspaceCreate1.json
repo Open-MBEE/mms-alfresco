@@ -1,0 +1,9 @@
+{
+  "workspaces": [
+    {
+      "_creator": "admin",
+      "name": "ws1",
+      "parent": "master",
+    }
+  ]
+}

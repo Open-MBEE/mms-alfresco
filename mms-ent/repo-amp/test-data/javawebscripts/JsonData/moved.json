@@ -1,0 +1,10 @@
+{
+  "elements": [
+    {
+      "sysmlId": "304",
+      "ownerId": "123456",
+      "documentation": "this will create a moved element",
+      "type": "Property"
+    }
+  ]
+}

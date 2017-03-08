@@ -1,0 +1,46 @@
+{
+  "workspace1": {
+    "elements": []
+  },
+  "workspace2": {
+    "deletedElements": [],
+    "moved": [],
+    "addedElements": [
+      {
+        "_modifier": "admin",
+        "_owner": "holding_bin_no_site_no_project",
+        "documentation": "b is b",
+        "sysmlId": "b",
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "the b value",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property",
+        "_editable": true,
+        "_creator": "admin"
+      },
+      {
+        "_modifier": "admin",
+        "_owner": "holding_bin_no_site_no_project",
+        "documentation": "d is d",
+        "sysmlId": "d",
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "type": "Property",
+        "_editable": true,
+        "_creator": "admin"
+      }
+    ],
+    "conflictedElements": [],
+    "updatedElements": [],
+    "conflicted": [],
+    "movedElements": []
+  }
+}

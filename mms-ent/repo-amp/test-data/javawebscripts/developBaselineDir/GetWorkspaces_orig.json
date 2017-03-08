@@ -1,0 +1,48 @@
+{"workspaces": [
+    {
+        "qualifiedId": "master",
+        "id": "master",
+        "workspaceOperationsPermission": true,
+        "qualifiedName": "master",
+        "name": "master"
+    },
+    {
+        "qualifiedId": "master/60abbd63-012c-499d-903b-b4e141b180e6",
+        "id": "60abbd63-012c-499d-903b-b4e141b180e6",
+        "created": "2015-09-22T09:40:12.844-0700",
+        "description": "",
+        "qualifiedName": "master/wsA",
+        "name": "wsA",
+        "parent": "master",
+        "permission": "read",
+        "branched": "2015-09-22T09:40:12.028-0700",
+        "modified": "2015-09-22T09:40:13.509-0700",
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "master/60abbd63-012c-499d-903b-b4e141b180e6/4ee42f98-0c07-45ab-b449-62460205066d",
+        "id": "4ee42f98-0c07-45ab-b449-62460205066d",
+        "created": "2015-09-22T09:40:13.454-0700",
+        "description": "",
+        "qualifiedName": "master/wsA/wsB",
+        "name": "wsB",
+        "parent": "60abbd63-012c-499d-903b-b4e141b180e6",
+        "permission": "read",
+        "branched": "2015-09-22T09:40:15.000-0700",
+        "modified": "2015-09-22T09:40:13.454-0700",
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "master/de2adf51-e052-469f-8e07-cb3c84f68e34",
+        "id": "de2adf51-e052-469f-8e07-cb3c84f68e34",
+        "created": "2015-09-22T09:40:13.939-0700",
+        "description": "modified the workspace name and desc",
+        "qualifiedName": "master/modifiedWorkspaceName",
+        "name": "modifiedWorkspaceName",
+        "parent": "master",
+        "permission": "read",
+        "modified": "2015-09-22T09:40:14.275-0700",
+        "creator": "admin"
+    }
+]}
+200

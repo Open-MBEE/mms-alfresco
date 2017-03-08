@@ -1,0 +1,42 @@
+{
+  "elements": [
+    {
+      "name": "300",
+      "_owner": "123456",
+      "documentation": "something",
+      "sysmlId": "300",
+      "propertyType": null,
+      "isSlot": false,
+      "isDerived": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "name": "300",
+      "_owner": "holding_bin_no_site_no_project",
+      "documentation": "something",
+      "sysmlId": "x",
+      "propertyType": null,
+      "isSlot": false,
+      "isDerived": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "dlam_string",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property",
+      "_editable": true,
+      "_creator": "admin"
+    }
+  ]
+}

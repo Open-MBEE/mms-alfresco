@@ -1,0 +1,12 @@
+{
+  "elements": [
+    {
+      "sysmlId": "ychild",
+      "documentation": "y child",
+      "_owner": "y",
+      "type": "Element",
+      "_editable": true,
+      "_creator": "Collaborator"
+    }
+  ]
+}

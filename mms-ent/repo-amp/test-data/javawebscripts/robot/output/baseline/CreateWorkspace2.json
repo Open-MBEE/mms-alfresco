@@ -1,0 +1,10 @@
+{
+    "workspaces": [
+        {
+            "creator": "admin",
+            "description": "",
+            "name": "wsB",
+            "permission": "read"
+        }
+    ]
+}

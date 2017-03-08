@@ -1,0 +1,19 @@
+{
+  "elements": [
+    {
+      "sysmlId": "jsonTest3",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "jsonTest3",
+      "_owner": "123456",
+      "documentation": "",
+      "specification": {
+        "valueExpression": null,
+        "integer": 3,
+        "type": "LiteralInteger"
+      },
+      "type": "Constraint"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "documentation": "",
+            "name": "notInThePast",
+            "ownerId": "123456",
+            "specification": {
+                "expressionBody": [
+                    "foo8"
+                ],
+                "type": "OpaqueExpression"
+            },
+            "sysmlId": "notInThePast",
+            "type": "Constraint"
+        }
+    ]
+}

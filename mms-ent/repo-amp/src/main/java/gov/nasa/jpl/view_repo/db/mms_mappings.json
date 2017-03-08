@@ -1,0 +1,76 @@
+{
+    "element": {
+        "properties": {
+            "name": {
+                "type": "string",
+                "index": "not_analyzed"
+            },
+            "ownerId": {
+                "type": "string",
+                "analyzer": "include_hyphen",
+                "index": "not_analyzed"
+            },
+            "documentation": {
+                "type": "string"
+            },
+            "sysmlId": {
+                "type": "string",
+                "analyzer": "include_hyphen",
+                "index": "not_analyzed"
+            },
+            "read": {
+                "type": "string"
+            },
+            "displayedElements": {
+                "type": "string",
+                "index": "not_analyzed"
+            },
+            "allowedElements": {
+                "type": "string",
+                "index": "not_analyzed"
+            },
+            "type": {
+                "type": "string",
+                "index": "not_analyzed"
+            },
+            "contains": {
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                }
+            },
+            "value": {
+                "properties": {
+                    "valueExpression": {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                }
+            },
+            "_creator": {
+                "type": "string",
+                "index": "not_analyzed"
+            },
+            "_qualifiedName": {
+                "type": "string",
+                "index": "not_analyzed"
+            },
+            "_qualifiedId": {
+                "type": "string",
+                "index": "not_analyzed"
+            },
+            "_created": {
+                "type": "date",
+                "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                "index": "not_analyzed"
+            },
+            "_modified": {
+                "type": "date",
+                "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                "index": "not_analyzed"
+            }
+        }
+    }
+}

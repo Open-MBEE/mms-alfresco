@@ -1,0 +1,44 @@
+{
+  "workspace1": {
+    "qualifiedName": "master/wsMatrix2",
+    "name": "wsMatrix2",
+    "elements": [{
+      "qualifiedName": "/europa/JW_TEST2/none_delete_gg",
+      "sysmlid": "none_delete_gg",
+      "editable": true,
+      "creator": "admin",
+      "modifier": "admin",
+      "name": "none_delete_gg",
+      "owner": "123456",
+      "documentation": "none_delete_gg",
+      "specialization": {
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [{
+          "valueExpression": null,
+          "string": "on a shoe",
+          "type": "LiteralString"
+        }],
+        "type": "Property"
+      }
+    }]
+  },
+  "workspace2": {
+    "deletedElements": [{
+      "qualifiedName": "/europa/JW_TEST2/none_delete_gg",
+      "name": "none_delete_gg",
+      "sysmlid": "none_delete_gg",
+      "owner": "123456",
+      "specialization": {"type": "Property"},
+      "creator": "admin",
+    }],
+    "addedElements": [],
+    "conflictedElements": [],
+    "updatedElements": [],
+    "qualifiedName": "master/wsMatrix2",
+    "name": "wsMatrix2",
+    "movedElements": []
+  }
+}
+200

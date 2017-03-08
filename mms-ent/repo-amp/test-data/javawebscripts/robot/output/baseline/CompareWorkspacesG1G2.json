@@ -1,0 +1,151 @@
+{
+  "workspace1": {
+    "name": "wsG1",
+    "elements": [
+      {
+        "sysmlId": "x",
+        "_editable": true,
+        "version": "1.1",
+        "name": "300",
+        "_owner": "holding_bin_no_site_no_project",
+        "documentation": "x is x",
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "the x value",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property"
+      },
+      {
+        "name": "302",
+        "documentation": "to",
+        "_owner": "301",
+        "sysmlId": "302",
+        "propertyType": null,
+        "isSlot": false,
+        "isDerived": false,
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property",
+        "_editable": true
+      },
+      {
+        "name": "301",
+        "documentation": "else",
+        "_owner": "300",
+        "sysmlId": "301",
+        "view2view": [
+          {
+            "childrenViews": [
+              "301",
+              "302"
+            ],
+            "sysmlId": "301"
+          }
+        ],
+        "childrenViews": [
+          "304"
+        ],
+        "displayedElements": [
+          "301",
+          "302",
+          "303"
+        ],
+        "allowedElements": [
+          "301",
+          "302",
+          "303"
+        ],
+        "noSections": [
+          "302"
+        ],
+        "contains": [
+          {
+            "sourceType": "reference",
+            "source": "301",
+            "sourceProperty": "documentation",
+            "type": "Paragraph"
+          }
+        ],
+        "type": "Product",
+        "_editable": true
+      },
+      {
+        "name": "300",
+        "documentation": "something",
+        "_owner": "123456",
+        "sysmlId": "300",
+        "propertyType": null,
+        "isSlot": false,
+        "isDerived": false,
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property",
+        "_editable": true
+      },
+      {
+        "name": "holding_bin",
+        "sysmlId": "holding_bin_no_site_no_project",
+        "_owner": "no_site_no_project",
+        "type": "Package",
+        "_editable": true
+      }
+    ]
+  },
+  "workspace2": {
+    "deletedElements": [],
+    "addedElements": [
+      {
+        "_owner": "302",
+        "documentation": "z is z",
+        "sysmlId": "z",
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "the z value",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property",
+        "_editable": true
+      }
+    ],
+    "conflictedElements": [],
+    "updatedElements": [
+      {
+        "name": "300",
+        "_owner": "holding_bin_no_site_no_project",
+        "documentation": "something",
+        "sysmlId": "x",
+        "value": [
+          {
+            "valueExpression": null,
+            "string": "dlam_string",
+            "type": "LiteralString"
+          }
+        ],
+        "type": "Property"
+      }
+    ],
+    "name": "wsG2",
+    "movedElements": []
+  }
+}

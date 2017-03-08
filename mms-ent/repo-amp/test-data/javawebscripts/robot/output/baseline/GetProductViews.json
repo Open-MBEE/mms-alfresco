@@ -1,0 +1,20 @@
+{
+    "views": [
+        {
+            "_creator": "admin",
+            "_modifier": "admin",
+            "documentation": "else",
+            "isDerived": false,
+            "name": "301",
+            "ownerId": "300",
+            "sysmlId": "301",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}

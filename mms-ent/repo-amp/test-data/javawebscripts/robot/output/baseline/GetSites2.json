@@ -1,0 +1,22 @@
+{
+    "sites": [
+        {
+            "_editable": true,
+            "isCharacterization": false,
+            "name": "demo3site",
+            "sysmlId": "demo3site"
+        },
+        {
+            "_editable": true,
+            "isCharacterization": false,
+            "name": "vetest",
+            "sysmlId": "vetest"
+        },
+        {
+            "_editable": true,
+            "isCharacterization": false,
+            "name": "europa",
+            "sysmlId": "europa"
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+{
+  "elements": [
+    {
+      "sysmlId": "newElement",
+      "documentation": "x is x",
+      "type": "Property",
+      "value": [
+        {
+          "string": "the element added to ws1",
+          "type": "LiteralString"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>delete configuration with {configurationId}</shortname>
+    <description>
+        delete configuration with {configurationId}
+    </description>
+      <url>/projects/{projectId}/refs/{refId}/sites/{siteId}/configurations/{configurationId}</url>
+      <format default="json">argument</format>
+      <authentication>user</authentication>
+      <transaction>required</transaction>
+      <family>MMS REST API</family>
+ </webscript>

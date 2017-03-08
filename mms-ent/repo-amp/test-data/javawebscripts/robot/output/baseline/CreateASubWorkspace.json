@@ -1,0 +1,9 @@
+{
+  "workspaces": [
+    {
+      "description": "",
+      "name": "theSubworkspace",
+      "_creator": "admin"
+    }
+  ]
+}

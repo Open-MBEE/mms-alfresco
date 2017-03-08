@@ -1,0 +1,35 @@
+{
+  "elements": [
+    {
+      "documentation": "",
+      "sysmlId": "onBothWorkspaces1",
+      "name": "onBothWorkspaces1",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "gg_string"
+        }
+      ]
+    },
+    {
+      "documentation": "",
+      "sysmlId": "onBothWorkspaces2",
+      "ownerId": "123456",
+      "name": "onBothWorkspaces2",
+      "type": "Expression",
+      "operand": [
+        {
+          "type": "ElementValue",
+          "element": "300"
+        },
+        {
+          "type": "ElementValue",
+          "element": "302"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "workspaces": [
+    {
+      "description": "modified the workspace name and desc",
+      "name": "modifiedWorkspaceName",
+      "parent": "master",
+      "_creator": "admin"
+    }
+  ]
+}
+

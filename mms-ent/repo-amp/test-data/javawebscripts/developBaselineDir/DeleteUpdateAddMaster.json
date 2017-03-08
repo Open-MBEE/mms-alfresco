@@ -1,0 +1,44 @@
+{
+  "workspace1": {
+    "qualifiedName": "master",
+    "name": "master",
+    "elements": [{
+      "qualifiedName": "/europa/JW_TEST2/update_add_gg",
+      "sysmlid": "update_add_gg",
+      "editable": true,
+      "creator": "admin",
+      "modifier": "admin",
+      "name": "update_add_gg",
+      "owner": "123456",
+      "documentation": "update_add_gg",
+      "specialization": {
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [{
+          "valueExpression": null,
+          "string": "on a shoe",
+          "type": "LiteralString"
+        }],
+        "type": "Property"
+      }
+    }]
+  },
+  "workspace2": {
+    "deletedElements": [{
+      "name": "update_add_gg",
+      "qualifiedName": "/europa/JW_TEST2/update_add_gg",
+      "owner": "123456",
+      "sysmlid": "update_add_gg",
+      "specialization": {"type": "Property"},
+      "creator": "admin"
+    }],
+    "addedElements": [],
+    "conflictedElements": [],
+    "updatedElements": [],
+    "qualifiedName": "master",
+    "name": "master",
+    "movedElements": []
+  }
+}
+200

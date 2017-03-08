@@ -1,0 +1,1070 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Element specification",
+    "properties": {
+        "source": {
+            "type": "string",
+            "description": "The source of the change (e.g., from which client). This is optional."
+        },
+        "elements": {
+            "type": "array",
+            "description": "An array of elements",
+            "items": {
+                "type": "object",
+                "$ref": "#/definitions/Element"
+            }
+        },
+        "message": {
+                    "type": "string",
+                    "description": "The response message for this transaction if it is non-empty."
+        }
+    },
+
+    "definitions": {
+        "Element": {
+            "properties": {
+                "sysmlid": {
+                    "type": "string",
+                    "description": "[xmi:id] Unique identifier of the element. Equivalent to MDID unless element is a slot. If a slot, id is constructed using the pattern [instanceSpecId]-slot-[definingFeatureId]."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "[UML:name for named element] Name of the element"
+                },
+                "documentation": {
+                    "type": "string",
+                    "description": "[MD:documentation] Documentation of the element"
+                },
+                "editable": {
+                    "type": "boolean",
+                    "description": "[MMS specific] Indicates whether user has permissions to edit the element (so GUI can toggle, server still checks on save though) (Read-Only)"
+                },
+                "owner": {
+                    "type": "string",
+                    "description": "[UML:owner] Owner of the element - this indicates containment"
+                },
+                "creator": {
+                    "type": "string",
+                    "description": "[MMS specific] Creator of the element (Read-Only)"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "[MMS specific] Creation time of the element on server (Read-Only)"
+                },
+                "modifier": {
+                    "type": "string",
+                    "description": "[MMS specific] Last modifier of the element (Read-Only)"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "[MMS specific] Last modified time of the element (Read-Only)"
+                },
+                "read": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "[MMS specific] On updating any element, the time when the data was loaded needs to be provided so conflicts can be detected and handled by the server (Read-Only)"
+                },
+                "qualifiedName": {
+                    "type": "string",
+                    "description": "[Derived property] Containment hierarchy of element based off of SysML names, currently provided as a convenience for context (Read-Only)"
+                },
+                "qualifiedPath": {
+                    "type": "string",
+                    "description": "[Derived property] Containment hierarchy of element based off of SysML ids, provided for systems that can't find by unique id (Read-Only)"
+                },
+                "id": {
+                    "type": "string",
+                    "description": "[MMS specific] Alfresco unique identifier for the element (Read-Only)"
+                },
+                "siteCharacterizationId": {
+                    "type": "string",
+                    "description": "[MMS specific] Sysml ID of the site characterization that element belongs to (Read-Only). Enables categorization of sites."
+                },
+                "isMetatype": {
+                    "type": "boolean",
+                    "description": "[UML is metatype] True if element is a metatype (e.g., stereotype or metaclass). If not specified by MMS, assumption is that it is false"
+                },
+                "metatypes": {
+                    "type": "array",
+                    "description": "[UML inherited metatypes] An array of all the metatypes that this element directly inherits or extends. If this exists, isMetatype must be true",
+                    "items": {
+                        "type": "String",
+                        "description": "Sysml ID of the inherited or extended metatype"
+                    }
+                },
+                "appliedMetatypes": {
+                    "type": "array",
+                    "description": "[UML applied metatypes] An array of all the metatypes that are directly applied to this element.",
+                    "items": {
+                        "type": "String",
+                        "description": "Sysml ID of applied metatype"
+                    }
+                },
+                "specialization": {
+                    "type": "object",
+                    "description": "Properties of the specialized type of the element, if any, adds additional metadata per the references",
+                    "oneOf": [
+                        { "$ref": "#/definitions/Comment"},
+                        { "$ref": "#/definitions/Constraint"},
+                        { "$ref": "#/definitions/InstanceSpecification"},
+                        { "$ref": "#/definitions/Operation"},
+                        { "$ref": "#/definitions/Package"},
+                        { "$ref": "#/definitions/Product"},
+                        { "$ref": "#/definitions/Project"},
+                        { "$ref": "#/definitions/Property"},
+                        { "$ref": "#/definitions/Parameter"},
+                        { "$ref": "#/definitions/View"},
+                        { "$ref": "#/definitions/ViewPoint"},
+
+                        { "$ref": "#/definitions/DirectedRelationship"},
+                        { "$ref": "#/definitions/Conform"},
+                        { "$ref": "#/definitions/Dependency"},
+                        { "$ref": "#/definitions/Expose"},
+                        { "$ref": "#/definitions/Connector"},
+                        { "$ref": "#/definitions/Association"},
+                        { "$ref": "#/definitions/Characterizes"},
+                        { "$ref": "#/definitions/Succession"},
+                        { "$ref": "#/definitions/Binding"},
+                        { "$ref": "#/definitions/MagicDrawData"}
+                        
+                    ]
+                },
+                "relatedDocuments": {
+                    "type": "array",
+                    "description": "[MMS specific] Array of documents that the element appears in. Typically only returned as part of search results. (Read Only)",
+                    "items": {
+		                "type": "object",
+		                "$ref": "#/definitions/RelatedDocument"
+	                }
+	            },
+	            "searchTypes": {
+	               "type": "text",
+	               "description": "[MMS specific] If results are for a search, returns a comma separated list of the searchTypes were matches were found. Aspect, documentation, id, etc. (Read Only)"
+                }
+            }
+        },
+
+
+        "Comment": {
+            "description": "[UML::Comment]",
+            "properties": {
+                "type": { "enum": ["Comment"] }
+            }
+        },
+        "Constraint": {
+            "description": "[UML::Constraint]",
+            "properties": {
+                "type": { "enum": ["Constraint"] },
+                "specification": {
+                    "type": "string",
+                    "description": "ID of element that provides the constraint specification"
+                }
+            }
+        },
+        "InstanceSpecification": {
+            "description": "[UML::InstanceSpecification]",
+            "properties": {
+                "type": { "enum": ["InstanceSpecification"] },
+                "instanceSpecificationSpecification": {
+                        "type": "object",
+                        "description": "The embedded specification",
+                        "oneOf": [
+                            { "$ref": "#/definitions/ValueSpecification"},
+                            { "$ref": "#/definitions/Duration"},
+                            { "$ref": "#/definitions/DurationInterval"},
+                            { "$ref": "#/definitions/ElementValue"},
+                            { "$ref": "#/definitions/Expression"},
+                            { "$ref": "#/definitions/OpaqueExpression"},
+                            { "$ref": "#/definitions/InstanceValue"},
+                            { "$ref": "#/definitions/Interval"},
+                            { "$ref": "#/definitions/StringExpression"},
+                            { "$ref": "#/definitions/LiteralBoolean"},
+                            { "$ref": "#/definitions/LiteralNull"},
+                            { "$ref": "#/definitions/LiteralInteger"},
+                            { "$ref": "#/definitions/LiteralReal"},
+                            { "$ref": "#/definitions/LiteralString"},
+                            { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                            { "$ref": "#/definitions/TimeExpression"},
+                            { "$ref": "#/definitions/TimeInterval"}
+                        ]
+                },
+                "classifier": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "The classifiers IDs"
+                    }
+                },
+                "slots": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "IDs of the slots"
+                    }
+                }
+            }
+        },
+        "Operation": {
+            "description": "[UML::Operation]",
+            "properties": {
+                "type": { "enum": ["Operation"] },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "ID of parameter elements"
+                    },
+                    "uniqueItems": true    
+                },
+                "expression": {
+                    "type": "string",
+                    "description": "ID of expression element"
+                }
+            }
+        },
+        "Package": {
+            "description": "[UML::Package]",
+            "properties": {
+                "type": { "enum": ["Package"] },
+                "isSite": {
+                    "type": "boolean",
+                    "description": "True if site characterization exists"
+                }
+            }
+        },
+        "Product": {
+            "description": "[MDK Profile <<Document>>]",
+            "properties": {
+                "type": { "enum": ["Product"] },
+                "view2view": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "description": "A map of views to views: ids to childrenViews"
+                    }
+                },
+                "noSections": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "ID of the view elements that have no section"
+                    }
+                }
+            }
+        },
+        "Project": {
+            "description": "[MD::Project]",
+            "properties": {
+                "type": { "enum": ["Project"] },
+                "projectVersion": {
+                    "type": "string"
+                }
+            }
+        },
+        "Property": {
+            "description": "[UML::Property]",
+            "properties": {
+                "type": { "enum": ["Property"] },
+                "lower": {
+                    "type": "object",
+                    "description": "",
+                    "oneOf": [
+                        { "$ref": "#/definitions/ValueSpecification"},
+                        { "$ref": "#/definitions/Duration"},
+                        { "$ref": "#/definitions/DurationInterval"},
+                        { "$ref": "#/definitions/ElementValue"},
+                        { "$ref": "#/definitions/Expression"},
+                        { "$ref": "#/definitions/OpaqueExpression"},
+                        { "$ref": "#/definitions/InstanceValue"},
+                        { "$ref": "#/definitions/Interval"},
+                        { "$ref": "#/definitions/StringExpression"},
+                        { "$ref": "#/definitions/LiteralBoolean"},
+                        { "$ref": "#/definitions/LiteralNull"},
+                        { "$ref": "#/definitions/LiteralInteger"},
+                        { "$ref": "#/definitions/LiteralReal"},
+                        { "$ref": "#/definitions/LiteralString"},
+                        { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                        { "$ref": "#/definitions/TimeExpression"},
+                        { "$ref": "#/definitions/TimeInterval"}
+                    ]
+                },
+                "upper": {
+                    "type": "object",
+                    "description": "",
+                    "oneOf": [
+                        { "$ref": "#/definitions/ValueSpecification"},
+                        { "$ref": "#/definitions/Duration"},
+                        { "$ref": "#/definitions/DurationInterval"},
+                        { "$ref": "#/definitions/ElementValue"},
+                        { "$ref": "#/definitions/Expression"},
+                        { "$ref": "#/definitions/OpaqueExpression"},
+                        { "$ref": "#/definitions/InstanceValue"},
+                        { "$ref": "#/definitions/Interval"},
+                        { "$ref": "#/definitions/StringExpression"},
+                        { "$ref": "#/definitions/LiteralBoolean"},
+                        { "$ref": "#/definitions/LiteralNull"},
+                        { "$ref": "#/definitions/LiteralInteger"},
+                        { "$ref": "#/definitions/LiteralReal"},
+                        { "$ref": "#/definitions/LiteralString"},
+                        { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                        { "$ref": "#/definitions/TimeExpression"},
+                        { "$ref": "#/definitions/TimeInterval"}
+                    ]
+                },
+                "isDerived": {
+                    "type": "boolean",
+                    "description": "[UML::Property.isDerived] Indicates whether the property is a free variable (if true) or not (if false)"
+                },
+                "isSlot": {
+                    "type": "boolean",
+                    "description": "[UML] Indicates whther or not the property refers to a slot value"
+                },
+                "propertyType": {
+                    "type": "string",
+                    "description": "[UML::Property.dataType] ID for the property type element"
+                },
+                
+                "value": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "description": "[UML] The value of the property",
+                        "oneOf": [
+                            { "$ref": "#/definitions/ValueSpecification"},
+                            { "$ref": "#/definitions/Duration"},
+                            { "$ref": "#/definitions/DurationInterval"},
+                            { "$ref": "#/definitions/ElementValue"},
+                            { "$ref": "#/definitions/Expression"},
+                            { "$ref": "#/definitions/OpaqueExpression"},
+                            { "$ref": "#/definitions/InstanceValue"},
+                            { "$ref": "#/definitions/Interval"},
+                            { "$ref": "#/definitions/StringExpression"},
+                            { "$ref": "#/definitions/LiteralBoolean"},
+                            { "$ref": "#/definitions/LiteralNull"},
+                            { "$ref": "#/definitions/LiteralInteger"},
+                            { "$ref": "#/definitions/LiteralReal"},
+                            { "$ref": "#/definitions/LiteralString"},
+                            { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                            { "$ref": "#/definitions/TimeExpression"},
+                            { "$ref": "#/definitions/TimeInterval"}
+                        ]
+                    }
+                }
+            }
+        },
+        "Parameter": {
+            "description": "[UML::Parameter]",
+            "properties": {
+                "type": { "enum": ["Parameter"] },
+                "direction": {
+                    "type": "string"
+                },
+                "parameterType": {
+                    "type": "string"
+                },
+                "defaultValue": {
+                    "type": "string",
+                    "description": "Node ID"
+                }
+            }
+        },
+        "View": {
+            "description": "[sysml::View]",
+            	"properties": {
+            	    "type": { "enum": ["View"] },
+                "contains": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "oneOf": [
+                            {"$ref": "#/definitions/Paragraph"},
+                            {"$ref": "#/definitions/Table"},
+                            {"$ref": "#/definitions/List"},
+                            {"$ref": "#/definitions/Image"},
+                            {"$ref": "#/definitions/Section"}
+                        ]
+                    }
+                },
+                "displayedElements": {
+                    "description": "[MMS specific]: array of any elements displayed in view",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "ID of displayed element"
+                    }
+                },
+                "allowedElements": {
+                    "description": "[MMS specific]: array of any elements allowed in view",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "ID of allowed element"
+                    }
+                },
+                "childrenViews": {
+                    "description": "[MMS specific]: array of children views",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "ID of views"
+                    }
+                },
+                "contents": {
+                    "description": "[MMS specific]: contents of view in JSON blob. Node ID",
+                    "type": "string"
+                }
+            }
+        },
+        "Viewpoint": {
+            "description": "[sysml::Viewpoint]",
+            "properties": {
+                "type": { "enum": ["Viewpoint"] },
+                "method": {
+                    "type": "string",
+                    "description": "ID of the method element for the viewpoint"
+                }
+            }
+        },
+
+        "DirectedRelationship": {
+            "description": "[UML:DirectedRelationship]",
+            "properties": {
+                "type": { "enum": ["DirectedRelationship"] },
+                "source": {
+                    "type": "string",
+                    "description": "ID of the source of the relationship"
+                },
+                "target": {
+                    "type": "string",
+                    "description": "ID of the target of the relationship"
+                }
+            }
+        },
+        "Conform": {
+            "description": "[sysml::Conforms]",
+            "properties": {
+                "type": { "enum": ["Conform"] }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/DirectedRelationship"}
+            ]
+        },
+        "Dependency": {
+            "description": "[UML::Dependency]",
+            "properties": {
+                "type": { "enum": ["Dependency"] }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/DirectedRelationship"}
+            ]
+        },
+        "Expose": {
+            "description": "[sysml::Expose]",
+            "properties": {
+                "type": { "enum": ["Expose"] }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/DirectedRelationship"}
+            ]
+        },
+
+
+        "ValueSpecification": {
+            "description": "[UML::ValueSpecification]",
+            "properties": {
+                "type": { "enum": ["ValueSpecification"] },
+                "expression": {
+                    "type": "string",
+                    "description": "ID of the SysML element expression of the value specification"
+                }
+            }
+        },
+        "Duration": {
+            "description": "[UML::Duration]",
+            "properties": {
+                "type": { "enum": ["Duration"] }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "DurationInterval": {
+            "description": "[UML::DurationInterval]",
+            "properties": {
+                "type": { "enum": ["DurationInterval"] },
+                "durationMax": {
+                    "type": "string",
+                    "description": "ID of the SysML element representing the duration max"
+                },
+                "durationMin": {
+                    "type": "string",
+                    "description": "ID of the SysML element representing the duration min"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "ElementValue": {
+            "description": "[UML::ElementValue]",
+            "properties": {
+                "type": { "enum": ["ElementValue"] },
+                "element": {
+                    "type": "string",
+                    "description": "ID of the element that stores this element value"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "LiteralSet": {
+            "description": "[UML::LiteralSet]",
+            "properties": {
+                "type": { "enum": ["LiteralSet"] },
+                "set": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "description": "The value specs",
+                        "oneOf": [
+                            { "$ref": "#/definitions/ValueSpecification"},
+                            { "$ref": "#/definitions/Duration"},
+                            { "$ref": "#/definitions/DurationInterval"},
+                            { "$ref": "#/definitions/ElementValue"},
+                            { "$ref": "#/definitions/Expression"},
+                            { "$ref": "#/definitions/OpaqueExpression"},
+                            { "$ref": "#/definitions/InstanceValue"},
+                            { "$ref": "#/definitions/Interval"},
+                            { "$ref": "#/definitions/StringExpression"},
+                            { "$ref": "#/definitions/LiteralBoolean"},
+                            { "$ref": "#/definitions/LiteralNull"},
+                            { "$ref": "#/definitions/LiteralInteger"},
+                            { "$ref": "#/definitions/LiteralReal"},
+                            { "$ref": "#/definitions/LiteralString"},
+                            { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                            { "$ref": "#/definitions/TimeExpression"},
+                            { "$ref": "#/definitions/TimeInterval"}
+                        ]
+                    }
+                },
+                "setOperand": {
+                    "type": "object",
+                    "description": "The value specs",
+                    "oneOf": [
+                        { "$ref": "#/definitions/ValueSpecification"},
+                        { "$ref": "#/definitions/Duration"},
+                        { "$ref": "#/definitions/DurationInterval"},
+                        { "$ref": "#/definitions/ElementValue"},
+                        { "$ref": "#/definitions/Expression"},
+                        { "$ref": "#/definitions/OpaqueExpression"},
+                        { "$ref": "#/definitions/InstanceValue"},
+                        { "$ref": "#/definitions/Interval"},
+                        { "$ref": "#/definitions/StringExpression"},
+                        { "$ref": "#/definitions/LiteralBoolean"},
+                        { "$ref": "#/definitions/LiteralNull"},
+                        { "$ref": "#/definitions/LiteralInteger"},
+                        { "$ref": "#/definitions/LiteralReal"},
+                        { "$ref": "#/definitions/LiteralString"},
+                        { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                        { "$ref": "#/definitions/TimeExpression"},
+                        { "$ref": "#/definitions/TimeInterval"}
+                    ]
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "Expression": {
+            "description": "[UML::Expression]",
+            "properties": {
+                "type": { "enum": ["Expression"] },
+                "operand": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "description": "The value specs",
+                        "oneOf": [
+                            { "$ref": "#/definitions/ValueSpecification"},
+                            { "$ref": "#/definitions/Duration"},
+                            { "$ref": "#/definitions/DurationInterval"},
+                            { "$ref": "#/definitions/ElementValue"},
+                            { "$ref": "#/definitions/Expression"},
+                            { "$ref": "#/definitions/OpaqueExpression"},
+                            { "$ref": "#/definitions/InstanceValue"},
+                            { "$ref": "#/definitions/Interval"},
+                            { "$ref": "#/definitions/StringExpression"},
+                            { "$ref": "#/definitions/LiteralBoolean"},
+                            { "$ref": "#/definitions/LiteralNull"},
+                            { "$ref": "#/definitions/LiteralInteger"},
+                            { "$ref": "#/definitions/LiteralReal"},
+                            { "$ref": "#/definitions/LiteralString"},
+                            { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                            { "$ref": "#/definitions/TimeExpression"},
+                            { "$ref": "#/definitions/TimeInterval"}
+                        ]
+                    }
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "OpaqueExpression": {
+            "description": "[UML::OpaqueExpression]",
+            "properties": {
+                "type": { "enum": ["OpaqueExpression"] },
+                "expressionBody": {
+                    "type": "string",
+                    "description": "The opaque expression string"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "InstanceValue": {
+            "description": "[UML::InstanceValue]",
+            "properties": {
+                "type": { "enum": ["InstanceValue"] },
+                "instance": {
+                    "type": "string",
+                    "description": "ID of the SysML element representing the instance"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "Interval": {
+            "description": "[UML::Interval]",
+            "properties": {
+                "type": { "enum": ["Interval"] }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "StringExpression": {
+            "description": "[UML::StringExpression]",
+            "properties": {
+                "type": { "enum ": ["StringExpression"] }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "LiteralBoolean": {
+            "description": "[UML::LiteralBoolean]",
+            "properties": {
+                "type": { "enum": ["LiteralBoolean"] },
+                "boolean": {
+                    "type": "boolean"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "LiteralNull": {
+            "description": "[UML::LiterallNull]",
+            "properties": {
+                "type": { "enum": ["LiteralNull"] }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "LiteralInteger": {
+            "description": "[UML::LiteralInteger]",
+            "properties": {
+                "type": { "enum": ["LiteralInteger"] },
+                "integer": {
+                    "type": "integer"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "LiteralReal": {
+            "description": "[UML::LiteralReal]",
+            "properties": {
+                "type": { "enum": ["LiteralReal"] },
+                "double": {
+                    "type": "number"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "LiteralString": {
+            "description": "[UML::LiteralString]",
+            "properties": {
+                "type": { "enum": ["LiteralString"] },
+                "string": {
+                    "type": "string"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "LiteralUnlimitedNatural": {
+            "description": "[UML::LiteralUnlimitedNatural]",
+            "properties": {
+                "type": { "enum": ["LiteralUnlimitedNatural"] },
+                "naturalValue": {
+                    "type": "integer"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "TimeExpression": {
+            "description": "[UML::TimeExpression]",
+            "properties": {
+                "type": { "enum": ["TimeExpression"] }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "TimeInterval": {
+            "description": "[UML::TimeInterval]",
+            "properties": {
+                "type": { "enum": ["TimeInterval"] },
+                "timeIntervalMin": {
+                    "type": "string",
+                    "description": "ID of the SysML element representing the time interval max"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/ValueSpecification"}
+            ]
+        },
+        "Connector": {
+            "description": "[UML::Connector]",
+            "properties": {
+                "type": { "enum": ["Connector"] },
+                "targetLower": {
+                    "type": "object",
+                    "description": "",
+                    "oneOf": [
+                        { "$ref": "#/definitions/ValueSpecification"},
+                        { "$ref": "#/definitions/Duration"},
+                        { "$ref": "#/definitions/DurationInterval"},
+                        { "$ref": "#/definitions/ElementValue"},
+                        { "$ref": "#/definitions/Expression"},
+                        { "$ref": "#/definitions/OpaqueExpression"},
+                        { "$ref": "#/definitions/InstanceValue"},
+                        { "$ref": "#/definitions/Interval"},
+                        { "$ref": "#/definitions/StringExpression"},
+                        { "$ref": "#/definitions/LiteralBoolean"},
+                        { "$ref": "#/definitions/LiteralNull"},
+                        { "$ref": "#/definitions/LiteralInteger"},
+                        { "$ref": "#/definitions/LiteralReal"},
+                        { "$ref": "#/definitions/LiteralString"},
+                        { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                        { "$ref": "#/definitions/TimeExpression"},
+                        { "$ref": "#/definitions/TimeInterval"}
+                    ]
+                },
+                "targetUpper": {
+                    "type": "object",
+                    "description": "",
+                    "oneOf": [
+                        { "$ref": "#/definitions/ValueSpecification"},
+                        { "$ref": "#/definitions/Duration"},
+                        { "$ref": "#/definitions/DurationInterval"},
+                        { "$ref": "#/definitions/ElementValue"},
+                        { "$ref": "#/definitions/Expression"},
+                        { "$ref": "#/definitions/OpaqueExpression"},
+                        { "$ref": "#/definitions/InstanceValue"},
+                        { "$ref": "#/definitions/Interval"},
+                        { "$ref": "#/definitions/StringExpression"},
+                        { "$ref": "#/definitions/LiteralBoolean"},
+                        { "$ref": "#/definitions/LiteralNull"},
+                        { "$ref": "#/definitions/LiteralInteger"},
+                        { "$ref": "#/definitions/LiteralReal"},
+                        { "$ref": "#/definitions/LiteralString"},
+                        { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                        { "$ref": "#/definitions/TimeExpression"},
+                        { "$ref": "#/definitions/TimeInterval"}
+                    ]
+                },
+                "sourceLower": {
+                    "type": "object",
+                    "description": "",
+                    "oneOf": [
+                        { "$ref": "#/definitions/ValueSpecification"},
+                        { "$ref": "#/definitions/Duration"},
+                        { "$ref": "#/definitions/DurationInterval"},
+                        { "$ref": "#/definitions/ElementValue"},
+                        { "$ref": "#/definitions/Expression"},
+                        { "$ref": "#/definitions/OpaqueExpression"},
+                        { "$ref": "#/definitions/InstanceValue"},
+                        { "$ref": "#/definitions/Interval"},
+                        { "$ref": "#/definitions/StringExpression"},
+                        { "$ref": "#/definitions/LiteralBoolean"},
+                        { "$ref": "#/definitions/LiteralNull"},
+                        { "$ref": "#/definitions/LiteralInteger"},
+                        { "$ref": "#/definitions/LiteralReal"},
+                        { "$ref": "#/definitions/LiteralString"},
+                        { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                        { "$ref": "#/definitions/TimeExpression"},
+                        { "$ref": "#/definitions/TimeInterval"}
+                    ]
+                },
+                "sourceUpper": {
+                    "type": "object",
+                    "description": "",
+                    "oneOf": [
+                        { "$ref": "#/definitions/ValueSpecification"},
+                        { "$ref": "#/definitions/Duration"},
+                        { "$ref": "#/definitions/DurationInterval"},
+                        { "$ref": "#/definitions/ElementValue"},
+                        { "$ref": "#/definitions/Expression"},
+                        { "$ref": "#/definitions/OpaqueExpression"},
+                        { "$ref": "#/definitions/InstanceValue"},
+                        { "$ref": "#/definitions/Interval"},
+                        { "$ref": "#/definitions/StringExpression"},
+                        { "$ref": "#/definitions/LiteralBoolean"},
+                        { "$ref": "#/definitions/LiteralNull"},
+                        { "$ref": "#/definitions/LiteralInteger"},
+                        { "$ref": "#/definitions/LiteralReal"},
+                        { "$ref": "#/definitions/LiteralString"},
+                        { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                        { "$ref": "#/definitions/TimeExpression"},
+                        { "$ref": "#/definitions/TimeInterval"}
+                    ]
+                },
+                "sourcePath": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "IDs of the Nodes"
+                    }
+                },
+                "targetPath": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "IDs of the Nodes"
+                    }
+                },
+                "connectorKind": {
+                    "type": "string",
+                    "description": "Can be BINDING, DIRECTED, NONE"
+                },
+                "connectorValue": {
+                    "type": "object",
+                    "description": "The value specs",
+                    "oneOf": [
+                        { "$ref": "#/definitions/ValueSpecification"},
+                        { "$ref": "#/definitions/Duration"},
+                        { "$ref": "#/definitions/DurationInterval"},
+                        { "$ref": "#/definitions/ElementValue"},
+                        { "$ref": "#/definitions/Expression"},
+                        { "$ref": "#/definitions/OpaqueExpression"},
+                        { "$ref": "#/definitions/InstanceValue"},
+                        { "$ref": "#/definitions/Interval"},
+                        { "$ref": "#/definitions/StringExpression"},
+                        { "$ref": "#/definitions/LiteralBoolean"},
+                        { "$ref": "#/definitions/LiteralNull"},
+                        { "$ref": "#/definitions/LiteralInteger"},
+                        { "$ref": "#/definitions/LiteralReal"},
+                        { "$ref": "#/definitions/LiteralString"},
+                        { "$ref": "#/definitions/LiteralUnlimitedNatural"},
+                        { "$ref": "#/definitions/TimeExpression"},
+                        { "$ref": "#/definitions/TimeInterval"}
+                    ]
+                },
+                "connectorType": {
+                    "type": "string",
+                    "description": "ID for the connector type element"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/DirectedRelationship"}
+            ]
+        },
+        "Association": {
+            "description": "[UML::Association]",
+            "properties": {
+                "type": { "enum": ["Association"] },
+                "ownedEnd": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "IDs of the Nodes"
+                    }
+                },
+                "sourceAggregation": {
+                    "type": "string",
+                    "description": "can be COMPOSITE, SHARED, NONE"
+                },
+                "targetAggregation": {
+                    "type": "string",
+                    "description": "can be COMPOSITE, SHARED, NONE"
+                }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/DirectedRelationship"}
+            ]
+        },
+        "Characterizes": {
+            "description": "[IMCE Characterizes]",
+            "properties": {
+                "type": { "enum": ["Characterizes"] }
+            },
+            "allOf": [
+                {"$ref": "#/definitions/DirectedRelationship"}
+            ]
+        },
+        "MagicDrawData": {
+            "description": "[MD] blob to hold serialization of MD data that isn't included in model",
+            "properties": {
+                "type": { "enum": ["MagicDrawData"] },
+                "mdData": {
+                    "type": "string"
+                }
+            }
+        },
+        "Succession": {
+            "description": "[UML::Succession]",
+            "allOf": [
+                {"$ref": "#/definitions/Connector"}
+            ]
+        },
+        "Binding": {
+            "description": "[UML::Binding]",
+            "allOf": [
+                {"$ref": "#/definitions/Connector"}
+            ]
+        },
+        
+        "Paragraph": {
+            "properties": {
+                "type": { "enum": ["Paragraph"] },
+                "sourceType": {
+                    "enum": ["reference", "text"],
+                    "description": "If reference, provides the source and sourceProperty, otherwise just the text"
+                },
+                "source": {
+                    "type": "string",
+                    "description": "Element ID" 
+                },
+                "sourceProperty": {
+                    "enum": ["documentation", "name", "value"]
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "Table": {
+            "properties": {
+                "type": { "enum": ["Table"] },
+                "title": { "type": "string" },
+                "body": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "type": "array",
+                                    "items": {
+			                            "type": "object",
+			                            "oneOf": [
+			                                { "$ref": "#/definitions/Paragraph" },
+			                                { "$ref": "#/definitions/List" },
+			                                { "$ref": "#/definitions/Table" },
+			                                { "$ref": "#/definitions/Image" }
+			                            ]
+		                            }
+	                            }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "List": {
+            "properties": {
+                "type": { "enum": ["List"] },
+                "ordered": {
+                    "type": "boolean"
+                 },
+                 "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "oneOf": [
+                                { "$ref": "#/definitions/Paragraph" },
+                                { "$ref": "#/definitions/List" },
+                                { "$ref": "#/definitions/Table" },
+                                { "$ref": "#/definitions/Image" }
+                            ]
+                        }
+                    }
+                }
+             }
+        },
+        "Image": {
+            "properties": {
+                "type": { "enum": ["Image"] },
+                "sysmlid": {
+                    "type": "string"
+                }
+            }
+        },
+        "Section": {
+            "properties": {
+                "type": { "enum": ["Section"] },
+                "name": {
+                    "type": "string"
+                },
+                "contains": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "oneOf": [
+                            {"$ref": "#/definitions/Paragraph"},
+                            {"$ref": "#/definitions/Table"},
+                            {"$ref": "#/definitions/List"},
+                            {"$ref": "#/definitions/Image"},
+                            {"$ref": "#/definitions/Section"}
+                        ]
+                    }
+                }
+            }
+        },
+        
+        "RelatedDocument": {
+            "description": "Object to hold the document that element might be referenced from",
+            "properties": {
+                "sysmlid": { "type": "string" },
+                "name": { "type": "string" },
+                "parentViews": {
+                    "type": "array",
+                    "description": "Array of the direct parent views the element appears in",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/Element"
+                    }
+                }
+            }
+        }
+    }
+}

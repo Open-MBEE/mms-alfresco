@@ -1,0 +1,18 @@
+{
+  "elements": [
+    {
+      "documentation": "Child",
+      "sysmlId": "childOfParentToDelete2",
+      "name": "childOfParentToDelete2",
+      "ownerId": "parentToDelete2",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "gg_string3"
+        }
+      ]
+    }
+  ]
+}

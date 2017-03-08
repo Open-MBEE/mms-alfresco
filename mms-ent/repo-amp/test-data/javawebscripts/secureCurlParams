@@ -1,0 +1,22 @@
+#!/bin/bash
+
+export CURL_STATUS="-w \n%{http_code}\n"
+export CURL_POST_FLAGS_NO_DATA="-X POST"
+export CURL_POST_FLAGS="-X POST -H Content-Type:application/json --data"
+export CURL_PUT_FLAGS="-X PUT"
+export CURL_GET_FLAGS="-X GET"
+
+export CURL_SECURITY=" -k -3"
+
+export CURL_USER=" -u `whoami`"
+export CURL_FLAGS=$CURL_STATUS$CURL_USER$CURL_SECURITY
+
+#pid=`${d}/getAlfrescoPid.sh`
+
+if [ -z "$ALF_SERVER" ]; then
+  export ALF_SERVER=localhost
+fi
+
+export SERVICE_URL="https://${ALF_SERVER}/alfresco/service/"
+export BASE_URL="https://${ALF_SERVER}/alfresco/service/workspaces/master/"
+

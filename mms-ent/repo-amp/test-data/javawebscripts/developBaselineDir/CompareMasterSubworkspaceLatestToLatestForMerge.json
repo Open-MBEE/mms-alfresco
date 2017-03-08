@@ -1,0 +1,98 @@
+{
+    "workspace1": {"elements": [
+        {
+            "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+            "sysmlid": "b",
+            "editable": true,
+            "creator": "admin",
+            "modifier": "admin",
+            "documentation": "b is b",
+            "owner": "holding_bin_no_site_no_project",
+            "specialization": {
+                "propertyType": null,
+                "isSlot": false,
+                "isDerived": false,
+                "value": [{
+                    "valueExpression": null,
+                    "string": "the b value",
+                    "type": "LiteralString"
+                }],
+                "type": "Property"
+            }
+        },
+        {
+            "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+            "sysmlid": "d",
+            "editable": true,
+            "creator": "admin",
+            "modifier": "admin",
+            "documentation": "d is d",
+            "owner": "holding_bin_no_site_no_project",
+            "specialization": {
+                "propertyType": null,
+                "isSlot": false,
+                "isDerived": false,
+                "type": "Property"
+            }
+        }
+    ]},
+    "workspace2": {
+        "deletedElements": [
+            {
+                "modifier": "admin",
+                "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+                "owner": "holding_bin_no_site_no_project",
+                "documentation": "b is b",
+                "sysmlid": "b",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "the b value",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                },
+                "editable": true,
+                "creator": "admin",
+            },
+            {
+                "modifier": "admin",
+                "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+                "owner": "holding_bin_no_site_no_project",
+                "documentation": "d is d",
+                "sysmlid": "d",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "type": "Property"
+                },
+                "editable": true,
+                "creator": "admin",
+            }
+        ],
+        "moved": [],
+        "addedElements": [{
+            "modifier": "admin",
+            "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+            "owner": "holding_bin_no_site_no_project",
+            "documentation": "f is f",
+            "sysmlid": "f",
+            "specialization": {
+                "source": null,
+                "target": null,
+                "type": "Expose"
+            },
+            "editable": true,
+            "creator": "admin",
+        }],
+        "conflictedElements": [],
+        "updatedElements": [],
+        "conflicted": [],
+        "movedElements": []
+    }
+}
+200

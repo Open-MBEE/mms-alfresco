@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+   <shortname>DocWeb Portal</shortname>
+   <description>Display DocWeb for specific site or a listing of DocWeb sites</description>
+   <family>dashlet</family>
+   <url>/components/dashlets/docweb</url>
+</webscript>

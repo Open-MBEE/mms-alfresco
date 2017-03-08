@@ -1,0 +1,41 @@
+.docweb .title a.iframe-title
+{
+   background: url("../images/new-window-16.png") no-repeat 100% 0;
+   padding-right: 20px;
+}
+
+.docweb .default-title,
+.docweb .notsecure-title,
+.docweb .iframe-title,
+.docweb .default-body,
+.docweb .notsecure-body,
+.docweb .iframe-body
+{
+   display: none;
+}
+
+.docweb-default .default-title,
+.docweb-notsecure .notsecure-title,
+.docweb-iframe .iframe-title
+{
+   display: inline;
+}
+
+.docweb-default .default-body,
+.docweb-notsecure .notsecure-body,
+.docweb-iframe .iframe-body
+{
+   display: block;
+}
+
+.docweb .scrollablePanel
+{
+   height: 200px;
+   overflow: hidden;
+}
+
+.docweb .default-body,
+.docweb .notsecure-body
+{
+   padding: 10px;
+}

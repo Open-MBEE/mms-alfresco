@@ -1,0 +1,11 @@
+{
+    "workspaces": [
+        {
+            "creator": "admin",
+            "description": "<p>This is a new workspace!</p>\n",
+            "name": "Workspace1",
+            "parent": "master",
+            "permission": "read"
+        }
+    ]
+}

@@ -1,0 +1,100 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "300",
+            "_qualifiedId": "/null/301",
+            "_qualifiedName": "/holding_bin/301",
+            "_siteCharacterizationId": "null",
+            "allowedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "childrenViews": [
+                "304"
+            ],
+            "contains": [
+                {
+                    "source": "301",
+                    "sourceProperty": "documentation",
+                    "sourceType": "reference",
+                    "type": "Paragraph"
+                }
+            ],
+            "displayedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "documentation": "else",
+            "isDerived": false,
+            "name": "301",
+            "noSections": [
+                "302"
+            ],
+            "ownerId": "holding_bin",
+            "sysmlId": "301",
+            "type": "Product",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ],
+            "view2view": [
+                {
+                    "childrenViews": [
+                        "301",
+                        "302"
+                    ],
+                    "sysmlId": "301"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "301",
+            "_qualifiedId": "/null/302",
+            "_qualifiedName": "/holding_bin/302",
+            "_siteCharacterizationId": "null",
+            "documentation": "to",
+            "isDerived": false,
+            "name": "302",
+            "ownerId": "holding_bin",
+            "sysmlId": "302",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_owner": "302",
+            "_qualifiedId": "/null/303",
+            "_qualifiedName": "/holding_bin/303",
+            "_siteCharacterizationId": "null",
+            "documentation": "talk",
+            "isDerived": false,
+            "name": "303",
+            "ownerId": "holding_bin",
+            "sysmlId": "303",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}

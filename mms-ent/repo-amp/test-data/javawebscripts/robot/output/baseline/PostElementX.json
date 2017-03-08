@@ -1,0 +1,24 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/holding_bin_123456/x",
+            "_qualifiedName": "//JW_TEST/Holding Bin/300",
+            "_siteCharacterizationId": "europa",
+            "documentation": "x is x",
+            "isDerived": false,
+            "name": "300",
+            "ownerId": "holding_bin_123456",
+            "sysmlId": "x",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "the x value",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}

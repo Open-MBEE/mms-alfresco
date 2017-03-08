@@ -1,0 +1,37 @@
+{
+  "views": [
+    {
+      "sysmlId": "_17_0_2_3_e610336_1394148311476_17302_29388",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "Components",
+      "_owner": "123456",
+      "documentation": "",
+        "displayedElements": [
+          "_17_0_2_4_f3a0363_1394142290412_487571_28478"
+        ],
+        "childrenViews": [],
+        "allowedElements": [
+          "_17_0_2_4_f3a0363_1394142290412_487571_28478"
+        ],
+        "contains": [
+          {
+            "ordered": false,
+            "list": [
+              [
+                {
+                  "sourceType": "reference",
+                  "source": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+                  "sourceProperty": "name",
+                  "type": "Paragraph"
+                }
+              ]
+            ],
+            "type": "List"
+          }
+        ],
+        "type": "View"
+      }
+  ]
+}

@@ -1,0 +1,32 @@
+{"elements": [{
+
+    "creator": "admin",
+
+    "documentation": "directed_relationship2",
+
+    "editable": true,
+
+    "name": "500",
+
+    "owner": "300",
+
+    "qualifiedId": "/123456/300/500",
+
+    "qualifiedName": "/JW_TEST/300/500",
+
+    "specialization": {
+
+        "source": "303",
+
+        "target": "304",
+
+        "type": "DirectedRelationship"
+
+    },
+
+    "sysmlid": "500"
+
+}]}
+
+200
+

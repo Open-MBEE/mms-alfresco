@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname> Search workspace for provided keywords </shortname>
+    <description>
+    Search workspace for provided keywords
+    </description>
+    <url>/projects/{projectId}/refs/{refId}/search?keyword={keyword}</url>
+    <format default="json">argument</format>
+    <authentication>user</authentication>
+    <transaction>required</transaction>
+    <family>MMS REST API</family>
+</webscript>

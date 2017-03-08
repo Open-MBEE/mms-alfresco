@@ -1,0 +1,23 @@
+{"elements": [{
+    "qualifiedId": "/no_site/no_site_no_project/holding_bin_no_site_no_project/x",
+    "qualifiedName": "/no_site/no_site_no_project/holding_bin/300",
+    "sysmlid": "x",
+    "editable": true,
+    "creator": "admin",
+    "modifier": "admin",
+    "name": "300",
+    "owner": "holding_bin_no_site_no_project",
+    "documentation": "x is x",
+    "specialization": {
+        "propertyType": null,
+        "isDerived": false,
+        "isSlot": false,
+        "value": [{
+            "valueExpression": null,
+            "string": "the x value",
+            "type": "LiteralString"
+        }],
+        "type": "Property"
+    }
+}]}
+200

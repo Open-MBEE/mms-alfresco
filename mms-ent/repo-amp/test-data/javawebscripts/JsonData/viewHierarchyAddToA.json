@@ -1,0 +1,22 @@
+{
+    "elements": [{
+        "sysmlId": "view-a3",
+        "owner": "_18_0_5_407019f_1466704583339_1092_14357",
+        "name": "View A3",
+        "documentation": "",
+        "type": "View"
+    }, {
+        "sysmlId": "_18_0_5_407019f_1466704583339_1092_14357",
+        "type": "View",
+        "childViews": [{
+            "aggregation": "NONE",
+            "id": "_18_0_5_407019f_1466704587594_239414_14483"
+        }, {
+            "aggregation": "COMPOSITE",
+            "id": "_18_0_5_407019f_1466704588878_781465_14530"
+        }, {
+            "aggregation": "COMPOSITE",
+            "id": "view-a3"
+        }]
+    }]
+}

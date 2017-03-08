@@ -1,0 +1,60 @@
+{
+    "workspace1": {
+        "qualifiedName": "master/wsA",
+        "name": "wsA",
+        "elements": [
+            {
+                "qualifiedName": "/no_site/no_site_no_project/holding_bin/300",
+                "sysmlid": "x",
+                "editable": true,
+                "version": "1.1",
+                "name": "300",
+                "owner": "holding_bin_no_site_no_project",
+                "documentation": "something",
+                "specialization": {
+                    "propertyType": null,
+                    "isDerived": false,
+                    "isSlot": false,
+                    "value": [{
+                        "valueExpression": null,
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }],
+                    "type": "Property"
+                }
+            },
+            {
+                "qualifiedName": "/no_site/no_site_no_project/holding_bin",
+                "sysmlid": "holding_bin_no_site_no_project",
+                "editable": true,
+                "name": "holding_bin",
+                "owner": "no_site_no_project",
+                "specialization": {"type": "Package"}
+            }
+        ]
+    },
+    "workspace2": {
+        "deletedElements": [],
+        "addedElements": [],
+        "conflictedElements": [],
+        "updatedElements": [{
+            "name": "300",
+            "qualifiedName": "/no_site/no_site_no_project/holding_bin/300",
+            "owner": "holding_bin_no_site_no_project",
+            "documentation": "x is x",
+            "sysmlid": "x",
+            "specialization": {
+                "value": [{
+                    "valueExpression": null,
+                    "string": "the x value",
+                    "type": "LiteralString"
+                }],
+                "type": "Property"
+            }
+        }],
+        "qualifiedName": "master/wsA/wsB",
+        "name": "wsB",
+        "movedElements": []
+    }
+}
+200

@@ -1,0 +1,288 @@
+{
+  "workspace1": {
+    "name": "wsA",
+    "elements": [
+      {
+        "sysmlId": "304",
+        "_editable": true,
+        "version": "1.2",
+        "name": "304",
+        "documentation": "about",
+        "_owner": "303",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "dlam_string",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "sysmlId": "404",
+        "_editable": true,
+        "version": "1.1",
+        "name": "404",
+        "documentation": "4about",
+        "_owner": "403",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "dlam_string",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "name": "conflict",
+        "documentation": "",
+        "_owner": "123456",
+        "sysmlId": "conflict",
+          "type": "Element",
+        "_editable": true
+      },
+      {
+        "sysmlId": "302",
+        "_editable": true,
+        "name": "302",
+        "_owner": "301",
+        "documentation": "to",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "dlam_string",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "sysmlId": "301",
+        "_editable": true,
+        "name": "301",
+        "_owner": "300",
+        "documentation": "else",
+          "displayedElements": [
+            "301",
+            "302",
+            "303"
+          ],
+          "childrenViews": [
+            "304"
+          ],
+          "view2view": [
+            {
+              "childrenViews": [
+                "301",
+                "302"
+              ],
+              "sysmlId": "301"
+            }
+          ],
+          "allowedElements": [
+            "301",
+            "302",
+            "303"
+          ],
+          "contains": [
+            {
+              "sourceType": "reference",
+              "source": "301",
+              "sourceProperty": "documentation",
+              "type": "Paragraph"
+            }
+          ],
+          "noSections": [
+            "302"
+          ],
+          "type": "Product"
+      },
+      {
+        "sysmlId": "300",
+        "_editable": true,
+        "name": "300",
+        "_owner": "123456",
+        "documentation": "something",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "dlam_string",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property"
+      },
+      {
+        "name": "403",
+        "documentation": "4talk",
+        "_owner": "402",
+        "sysmlId": "403",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "dlam_string",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property",
+        "_editable": true
+      },
+      {
+        "name": "402",
+        "documentation": "4to",
+        "_owner": "401",
+        "sysmlId": "402",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "dlam_string",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property",
+        "_editable": true
+      },
+      {
+        "name": "401",
+        "documentation": "4else",
+        "_owner": "4000",
+        "sysmlId": "401",
+          "view2view": [
+            {
+              "childrenViews": [
+                "401",
+                "402"
+              ],
+              "sysmlId": "401"
+            }
+          ],
+          "childrenViews": [
+            "404"
+          ],
+          "displayedElements": [
+            "401",
+            "402",
+            "403"
+          ],
+          "allowedElements": [
+            "401",
+            "402",
+            "403"
+          ],
+          "noSections": [
+            "402"
+          ],
+          "contains": [
+            {
+              "sourceType": "reference",
+              "source": "401",
+              "sourceProperty": "documentation",
+              "type": "Paragraph"
+            }
+          ],
+          "type": "Product",
+        "_editable": true
+      },
+      {
+        "name": "400",
+        "documentation": "4something",
+        "_owner": "123456",
+        "sysmlId": "4000",
+          "propertyType": null,
+          "isSlot": false,
+          "isDerived": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "dlam_string",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property",
+        "_editable": true
+      }
+    ]
+  },
+  "workspace2": {
+    "deletedElements": [],
+    "addedElements": [
+      {
+        "_owner": "302",
+        "documentation": "y is y",
+        "sysmlId": "y",
+          "propertyType": null,
+          "isDerived": false,
+          "isSlot": false,
+          "value": [
+            {
+              "valueExpression": null,
+              "string": "the y value",
+              "type": "LiteralString"
+            }
+          ],
+          "type": "Property",
+        "_editable": true
+      }
+    ],
+    "conflictedElements": [
+      {
+        "sysmlId": "conflict",
+        "name": "conflict",
+        "_owner": "123456",
+        "documentation": "this will create a conflict!",
+          "type": "Element"
+        }
+    ],
+    "updatedElements": [
+      {
+        "name": "conflict",
+        "_owner": "123456",
+        "documentation": "this will create a conflict!",
+        "sysmlId": "conflict",
+          "type": "Element"
+      },
+      {
+        "name": "304",
+        "_owner": "123456",
+        "documentation": "this will create a moved element",
+        "sysmlId": "304",
+          "type": "Property"
+      },
+      {
+        "name": "404",
+        "_owner": "403",
+        "sysmlId": "404",
+          "type": "Package"
+      }
+    ],
+    "name": "wsT",
+    "movedElements": [
+      {
+        "name": "304",
+        "_owner": "123456",
+        "documentation": "this will create a moved element",
+        "sysmlId": "304",
+          "type": "Property"
+      }
+    ]
+  }
+}

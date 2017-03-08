@@ -1,0 +1,12 @@
+{
+  "elements": [
+    {
+      "sysmlId": "301",
+      "type": "View"
+    },
+    {
+      "sysmlId": "401",
+      "type": "View"
+    }
+  ]
+}

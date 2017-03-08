@@ -1,0 +1,10 @@
+{
+  "workspaces": [
+    {
+      "description": "",
+      "name": "wsG1",
+      "parent": "master",
+      "_creator": "admin"
+    }
+  ]
+}

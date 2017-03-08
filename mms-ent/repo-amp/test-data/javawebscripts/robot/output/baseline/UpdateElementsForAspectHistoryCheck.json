@@ -1,0 +1,25 @@
+{
+  "message": "[WARNING]: The type supplied Conform is different than the stored type DirectedRelationship\n[WARNING]: The type supplied Untyped is different than the stored type Element\n",
+  "elements": [
+    {
+      "_modifier": "admin",
+      "sysmlId": "directed_relationship_zzz",
+      "documentation": "d is d",
+      "_owner": "aspect_history_zzz",
+      "source": null,
+      "target": null,
+      "type": "Conform",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "sysmlId": "element_zzz",
+      "documentation": "e is e",
+      "_owner": "aspect_history_zzz",
+      "type": "Untyped",
+      "_editable": true,
+      "_creator": "admin"
+    }
+  ]
+}

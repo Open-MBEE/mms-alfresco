@@ -1,0 +1,4 @@
+#!/bin/bash
+   # a new project is created
+echo  curl -w "\n%{http_code}\n" -u admin:admin -X POST -H "Content-Type:application/json" --data '{"name":"TEST"}' "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/projects/$1?fix=true&createSite=true"
+curl -w "\n%{http_code}\n" -u admin:admin -X POST -H "Content-Type:application/json" --data '{"name":"TEST"}' "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/projects/$1?fix=true&createSite=true"

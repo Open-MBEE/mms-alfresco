@@ -1,0 +1,75 @@
+{"elements": [
+    {
+        "author": "admin",
+        "name": "301",
+        "qualifiedName": "/////CY Test/300/301",
+        "documentation": "else",
+        "owner": "300",
+        "specialization": {
+            "childrenViews": ["304"],
+            "displayedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "view2view": [{
+                "childrenViews": [
+                    "301",
+                    "302"
+                ],
+            }],
+            "isDerived": false,
+            "allowedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "contains": [{
+                "sourceType": "reference",
+                "source": "301",
+                "sourceProperty": "documentation",
+                "type": "Paragraph"
+            }],
+            "noSections": ["302"],
+            "type": "Product"
+        },
+        "editable": true
+    },
+    {
+        "author": "admin",
+        "name": "302",
+        "qualifiedName": "/////CY Test/301/302",
+        "documentation": "to",
+        "owner": "301",
+        "specialization": {
+            "isDerived": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true
+    },
+    {
+        "author": "admin",
+        "name": "303",
+        "qualifiedName": "/////CY Test/302/303",
+        "documentation": "talk",
+        "owner": "302",
+        "specialization": {
+            "isDerived": false,
+            "value": [{
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true
+    }
+]}
+200

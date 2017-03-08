@@ -1,0 +1,15 @@
+{
+  "message": "[WARNING]: The type supplied Package is different than the stored type Property\n",
+  "elements": [
+    {
+      "sysmlId": "404",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "404",
+      "_owner": "403",
+      "documentation": "4about",
+      "type": "Package"
+    }
+  ]
+}

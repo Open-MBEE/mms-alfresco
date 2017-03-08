@@ -1,0 +1,21 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "documentation": "talk modified",
+            "isDerived": false,
+            "name": "303",
+            "ownerId": "302",
+            "sysmlId": "303",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string modified",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}

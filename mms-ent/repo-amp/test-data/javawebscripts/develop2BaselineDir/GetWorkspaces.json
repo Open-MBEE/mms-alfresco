@@ -1,0 +1,64 @@
+{"workspaces": [
+
+    {
+
+        "name": "master",
+
+        "qualifiedName": "master"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "wsB",
+
+        "qualifiedName": "master/wsA/wsB"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "wsT",
+
+        "qualifiedName": "master/wsA/wsT"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "wsA",
+
+        "qualifiedName": "master/wsA"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "ws2",
+
+        "qualifiedName": "master/ws2"
+
+    },
+
+    {
+
+        "creator": "admin",
+
+        "name": "ws1",
+
+        "qualifiedName": "master/ws1"
+
+    }
+
+]}
+
+200
+

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ "$#" -lt 2 ]; then
+  echo Error! Not enough arguments.
+  echo Usage: configdelete [workspaceId] productId snapshotId 
+elif [ "$#" -eq 2 ]; then
+  echo curl -w "%{http_code}\n" -X DELETE -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/products/$1/snapshots/$2"
+  curl -w "%{http_code}\n" -X DELETE -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/sites/europa/products/$1/snapshots/$2"
+elif [ "$#" -eq 3 ]; then
+  echo curl -w "%{http_code}\n" -X DELETE -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1/sites/europa/products/$2/snapshots/$3"
+  curl -w "%{http_code}\n" -X DELETE -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1/sites/europa/products/$2/snapshots/$3"
+fi;

@@ -1,0 +1,25 @@
+{
+  "message": "[WARNING]: Owner with name: parentToDelete2 was deleted.  Will resurrect it, and put childOfParentToDelete2 into it.\n[WARNING]: Owner with name: parentToDelete2 was deleted.  Will resurrect it\n[WARNING]: Owner with name: parentToDelete1 was deleted.  Will resurrect it\n",
+  "elements": [
+    {
+      "sysmlId": "childOfParentToDelete2",
+      "_editable": true,
+      "_creator": "admin",
+      "_modifier": "admin",
+      "name": "childOfParentToDelete2",
+      "_owner": "parentToDelete2",
+      "documentation": "Child",
+      "propertyType": null,
+      "isDerived": false,
+      "isSlot": false,
+      "value": [
+        {
+          "valueExpression": null,
+          "string": "gg_string3",
+          "type": "LiteralString"
+        }
+      ],
+      "type": "Property"
+    }
+  ]
+}

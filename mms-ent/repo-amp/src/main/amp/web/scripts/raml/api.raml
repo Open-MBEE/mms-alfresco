@@ -1,0 +1,313 @@
+#%RAML 0.8
+---
+# NOTE: to import into SOAPUI, need to remove {server} reference from baseUri
+# and change all the schema references to '|'
+title: mms
+version: 1.0
+mediaType: application/json
+baseUri: https://{server}/alfresco/service
+protocols: [HTTPS]
+documentation: 
+  - title: Home
+    content: |
+      Welcome to the _Model Management System (MMS) API_ Documentation. The _MMS API_
+      allows you to connect your application to our RESTful service for accessing
+      systems engineering model information.
+
+securitySchemes:
+  - basic:
+      type: Basic Authentication
+
+schemas:
+  # these all return elements - search may need to be paged
+  - elements: !include elements.json
+  - views:    !include elements.json
+  - products: !include elements.json
+
+  - comments:       !include comments.json    
+  - configurations: !include configurations.json
+  - projects:       !include projects.json
+  - snapshots:      !include snapshots.json
+  - versions:       !include versions.json
+    
+  - sites:        !include sites.json
+  - workspaces:   !include workspaces.json
+  
+  # include post/ put and delete responses
+  #- elementsResponse: !include postResponse.json
+  #- viewsResponse: !include postResponse.json
+traits:
+  - backgroundable:
+      description: Aspect for resources that can be created/updated in the background
+      queryParameters:
+        background:
+          description: Runs create/update in the asynchronously in the background if true, or synchronously if false or not specified
+          type: boolean
+  - recursable:
+      description: Aspect for resources that can be retrieved recursively
+      queryParameters:
+        recurse:
+          description: If true, finds all elements recursively based on containment hierarchy
+          type: boolean
+        recurseDepth:
+          description: Depth to recurse to. 0 specifies infinite recursion (e.g., until all leaf nodes are found).
+          type: integer
+  - searchable:
+      description: Aspect for resources that can be searched for any resource type
+      queryParameters:
+        search:
+          description: Regular expression of the search to be executed at the specified scope. Currently search is against sysml:id, sysml:name, sysml:documentation, sysml:body.
+  - sliceable:
+      description: Aspect for resources that can be queried via a timestamp
+      queryParameters:
+        timestamp:
+          description: Timestamp to find most recent version of <<resourcePathName>>, specified in ISO8601 time format.
+          type: date
+
+resourceTypes:
+  - readCollection:
+      securedBy: [basic]
+      is: [recursable, searchable, sliceable]
+      usage: Resources with read capabilities and standard responses
+      description: Read operations for <<resourcePathName>>
+      get:
+          description: Read operation for <<resourcePathName>>
+          responses:
+              200:
+                description: <<resourcePathName>> read successful
+                body:
+                  schema: <<resourcePathName>>
+              400:
+                description: Malformed request by client
+              401:
+                description: User does not have read permissions to <<resourcePathName>>
+              404:
+                description: <<resourcePathName>> not found
+              500:
+                description: Could not read <<resourcePathName>> due to internal server error
+  - collection:
+      type: readCollection
+      usage: Resources with CRUD capabilities
+      description: Create, Update, and Delete operations for <<resourcePathName>>
+      post:
+        description: Append operation for <<resourcePathName>>
+        body:
+          schema: <<resourcePathName>>
+        responses:
+          200:
+            body:
+              schema: <<resourcePathName>>PostResponse
+            description: <<resourcePathName>> append successful
+          202:
+            description: <<resourcePathName>> append started, but not yet completed
+          401:
+            description: User does not have write permissions to <<resourcePathName>>
+          404:
+            description: <<resourcePathName>> not found
+          409:
+            description: <<resourcePathName>> conflict detected (e.g., intervening update occurred between when user accessed resource and when user saved resource)
+          500:
+            description: Could not append to <<resourcePathName>> due to internal server error   
+      put:
+        description: Create/update operation for <<resourcePathName>>
+        body:
+          schema: <<resourcePathName>>
+        responses:
+          200:
+            description: <<resourcePathName>> update successful
+            body:
+              schema: <<resourcePathName>>PutResponse
+          201:
+            description: <<resourcePathName>> create successful
+          202:
+            description: <<resourcePathName>> create/update started, but not yet completed
+          401:
+            description: User does not have create/update permissions to <<resourcePathName>>
+          404:
+            description: <<resourcePathName>> not found
+          409:
+            description: <<resourcePathName>> conflict detected (e.g., intervening update occurred between when user accessed resource and when user updated resource)
+          500:
+            description: Could not append to <<resourcePathName>> due to internal server error
+      delete:
+        description: Delete operation for <<resourcePathName>>
+        responses:
+          200:
+            description: <<resourcePathName>> delete successful
+            body:
+              schema:  <<resourcePathName>>DeleteResponse
+          202:
+            description: <<resourcePathName>> delete started, but not yet completed
+          401:
+            description: User does not have delete permissions to <<resourcePathName>>
+          404:
+            description: <<resourcePathName>> not found
+          500:
+            description: Could not delete <<resourcePathName>> due to internal server error
+
+/workspaces:
+  description: This is a parallel of the sites branch and used for namespacing purposes, all the methods respond
+  /{workspaceId}:
+    /elements:
+      is: [backgroundable]
+      type: collection
+      /{elementId}:
+        type: collection
+        uriParameters:
+          elementId:
+            description: Sysml ID for the element under consideration
+        /comments:
+          type: collection
+          /{commentId}:
+            type: collection
+            uriParameters:
+              commentId:
+                description: Sysml ID for comment under consideration
+        /versions:
+          type: collection
+          /{versionId}:
+            type: collection
+            uriParameters:
+              versionId:
+                description: Sysml ID for the version under consideration
+    /sites:
+      type: readCollection
+      get:
+        description: Retrieve all sites for which user has read permissions
+        responses:
+          200:
+            body:
+              example: |
+                { "sites": 
+                  [
+                    {
+                      "name": "europa",
+                      "title": "Europa",
+                      "categories": [ "v1", "v2", "v3"]
+                    } ,
+                    {
+                      "name": "ems-support",
+                      "title": "EMS Support Site",
+                      "categories": []
+                    }
+                  ]
+                }
+      /{siteId}:
+        uriParameters:
+          siteId:
+            description: Alfresco site identifier for the project under consideration
+        /projects:
+          type: readCollection
+          get:
+            description: Retrieve all projects for which user has read permissions
+            responses:
+              200:
+                body:
+                  example: |
+                    # taken from project.post.desc.xml (not currently implemented)
+                    { 
+                      "projects": 
+                      [
+                        {
+                          "id": "PROJECT-123456",
+                          "name": "Europa",
+                          "projectVersion": "v1"
+                        },
+                        {
+                          "id": "PROJECT-2468",
+                          "name": "Europa FS",
+                          "projectVersion": "v35"
+                        }
+                      ]
+                    }
+          /{projectId}:
+            type: readCollection
+            uriParameters:
+              projectId:
+                description: MD project ID for the project under consideration
+        /products:
+          type: collection
+          get:
+            description: Retrieve all products for which user has read permissions
+            responses:
+              200:
+                body:
+                  example: |
+                    # taken from configuration.get.desc.xml
+                    {
+                      "products": [
+                        {
+                          "id": "_17_0_2_3_8af0285_1397502950809_504517_66083",
+                          "name": "Flight System",
+                          "snapshots": [
+                              {
+                              "created": "2014-04-21T17:00:16.645-07:00",
+                              "creator": "gdubos",
+                              "id": "_17_0_2_3_8af0285_1397502950809_504517_66083_1398124815059",
+                              "tag": "",
+                              "url": "/alfresco/service/snapshots/_17_0_2_3_8af0285_1397502950809_504517_66083_1398124815059"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+          /{productId}:
+            type: collection
+            uriParameters:
+              productId:
+                description: Sysml ID for the product (document) under consideration
+            /snapshots:
+              description: Scoped under /configurations and /products
+              type: collection
+              /{snapshotId}:
+                type: collection
+                uriParameters:
+                  snapshotId:
+                    description: ID for the snapshot under consideration
+    /views:
+      type: collection
+      /{viewId}:
+        type: collection
+        uriParameters:
+          viewId:
+            description: Sysml ID for the view under consideration
+        /elements:
+          type: collection
+          /{elementId}:
+            type: collection
+            uriParameters:
+              elementId:
+                description: Sysml ID for the element under consideration
+            /comments:
+              type: collection
+              /{commentId}:
+                type: collection
+                uriParameters:
+                  commentId:
+                    description: Sysml ID for comment under consideration
+            /versions:
+              type: collection
+              /{versionId}:
+                type: collection
+                uriParameters:
+                  versionId:
+                    description: Sysml ID for the version under consideration
+    /configurations:
+      type: collection
+      /{configurationId}:
+        type: collection
+        uriParameters:
+          configurationId:
+            description: ID for the configuration under consideration
+        /snapshots:
+          description: Scoped under /configurations and /products
+          type: collection
+          /{snapshotId}:
+            type: collection
+            uriParameters:
+              snapshotId:
+                description: ID for the snapshot under consideration
+    /changesets:
+      type: collection
+    /artifacts:
+    /constraints:

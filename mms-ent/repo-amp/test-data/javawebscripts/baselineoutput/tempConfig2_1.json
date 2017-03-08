@@ -1,0 +1,52 @@
+{
+  "configurations": [{
+    "timestamp": "2014-06-09T09:04:45.834-0700",
+    "description": "updating description",
+    "name": "product test 2",
+    "snapshots": [],
+  }],
+  "products": [{
+    "qualifiedId": "123456/300/301",
+    "name": "301",
+    "qualifiedName": "/CY Test/300/301",
+    "documentation": "else",
+    "owner": "300",
+    "specialization": {
+      "displayedElements": [
+        "301",
+        "302",
+        "303"
+      ],
+      "childrenViews": ["304"],
+      "view2view": [{
+        "childrenViews": [
+          "301",
+          "302"
+        ],
+      }],
+      "isDerived": false,
+      "isSlot": false,
+      "allowedElements": [
+        "301",
+        "302",
+        "303"
+      ],
+      "value": [{
+        "string": "dlam_string",
+        "type": "LiteralString"
+      }],
+      "contains": [{
+        "sourceType": "reference",
+        "source": "301",
+        "sourceProperty": "documentation",
+        "type": "Paragraph"
+      }],
+      "noSections": ["302"],
+      "type": "Product"
+    },
+    "editable": true,
+    "creator": "admin",
+  }]
+}
+
+200

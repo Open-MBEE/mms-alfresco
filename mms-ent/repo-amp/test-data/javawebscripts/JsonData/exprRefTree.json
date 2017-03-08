@@ -1,0 +1,106 @@
+// server needs to check if first operand in a Operation
+// server does not expext instanceSpecificationSpecification to be embedded.
+
+{
+  "elements": [
+    {
+      "sysmlId": "viewElemRefTree",
+      "specialization": {
+        "type": "View",
+        "contents": {
+          "operand": [
+            {
+              "instance": "rootInstanceSpec1",
+              "type": "InstanceValue"
+            },
+            {
+              "instance": "rootInstanceSpec2",
+              "type": "InstanceValue"
+            },
+            {
+              "instance": "rootInstanceSpec3",
+              "type": "InstanceValue"
+            },
+            {
+              "instance": "rootInstanceSpec4",
+              "type": "InstanceValue"
+            },
+          ],
+          "type": "Expression"
+        }
+      }
+    },
+    {
+      "sysmlId": "rootInstanceSpec1",
+      "type": "InstanceSpecification",
+      "classifier": [
+        "PE_Opaque_Paragraph"
+      ],
+      "instanceSpecificationSpecification": {
+        "string": "{\"sourceType\": \"reference\",\"source\": \"_17_0_5_1_407019f_1402422716418_897626_16413\",\"sourceProperty\": \"name\",\"type\": \"Paragraph\"}",
+        "type": "LiteralString"
+      }
+    },
+    {
+      "sysmlId": "rootInstanceSpec2",
+      "type": "InstanceSpecification",
+      "classifier": [
+        "PE_Table"
+      ],
+      "slots": [
+        "prop1"
+      ]
+    },
+    {
+      "sysmlId": "prop1",
+      "type": "Property",
+      "isSlot": true,
+      "propertyType": "PE_Table_Row",
+      "value": [
+        {
+          "string": "foo",
+          "type": "LiteralString"
+        }
+      ]
+    },
+    {
+      "sysmlId": "rootInstanceSpec3",
+      "name": "sectionName",
+      "type": "InstanceSpecification",
+      "classifier": [
+        "PE_Opaque_Section"
+      ],
+      "instanceSpecificationSpecification": {
+        "operand": [
+          {
+            "instance": "rootInstanceSpecSection1",
+            "type": "InstanceValue"
+          }
+        ],
+        "type": "Expression"
+      }
+    },
+    {
+      "sysmlId": "rootInstanceSpecSection1",
+      "type": "InstanceSpecification",
+      "classifier": [
+        "PE_Opaque_Paragraph"
+      ],
+      "instanceSpecificationSpecification": {
+        "string": "{\"sourceType\": \"reference\",\"source\": \"_17_0_5_1_407019f_1402422716418_897626_16413\",\"sourceProperty\": \"name\",\"type\": \"Paragraph\"}",
+        "type": "LiteralString"
+      }
+    },
+    {
+      "sysmlId": "rootInstanceSpec4",
+      "type": "InstanceSpecification",
+      "classifier": [
+        "PE_Opaque_List"
+      ],
+      "instanceSpecificationSpecification": {
+        "string": "{\"ordered\": true,\"bulleted\": true,\"list\": [[{\"sourceType\": \"reference\",\"source\": \"_17_0_5_1_407019f_1402422711365_292853_16371\",\"sourceProperty\": \"name\",\"type\": \"Paragraph\"}]],\"type\": \"List\"}",
+        "type": "LiteralString"
+      }
+    }
+  ]
+}

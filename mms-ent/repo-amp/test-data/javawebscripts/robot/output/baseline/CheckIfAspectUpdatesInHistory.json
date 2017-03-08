@@ -1,0 +1,60 @@
+{
+  "elements": [
+    {
+      "_modifier": "admin",
+      "sysmlId": "directed_relationship_zzz",
+      "documentation": "d is d",
+      "_owner": "aspect_history_zzz",
+      "source": null,
+      "target": null,
+      "type": "Conform",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "sysmlId": "untyped_no_doc_zzz",
+      "_owner": "aspect_history_zzz",
+      "type": "Untyped",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "sysmlId": "untyped_doc_zzz",
+      "documentation": "d is d",
+      "_owner": "aspect_history_zzz",
+      "type": "Untyped",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "sysmlId": "expose_no_doc_zzz",
+      "_owner": "aspect_history_zzz",
+        "source": null,
+        "target": null,
+        "type": "Expose",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "sysmlId": "aspect_history_zzz",
+      "documentation": "a place to put stuff for the aspect history tests",
+      "_owner": "123456",
+        "type": "Package",
+      "_editable": true,
+      "_creator": "admin"
+    },
+    {
+      "_modifier": "admin",
+      "sysmlId": "element_zzz",
+      "documentation": "e is e",
+      "_owner": "aspect_history_zzz",
+        "type": "Untyped",
+      "_editable": true,
+      "_creator": "admin"
+    }
+  ]
+}

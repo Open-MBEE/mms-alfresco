@@ -1,0 +1,35 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/null/view-c1",
+            "_qualifiedName": "/holding_bin/View c1",
+            "_siteCharacterizationId": "null",
+            "documentation": "",
+            "name": "View c1",
+            "owner": "_18_0_5_407019f_1466704587594_239414_14483",
+            "ownerId": "holding_bin",
+            "sysmlId": "view-c1",
+            "type": "View"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/null/_18_0_5_407019f_1466704587594_239414_14483",
+            "_qualifiedName": "/holding_bin/",
+            "_siteCharacterizationId": "null",
+            "childViews": [
+                {
+                    "aggregation": "COMPOSITE",
+                    "id": "view-c1"
+                }
+            ],
+            "ownerId": "holding_bin",
+            "sysmlId": "_18_0_5_407019f_1466704587594_239414_14483",
+            "type": "View"
+        }
+    ]
+}

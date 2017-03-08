@@ -1,0 +1,88 @@
+{
+  "elements": [
+    {
+      "documentation": "delete_update_consistent",
+      "sysmlId": "delete_update_consistent",
+      "name": "delete_update_consistent",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "this is it"
+        }
+      ]
+    },
+    {
+      "documentation": "delete_delete_consistent",
+      "sysmlId": "delete_delete_consistent",
+      "name": "delete_delete_consistent",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "this is it"
+        }
+      ]
+    },
+    {
+      "documentation": "update_update_consistent",
+      "sysmlId": "update_update_consistent",
+      "name": "update_update_consistent",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "this is it"
+        }
+      ]
+    },
+    {
+      "documentation": "update_delete_consistent",
+      "sysmlId": "update_delete_consistent",
+      "name": "update_delete_consistent",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "this is it"
+        }
+      ]
+    },
+    {
+      "documentation": "delete_delete_before",
+      "sysmlId": "delete_delete_before",
+      "name": "delete_delete_before",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "this is it"
+        }
+      ]
+    },
+    {
+      "documentation": "add_add_before",
+      "sysmlId": "add_add_before",
+      "name": "add_add_before",
+      "ownerId": "123456",
+      "type": "Property",
+      "isDerived": false,
+      "value": [
+        {
+          "type": "LiteralString",
+          "string": "this is it"
+        }
+      ]
+    }
+  ]
+}

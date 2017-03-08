@@ -1,0 +1,195 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/_17_0_2_3_e610336_1394148759911_783211_29758",
+            "_qualifiedName": "//JW_TEST/",
+            "_siteCharacterizationId": "europa",
+            "documentation": "",
+            "name": "",
+            "ownerId": "123456",
+            "source": "_17_0_2_3_e610336_1394148311476_17302_29388",
+            "sysmlId": "_17_0_2_3_e610336_1394148759911_783211_29758",
+            "target": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+            "type": "Expose"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/op_list",
+            "_qualifiedName": "//JW_TEST/List",
+            "_siteCharacterizationId": "europa",
+            "documentation": "",
+            "name": "List",
+            "ownerId": "123456",
+            "sysmlId": "op_list",
+            "type": "Operation"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/_17_0_2_3_e610336_1394148311476_17302_29388/_17_0_2_3_e610336_1394148464681_90735_29608",
+            "_qualifiedName": "//JW_TEST/Components/",
+            "_siteCharacterizationId": "europa",
+            "documentation": "",
+            "name": "",
+            "ownerId": "_17_0_2_3_e610336_1394148311476_17302_29388",
+            "source": "_17_0_2_3_e610336_1394148311476_17302_29388",
+            "sysmlId": "_17_0_2_3_e610336_1394148464681_90735_29608",
+            "target": "_17_0_2_3_e610336_1394148449252_91190_29556",
+            "type": "Conform"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/name_list",
+            "_qualifiedName": "//JW_TEST/viewpoint_op",
+            "_siteCharacterizationId": "europa",
+            "documentation": "",
+            "expression": {
+                "operand": [
+                    {
+                        "element": "op_list",
+                        "type": "ElementValue"
+                    },
+                    {
+                        "operand": [
+                            {
+                                "element": "op_map",
+                                "type": "ElementValue"
+                            },
+                            {
+                                "element": "exposed_id",
+                                "type": "ElementValue"
+                            },
+                            {
+                                "element": "op_name_arg",
+                                "type": "ElementValue"
+                            }
+                        ],
+                        "type": "Expression"
+                    }
+                ],
+                "type": "Expression"
+            },
+            "name": "viewpoint_op",
+            "ownerId": "123456",
+            "parameters": [
+                "exposed_id"
+            ],
+            "sysmlId": "name_list",
+            "type": "Operation"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/_17_0_2_3_e610336_1394148311476_17302_29388",
+            "_qualifiedName": "//JW_TEST/Components",
+            "_siteCharacterizationId": "europa",
+            "documentation": "",
+            "name": "Components",
+            "ownerId": "123456",
+            "sysmlId": "_17_0_2_3_e610336_1394148311476_17302_29388",
+            "type": "View"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/op_map_arg",
+            "_qualifiedName": "//JW_TEST/",
+            "_siteCharacterizationId": "europa",
+            "documentation": "",
+            "name": "",
+            "operand": [
+                {
+                    "element": "op_map",
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "exposed_id",
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "op_name_arg",
+                    "type": "ElementValue"
+                }
+            ],
+            "ownerId": "123456",
+            "sysmlId": "op_map_arg",
+            "type": "Expression"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/_17_0_2_4_f3a0363_1394142290412_487571_28478",
+            "_qualifiedName": "//JW_TEST/BLUCam CubeSat A",
+            "_siteCharacterizationId": "europa",
+            "documentation": "",
+            "name": "BLUCam CubeSat A",
+            "ownerId": "123456",
+            "sysmlId": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+            "type": "Package"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/exposed_id",
+            "_qualifiedName": "//JW_TEST/exposed",
+            "_siteCharacterizationId": "europa",
+            "documentation": "",
+            "name": "exposed",
+            "ownerId": "123456",
+            "sysmlId": "exposed_id",
+            "type": "Parameter"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/op_name_arg",
+            "_qualifiedName": "//JW_TEST/Name",
+            "_siteCharacterizationId": "europa",
+            "documentation": "",
+            "name": "Name",
+            "ownerId": "123456",
+            "sysmlId": "op_name_arg",
+            "type": "Operation"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/_17_0_2_3_e610336_1394148449252_91190_29556",
+            "_qualifiedName": "//JW_TEST/ComponentViewPoint",
+            "_siteCharacterizationId": "europa",
+            "documentation": "",
+            "method": "name_list",
+            "name": "ComponentViewPoint",
+            "ownerId": "123456",
+            "sysmlId": "_17_0_2_3_e610336_1394148449252_91190_29556",
+            "type": "Viewpoint"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_qualifiedId": "/europa/123456/op_map",
+            "_qualifiedName": "//JW_TEST/map",
+            "_siteCharacterizationId": "europa",
+            "documentation": "",
+            "name": "map",
+            "ownerId": "123456",
+            "sysmlId": "op_map",
+            "type": "Operation"
+        }
+    ]
+}

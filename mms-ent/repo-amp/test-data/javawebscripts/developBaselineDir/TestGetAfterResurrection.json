@@ -1,0 +1,1475 @@
+{"elements": [
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/_17_0_2_4_f3a0363_1394141845089_115460_28389",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/ionosphere",
+        "sysmlid": "_17_0_2_4_f3a0363_1394141845089_115460_28389",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "ionosphere",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/_17_0_2_3_e610336_1394148233838_91795_29332",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/Context",
+        "sysmlid": "_17_0_2_3_e610336_1394148233838_91795_29332",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "Context",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {"type": "View"}
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/_17_0_2_4_f3a0363_1394141831980_671275_28387",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/radiation",
+        "sysmlid": "_17_0_2_4_f3a0363_1394141831980_671275_28387",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "radiation",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/name_list",
+        "qualifiedName": "/europa/JW_TEST2/viewpoint_op",
+        "sysmlid": "name_list",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "viewpoint_op",
+        "owner": "123456",
+        "documentation": "",
+        "specialization": {
+            "expression": {
+                "valueExpression": null,
+                "operand": [
+                    {
+                        "element": "op_list",
+                        "valueExpression": null,
+                        "type": "ElementValue"
+                    },
+                    {
+                        "valueExpression": null,
+                        "type": "Expression",
+                        "operand": [
+                            {
+                                "element": "op_map",
+                                "valueExpression": null,
+                                "type": "ElementValue"
+                            },
+                            {
+                                "element": "exposed_id",
+                                "valueExpression": null,
+                                "type": "ElementValue"
+                            },
+                            {
+                                "element": "op_name_arg",
+                                "valueExpression": null,
+                                "type": "ElementValue"
+                            }
+                        ]
+                    }
+                ],
+                "type": "Expression"
+            },
+            "parameters": ["exposed_id"],
+            "type": "Operation"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/s1_param",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/s1_param",
+        "sysmlid": "s1_param",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "s1_param",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "type": "Parameter",
+            "defaultValue": null
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/vp_expression_2",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/vp_expression_2",
+        "sysmlid": "vp_expression_2",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "vp_expression_2",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "valueExpression": null,
+            "type": "Expression",
+            "operand": [
+                {
+                    "element": "op_list",
+                    "valueExpression": null,
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "op_name_arg_1",
+                    "valueExpression": null,
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "op_name_arg_2",
+                    "valueExpression": null,
+                    "type": "ElementValue"
+                }
+            ]
+        }
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/elementValueNull",
+        "name": "elementValueNull",
+        "qualifiedName": "/europa/JW_TEST2/elementValueNull",
+        "documentation": "ElementValue with null values",
+        "owner": "123456",
+        "sysmlid": "elementValueNull",
+        "specialization": {
+            "element": null,
+            "valueExpression": null,
+            "type": "ElementValue"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/4000",
+        "qualifiedName": "/europa/JW_TEST2/400",
+        "sysmlid": "4000",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "400",
+        "owner": "123456",
+        "documentation": "4something",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/metatype1",
+        "qualifiedName": "/europa/JW_TEST2/metatype1",
+        "sysmlid": "metatype1",
+        "isMetatype": true,
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "metatype1",
+        "owner": "123456",
+        "documentation": "metatype",
+        "metatypes": [
+            "target",
+            "source"
+        ],
+        "specialization": {"type": "Element"}
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/get_two_names",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/get_two_names_op",
+        "sysmlid": "get_two_names",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "get_two_names_op",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "expression": {
+                "valueExpression": null,
+                "operand": [
+                    {
+                        "element": "get_names",
+                        "valueExpression": null,
+                        "type": "ElementValue"
+                    },
+                    {
+                        "element": "_17_0_2_4_f3a0363_1394141845089_115460_28389",
+                        "valueExpression": null,
+                        "type": "ElementValue"
+                    },
+                    {
+                        "element": "_17_0_2_4_f3a0363_1394141831980_671275_28387",
+                        "valueExpression": null,
+                        "type": "ElementValue"
+                    }
+                ],
+                "type": "Expression"
+            },
+            "parameters": [],
+            "type": "Operation"
+        }
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/BLUCamTest",
+        "name": "BLUCamTest",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest",
+        "sysmlid": "BLUCamTest",
+        "owner": "123456",
+        "specialization": {"type": "Package"},
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/_17_0_2_3_e610336_1394148233838_91795_29332/_17_0_2_3_e610336_1394148461465_93174_29599",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/Context/conform relationship",
+        "sysmlid": "_17_0_2_3_e610336_1394148461465_93174_29599",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "conform relationship",
+        "owner": "_17_0_2_3_e610336_1394148233838_91795_29332",
+        "documentation": "",
+        "specialization": {
+            "source": "_17_0_2_3_e610336_1394148233838_91795_29332",
+            "target": "_17_0_2_3_e610336_1394148443742_79128_29536",
+            "type": "Conform"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/300",
+        "qualifiedName": "/europa/JW_TEST2/300",
+        "sysmlid": "300",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "300",
+        "owner": "123456",
+        "documentation": "something",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/valueSpecificationNull",
+        "name": "valueSpecificationNull",
+        "qualifiedName": "/europa/JW_TEST2/valueSpecificationNull",
+        "documentation": "ValueSpecification with null values",
+        "owner": "123456",
+        "sysmlid": "valueSpecificationNull",
+        "specialization": {
+            "valueExpression": null,
+            "type": "ValueSpecification"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/300/301/302",
+        "qualifiedName": "/europa/JW_TEST2/300/301/302",
+        "sysmlid": "302",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "302",
+        "owner": "301",
+        "documentation": "to",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/300/301",
+        "qualifiedName": "/europa/JW_TEST2/300/301",
+        "sysmlid": "301",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "301",
+        "owner": "300",
+        "documentation": "else",
+        "specialization": {
+            "displayedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "childrenViews": ["304"],
+            "view2view": [{
+                "childrenViews": [
+                    "301",
+                    "302"
+                ],
+                "sysmlid": "301"
+            }],
+            "allowedElements": [
+                "301",
+                "302",
+                "303"
+            ],
+            "contains": [{
+                "sourceType": "reference",
+                "source": "301",
+                "sourceProperty": "documentation",
+                "type": "Paragraph"
+            }],
+            "noSections": ["302"],
+            "type": "Product"
+        }
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/association",
+        "name": "association",
+        "qualifiedName": "/europa/JW_TEST2/association",
+        "documentation": "association",
+        "owner": "123456",
+        "sysmlid": "association",
+        "specialization": {
+            "targetAggregation": "SHARED",
+            "source": "sourceId",
+            "sourceAggregation": "COMPOSITE",
+            "target": "targetId",
+            "ownedEnd": ["AssocOwnedEnd"],
+            "type": "Association"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/300/301/302/303/304",
+        "qualifiedName": "/europa/JW_TEST2/300/301/302/303/304",
+        "sysmlid": "304",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "304",
+        "owner": "303",
+        "documentation": "about",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/300/301/302/303",
+        "qualifiedName": "/europa/JW_TEST2/300/301/302/303",
+        "sysmlid": "303",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "303",
+        "owner": "302",
+        "documentation": "talk",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/instanceValueNull",
+        "name": "instanceValueNull",
+        "qualifiedName": "/europa/JW_TEST2/instanceValueNull",
+        "documentation": "InstanceValue with null values",
+        "owner": "123456",
+        "sysmlid": "instanceValueNull",
+        "specialization": {
+            "valueExpression": null,
+            "instance": null,
+            "type": "InstanceValue"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/_17_0_2_3_e610336_1394148449252_91190_29556",
+        "qualifiedName": "/europa/JW_TEST2/ComponentViewPoint",
+        "sysmlid": "_17_0_2_3_e610336_1394148449252_91190_29556",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "ComponentViewPoint",
+        "owner": "123456",
+        "documentation": "",
+        "specialization": {
+            "method": "name_list",
+            "type": "Viewpoint"
+        }
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/targetId",
+        "name": "targetId",
+        "qualifiedName": "/europa/JW_TEST2/targetId",
+        "documentation": "target",
+        "owner": "123456",
+        "sysmlid": "targetId",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/dlam",
+        "qualifiedName": "/europa/JW_TEST2/dlam",
+        "sysmlid": "dlam",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "dlam",
+        "owner": "123456",
+        "documentation": "to make compatible with value specs (this is just a Element)",
+        "specialization": {"type": "Element"}
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/connectorNull",
+        "name": "connectorNull",
+        "qualifiedName": "/europa/JW_TEST2/connectorNull",
+        "documentation": "Connector with null values",
+        "owner": "123456",
+        "sysmlid": "connectorNull",
+        "specialization": {
+            "connectorType": null,
+            "targetPath": [],
+            "sourceLower": {
+                "valueExpression": null,
+                "string": "sourceLower!",
+                "type": "LiteralString"
+            },
+            "targetLower": {
+                "valueExpression": null,
+                "string": "targetLower!",
+                "type": "LiteralString"
+            },
+            "source": null,
+            "sourceUpper": {
+                "valueExpression": null,
+                "string": "sourceUpper!",
+                "type": "LiteralString"
+            },
+            "targetUpper": {
+                "valueExpression": null,
+                "string": "targetUpper!",
+                "type": "LiteralString"
+            },
+            "sourcePath": [],
+            "target": null,
+            "connectorValue": {
+                "valueExpression": null,
+                "string": "Ninja Attack!",
+                "type": "LiteralString"
+            },
+            "connectorKind": "BINDING",
+            "type": "Connector"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedName": "/europa/JW_TEST2/",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "",
+        "owner": "123456",
+        "documentation": "",
+        "specialization": {
+            "source": "_17_0_2_3_e610336_1394148311476_17302_29388",
+            "target": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+            "type": "Expose"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/300/500",
+        "qualifiedName": "/europa/JW_TEST2/300/500",
+        "sysmlid": "500",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "500",
+        "owner": "300",
+        "documentation": "directed_relationship2",
+        "specialization": {
+            "source": "303",
+            "target": "304",
+            "type": "DirectedRelationship"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/4000/401/402/403/404",
+        "qualifiedName": "/europa/JW_TEST2/400/401/402/403/404",
+        "sysmlid": "404",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "404",
+        "owner": "403",
+        "documentation": "4about",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/4000/401",
+        "qualifiedName": "/europa/JW_TEST2/400/401",
+        "sysmlid": "401",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "401",
+        "owner": "4000",
+        "documentation": "4else",
+        "specialization": {
+            "displayedElements": [
+                "401",
+                "402",
+                "403"
+            ],
+            "childrenViews": ["404"],
+            "view2view": [{
+                "childrenViews": [
+                    "401",
+                    "402"
+                ],
+                "sysmlid": "401"
+            }],
+            "allowedElements": [
+                "401",
+                "402",
+                "403"
+            ],
+            "contains": [{
+                "sourceType": "reference",
+                "source": "401",
+                "sourceProperty": "documentation",
+                "type": "Paragraph"
+            }],
+            "noSections": ["402"],
+            "type": "Product"
+        }
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/connector",
+        "name": "connector",
+        "qualifiedName": "/europa/JW_TEST2/connector",
+        "documentation": "Connector updates",
+        "owner": "123456",
+        "sysmlid": "connector",
+        "specialization": {
+            "connectorType": "association",
+            "targetPath": ["connectorTarget"],
+            "sourceLower": {
+                "valueExpression": null,
+                "string": "sourceLower!",
+                "type": "LiteralString"
+            },
+            "targetLower": {
+                "valueExpression": null,
+                "string": "targetLower!",
+                "type": "LiteralString"
+            },
+            "source": null,
+            "sourceUpper": {
+                "valueExpression": null,
+                "string": "sourceUpper!",
+                "type": "LiteralString"
+            },
+            "targetUpper": {
+                "valueExpression": null,
+                "string": "targetUpper!",
+                "type": "LiteralString"
+            },
+            "sourcePath": ["connectorSource"],
+            "target": null,
+            "connectorValue": {
+                "valueExpression": null,
+                "string": "Ninja Attack!",
+                "type": "LiteralString"
+            },
+            "connectorKind": "BINDING",
+            "type": "Connector"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "qualifiedName": "/europa/JW_TEST2/BLUCam CubeSat A",
+        "sysmlid": "_17_0_2_4_f3a0363_1394142290412_487571_28478",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "BLUCam CubeSat A",
+        "owner": "123456",
+        "documentation": "",
+        "specialization": {"type": "Package"}
+    },
+    {
+        "qualifiedId": "/europa/123456/notInThePast",
+        "qualifiedName": "/europa/JW_TEST2/notInThePast",
+        "sysmlid": "notInThePast",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "notInThePast",
+        "owner": "123456",
+        "documentation": "",
+        "specialization": {
+            "specification": {
+                "valueExpression": null,
+                "expressionBody": ["foo8"],
+                "type": "OpaqueExpression"
+            },
+            "type": "Constraint"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/4000/401/402/403",
+        "qualifiedName": "/europa/JW_TEST2/400/401/402/403",
+        "sysmlid": "403",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "403",
+        "owner": "402",
+        "documentation": "4talk",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/4000/401/402",
+        "qualifiedName": "/europa/JW_TEST2/400/401/402",
+        "sysmlid": "402",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "402",
+        "owner": "401",
+        "documentation": "4to",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        }
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/viewContents",
+        "name": "viewContents",
+        "qualifiedName": "/europa/JW_TEST2/viewContents",
+        "documentation": "View content",
+        "owner": "123456",
+        "sysmlid": "viewContents",
+        "specialization": {
+            "valueExpression": null,
+            "type": "Expression"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/viewNull",
+        "name": "viewNull",
+        "qualifiedName": "/europa/JW_TEST2/viewNull",
+        "documentation": "View with null values",
+        "owner": "123456",
+        "sysmlid": "viewNull",
+        "specialization": {"type": "View"},
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/_17_0_2_3_e610336_1394148311476_17302_29388/_17_0_2_3_e610336_1394148464681_90735_29608",
+        "qualifiedName": "/europa/JW_TEST2/Components/",
+        "sysmlid": "_17_0_2_3_e610336_1394148464681_90735_29608",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "",
+        "owner": "_17_0_2_3_e610336_1394148311476_17302_29388",
+        "documentation": "",
+        "specialization": {
+            "source": "_17_0_2_3_e610336_1394148311476_17302_29388",
+            "target": "_17_0_2_3_e610336_1394148449252_91190_29556",
+            "type": "Conform"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/testCmed416",
+        "modifier": "admin",
+        "qualifiedName": "/europa/JW_TEST2/testName",
+        "name": "testName",
+        "owner": "123456",
+        "sysmlid": "testCmed416",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "name": "dont care1",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care1",
+        "sysmlid": "_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "owner": "BLUCamTest",
+        "specialization": {"type": "Package"},
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/parentToDelete1/parentToDelete2/childOfParentToDelete2",
+        "name": "childOfParentToDelete2",
+        "qualifiedName": "/europa/JW_TEST2/parentToDelete1/parentToDelete2/childOfParentToDelete2",
+        "documentation": "Child",
+        "owner": "parentToDelete2",
+        "sysmlid": "childOfParentToDelete2",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "gg_string3",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/durationIntervalNull",
+        "name": "durationIntervalNull",
+        "qualifiedName": "/europa/JW_TEST2/durationIntervalNull",
+        "documentation": "DurationInterval with null values",
+        "owner": "123456",
+        "sysmlid": "durationIntervalNull",
+        "specialization": {
+            "min": null,
+            "max": null,
+            "valueExpression": null,
+            "type": "DurationInterval"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/parentToDelete1/parentToDelete2",
+        "qualifiedName": "/europa/JW_TEST2/parentToDelete1/parentToDelete2",
+        "sysmlid": "parentToDelete2",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "parentToDelete2",
+        "owner": "parentToDelete1",
+        "documentation": "Parent 2",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/parentToDelete1",
+        "qualifiedName": "/europa/JW_TEST2/parentToDelete1",
+        "sysmlid": "parentToDelete1",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "parentToDelete1",
+        "owner": "123456",
+        "documentation": "Parent 1",
+        "specialization": {
+            "propertyType": null,
+            "isDerived": false,
+            "isSlot": false,
+            "value": [],
+            "type": "Property"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/get_two_names_expression",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/get_two_names_expression",
+        "sysmlid": "get_two_names_expression",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "get_two_names_expression",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "valueExpression": null,
+            "type": "Expression",
+            "operand": [
+                {
+                    "element": "get_names",
+                    "valueExpression": null,
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "_17_0_2_4_f3a0363_1394141845089_115460_28389",
+                    "valueExpression": null,
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "_17_0_2_4_f3a0363_1394141831980_671275_28387",
+                    "valueExpression": null,
+                    "type": "ElementValue"
+                }
+            ]
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/get_names",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/get_names_op",
+        "sysmlid": "get_names",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "get_names_op",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "expression": {
+                "valueExpression": null,
+                "operand": [
+                    {
+                        "element": "op_list",
+                        "valueExpression": null,
+                        "type": "ElementValue"
+                    },
+                    {
+                        "element": "op_name_arg_1",
+                        "valueExpression": null,
+                        "type": "ElementValue"
+                    },
+                    {
+                        "element": "op_name_arg_2",
+                        "valueExpression": null,
+                        "type": "ElementValue"
+                    }
+                ],
+                "type": "Expression"
+            },
+            "parameters": [
+                "s1_param",
+                "s2_param"
+            ],
+            "type": "Operation"
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/op_name_arg_1",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/name_arg_1",
+        "sysmlid": "op_name_arg_1",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "name_arg_1",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "valueExpression": null,
+            "type": "Expression",
+            "operand": [
+                {
+                    "element": "op_name_arg",
+                    "valueExpression": null,
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "s1_param",
+                    "valueExpression": null,
+                    "type": "ElementValue"
+                }
+            ]
+        }
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/op_name_arg_2",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/name_arg_2",
+        "sysmlid": "op_name_arg_2",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "name_arg_2",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "valueExpression": null,
+            "type": "Expression",
+            "operand": [
+                {
+                    "element": "op_name_arg",
+                    "valueExpression": null,
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "s2_param",
+                    "valueExpression": null,
+                    "type": "ElementValue"
+                }
+            ]
+        }
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/sourceId",
+        "name": "sourceId",
+        "qualifiedName": "/europa/JW_TEST2/sourceId",
+        "documentation": "source",
+        "owner": "123456",
+        "sysmlid": "sourceId",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/timeIntervalNull",
+        "name": "timeIntervalNull",
+        "qualifiedName": "/europa/JW_TEST2/timeIntervalNull",
+        "documentation": "TimeInterval with null values",
+        "owner": "123456",
+        "sysmlid": "timeIntervalNull",
+        "specialization": {
+            "min": null,
+            "max": null,
+            "valueExpression": null,
+            "type": "TimeInterval"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/md",
+        "name": "md",
+        "qualifiedName": "/europa/JW_TEST2/md",
+        "documentation": "Magic Draw Meta-Data",
+        "owner": "123456",
+        "sysmlid": "md",
+        "specialization": {
+            "type": "MagicDrawData",
+            "mdData": "A blob of meta-data"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/characterizes",
+        "name": "characterizes",
+        "qualifiedName": "/europa/JW_TEST2/characterizes",
+        "documentation": "Characterizes",
+        "owner": "123456",
+        "sysmlid": "characterizes",
+        "specialization": {
+            "source": "sourceId",
+            "target": "targetId",
+            "type": "Characterizes"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/jsonTest1",
+        "name": "jsonTest1",
+        "qualifiedName": "/europa/JW_TEST2/jsonTest1",
+        "documentation": "",
+        "owner": "123456",
+        "sysmlid": "jsonTest1",
+        "specialization": {
+            "specification": {
+                "valueExpression": null,
+                "integer": 1,
+                "type": "LiteralInteger"
+            },
+            "type": "Constraint"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/parameterNull",
+        "name": "parameterNull",
+        "qualifiedName": "/europa/JW_TEST2/parameterNull",
+        "documentation": "Parameter with null values",
+        "owner": "123456",
+        "sysmlid": "parameterNull",
+        "specialization": {
+            "defaultValue": null,
+            "type": "Parameter"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/jsonTest3",
+        "name": "jsonTest3",
+        "qualifiedName": "/europa/JW_TEST2/jsonTest3",
+        "documentation": "",
+        "owner": "123456",
+        "sysmlid": "jsonTest3",
+        "specialization": {
+            "specification": {
+                "valueExpression": null,
+                "integer": 3,
+                "type": "LiteralInteger"
+            },
+            "type": "Constraint"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/jsonTest2",
+        "name": "jsonTest2",
+        "qualifiedName": "/europa/JW_TEST2/jsonTest2",
+        "documentation": "",
+        "owner": "123456",
+        "sysmlid": "jsonTest2",
+        "specialization": {
+            "specification": {
+                "valueExpression": null,
+                "integer": 2,
+                "type": "LiteralInteger"
+            },
+            "type": "Constraint"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/hasAppliedMetatype1",
+        "qualifiedName": "/europa/JW_TEST2/hasAppliedMetatype1",
+        "sysmlid": "hasAppliedMetatype1",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "hasAppliedMetatype1",
+        "documentation": "hasAppliedMetatype",
+        "owner": "123456",
+        "appliedMetatypes": ["metatype"],
+        "specialization": {"type": "Element"}
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/jsonTest4",
+        "name": "jsonTest4",
+        "qualifiedName": "/europa/JW_TEST2/jsonTest4",
+        "documentation": "",
+        "owner": "123456",
+        "sysmlid": "jsonTest4",
+        "specialization": {
+            "specification": {
+                "valueExpression": null,
+                "expressionBody": [
+                    "hello",
+                    "there"
+                ],
+                "type": "OpaqueExpression"
+            },
+            "type": "Constraint"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/expose relationship",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "expose relationship",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "source": "_17_0_2_3_e610336_1394148233838_91795_29332",
+            "target": "_17_0_2_4_f3a0363_1394140326296_809805_27600",
+            "type": "Expose"
+        }
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/instanceSpecificationNull",
+        "name": "instanceSpecificationNull",
+        "qualifiedName": "/europa/JW_TEST2/instanceSpecificationNull",
+        "documentation": "InstanceSpecification with null values",
+        "owner": "123456",
+        "sysmlid": "instanceSpecificationNull",
+        "specialization": {
+            "slots": ["elementValueNull"],
+            "classifier": ["propertyNull"],
+            "type": "InstanceSpecification"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/_17_0_2_3_e610336_1394148311476_17302_29388",
+        "qualifiedName": "/europa/JW_TEST2/Components",
+        "sysmlid": "_17_0_2_3_e610336_1394148311476_17302_29388",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "Components",
+        "owner": "123456",
+        "documentation": "",
+        "specialization": {"type": "View"}
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456",
+        "name": "JW_TEST2",
+        "qualifiedName": "/europa/JW_TEST2",
+        "sysmlid": "123456",
+        "owner": null,
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/viewWithContents",
+        "name": "viewWithContents",
+        "qualifiedName": "/europa/JW_TEST2/viewWithContents",
+        "documentation": "View updates",
+        "owner": "123456",
+        "sysmlid": "viewWithContents",
+        "specialization": {
+            "contents": {
+                "valueExpression": null,
+                "type": "Expression"
+            },
+            "type": "View"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "name": "dont care2",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2",
+        "sysmlid": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "owner": "BLUCamTest",
+        "specialization": {"type": "Package"},
+        "editable": true,
+        "creator": "admin",
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/literalSet",
+        "name": "literalSet",
+        "qualifiedName": "/europa/JW_TEST2/literalSet",
+        "documentation": "LiteralSet",
+        "owner": "123456",
+        "sysmlid": "literalSet",
+        "specialization": {
+            "valueExpression": null,
+            "set": [
+                {
+                    "valueExpression": null,
+                    "string": "I",
+                    "type": "LiteralString"
+                },
+                {
+                    "valueExpression": null,
+                    "string": "Love",
+                    "type": "LiteralString"
+                },
+                {
+                    "valueExpression": null,
+                    "string": "Bears",
+                    "type": "LiteralString"
+                }
+            ],
+            "setOperand": {
+                "valueExpression": null,
+                "string": "Bears",
+                "type": "LiteralString"
+            },
+            "type": "LiteralSet"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/propertyNull",
+        "name": "propertyNull",
+        "qualifiedName": "/europa/JW_TEST2/propertyNull",
+        "documentation": "Property with null values",
+        "owner": "123456",
+        "sysmlid": "propertyNull",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "dlam_string",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/connectorTarget",
+        "name": "connectorTarget",
+        "qualifiedName": "/europa/JW_TEST2/connectorTarget",
+        "documentation": "Connector target",
+        "owner": "123456",
+        "sysmlid": "connectorTarget",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/AssocOwnedEnd",
+        "name": "AssocOwnedEnd",
+        "qualifiedName": "/europa/JW_TEST2/AssocOwnedEnd",
+        "documentation": "Associations's owned end",
+        "owner": "123456",
+        "sysmlid": "AssocOwnedEnd",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/_17_0_2_3_e610336_1394148443742_79128_29536",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/ContextViewpoint",
+        "sysmlid": "_17_0_2_3_e610336_1394148443742_79128_29536",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "ContextViewpoint",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "method": "get_two_names",
+            "type": "Viewpoint"
+        }
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/directedRelationshipNull",
+        "name": "directedRelationshipNull",
+        "qualifiedName": "/europa/JW_TEST2/directedRelationshipNull",
+        "documentation": "directed_relationship with null values",
+        "owner": "123456",
+        "sysmlid": "directedRelationshipNull",
+        "specialization": {
+            "source": null,
+            "target": null,
+            "type": "DirectedRelationship"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394140452779_641658_27742/_17_0_2_4_f3a0363_1394140326296_809805_27600",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care1/ContextStuffs",
+        "sysmlid": "_17_0_2_4_f3a0363_1394140326296_809805_27600",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "ContextStuffs",
+        "owner": "_17_0_2_4_f3a0363_1394140452779_641658_27742",
+        "documentation": "",
+        "specialization": {"type": "Element"}
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/connectorSource",
+        "name": "connectorSource",
+        "qualifiedName": "/europa/JW_TEST2/connectorSource",
+        "documentation": "Connector source",
+        "owner": "123456",
+        "sysmlid": "connectorSource",
+        "specialization": {
+            "upper": {
+                "valueExpression": null,
+                "string": "lower!",
+                "type": "LiteralString"
+            },
+            "lower": {
+                "valueExpression": null,
+                "string": "lower!",
+                "type": "LiteralString"
+            },
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/300/301/302/y",
+        "modifier": "Collaborator",
+        "qualifiedName": "/europa/JW_TEST2/300/301/302/null",
+        "owner": "302",
+        "documentation": "y is y",
+        "sysmlid": "y",
+        "specialization": {
+            "propertyType": null,
+            "isSlot": false,
+            "isDerived": false,
+            "value": [{
+                "valueExpression": null,
+                "string": "the y value",
+                "type": "LiteralString"
+            }],
+            "type": "Property"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "modifier": "admin",
+        "qualifiedId": "/europa/123456/viewpointNull",
+        "name": "viewpointNull",
+        "qualifiedName": "/europa/JW_TEST2/viewpointNull",
+        "documentation": "Viewpoint with null values",
+        "owner": "123456",
+        "sysmlid": "viewpointNull",
+        "specialization": {
+            "method": null,
+            "type": "Viewpoint"
+        },
+        "editable": true,
+        "creator": "admin"
+    },
+    {
+        "qualifiedId": "/europa/123456/BLUCamTest/_17_0_2_4_f3a0363_1394146455624_407543_30441/s2_param",
+        "qualifiedName": "/europa/JW_TEST2/BLUCamTest/dont care2/s2_param",
+        "sysmlid": "s2_param",
+        "editable": true,
+        "creator": "admin",
+        "modifier": "admin",
+        "name": "s2_param",
+        "owner": "_17_0_2_4_f3a0363_1394146455624_407543_30441",
+        "documentation": "",
+        "specialization": {
+            "type": "Parameter",
+            "defaultValue": null
+        }
+    }
+]}
+200

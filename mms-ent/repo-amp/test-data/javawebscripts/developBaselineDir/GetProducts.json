@@ -1,0 +1,40 @@
+{"products": [{
+    "modifier": "admin",
+    "qualifiedId": "/europa/123456/300/301",
+    "name": "301",
+    "qualifiedName": "/europa/JW_TEST/300/301",
+    "documentation": "else",
+    "owner": "300",
+    "sysmlid": "301",
+    "specialization": {
+        "view2view": [{
+            "childrenViews": [
+                "301",
+                "302"
+            ],
+            "sysmlid": "301"
+        }],
+        "childrenViews": ["304"],
+        "displayedElements": [
+            "301",
+            "302",
+            "303"
+        ],
+        "allowedElements": [
+            "301",
+            "302",
+            "303"
+        ],
+        "noSections": ["302"],
+        "contains": [{
+            "sourceType": "reference",
+            "source": "301",
+            "sourceProperty": "documentation",
+            "type": "Paragraph"
+        }],
+        "type": "Product"
+    },
+    "editable": true,
+    "creator": "admin"
+}]}
+200

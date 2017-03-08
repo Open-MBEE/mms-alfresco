@@ -1,0 +1,121 @@
+{
+  "elements": [
+    {
+      "documentation": "",
+      "sysmlId": "expr_32165",
+      "name": "",
+      "operand": [
+        "op_32166",
+        "arg_32167",
+        "arg_32168"
+      ],
+      "ownerId": "e_32169",
+      "symbol": "",
+      "type": "Expression"
+    },
+    {
+      "documentation": "",
+      "elementValueOfElement": "op_ev_31835",
+      "sysmlId": "op_32166",
+      "name": "",
+      "ownerId": "expr_32165",
+      "type": "ElementValue",
+      "valueExpression": "expr_32165"
+    },
+    {
+      "documentation": "",
+      "sysmlId": "op_ev_31835",
+      "name": "GreaterEquals",
+      "operationParameter": [
+        "op_param_31867",
+        "op_param_31868",
+        "op_param_31869"
+      ],
+      "ownerId": "e_31828",
+      "type": "Operation"
+    },
+    {
+      "documentation": "",
+      "sysmlId": "op_param_31867",
+      "name": "result",
+      "ownerId": "op_ev_31835",
+      "parameterDirection": "return",
+      "type": "Element"
+    },
+    {
+      "documentation": "",
+      "sysmlId": "op_param_31868",
+      "name": "x",
+      "ownerId": "op_ev_31835",
+      "parameterDirection": "in",
+      "type": "Element"
+    },
+    {
+      "documentation": "",
+      "sysmlId": "op_param_31869",
+      "name": "y",
+      "ownerId": "op_ev_31835",
+      "parameterDirection": "in",
+      "type": "Element"
+    },
+    {
+      "documentation": "",
+      "elementValueOfElement": "arg_ev_38307",
+      "sysmlId": "arg_32167",
+      "name": "",
+      "ownerId": "expr_32165",
+      "type": "ElementValue",
+      "valueExpression": "expr_32165"
+    },
+    {
+      "documentation": "",
+      "sysmlId": "arg_ev_38307",
+      "isDerived": false,
+      "isSlot": false,
+      "name": "duration",
+      "ownerId": "e_38304",
+      "propertyType": "_11_5EAPbeta_be00301_1147431819399_50461_1671",
+      "type": "Property",
+      "value": [
+        "durVal"
+      ]
+    },
+    {
+      "documentation": "",
+      "sysmlId": "durVal",
+      "integer": 22,
+      "name": "",
+      "ownerId": "arg_ev_33001",
+      "type": "LiteralInteger"
+    },
+    {
+      "documentation": "",
+      "elementValueOfElement": "arg_ev_33001",
+      "sysmlId": "arg_32168",
+      "name": "",
+      "ownerId": "expr_32165",
+      "type": "ElementValue",
+      "valueExpression": "expr_32165"
+    },
+    {
+      "documentation": "",
+      "sysmlId": "arg_ev_33001",
+      "isDerived": false,
+      "isSlot": false,
+      "name": "initialDuration",
+      "ownerId": "e_38263",
+      "propertyType": "_11_5EAPbeta_be00301_1147431819399_50461_1671",
+      "type": "Property",
+      "value": [
+        "initVal"
+      ]
+    },
+    {
+      "documentation": "",
+      "sysmlId": "initVal",
+      "name": "",
+      "ownerId": "arg_ev_33001",
+      "type": "LiteralInteger"
+    }
+  ]
+}

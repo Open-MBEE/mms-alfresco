@@ -1,0 +1,30 @@
+{"elements": [{
+    "modifier": "admin",
+    "evaluationResult": 2,
+    "qualifiedName": "/no_site/no_site_no_project/holding_bin/null",
+    "owner": "holding_bin_no_site_no_project",
+    "specialization": {
+        "valueExpression": null,
+        "type": "Expression",
+        "operand": [
+            {
+                "element": "Plus",
+                "valueExpression": null,
+                "type": "ElementValue"
+            },
+            {
+                "valueExpression": null,
+                "integer": 1,
+                "type": "LiteralInteger"
+            },
+            {
+                "valueExpression": null,
+                "integer": 1,
+                "type": "LiteralInteger"
+            }
+        ]
+    },
+    "editable": true,
+    "creator": "admin",
+}]}
+200
