@@ -91,8 +91,8 @@ public class ConfigurationPost extends AbstractJavaWebScript {
         JSONObject postJson = new JSONObject();
         JSONObject o = new JSONObject();
 
-        if (reqPostJson.has("configurations")) {
-            JSONArray configsJson = reqPostJson.getJSONArray("configurations");
+        if (reqPostJson.has("refs")) {
+            JSONArray configsJson = reqPostJson.getJSONArray("refs");
             postJson = configsJson.getJSONObject(0);
         } else {
             postJson = reqPostJson;

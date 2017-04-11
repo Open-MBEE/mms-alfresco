@@ -352,6 +352,13 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
+
+    <bean id="webscript.gov.nasa.jpl.mms.workspaces.history.workspace.get"
+          class="gov.nasa.jpl.view_repo.webscripts.WorkspaceHistoryGet" parent="webscript"
+          singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
 <!--     <bean id="webscript.gov.nasa.jpl.mms.merge.post"
         class="gov.nasa.jpl.view_repo.webscripts.WorkspacesMerge" parent="webscript"
         singleton="false">

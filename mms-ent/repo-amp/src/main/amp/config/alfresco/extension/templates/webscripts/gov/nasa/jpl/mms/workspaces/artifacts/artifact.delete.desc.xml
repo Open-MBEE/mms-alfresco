@@ -5,7 +5,7 @@
     <description>
         delete artifact with {artifactId}
     </description>
-      <url>/refs/{refId}/artifacts/{artifactId}</url>
+      <url>/projects/{projectId}/refs/{refId}/artifacts/{artifactId}</url>
       <format default="json">argument</format>
       <authentication>user</authentication>
       <transaction>required</transaction>

@@ -4,7 +4,7 @@ Library		        OperatingSystem
 Library		        requests
 Library		        Collections
 Library		        json
-Library		        /Users/dank/git/mms-all-in-one/mms-ent/repo-amp/test-data/javawebscripts/robot/robot_lib.py
+Library		        ${CURDIR}/../robot_lib.py
 
 *** Variables ***
 ${AUTH}			admin:admin
@@ -13,7 +13,7 @@ ${ROOT}			http://${AUTH}@${SERVER}/alfresco/service
 #Notice the & instead of $, it represents a dictionary object
 &{REQ_HEADER}		content-type=application/json
 # GLOBAL DELAYS TO ALLOW FOR INDEXING IN SOLR
-${POST_DELAY_INDEXING}      20s
+${POST_DELAY_INDEXING}      2s
 ${DELETE_DELAY_INDEXING}    10s
 
 # UNCOMMENT TO TEST KEYWORDS -- This will make all other tests fail!

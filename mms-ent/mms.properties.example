@@ -29,7 +29,10 @@ pg.limit.select=1000
 
 #Elasticsearch Settings
 elastic.host=http://localhost:9200
+elastic.index.element=mms
 elastic.limit.insert=80
+elastic.limit.result=10000
+elastic.limit.term=10000
 
 #Teamwork Settings
 tw.url=TWSERVERURL

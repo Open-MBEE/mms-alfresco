@@ -81,7 +81,7 @@ public class OrgPost extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
 
                 JSONObject json = (JSONObject) req.parseContent();
-                JSONArray elementsArray = json != null ? json.optJSONArray("elements") : null;
+                JSONArray elementsArray = json != null ? json.optJSONArray("orgs") : null;
                 JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ?
                                 elementsArray.getJSONObject(0) :
                                 new JSONObject();
@@ -91,7 +91,7 @@ public class OrgPost extends AbstractJavaWebScript {
 
                 System.out.println("ORGID: " + orgId);
 
-                SiteInfo siteInfo = services.getSiteService().getSite(orgName);
+                SiteInfo siteInfo = services.getSiteService().getSite(orgId);
                 if (siteInfo == null) {
                     String sitePreset = "site-dashboard";
                     String siteTitle = (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;

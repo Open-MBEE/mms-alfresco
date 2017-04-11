@@ -1,0 +1,302 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "4something",
+            "id": "4000",
+            "isDerived": false,
+            "name": "400",
+            "ownerId": "123456",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "300",
+            "isDerived": false,
+            "name": "300",
+            "ownerId": "123456",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "else",
+            "id": "301",
+            "isDerived": false,
+            "name": "301",
+            "ownerId": "300",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "to",
+            "id": "302",
+            "isDerived": false,
+            "name": "302",
+            "ownerId": "301",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "4else",
+            "id": "401",
+            "isDerived": false,
+            "name": "401",
+            "ownerId": "4000",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "directed_relationship",
+            "id": "500",
+            "name": "500",
+            "ownerId": "300",
+            "source": "302",
+            "target": "303",
+            "type": "DirectedRelationship"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "talk",
+            "id": "303",
+            "isDerived": false,
+            "name": "303",
+            "ownerId": "302",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "4to",
+            "id": "402",
+            "isDerived": false,
+            "name": "402",
+            "ownerId": "401",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "element values",
+            "id": "600",
+            "name": "600",
+            "ownerId": "holding_bin_123456",
+            "type": "Property",
+            "value": [
+                {
+                    "element": "300",
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "302",
+                    "type": "ElementValue"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "about",
+            "id": "304",
+            "isDerived": false,
+            "name": "304",
+            "ownerId": "303",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "4talk",
+            "id": "403",
+            "isDerived": false,
+            "name": "403",
+            "ownerId": "402",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "no owner",
+            "id": "305",
+            "isDerived": false,
+            "name": "305",
+            "ownerId": "holding_bin_123456",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "4about",
+            "id": "404",
+            "isDerived": false,
+            "name": "404",
+            "ownerId": "403",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "x",
+            "isDerived": false,
+            "name": "300",
+            "ownerId": "holding_bin_123456",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "",
+            "id": "6666",
+            "name": "6666_name",
+            "operand": [
+                {
+                    "element": "300",
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "302",
+                    "type": "ElementValue"
+                }
+            ],
+            "ownerId": "holding_bin_123456",
+            "type": "Expression"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "123456",
+            "_refId": "master",
+            "documentation": "to make compatible with value specs (this is just a Element)",
+            "id": "dlam",
+            "name": "dlam",
+            "ownerId": "123456"
+        }
+    ]
+}

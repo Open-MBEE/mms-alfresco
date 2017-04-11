@@ -194,10 +194,10 @@ public class ModelsGet extends AbstractJavaWebScript {
         if (requestJson.has("elements")) {
             JSONArray elementsToFindJson = requestJson.getJSONArray("elements");
 
-            WorkspaceNode workspace = getWorkspace(req);
+            String refId = getRefId(req);
             String projectId = getProjectId(req);
 
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
             JSONArray result = new JSONArray();
             Set<String> uniqueElements = new HashSet<>();

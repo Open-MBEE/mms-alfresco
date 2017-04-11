@@ -148,7 +148,7 @@ public class SiteGet extends AbstractJavaWebScript {
                     throws IOException {
 
         String orgId = getOrgId(req);
-        populateSites(projectId, orgId, workspace, dateTime);
+        //populateSites(projectId, orgId, workspace, dateTime);
 
         JSONArray json = new JSONArray();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
@@ -157,11 +157,16 @@ public class SiteGet extends AbstractJavaWebScript {
         pgh.setWorkspace(workspace);
         ElasticHelper eh = new ElasticHelper();
         List<String> ids = new ArrayList<>();
+        List<String> alfs = new ArrayList<>();
 
         try {
             List<Node> siteNodes = pgh.getSites();
+            List<Node> alfSites = pgh.getSites(true, false);
             siteNodes.forEach((n) -> {
                 ids.add(n.getElasticId());
+            });
+            alfSites.forEach((a) -> {
+                alfs.add(a.getSysmlId());
             });
             //JSONArray elements = filterByPermission(eh.getElementsFromElasticIds(ids), req);
             JSONArray elements = eh.getElementsFromElasticIds(ids);
@@ -180,14 +185,12 @@ public class SiteGet extends AbstractJavaWebScript {
                 }
 
                 newo.put("_" + Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
-                //newo.put(Sjm.EDITABLE, o.getBoolean(Sjm.EDITABLE));
 
                 // FIXME: MMS-489: Add "editable" key to output - look at view-repo updates
 
                 siteNodes.forEach((n)->{
                     if (n.getSysmlId().equals(o.getString(Sjm.SYSMLID))) {
                         if (n.getNodeType() == DbNodeTypes.SITEANDPACKAGE.getValue()) {
-                            //newo.put("isCharacterization", true);
                             Set<DbNodeTypes> sites = new HashSet<>();
                             sites.add(DbNodeTypes.SITE);
                             sites.add(DbNodeTypes.SITEANDPACKAGE);
@@ -195,13 +198,14 @@ public class SiteGet extends AbstractJavaWebScript {
                                             DbEdgeTypes.CONTAINMENT, sites);
                             newo.put("_parentId", parent);
                         } else {
-                            //newo.put("isCharacterization", false);
-                            newo.put("_parentId", JSONObject.NULL);
+                            newo.put("_parentId", "null");
                         }
                     }
                 });
 
-                json.put(newo);
+                if (!alfs.contains(newo.getString("_" + Sjm.SYSMLID))) {
+                    json.put(newo);
+                }
             }
         } catch (Exception e) {
             // TODO Auto-generated catch block

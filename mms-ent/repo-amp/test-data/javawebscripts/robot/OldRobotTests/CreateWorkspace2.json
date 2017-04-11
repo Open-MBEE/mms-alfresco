@@ -1,0 +1,8 @@
+{
+    "workspaces": [{
+        "name": "Workspace2",
+        "description": "<p>Workspace 2 based off of workspace 1</p>\n",
+        "permission": "read",
+        "parent": "master"
+    }]
+}

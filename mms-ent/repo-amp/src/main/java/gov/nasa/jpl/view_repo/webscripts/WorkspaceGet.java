@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.EmsNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -22,6 +23,7 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 
 public class WorkspaceGet extends AbstractJavaWebScript{
 	static Logger logger = Logger.getLogger(WorkspaceGet.class);
@@ -48,9 +50,12 @@ public class WorkspaceGet extends AbstractJavaWebScript{
 
         Map<String, Object> model = new HashMap<>();
         JSONObject object = null;
+        String projectId = getProjectId(req);
 
         try{
             if(validateRequest(req, status)){
+                String wsID = req.getServiceMatch().getTemplateVars().get(REF_ID);
+                /*
                 String userName = AuthenticationUtil.getRunAsUser();
                 String wsID = req.getServiceMatch().getTemplateVars().get(REF_ID);
                 WorkspaceNode workspace =
@@ -61,6 +66,8 @@ public class WorkspaceGet extends AbstractJavaWebScript{
                                                                   //false,
                                                                   userName );
                 object = getWorkspace(workspace, wsID);
+                */
+                object = getRef(projectId, wsID);
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON object could not be created \n");
@@ -92,6 +99,16 @@ public class WorkspaceGet extends AbstractJavaWebScript{
         if(object == null)
             return "null";
         return object;
+    }
+
+    protected JSONObject getRef(String projectId, String refId) {
+        JSONObject json = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+        JSONObject ref = emsNodeUtil.getRefJson(refId);
+        jsonArray.put(ref);
+        json.put("refs" , jsonArray);
+        return json;
     }
 
     protected JSONObject getWorkspace(WorkspaceNode ws, String wsID) throws JSONException {

@@ -483,6 +483,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     public static final String NO_PROJECT_ID = "no_project";
     public static final String NO_SITE_ID = "no_site";
 
+    protected static final String COMMITID = "commitId";
 
     public String getSiteName( WebScriptRequest req ) {
         return getSiteName( req, false );
@@ -609,12 +610,14 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      *
      */
     protected boolean userHasWorkspaceLdapPermissions() {
-
+        // TODO: Fix this to not check the workspace node, since there isn't any.
+        /*
         if (!NodeUtil.userHasWorkspaceLdapPermissions()) {
             log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "User %s does not have LDAP permissions to perform workspace operations.  LDAP group with permissions: %s",
                     NodeUtil.getUserName(), NodeUtil.getWorkspaceLdapGroup());
             return false;
         }
+        */
         return true;
     }
 
@@ -851,6 +854,10 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
             refId = NO_WORKSPACE_ID;
         }
         return refId;
+    }
+
+    public static String getCommitId( WebScriptRequest req ) {
+        return req.getServiceMatch().getTemplateVars().get(COMMITID);
     }
 
     private static String getWorkspaceNum( WebScriptRequest req, boolean isWs1 ) {

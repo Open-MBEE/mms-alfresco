@@ -56,13 +56,23 @@ while [[ -n "$1" ]]; do
     shift
 done
 
+
 if [[ "$OSTYPE" == "darwin" ]]; then
+    dropdb -U $dbuser _123456
     dropdb -U $dbuser $usedb
     createdb -U $dbuser $usedb
     psql -U $dbuser -f ./repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql $usedb
 else
     if [ ! -z $password ];then
         EXPECT=$(which expect)
+
+        $EXPECT <<EOD
+log_user 0
+spawn dropdb -U $dbuser _123456
+expect "*Password*"
+send "$password\r"
+expect eof
+EOD
 
         $EXPECT <<EOD
 log_user 0
@@ -89,9 +99,12 @@ expect eof
 EOD
 
     else
+        dropdb -U $dbuser _123456
         dropdb -U $dbuser $usedb
         createdb -U $dbuser $usedb
         psql -U $dbuser -f ./repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql $usedb
+
+        echo "Dropping previous databases"
     fi
 fi
 

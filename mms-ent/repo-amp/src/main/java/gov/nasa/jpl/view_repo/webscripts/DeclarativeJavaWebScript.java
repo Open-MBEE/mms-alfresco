@@ -2,6 +2,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,6 +83,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
      * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
     @Override final public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException {
+
         // retrieve requested format
         String format = req.getFormat();
 
@@ -419,7 +421,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         }
         return result;
     }
-
+    
     private JSONObject filterElementByPermission(JSONObject element, String projectId, String refId,
                     String commitId, Permission permission, StringBuffer response,
                     Map<String, Map<Permission, Boolean>> permCache) {

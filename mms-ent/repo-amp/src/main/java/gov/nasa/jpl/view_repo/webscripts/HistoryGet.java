@@ -73,7 +73,7 @@ public class HistoryGet extends ModelGet {
 
         try {
             if (elementsJson.length() > 0) {
-                top.put("elements", elementsJson);
+                top.put("commits", elementsJson);
             } else {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -128,10 +128,12 @@ public class HistoryGet extends ModelGet {
                 return new JSONArray();
             }
 
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), getWorkspace(req));
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), getRefId(req));
             Long depth = 0L;
 
-            jsonHist = emsNodeUtil.getNodeHistory(modelId, null);
+            jsonHist = filterByPermission(emsNodeUtil.getNodeHistory(modelId), req);
+
+
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));

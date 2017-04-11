@@ -3,7 +3,7 @@
 <webscript>
     <shortname> get workspace </shortname>
     <description>
-    get workspace 
+    get workspace
     </description>
     <url>/projects/{projectId}/refs/{refId}</url>
     <format default="json">argument</format>

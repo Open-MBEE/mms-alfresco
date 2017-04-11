@@ -5221,11 +5221,11 @@ public class EmsScriptNode extends ScriptNode
 
     }
 
-    public ArrayList<EmsScriptNode> getNodesOfViews(Collection<sysml.view.View<EmsScriptNode>> views) {
+    public ArrayList<EmsScriptNode> getNodesOfViews(Collection<gov.nasa.jpl.sysml.view.View<EmsScriptNode>> views) {
         ArrayList<EmsScriptNode> nodes = new ArrayList<>();
         if (views == null)
             return nodes;
-        for (sysml.view.View<EmsScriptNode> view : views) {
+        for (gov.nasa.jpl.sysml.view.View<EmsScriptNode> view : views) {
             if (view == null) {
                 logger.error("viewsToSysmlIds() trying to get non-existent sysmlid of null view");
                 continue;

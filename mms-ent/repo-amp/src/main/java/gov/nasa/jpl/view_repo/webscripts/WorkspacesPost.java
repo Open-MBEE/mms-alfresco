@@ -32,6 +32,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -98,19 +99,18 @@ public class WorkspacesPost extends AbstractJavaWebScript{
         JSONObject json = null;
         try{
             if(validateRequest(req, status)){
+                JSONObject reqJson = (JSONObject) req.parseContent();
                 String projectId = getProjectId(req);
-                String sourceWorkspaceParam = req.getParameter("sourceWorkspace");
-                String newName = req.getServiceMatch().getTemplateVars().get(REF_ID);
+                String sourceWorkspaceParam = reqJson.getJSONArray("refs").getJSONObject(0).optString("parentRefId");
+                String newName = reqJson.getJSONArray("refs").getJSONObject(0).optString("name");
                 String copyTime = req.getParameter("copyTime");
                 Date copyDateTime = TimeUtils.dateFromTimestamp( copyTime );
                 if (copyDateTime == null) copyDateTime = new Date();
                 String follow = req.getParameter( "follow" );
                 if (follow != null) copyDateTime = null;
-                JSONObject reqJson =
-                        (JSONObject)req.parseContent();
-                EmsScriptNode ws = createWorkSpace(projectId, sourceWorkspaceParam, newName, copyDateTime, reqJson, user, status);
+
+                json = createWorkSpace(projectId, sourceWorkspaceParam, newName, copyDateTime, reqJson, user, status);
                 statusCode = status.getCode();
-                json = printObject(ws);
             } else {
                 statusCode = responseStatus.getCode();
             }
@@ -121,39 +121,31 @@ public class WorkspacesPost extends AbstractJavaWebScript{
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal stack trace:\n %s \n", e.getLocalizedMessage());
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        if(json == null)
-            model.put( "res", createResponseJson() );
-        else
+        if (json == null) {
+            model.put("res", createResponseJson());
+        } else {
             try {
-                if (!Utils.isNullOrEmpty(response.toString())) json.put("message", response.toString());
-                model.put("res", NodeUtil.jsonToString( json, 4 ));
+                if (!Utils.isNullOrEmpty(response.toString())) {
+                    json.put("message", response.toString());
+                }
+                JSONObject resultRefs = new JSONObject();
+                JSONArray refsList = new JSONArray();
+                refsList.put(json);
+                resultRefs.put("refs", refsList);
+                model.put("res", resultRefs);
             } catch (JSONException e) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                model.put( "res", createResponseJson() );
+                model.put("res", createResponseJson());
             }
+        }
         status.setCode(statusCode);
 
         printFooter(user, logger, timer);
 
         return model;
     }
-    protected JSONObject printObject(EmsScriptNode ws) throws JSONException{
-        JSONObject json = new JSONObject();
-        JSONArray jsonArray = new JSONArray();
-        if (ws != null) {
-            if(checkPermissions(ws, PermissionService.READ)) {
-                WorkspaceNode wsn = new WorkspaceNode(ws.getNodeRef(), services);
-                jsonArray.put(wsn.toJSONObject( wsn, null ));
-            }
-            else {
-                log(Level.WARN,HttpServletResponse.SC_NOT_FOUND,"No permission to read: %", ws.getSysmlId());
-            }
-        }
-        json.put("workspaces", jsonArray);
-        return json;
-    }
 
-    public EmsScriptNode createWorkSpace(String projectId, String sourceWorkId, String newWorkName, Date cpyTime, JSONObject jsonObject,
+    public JSONObject createWorkSpace(String projectId, String sourceWorkId, String newWorkName, Date cpyTime, JSONObject jsonObject,
                     String user, Status status) throws JSONException {
         status.setCode(HttpServletResponse.SC_OK);
         if (Debug.isOn()) {
@@ -161,9 +153,10 @@ public class WorkspacesPost extends AbstractJavaWebScript{
                             + cpyTime + ", jsonObject=" + jsonObject + ", user=" + user + ", status=" + status + ")");
         }
 
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, sourceWorkId);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, sourceWorkId == null ? "master" : sourceWorkId);
         JSONObject project = emsNodeUtil.getProject(projectId);
         EmsScriptNode orgNode = getSiteNode(project.optString("orgId"));
+        String date = TimeUtils.toTimestamp(new Date().getTime());
 
         if (orgNode == null) {
             log(Level.WARN, "Site Not Found", HttpServletResponse.SC_NOT_FOUND);
@@ -173,9 +166,12 @@ public class WorkspacesPost extends AbstractJavaWebScript{
 
         String sourceWorkspaceId = null;
         String newWorkspaceId = null;
+        JSONObject wsJson = new JSONObject();
+        JSONObject srcJson = new JSONObject();
         String workspaceName = null;
         String desc = null;
-        Date copyTime = null;
+        String elasticId = null;
+        Boolean isTag = false;
         String permission = "read";  // Default is public read permission
         EmsScriptNode finalWorkspace = null;
 
@@ -184,19 +180,19 @@ public class WorkspacesPost extends AbstractJavaWebScript{
         if (jsonObject != null) {
 
             JSONArray jarr = jsonObject.getJSONArray("refs");
-            JSONObject wsJson = jarr.getJSONObject(0);  // Will only post/update one workspace
-            sourceWorkspaceId = wsJson.optString("parent", null);
+            wsJson = jarr.getJSONObject(0);  // Will only post/update one workspace
+            sourceWorkspaceId = wsJson.optString("parentRefId", null);
+            srcJson = emsNodeUtil.getRefJson(sourceWorkspaceId);
             newWorkspaceId = wsJson.optString("id", null); // alfresco id of workspace node
+
             workspaceName = wsJson.optString("name", null); // user or auto-generated name, ems:workspace_name
-            copyTime = TimeUtils.dateFromTimestamp(wsJson.optString("branched", null));
+            isTag = wsJson.optString("type", "Branch").equals("Tag");
+            Map<String, String> guidTimestamp = emsNodeUtil.getGuidAndTimestampFromElasticId(wsJson.optString("commitId", null));
             desc = wsJson.optString("description", null);
             permission = wsJson.optString("permission", "read");  // "read" or "write"
-        }
-        // If no json object given, this is mainly for backwards compatibility:
-        else {
+        } else {
             sourceWorkspaceId = sourceWorkId;
             workspaceName = newWorkName;   // The name is given on the URL typically, not the ID
-            copyTime = cpyTime;
         }
 
         if ((newWorkspaceId != null && newWorkspaceId.equals("master")) || (workspaceName != null && workspaceName
@@ -210,6 +206,15 @@ public class WorkspacesPost extends AbstractJavaWebScript{
         if (newWorkspaceId == null) {
 
             EmsScriptNode srcWs = orgNode.childByNamePath("/" + projectId + "/refs/" + sourceWorkspaceId, false, null, true);
+
+            wsJson.put(Sjm.SYSMLID, workspaceName);
+            wsJson.put(Sjm.COMMITID, emsNodeUtil.getHeadCommit());
+            wsJson.put(Sjm.CREATED, date);
+            wsJson.put(Sjm.CREATOR, user);
+            wsJson.put(Sjm.MODIFIED, date);
+            wsJson.put(Sjm.MODIFIER, user);
+            elasticId = emsNodeUtil.insertSingleElastic(wsJson);
+
 
             if (!"master".equals(sourceWorkspaceId) && srcWs == null) {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Source workspace not found.");
@@ -231,13 +236,11 @@ public class WorkspacesPost extends AbstractJavaWebScript{
                     dstWs.addAspect( "ems:Workspace" );
                     dstWs.setProperty("ems:workspace_name", workspaceName );
 
-                    CommitUtil.sendBranch(projectId, srcWs, dstWs, copyTime);
+                    CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag);
                     finalWorkspace = dstWs;
                 }
             }
-        }
-        // Otherwise, update the workspace:
-        else {
+        } else {
 
             // First try and find the workspace by id:
             EmsScriptNode existingWs = orgNode.childByNamePath(newWorkspaceId, false, null, true);
@@ -269,6 +272,11 @@ public class WorkspacesPost extends AbstractJavaWebScript{
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);
                 return null;
             }
+
+            wsJson.put(Sjm.MODIFIED, date);
+            wsJson.put(Sjm.MODIFIER, user);
+            elasticId = emsNodeUtil.insertSingleElastic(wsJson);
+            emsNodeUtil.updateRef(newWorkspaceId, workspaceName, elasticId, isTag);
         }
 
         // Finally, apply the permissions:
@@ -281,7 +289,7 @@ public class WorkspacesPost extends AbstractJavaWebScript{
             finalWorkspace.createOrUpdateProperty("ems:permission", permission);
         }
 
-        return finalWorkspace;
+        return wsJson;
     }
 
 }

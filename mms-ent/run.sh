@@ -21,5 +21,5 @@ if [ -z "$JREBEL_JAR" ]; then
   MAVEN_OPTS="-Xms256m -Xmx8G -Xdebug -Xrunjdwp:transport=dt_socket,address=10000,server=y,suspend=n" mvn install -f $pom -P run,enterprise 2>runserver.err 2>&1 | tee runserver.log | tee runserver.out;
 else
   echo "running with jrebel"
-  MAVEN_OPTS="-Xms256m -Xmx8G -Xdebug -Xrunjdwp:transport=dt_socket,address=10000,server=y,suspend=n -javaagent:$JREBEL_JAR" mvn install -f $pom -P run,enterprise 2>runserver.err 2>&1 | tee runserver.log | tee runserver.out
+  MAVEN_OPTS="-Xms256m -Xmx8G -Xdebug -Xrunjdwp:transport=dt_socket,address=10000,server=y,suspend=n -agentpath:$JREBEL_JAR" mvn install -f $pom -P run,enterprise 2>runserver.err 2>&1 | tee runserver.log | tee runserver.out
 fi

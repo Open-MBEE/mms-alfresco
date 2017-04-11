@@ -90,3 +90,4 @@ activemq-data/
 *.pyc
 .pydevproject
 /bin/
+projectids.txt

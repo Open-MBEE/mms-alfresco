@@ -29,8 +29,6 @@
             See SDK Parent POM for more info. -->
         <env>local</env>
 
-        <mbee.version>2.2.0-SNAPSHOT</mbee.version>
-
         <!-- The Alfresco Share web application is accessible via this URL -->
         <share.client.url>http://localhost:8080/share</share.client.url>
     </properties>
@@ -76,26 +74,6 @@
     </distributionManagement>
 
     <repositories>
-        <repository>
-            <id>cae-releases</id>
-            <name>cae-releases</name>
-            <url>https://cae-artifactory.jpl.nasa.gov/artifactory/libs-release-local</url>
-        </repository>
-        <repository>
-            <id>cae-snapshots</id>
-            <name>cae-snapshots</name>
-            <url>https://cae-artifactory.jpl.nasa.gov/artifactory/libs-snapshot-local</url>
-        </repository>
-        <repository>
-            <id>cae-external-releases</id>
-            <name>cae-external-releases</name>
-            <url>https://cae-artifactory.jpl.nasa.gov/artifactory/ext-release-local</url>
-        </repository>
-        <repository>
-            <id>cae-external-snapshots</id>
-            <name>cae-external-snapshots</name>
-            <url>https://cae-artifactory.jpl.nasa.gov/artifactory/ext-snapshot-local</url>
-        </repository>
         <repository>
             <id>alfresco-private-repository</id>
             <name>alfresco-private-repository</name>

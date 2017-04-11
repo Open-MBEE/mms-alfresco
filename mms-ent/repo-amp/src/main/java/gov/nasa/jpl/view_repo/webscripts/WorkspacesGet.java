@@ -61,10 +61,11 @@ public class WorkspacesGet extends AbstractJavaWebScript{
 
         Map<String, Object> model = new HashMap<>();
         JSONObject json = null;
+        String projectId = getProjectId(req);
 
         try {
             if (validateRequest(req, status)) {
-                json = handleWorkspace (req.getParameter( "deleted" ) != null);
+                json = handleWorkspace (projectId, req.getParameter( "deleted" ) != null);
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
@@ -91,9 +92,12 @@ public class WorkspacesGet extends AbstractJavaWebScript{
         return model;
     }
 
-    protected JSONObject handleWorkspace (boolean findDeleted) throws JSONException{
-        JSONObject json = new JSONObject ();
-        JSONArray jArray = new JSONArray ();
+    protected JSONObject handleWorkspace (String projectId, boolean findDeleted) throws JSONException{
+        JSONObject json = new JSONObject();
+        JSONArray jArray = null;
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+        jArray = emsNodeUtil.getRefsJson();
+        /*
         if (!findDeleted) {
             //This is for the master workspace (not located in the user home folder).
             JSONObject interiorJson = new JSONObject();
@@ -116,7 +120,7 @@ public class WorkspacesGet extends AbstractJavaWebScript{
                 }
             }
         }
-
+        */
         json.put("refs", jArray);
         return json;
     }

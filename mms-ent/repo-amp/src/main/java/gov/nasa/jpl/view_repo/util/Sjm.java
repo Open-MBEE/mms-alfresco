@@ -78,6 +78,7 @@ public class Sjm {
     public static final String CREATED = "_created";
     public static final String MODIFIER = "_modifier";
     public static final String MODIFIED = "_modified";
+    public static final String TIMESTAMP = "_timestamp";
 
     public static final Map<String, String> STEREOTYPEIDS;
 

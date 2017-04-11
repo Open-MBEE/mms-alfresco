@@ -24,15 +24,16 @@
         <scope>provided</scope> is inherited for each of the following; for more
         info, please refer to alfresco-platform-distribution POM -->
     <dependencies>
-    	<dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>18.0</version>
+        <dependency>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-repository</artifactId>
+            <version>${alfresco.version}</version>
         </dependency>
         <dependency>
-            <groupId>c3p0</groupId>
-            <artifactId>c3p0</artifactId>
-            <version>0.9.1.2</version>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-remote-api</artifactId>
+            <version>${alfresco.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.searchbox</groupId>
@@ -44,9 +45,14 @@
             <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
-            <groupId>${alfresco.groupId}</groupId>
-            <artifactId>alfresco-repository</artifactId>
-            <version>${alfresco.version}</version>
+            <groupId>c3p0</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>0.9.1.2</version>
+        </dependency>
+    	<dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -57,12 +63,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${alfresco.groupId}</groupId>
-            <artifactId>alfresco-remote-api</artifactId>
-            <version>${alfresco.version}</version>
-            <scope>provided</scope>
         </dependency>
         <!-- required for mapping slf4j to log4j -->
         <dependency>
@@ -110,11 +110,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.oracle.weblogic</groupId>
-            <artifactId>wlthint3client</artifactId>
-            <version>10.3.6.0</version>
-        </dependency>
         <!-- REST client dependencies -->
         <dependency>
             <groupId>com.sun.jersey</groupId>
@@ -137,20 +132,15 @@
             <version>4.5</version>
         </dependency><!--$NO-MVN-MAN-VER$-->
         <dependency>
-            <groupId>gov.nasa.jpl.mbee.bae</groupId>
-            <artifactId>bae</artifactId>
-            <version>${mbee.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>gov.nasa.jpl.mbee.util</groupId>
-            <artifactId>mbee_util</artifactId>
-            <version>${mbee.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-rasterizer</artifactId>
             <version>1.7</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.0</version>
         </dependency>
     </dependencies>
 
@@ -177,49 +167,6 @@
                 <skipTests>true</skipTests>
             </properties>
         </profile>
-        <profile>
-            <id>mbee-dev</id>
-            <dependencies>
-                <dependency>
-                    <groupId>gov.nasa.jpl.mbee.util</groupId>
-                    <artifactId>mbee_util</artifactId>
-                    <version>${mbee.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>gov.nasa.jpl.mbee.sysml</groupId>
-                    <artifactId>sysml</artifactId>
-                    <version>${mbee.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>gov.nasa.jpl.mbee.bae</groupId>
-                    <artifactId>bae</artifactId>
-                    <version>${mbee.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>gov.nasa.jpl.mbee.klang</groupId>
-                    <artifactId>klang</artifactId>
-                    <version>${mbee.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>kexpparser</groupId>
-                    <artifactId>kexpparser</artifactId>
-                    <version>0.0.8</version>
-                </dependency>
-                <dependency>
-                    <groupId>gov.nasa.jpl.mbee.docbook</groupId>
-                    <artifactId>docbook</artifactId>
-                    <version>0.0.5</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.oracle.weblogic</groupId>
-                    <artifactId>wlthint3client</artifactId>
-                    <version>10.3.6.0</version>
-                </dependency>
-            </dependencies>
-            <properties>
-                <env.BUILD_NUMBER>1</env.BUILD_NUMBER>
-            </properties>
-        </profile>
     </profiles>
 
 
@@ -235,7 +182,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.8</version>
+                <version>3.0.0</version>
             </plugin>
             <!-- make sure fonts are copied correctly : alfresco munges woff files
                 maybe because of UTF-8 encoding? -->
@@ -336,62 +283,5 @@
                 </executions>
             </plugin>
         </plugins>
-        <pluginManagement>
-            <plugins>
-                <!--This plugin's configuration is used to store Eclipse m2e settings
-                    only. It has no influence on the Maven build itself. -->
-                <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <version>1.0.0</version>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>
-                                            org.alfresco.maven.plugin
-                                        </groupId>
-                                        <artifactId>
-                                            alfresco-maven-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [1.0.2,)
-                                        </versionRange>
-                                        <goals>
-                                            <goal>set-version</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore></ignore>
-                                    </action>
-                                </pluginExecution>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>
-                                            org.codehaus.mojo
-                                        </groupId>
-                                        <artifactId>
-                                            build-helper-maven-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [1.7,)
-                                        </versionRange>
-                                        <goals>
-                                            <goal>
-                                                add-test-resource
-                                            </goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore></ignore>
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 </project>

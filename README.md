@@ -355,8 +355,8 @@ This needs to be thought out a bit, but should be manageable
 
 Use the following curl commands to post an initial organization + project:
 ```
-curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data '{"elements": [{"sysmlId": "vetest", "name": "vetest"}]}' -X POST "http://localhost:8080/alfresco/service/orgs"
-curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data '{"elements": [{"sysmlId": "123456","name": "vetest","type": "Project"}]}' -X POST "http://localhost:8080/alfresco/service/orgs/vetest/projects"
+curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data '{"orgs": [{"id": "vetest", "name": "vetest"}]}' -X POST "http://localhost:8080/alfresco/service/orgs"
+curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data '{"projects": [{"id": "123456","name": "vetest","type": "Project"}]}' -X POST "http://localhost:8080/alfresco/service/orgs/vetest/projects"
 ```
 
 Then you can post some elements. For convenience, there is a json file in repo-amp/test-data/javawebscripts/JsonData. Using the project from above:

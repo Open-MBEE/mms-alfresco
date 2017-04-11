@@ -27,11 +27,7 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.util.Acm;
-import gov.nasa.jpl.view_repo.util.CommitUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
-import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.util.*;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -88,10 +84,8 @@ public class OrgProjectPost extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
 
                 JSONObject json = (JSONObject) req.parseContent();
-                JSONArray elementsArray = json != null ? json.optJSONArray("elements") : null;
-                JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ?
-                    elementsArray.getJSONObject(0) :
-                    new JSONObject();
+                JSONArray elementsArray = json.optJSONArray("projects");
+                JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ? elementsArray.getJSONObject(0) : new JSONObject();
 
                 String orgId = getOrgId(req);
 
@@ -111,8 +105,13 @@ public class OrgProjectPost extends AbstractJavaWebScript {
                         statusCode = updateOrCreateProject(projJson, projectId);
                     }
                 } else {
+                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
                     // This should not happen, since the Organization should be created before a Project is posted
-                    statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+                    if (emsNodeUtil.orgExists(orgId)) {
+                        statusCode = HttpServletResponse.SC_FORBIDDEN;
+                    } else {
+                        statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+                    }
                 }
 
             } else {
@@ -143,10 +142,6 @@ public class OrgProjectPost extends AbstractJavaWebScript {
             return HttpServletResponse.SC_NOT_FOUND;
         }
 
-        String projectName = null;
-        if (jsonObject.has(Acm.JSON_NAME)) {
-            projectName = jsonObject.getString(Acm.JSON_NAME);
-        }
         String projectVersion = null;
         if (jsonObject.has(Acm.JSON_SPECIALIZATION)) {
             JSONObject specialization = jsonObject.getJSONObject(Acm.JSON_SPECIALIZATION);
@@ -161,15 +156,6 @@ public class OrgProjectPost extends AbstractJavaWebScript {
                 projectNode.createOrUpdateProperty(Acm.ACM_ID, projectId);
             }
             projectNode.createOrUpdateProperty(Acm.ACM_TYPE, "Project");
-            boolean nameChanged = false;
-            if (projectName != null) {
-                projectNode.createOrUpdateProperty(Acm.CM_TITLE, projectName);
-                String oldName = (String) projectNode.getProperty(Acm.ACM_NAME);
-                nameChanged = !projectName.equals(oldName);
-                if (nameChanged) {
-                    projectNode.createOrUpdateProperty(Acm.ACM_NAME, projectName);
-                }
-            }
             if (projectVersion != null) {
                 projectNode.createOrUpdateProperty(Acm.ACM_PROJECT_VERSION, projectVersion);
             }
@@ -213,35 +199,17 @@ public class OrgProjectPost extends AbstractJavaWebScript {
             EmsScriptNode branch = refContainerNode.childByNamePath("master", false, null, true);
             if (branch == null) {
                 branch = refContainerNode.createFolder("master");
+                EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+                JSONObject masterWs = new JSONObject();
+                masterWs.put("id", "master");
+                masterWs.put("name", "master");
+                String elasticId = emsNodeUtil.insertSingleElastic(masterWs);
+                emsNodeUtil.insertRef("master", "master", elasticId, false);
             }
 
             if (branch == null) {
                 log(Level.WARN, HttpServletResponse.SC_BAD_REQUEST, "Projects must be created in master workspace.\n");
                 return HttpServletResponse.SC_BAD_REQUEST;
-            }
-
-            if (checkPermissions(site, PermissionService.WRITE)) {
-                String projectName = null;
-                if (jsonObject.has(Acm.JSON_NAME)) {
-                    projectName = jsonObject.getString(Acm.JSON_NAME);
-                }
-                String projectVersion = null;
-                if (jsonObject.has(Acm.JSON_SPECIALIZATION)) {
-                    JSONObject specialization = jsonObject.getJSONObject(Acm.JSON_SPECIALIZATION);
-                    if (specialization != null && specialization.has(Acm.JSON_PROJECT_VERSION)) {
-                        projectVersion = specialization.getString(Acm.JSON_PROJECT_VERSION);
-                    }
-                }
-
-                site.createOrUpdateProperty(Acm.ACM_TYPE, "Project");
-                if (projectName != null) {
-                    site.createOrUpdateProperty(Acm.CM_TITLE, projectName);
-                }
-                if (projectVersion != null) {
-                    site.createOrUpdateProperty(Acm.ACM_PROJECT_VERSION, projectVersion);
-                }
-                log(Level.INFO, "Project metadata updated.\n", HttpServletResponse.SC_OK);
-
             }
         }
 

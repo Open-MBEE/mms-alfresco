@@ -25,13 +25,43 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.util.Date;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+
+import gov.nasa.jpl.view_repo.util.CommitUtil;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.util.WorkspaceNode;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.EmsTransaction;
+import gov.nasa.jpl.view_repo.util.NodeUtil;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.util.TempFileProvider;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,11 +71,7 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.util.CommitUtil;
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
+import gov.nasa.jpl.mbee.util.Utils;
 
 // ASSUMPTIONS & Interesting things about the new model get
 // 1. always complete json for elements (no partial)
@@ -59,6 +85,16 @@ import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 
 public class ModelPost extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(ModelPost.class);
+
+    protected EmsScriptNode svgArtifact = null;
+    protected EmsScriptNode pngArtifact = null;
+    protected String artifactId = null;
+    protected String extension = null;
+    protected String content = null;
+    protected String siteName = null;
+    protected String path = null;
+    protected WorkspaceNode workspace = null;
+    protected Path pngPath = null;
 
     public static boolean timeEvents = false;
 
@@ -77,75 +113,78 @@ public class ModelPost extends AbstractJavaWebScript {
 
         ModelPost instance = new ModelPost(repository, services);
         instance.setServices(getServices());
+
         return instance.executeImplImpl(req, status, cache);
     }
 
     @Override
     protected Map<String, Object> executeImplImpl(final WebScriptRequest req, final Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        printHeader(user, logger, req);
+        //printHeader(user, logger, req);
         Timer timer = new Timer();
 
-        Object content;
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = null;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
+
+        if (contentType.contains("image") || contentType.contains("x-www-form-urlencoded")) {
+            result = handleArtifactPost(req, status, user, contentType);
+        } else {
+            result = handleElementPost(req, status, user, contentType);
+        }
+
+        printFooter(user, logger, timer);
+
+        return result;
+    }
+
+    private JSONObject getPostJson(boolean jsonNotK, Object content, String expressionString) throws JSONException {
+        if (!jsonNotK) {
+            // TODO
+        } else {
+            if (content instanceof JSONObject) {
+                return (JSONObject) content;
+            } else if (content instanceof String) {
+                return new JSONObject((String) content);
+            }
+        }
+
+        return new JSONObject();
+    }
+
+    protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user, String contentType) {
+        JSONObject commit = new JSONObject();
+        JSONObject newElementsObject = new JSONObject();
         boolean jsonNotK = !contentType.contains("application/k");
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         String expressionString = req.getParameter("expression");
         WorkspaceNode myWorkspace = getWorkspace(req, user);
-        String projectId = getProjectId(req);
-        String refId = getRefId(req);
-        JSONObject commit = new JSONObject();
-        JSONArray elements = null;
-        JSONObject newElementsObject = new JSONObject();
-        Date start = new Date();
-        Date end = null;
-        JSONArray ownersNotFound = new JSONArray();
 
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, myWorkspace);
+        boolean nodesOnly = Boolean.parseBoolean(req.getParameter("nodes"));
+        boolean edgesOnly = !nodesOnly && Boolean.parseBoolean(req.getParameter("edges"));
+
+        String refId = getRefId(req);
+        String projectId = getProjectId(req);
+        Map<String, Object> result = new HashMap<>();
+
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         try {
-            if (!jsonNotK) {
-                content = req.getContent().getContent();
-            } else {
-                content = req.parseContent();
-            }
 
-            JSONObject postJson = getPostJson(true, content, expressionString);
-
-            elements = emsNodeUtil.populateElements(postJson.getJSONArray("elements"));
+            JSONObject postJson = getPostJson(true, !jsonNotK ? req.getContent().getContent() : req.parseContent(), expressionString);
             this.populateSourceApplicationFromJson(postJson);
-            logger.debug(String.format("ModelPost processing %d elements.", elements.length()));
-
-            // process elements to see which ones will go to the holding bin
-            // decide which holding bin to place the element in, if there is no
-
-            ownersNotFound = emsNodeUtil.getOwnersNotFound(elements, projectId);
-
-            // some owners not found, bail with appropriate response
-            if (ownersNotFound.length() > 0) {
-                logger.debug(String.format("Owners not found: %s", ownersNotFound.toString()));
-                JSONObject res = new JSONObject();
-                res.put("ownersNotFound", ownersNotFound);
-                res.put("message", response.toString());
-                result.put("res", res);
-
-                status.setCode(responseStatus.getCode());
-                return result;
-            }
+            //logger.debug(String.format("ModelPost processing %d elements.", elements.length()));
 
             Map<String, JSONObject> foundElements = new HashMap<>();
             Map<String, String> foundParentElements = new HashMap<>();
 
-            JSONArray processed = emsNodeUtil.processElements(elements, user, foundElements);
-            processed = emsNodeUtil.processImageData(processed, myWorkspace);
-            JSONObject results = emsNodeUtil.insertIntoElastic(processed, foundParentElements);
-            JSONObject formattedCommit = emsNodeUtil.processCommit(results, user, foundElements, foundParentElements);
+            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(emsNodeUtil.populateElements(postJson.getJSONArray("elements")), myWorkspace), user, foundElements, edgesOnly), foundParentElements);
+
+            JSONObject formattedCommit = emsNodeUtil.processCommit(results, user, foundElements, foundParentElements, edgesOnly);
             // this logic needs to be fixed because emsNodesUtil does not pass a formatted commit
             emsNodeUtil.insertCommitIntoElastic(formattedCommit);
             String commitResults = formattedCommit.getJSONObject("commit").getString(Sjm.ELASTICID);
-            logger.debug(String.format("Processing finished\nIndexed: %s", results));
-            JSONArray newElements = results.getJSONArray("newElements");
+
+            //logger.debug(String.format("Processing finished\nIndexed: %s", results));
 
             results = emsNodeUtil.addCommitId(results, commitResults);
 
@@ -153,13 +192,13 @@ public class ModelPost extends AbstractJavaWebScript {
             commit.put("workspace2", results);
             commit.put("_creator", user);
 
-
             CommitUtil.sendDeltas(commit, commitResults, projectId, myWorkspace == null ? null : myWorkspace.getId(),
-                requestSourceApplication);
+                requestSourceApplication, nodesOnly, edgesOnly);
 
             Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
 
-            newElementsObject.put("elements", extended ? emsNodeUtil.addExtendedInformation(newElements) : newElements);
+            newElementsObject
+                .put("elements", extended ? emsNodeUtil.addExtendedInformation(results.getJSONArray("newElements")) : results.getJSONArray("newElements"));
             newElementsObject.put("commitId", commitResults);
             newElementsObject.put("_timestamp", commitObject.get("timestamp"));
             newElementsObject.put("_creator", user);
@@ -172,35 +211,194 @@ public class ModelPost extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        end = new Date();
-
-        printFooter(user, logger, timer);
-
         return result;
     }
 
-    private JSONObject getPostJson(boolean jsonNotK, Object content, String expressionString) throws JSONException {
-        JSONObject postJson = null;
+    protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user, String contentType) {
 
-        if (!jsonNotK) {
-            // TODO
-        } else {
-            if (content instanceof JSONObject) {
-                postJson = (JSONObject) content;
-            } else if (content instanceof String) {
-                postJson = new JSONObject((String) content);
+        JSONObject resultJson = null;
+        String filename = null;
+        Map<String, Object> model = new HashMap<>();
+
+        extension = contentType.replaceFirst(".*/(\\w+).*", "$1");
+
+        if (!extension.startsWith(".")) {
+            extension = "." + extension;
+        }
+
+        workspace = getWorkspace(req, AuthenticationUtil.getRunAsUser());
+
+        try {
+            Object binaryContent = req.getContent().getContent();
+            content = binaryContent.toString();
+        } catch(IOException e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+
+        // Get the site name from the request:
+        String projectId = getProjectId(req);
+        String refId = getRefId(req);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        JSONObject project = emsNodeUtil.getProject(projectId);
+        siteName = project.optString("orgId");
+
+        if (siteName != null && validateRequest(req, status)) {
+
+            try {
+                // Get the artifact name from the url:
+                String artifactIdPath = getArtifactId(req);
+
+                logger.error("ArtifactIdPath: " + artifactIdPath);
+                logger.error("Content: " + content);
+                logger.error("Header: " + req.getHeader("Content-Type"));
+
+                if (artifactIdPath != null) {
+                    int lastIndex = artifactIdPath.lastIndexOf("/");
+
+                    if (artifactIdPath.length() > (lastIndex + 1)) {
+
+                        path = lastIndex != -1 ? artifactIdPath.substring(0, lastIndex) : "";
+                        artifactId = lastIndex != -1 ? artifactIdPath.substring(lastIndex + 1) : artifactIdPath;
+                        logger.error("artifactId: " + artifactId);
+
+                        filename = extension != null ? artifactId + extension : artifactId;
+
+                        // Create return json:
+                        resultJson = new JSONObject();
+                        resultJson.put("filename", filename);
+                        // TODO: want full path here w/ path to site also, but Dorris doesnt use it,
+                        //		 so leaving it as is.
+                        resultJson.put("path", path);
+                        resultJson.put("site", siteName);
+
+                        // Update or create the artifact if possible:
+                        if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
+
+                            new EmsTransaction(this.services, this.response, this.responseStatus) {
+                                @Override public void run() throws Exception {
+                                    svgArtifact = NodeUtil.updateOrCreateArtifact(artifactId, extension, null, content,
+                                        siteName, path, workspace, null, response, null, false);
+                                }
+                            };
+
+                            if (svgArtifact == null) {
+                                logger.error("Was not able to create the artifact!\n");
+                                model.put("res", createResponseJson());
+                            } else {
+                                resultJson.put("upload", svgArtifact);
+                                svgArtifact.getOrSetCachedVersion();
+                                if (!NodeUtil.skipSvgToPng) {
+                                    try {
+                                        Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
+                                        pngPath = svgToPng(svgPath);
+
+                                        new EmsTransaction(this.services, this.response, this.responseStatus) {
+
+                                            @Override public void run() throws Exception {
+                                                try {
+                                                    pngArtifact = NodeUtil.updateOrCreateArtifactPng(svgArtifact,
+                                                        pngPath, siteName, path, workspace, null, response,
+                                                        null, false);
+                                                } catch (Throwable ex) {
+                                                    throw new Exception("Failed to convert SVG to PNG!\n");
+                                                }
+                                            }
+                                        };
+
+                                        if (pngArtifact == null) {
+                                            logger.error("Failed to convert SVG to PNG!\n");
+                                        } else {
+                                            synchSvgAndPngVersions(svgArtifact, pngArtifact);
+                                            pngArtifact.getOrSetCachedVersion();
+                                        }
+                                        Files.deleteIfExists(svgPath);
+                                        Files.deleteIfExists(pngPath);
+                                    } catch (Throwable ex) {
+                                        logger.error("Failed to convert SVG to PNG!\n");
+                                    }
+                                }
+                            }
+                        } else {
+                            logger.error("Invalid artifactId or no content!\n");
+                            model.put("res", createResponseJson());
+                        }
+                    } else {
+                        logger.error("Invalid artifactId!\\n");
+                        model.put("res", createResponseJson());
+                    }
+
+                } else {
+                    logger.error("artifactId not supplied!\\n");
+                    model.put("res", createResponseJson());
+                }
+
+            } catch (JSONException e) {
+                logger.error("Issues creating return JSON\\n");
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                model.put("res", createResponseJson());
             }
-        }
-        if (postJson == null)
-            postJson = new JSONObject();
-
-        JSONArray jarr = postJson.optJSONArray("elements");
-        if (jarr == null) {
-            jarr = new JSONArray();
-            postJson.put("elements", jarr);
+        } else {
+            logger.error("Invalid request, no sitename specified or no content provided!\\n");
+            model.put("res", createResponseJson());
         }
 
-        return postJson;
+        status.setCode(responseStatus.getCode());
+        if (!model.containsKey("res")) {
+            model.put("res", resultJson != null ? resultJson : createResponseJson());
+        }
+
+        return model;
+    }
+
+    protected Path saveSvgToFilesystem(String artifactId, String extension, String content) throws Throwable {
+        byte[] svgContent = content.getBytes(Charset.forName("UTF-8"));
+        File tempDir = TempFileProvider.getTempDir();
+        Path svgPath = Paths.get(tempDir.getAbsolutePath(), String.format("%s%s", artifactId, extension));
+        File file = new File(svgPath.toString());
+
+        try (final InputStream in = new ByteArrayInputStream(svgContent);) {
+            file.mkdirs();
+            Files.copy(in, svgPath, StandardCopyOption.REPLACE_EXISTING);
+            return svgPath;
+        } catch (Throwable ex) {
+            throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
+        }
+    }
+
+    protected Path svgToPng(Path svgPath) throws Throwable {
+        Path pngPath = Paths.get(svgPath.toString().replace(".svg", ".png"));
+        try (OutputStream png_ostream = new FileOutputStream(pngPath.toString());) {
+            String svg_URI_input = svgPath.toUri().toURL().toString();
+            TranscoderInput input_svg_image = new TranscoderInput(svg_URI_input);
+            TranscoderOutput output_png_image = new TranscoderOutput(png_ostream);
+            PNGTranscoder my_converter = new PNGTranscoder();
+            my_converter.transcode(input_svg_image, output_png_image);
+        } catch (Throwable ex) {
+            throw new Throwable("Failed to convert SVG to PNG! " + ex.getMessage());
+        }
+        return pngPath;
+    }
+
+    protected void synchSvgAndPngVersions(EmsScriptNode svgNode, EmsScriptNode pngNode) {
+        Version svgVer = svgNode.getCurrentVersion();
+        String svgVerLabel = svgVer.getVersionLabel();
+        Double svgVersion = Double.parseDouble(svgVerLabel);
+
+        Version pngVer = pngNode.getCurrentVersion();
+        String pngVerLabel = pngVer.getVersionLabel();
+        Double pngVersion = Double.parseDouble(pngVerLabel);
+
+        int svgVerLen = svgNode.getEmsVersionHistory().length;
+        int pngVerLen = pngNode.getEmsVersionHistory().length;
+
+        while (pngVersion < svgVersion || pngVerLen < svgVerLen) {
+            pngNode.makeSureNodeRefIsNotFrozen();
+            pngNode.createVersion("creating the version history", false);
+            pngVer = pngNode.getCurrentVersion();
+            pngVerLabel = pngVer.getVersionLabel();
+            pngVersion = Double.parseDouble(pngVerLabel);
+            pngVerLen = pngNode.getEmsVersionHistory().length;
+        }
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
@@ -218,5 +416,4 @@ public class ModelPost extends AbstractJavaWebScript {
 
         return true;
     }
-
 }

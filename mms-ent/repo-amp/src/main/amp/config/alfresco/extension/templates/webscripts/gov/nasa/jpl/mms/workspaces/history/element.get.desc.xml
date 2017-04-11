@@ -5,7 +5,7 @@
     <description>
         get element version history with {elementId}
     </description>
-    <url>/projects/{projectId}/refs/{refId}/history/{elementId}</url>
+    <url>/projects/{projectId}/refs/{refId}/elements/{elementId}/history</url>
     <format default="json">argument</format>
     <authentication>user</authentication>
     <transaction>required</transaction>
