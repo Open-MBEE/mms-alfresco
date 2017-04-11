@@ -164,26 +164,6 @@ public class EmsNodeUtil {
         return null;
     }
 
-    //    public JSONArray getNodes(String key, String value) {
-    //        JSONArray nodes = new JSONArray();
-    //        try {
-    //            switch (key) {
-    //                case Sjm.SYSMLID:
-    //                    nodes.put(eh.getElement(value));
-    //                default:
-    //                    nodes = eh.search(value);
-    //            }
-    //        } catch (Exception e) {
-    //            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-    //        }
-    //
-    //        return nodes;
-    //    }
-
-    //    public Node getNodeByLastCommitId(String commitId) {
-    //        return pgh.getNodeFromLastCommitId(commitId);
-    //    }
-
     public JSONObject getElementByElementAndCommitId(String commitId, String sysmlid) {
         try {
             return eh.getElementByCommitId(commitId, sysmlid);

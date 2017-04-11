@@ -257,7 +257,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
                     if (artifactIdPath.length() > (lastIndex + 1)) {
 
-                        path = lastIndex != -1 ? artifactIdPath.substring(0, lastIndex) : "";
+                        path = projectId + "/refs/" + refId + "/" + (lastIndex != -1 ? artifactIdPath.substring(0, lastIndex) : "");
                         artifactId = lastIndex != -1 ? artifactIdPath.substring(lastIndex + 1) : artifactIdPath;
                         logger.error("artifactId: " + artifactId);
 
