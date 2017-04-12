@@ -38,8 +38,6 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.actions.ActionUtil;
 import gov.nasa.jpl.view_repo.actions.SvgToPngActionExecuter;
-//import gov.nasa.jpl.view_repo.actions.HtmlToPdfActionExecuter;
-//import gov.nasa.jpl.view_repo.actions.SvgToPngActionExecuter;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 

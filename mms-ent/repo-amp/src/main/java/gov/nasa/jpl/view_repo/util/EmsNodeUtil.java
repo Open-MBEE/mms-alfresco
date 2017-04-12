@@ -807,7 +807,7 @@ public class EmsNodeUtil {
             property.put(Sjm.AGGREGATION, aggregation);
             property.put(Sjm.ELASTICID, UUID.randomUUID().toString());
             // Default Fields
-            property.put(Sjm.ASSOCIATIONID, "");
+            property.put(Sjm.ASSOCIATIONID, associationSysmlId);
             property.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
             property.put(Sjm.DOCUMENTATION, "");
             property.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
@@ -887,6 +887,7 @@ public class EmsNodeUtil {
             assocProperty.put(Sjm.SYSMLID, assocPropSysmlId);
             assocProperty.put(Sjm.TYPE, "Property");
             assocProperty.put(Sjm.TYPEID, sysmlId);
+            assocProperty.put(Sjm.OWNERID, associationSysmlId);
             assocProperty.put(Sjm.AGGREGATION, "none");
             assocProperty.put(Sjm.ELASTICID, UUID.randomUUID().toString());
             // Default Fields
