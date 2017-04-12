@@ -988,7 +988,6 @@ public class EmsNodeUtil {
 
         JSONArray addedElements = new JSONArray();
         JSONArray updatedElements = new JSONArray();
-        JSONArray movedElements = new JSONArray();
         JSONArray newElements = new JSONArray();
         JSONArray deletedElements = new JSONArray();
 
@@ -1007,16 +1006,10 @@ public class EmsNodeUtil {
 
             boolean added;
             boolean updated = false;
-            boolean moved = false;
 
-            added = getNodeBySysmlid(sysmlid).length() == 0;
+            added = !pgh.sysmlIdExists(sysmlid);
             if (!added) {
                 updated = isUpdated(sysmlid);
-            }
-
-            if (!added && e.has(Sjm.OWNERID) && !e.getString(Sjm.OWNERID).equals("null")) {
-                String newOwner = e.getString(Sjm.OWNERID);
-                moved = isMoved(sysmlid, newOwner);
             }
 
             if (added) {
@@ -1024,25 +1017,19 @@ public class EmsNodeUtil {
                     logger.info("Added: " + sysmlid);
                 }
                 addedElements.put(e);
-            } else if (moved) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("Moved: " + sysmlid);
-                }
-                foundParentElements.put(sysmlid, e.getString(Sjm.ELASTICID));
-                movedElements.put(e);
-            } else if (updated && !moved) {
+            } else if (updated) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Updated: " + sysmlid);
                 }
                 foundParentElements.put(sysmlid, e.getString(Sjm.ELASTICID));
                 updatedElements.put(e);
             } else {
-                logger.error("Element is not added, updated, or moved: " + sysmlid);
+                logger.error("Element is not added or updated: " + sysmlid);
             }
 
-            if (added || updated || moved) {
+            if (added || updated) {
                 if (logger.isInfoEnabled()) {
-                    logger.info("Added, updated or moved:" + sysmlid);
+                    logger.info("Added or updated:" + sysmlid);
                 }
                 e.put(Sjm.PROJECTID, this.projectId);
                 e.put(Sjm.REFID, this.workspaceName);
@@ -1052,7 +1039,6 @@ public class EmsNodeUtil {
 
         results.put("addedElements", addedElements);
         results.put("updatedElements", updatedElements);
-        results.put("movedElements", movedElements);
         results.put("newElements", newElements);
         results.put("deletedElements", deletedElements);
 
@@ -1143,7 +1129,7 @@ public class EmsNodeUtil {
         qn.add(o.optString("name"));
         qid.add(o.optString(Sjm.SYSMLID));
 
-        while (o != null && o.has(Sjm.OWNERID) && o.optString(Sjm.OWNERID) != null && !o.optString(Sjm.OWNERID)
+        while (o.has(Sjm.OWNERID) && o.optString(Sjm.OWNERID) != null && !o.optString(Sjm.OWNERID)
             .equals("null")) {
             String sysmlid = o.optString(Sjm.OWNERID);
             JSONObject owner = elementMap.get(sysmlid);
