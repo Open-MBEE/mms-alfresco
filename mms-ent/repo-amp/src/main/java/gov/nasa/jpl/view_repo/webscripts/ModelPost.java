@@ -159,9 +159,6 @@ public class ModelPost extends AbstractJavaWebScript {
         String expressionString = req.getParameter("expression");
         WorkspaceNode myWorkspace = getWorkspace(req, user);
 
-        boolean nodesOnly = Boolean.parseBoolean(req.getParameter("nodes"));
-        boolean edgesOnly = !nodesOnly && Boolean.parseBoolean(req.getParameter("edges"));
-
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         Map<String, Object> result = new HashMap<>();
@@ -177,9 +174,9 @@ public class ModelPost extends AbstractJavaWebScript {
             Map<String, JSONObject> foundElements = new HashMap<>();
             Map<String, String> foundParentElements = new HashMap<>();
 
-            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(emsNodeUtil.populateElements(postJson.getJSONArray("elements")), myWorkspace), user, foundElements, edgesOnly), foundParentElements);
+            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(emsNodeUtil.populateElements(postJson.getJSONArray("elements")), myWorkspace), user, foundElements), foundParentElements);
 
-            JSONObject formattedCommit = emsNodeUtil.processCommit(results, user, foundElements, foundParentElements, edgesOnly);
+            JSONObject formattedCommit = emsNodeUtil.processCommit(results, user, foundElements, foundParentElements);
             // this logic needs to be fixed because emsNodesUtil does not pass a formatted commit
             emsNodeUtil.insertCommitIntoElastic(formattedCommit);
             String commitResults = formattedCommit.getJSONObject("commit").getString(Sjm.ELASTICID);
@@ -193,7 +190,7 @@ public class ModelPost extends AbstractJavaWebScript {
             commit.put("_creator", user);
 
             CommitUtil.sendDeltas(commit, commitResults, projectId, myWorkspace == null ? null : myWorkspace.getId(),
-                requestSourceApplication, nodesOnly, edgesOnly);
+                requestSourceApplication);
 
             Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
 

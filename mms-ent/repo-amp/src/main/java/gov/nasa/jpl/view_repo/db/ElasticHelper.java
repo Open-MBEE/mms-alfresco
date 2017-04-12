@@ -255,7 +255,7 @@ public class ElasticHelper {
             // sublist is fromIndex inclusive, toIndex exclusive
             List<String> sub = ids.subList(count, Math.min(ids.size(), count + termLimit));
             if (count == Math.min(ids.size(), count + termLimit)) {
-                sub = new ArrayList<String>();
+                sub = new ArrayList<>();
                 sub.add(ids.get(count));
             }
             JSONArray elasticids = new JSONArray();

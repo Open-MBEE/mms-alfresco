@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jdk.nashorn.internal.runtime.JSONListAdapter;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -566,17 +567,12 @@ public class EmsNodeUtil {
 
     public JSONObject processCommit(JSONObject elements, String user, Map<String, JSONObject> foundElements,
         Map<String, String> foundParentElements) {
-        return processCommit(elements, user, foundElements, foundParentElements, false);
-    }
-
-    public JSONObject processCommit(JSONObject elements, String user, Map<String, JSONObject> foundElements,
-        Map<String, String> foundParentElements, boolean edgesOnly) {
 
         JSONObject o = new JSONObject();
         JSONObject results = new JSONObject();
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
-        if (edgesOnly) {
+        if (isInitialCommit()) {
             o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
             o.put("added", new JSONObject());
             o.put("_creator", user);
@@ -617,8 +613,7 @@ public class EmsNodeUtil {
         return results;
     }
 
-    public JSONArray processElements(JSONArray elements, String user, Map<String, JSONObject> foundElements,
-        boolean edgesOnly) {
+    public JSONArray processElements(JSONArray elements, String user, Map<String, JSONObject> foundElements) {
 
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
@@ -641,9 +636,7 @@ public class EmsNodeUtil {
                 o.put(Sjm.OWNERID, holdingBinSysmlid);
             }
             // pregenerate the elasticId
-            if (!edgesOnly) {
-                o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
-            }
+            o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
             logger.debug(sysmlid);
 
             boolean added;
@@ -815,6 +808,38 @@ public class EmsNodeUtil {
             property.put(Sjm.TYPEID, cvSysmlId);
             property.put(Sjm.AGGREGATION, aggregation);
             property.put(Sjm.ELASTICID, UUID.randomUUID().toString());
+            // Default Fields
+            property.put(Sjm.ASSOCIATIONID, "");
+            property.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
+            property.put(Sjm.DOCUMENTATION, "");
+            property.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+            property.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
+            property.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
+            property.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
+            property.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+            property.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+            property.put(Sjm.VISIBILITY, "private");
+            property.put(Sjm.ISLEAF, false);
+            property.put(Sjm.ISSTATIC, false);
+            property.put(Sjm.ISORDERED, false);
+            property.put(Sjm.ISUNIQUE, true);
+            property.put(Sjm.LOWERVALUE, JSONObject.NULL);
+            property.put(Sjm.UPPERVALUE, JSONObject.NULL);
+            property.put(Sjm.ISREADONLY, false);
+            property.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
+            property.put(Sjm.ENDIDS, new JSONArray());
+            property.put(Sjm.DEPLOYMENTIDS, new JSONArray());
+            property.put(Sjm.ASSOCIATIONENDID, JSONObject.NULL);
+            property.put(Sjm.QUALIFIERIDS, new JSONArray());
+            property.put(Sjm.DATATYPEID, JSONObject.NULL);
+            property.put(Sjm.DEFAULTVALUE, JSONObject.NULL);
+            property.put(Sjm.INTERFACEID, JSONObject.NULL);
+            property.put(Sjm.ISDERIVED, false);
+            property.put(Sjm.ISDERIVEDUNION, false);
+            property.put(Sjm.ISID, false);
+            property.put(Sjm.REDEFINEDPROPERTYIDS, new JSONArray());
+            property.put(Sjm.SUBSETTEDPROPERTYIDS, new JSONArray());
+
             newElements.put(property);
 
             // Create Associations
@@ -831,6 +856,32 @@ public class EmsNodeUtil {
             association.put(Sjm.MEMBERENDIDS, memberEndIds);
             association.put(Sjm.OWNEDENDIDS, ownedEndIds);
             association.put(Sjm.ELASTICID, UUID.randomUUID().toString());
+            // Default Fields
+            association.put(Sjm.DOCUMENTATION, "");
+            association.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+            association.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
+            association.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
+            association.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
+            association.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+            association.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+            association.put(Sjm.VISIBILITY, "public");
+            association.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
+            association.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
+            association.put(Sjm.PACKAGEIMPORTIDS, new JSONArray());
+            association.put(Sjm.ISLEAF, false);
+            association.put(Sjm.TEMPLATEBINDINGIDS, new JSONArray());
+            association.put(Sjm.USECASEIDS, new JSONArray());
+            association.put(Sjm.REPRESENTATIONID, JSONObject.NULL);
+            association.put(Sjm.COLLABORATIONUSEIDS, new JSONArray());
+            association.put(Sjm.GENERALIZATIONIDS, new JSONArray());
+            association.put(Sjm.POWERTYPEEXTENTIDS, new JSONArray());
+            association.put(Sjm.ISABSTRACT, false);
+            association.put(Sjm.ISFINALSPECIALIZATION, false);
+            association.put(Sjm.REDEFINEDCLASSIFIERIDS, new JSONArray());
+            association.put(Sjm.SUBSTITUTIONIDS, new JSONArray());
+            association.put(Sjm.ISDERIVED, false);
+            association.put(Sjm.NAVIGABLEOWNEDENDIDS, new JSONArray());
+
             newElements.put(association);
 
             // Create Association Property
@@ -840,6 +891,38 @@ public class EmsNodeUtil {
             assocProperty.put(Sjm.TYPEID, sysmlId);
             assocProperty.put(Sjm.AGGREGATION, "none");
             assocProperty.put(Sjm.ELASTICID, UUID.randomUUID().toString());
+            // Default Fields
+            assocProperty.put(Sjm.ASSOCIATIONID, associationSysmlId);
+            assocProperty.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
+            assocProperty.put(Sjm.DOCUMENTATION, "");
+            assocProperty.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+            assocProperty.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
+            assocProperty.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
+            assocProperty.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
+            assocProperty.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+            assocProperty.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+            assocProperty.put(Sjm.VISIBILITY, "private");
+            assocProperty.put(Sjm.ISLEAF, false);
+            assocProperty.put(Sjm.ISSTATIC, false);
+            assocProperty.put(Sjm.ISORDERED, false);
+            assocProperty.put(Sjm.ISUNIQUE, true);
+            assocProperty.put(Sjm.LOWERVALUE, JSONObject.NULL);
+            assocProperty.put(Sjm.UPPERVALUE, JSONObject.NULL);
+            assocProperty.put(Sjm.ISREADONLY, false);
+            assocProperty.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
+            assocProperty.put(Sjm.ENDIDS, new JSONArray());
+            assocProperty.put(Sjm.DEPLOYMENTIDS, new JSONArray());
+            assocProperty.put(Sjm.ASSOCIATIONENDID, JSONObject.NULL);
+            assocProperty.put(Sjm.QUALIFIERIDS, new JSONArray());
+            assocProperty.put(Sjm.DATATYPEID, JSONObject.NULL);
+            assocProperty.put(Sjm.DEFAULTVALUE, JSONObject.NULL);
+            assocProperty.put(Sjm.INTERFACEID, JSONObject.NULL);
+            assocProperty.put(Sjm.ISDERIVED, false);
+            assocProperty.put(Sjm.ISDERIVEDUNION, false);
+            assocProperty.put(Sjm.ISID, false);
+            assocProperty.put(Sjm.REDEFINEDPROPERTYIDS, new JSONArray());
+            assocProperty.put(Sjm.SUBSETTEDPROPERTYIDS, new JSONArray());
+
             newElements.put(assocProperty);
 
             // Add OwnedAttributeIds

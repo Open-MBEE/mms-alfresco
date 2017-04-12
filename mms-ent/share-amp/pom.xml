@@ -9,10 +9,10 @@
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
         <artifactId>mms-ent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>3.0.0-RC1</version>
     </parent>
 
-    <!-- 
+    <!--
         SDK properties have sensible defaults in the SDK parent,
         but you can override the properties below to use another version.
         For more available properties see the alfresco-sdk-parent POM.
@@ -24,10 +24,10 @@
 
         <!-- Defines the log level used in log4j.properties -->
         <app.log.root.level>WARN</app.log.root.level>
-        
+
         <external-groupId>externalrepo_</external-groupId>
     </properties>
-    
+
     <repositories>
         <!-- local repository -->
         <repository>
@@ -36,8 +36,8 @@
         </repository>
     </repositories>
 
-    <!-- Following dependencies are needed for compiling Java code in src/main/java; 
-         <scope>provided</scope> is inherited for each of the following; 
+    <!-- Following dependencies are needed for compiling Java code in src/main/java;
+         <scope>provided</scope> is inherited for each of the following;
          for more info, please refer to alfresco-platform-distribution POM -->
     <dependencies>
         <dependency>

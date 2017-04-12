@@ -187,7 +187,6 @@ public class WorkspacesPost extends AbstractJavaWebScript{
 
             workspaceName = wsJson.optString("name", null); // user or auto-generated name, ems:workspace_name
             isTag = wsJson.optString("type", "Branch").equals("Tag");
-            Map<String, String> guidTimestamp = emsNodeUtil.getGuidAndTimestampFromElasticId(wsJson.optString("commitId", null));
             desc = wsJson.optString("description", null);
             permission = wsJson.optString("permission", "read");  // "read" or "write"
         } else {
