@@ -650,8 +650,10 @@ public class EmsNodeUtil {
             boolean updated = false;
 
             JSONObject gotNode = getNodeBySysmlid(sysmlid);
+            boolean nodeExists = pgh.sysmlIdExists(sysmlid);
             added = gotNode.length() == 0;
-            if (!added) {
+            if (!added || nodeExists) {
+                added = false;
                 updated = isUpdated(sysmlid);
             }
 

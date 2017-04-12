@@ -322,6 +322,7 @@ public class CommitUtil {
                     updatedNode.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
                     updatedNode.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
                     updatedNode.put("nodetype", Integer.toString(getNodeType(e).getValue()));
+                    updatedNode.put("deleted", "false");
                     nodeUpdates.add(updatedNode);
                 }
             }
