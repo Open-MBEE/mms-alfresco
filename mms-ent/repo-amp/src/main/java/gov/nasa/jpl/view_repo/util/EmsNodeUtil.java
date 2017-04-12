@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jdk.nashorn.internal.runtime.JSONListAdapter;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,7 +31,6 @@ import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbCommitTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
-import sun.rmi.runtime.Log;
 
 public class EmsNodeUtil {
 
