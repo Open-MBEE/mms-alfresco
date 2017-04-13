@@ -1335,7 +1335,7 @@ public class PostgresHelper {
                 return;
 
             execUpdate(
-                "DELETE FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " OR child = " + n.getId());
+                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
