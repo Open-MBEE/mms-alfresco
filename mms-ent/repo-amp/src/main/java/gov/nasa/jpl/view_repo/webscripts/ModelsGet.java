@@ -128,7 +128,7 @@ public class ModelsGet extends AbstractJavaWebScript {
                 //top.put("elements", elementsJson);
                 if (!Utils.isNullOrEmpty(response.toString()))
                     top.put("message", response.toString());
-                if (prettyPrint) {
+                if (prettyPrint || req.getContentType().contains("webp")) {
                     model.put("res", top.toString(4));
                 } else {
                     model.put("res", top);

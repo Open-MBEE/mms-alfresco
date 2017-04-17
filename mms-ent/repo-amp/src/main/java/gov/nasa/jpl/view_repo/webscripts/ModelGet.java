@@ -144,7 +144,7 @@ public class ModelGet extends AbstractJavaWebScript {
 
         status.setCode(responseStatus.getCode());
 
-        if (prettyPrint) {
+        if (prettyPrint || req.getContentType().contains("webp")) {
             model.put("res", top.toString(4));
         } else {
             model.put("res", top);
