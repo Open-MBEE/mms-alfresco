@@ -615,7 +615,6 @@ public class EmsNodeUtil {
 
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
-        JSONArray elasticElements = new JSONArray();
         String holdingBinSysmlid = "holding_bin";
         if (projectId != null) {
             holdingBinSysmlid = "holding_bin_" + projectId;
@@ -637,14 +636,10 @@ public class EmsNodeUtil {
             o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
             logger.debug(sysmlid);
 
-            boolean added;
+            boolean added = !pgh.sysmlIdExists(sysmlid);
             boolean updated = false;
 
-            JSONObject gotNode = getNodeBySysmlid(sysmlid);
-            boolean nodeExists = pgh.sysmlIdExists(sysmlid);
-            added = gotNode.length() == 0;
-            if (!added || nodeExists) {
-                added = false;
+            if (!added) {
                 updated = isUpdated(sysmlid);
             }
 
@@ -661,20 +656,19 @@ public class EmsNodeUtil {
                 // Get originalNode if updated
                 o.put(Sjm.MODIFIER, user);
                 o.put(Sjm.MODIFIED, date);
-                foundElements.put(sysmlid, gotNode);
+                foundElements.put(sysmlid, getNodeBySysmlid(sysmlid));
             }
 
             if (added || updated) {
-                elasticElements.put(o);
+                elements.put(i, o);
             }
 
             for (int ii = 0; ii < newElements.length(); ii++) {
-                elasticElements.put(newElements.getJSONObject(ii));
+                elements.put(newElements.getJSONObject(ii));
             }
-
         }
 
-        return elasticElements;
+        return elements;
     }
 
     public JSONObject processConfiguration(JSONObject postJson, String user, String date) {
@@ -1453,16 +1447,16 @@ public class EmsNodeUtil {
     }
 
     public JSONArray processImageData(JSONArray elements, WorkspaceNode workspace) {
-        JSONArray rtnElements = new JSONArray();
         for (int i = 0; i < elements.length(); i++) {
             String content = elements.getJSONObject(i).toString();
             if (isImageData(content)) {
                 content = extractAndReplaceImageData(content, workspace,
                     getSite(elements.getJSONObject(i).getString(Sjm.SYSMLID)));
+                elements.put(i, new JSONObject(content));
             }
-            rtnElements.put(new JSONObject(content));
         }
-        return rtnElements;
+
+        return elements;
     }
 
     private boolean isImageData(String value) {

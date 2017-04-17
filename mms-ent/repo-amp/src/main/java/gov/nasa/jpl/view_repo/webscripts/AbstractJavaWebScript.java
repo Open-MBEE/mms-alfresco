@@ -96,6 +96,8 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     // keeps track of who made the call to the service
     protected String requestSourceApplication = null;
 
+    protected boolean prettyPrint = false;
+
     protected void initMemberVariables(String siteName) {
         companyhome = new ScriptNode(repository.getCompanyHome(), services);
     }
@@ -1129,7 +1131,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         JSONObject jsonVersion = null;
         boolean paramVal = getBooleanArg(req, "mmsVersion", false);
         if (paramVal) {
-            jsonVersion = new JSONObject();
             jsonVersion = getMMSversion();
         }
 

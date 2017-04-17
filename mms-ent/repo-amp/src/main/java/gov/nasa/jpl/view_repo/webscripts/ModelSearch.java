@@ -91,7 +91,12 @@ public class ModelSearch extends ModelGet {
             JSONObject top = new JSONObject();
             JSONArray elementsJson = executeSearchRequest(req, top);
             top.put("elements", filterByPermission(elementsJson, req));
-            model.put("res", top);
+
+            if (prettyPrint) {
+                model.put("res", top.toString(4));
+            } else {
+                model.put("res", top);
+            }
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not create the JSON response");
             model.put("res", createResponseJson());

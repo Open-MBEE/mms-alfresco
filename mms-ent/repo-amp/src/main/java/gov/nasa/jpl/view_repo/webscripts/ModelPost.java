@@ -200,7 +200,12 @@ public class ModelPost extends AbstractJavaWebScript {
             newElementsObject.put("_timestamp", commitObject.get("timestamp"));
             newElementsObject.put("_creator", user);
             // Timestamp needs to be ISO format
-            result.put("res", newElementsObject.toString(4));
+
+            if (prettyPrint) {
+                result.put("res", newElementsObject.toString(4));
+            } else {
+                result.put("res", newElementsObject);
+            }
 
             status.setCode(responseStatus.getCode());
 

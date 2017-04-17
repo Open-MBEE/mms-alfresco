@@ -67,8 +67,6 @@ public class ModelsGet extends AbstractJavaWebScript {
         super(repositoryHelper, registry);
     }
 
-    protected boolean prettyPrint = true;
-
     String timestamp;
     Date dateTime;
 
@@ -126,14 +124,15 @@ public class ModelsGet extends AbstractJavaWebScript {
 
             JSONObject top = NodeUtil.newJsonObject();
             if (elementsJson.length() > 0) {
-                //top.put("elements", filterByPermission(elementsJson, req));
-                top.put("elements", elementsJson);
+                top.put("elements", filterByPermission(elementsJson, req));
+                //top.put("elements", elementsJson);
                 if (!Utils.isNullOrEmpty(response.toString()))
                     top.put("message", response.toString());
-                if (prettyPrint)
+                if (prettyPrint) {
                     model.put("res", top.toString(4));
-                else
-                    model.put("res", top.toString());
+                } else {
+                    model.put("res", top);
+                }
             } else {
                 log(Level.WARN, HttpServletResponse.SC_OK, "No elements found");
                 model.put("res", createResponseJson());
