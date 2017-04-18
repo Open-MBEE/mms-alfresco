@@ -95,7 +95,7 @@ public class ModelGet extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
 
         String[] accepts = req.getHeaderValues("Accept");
-        String accept = (accepts != null) ? accepts[0] : "";
+        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
         logger.error("Accept: " + accept);
 
         if (accept.contains("image") && !accept.contains("webp")) {
