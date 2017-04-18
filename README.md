@@ -35,7 +35,7 @@
     *   At **Main** tab
             *   Enter `${project_loc}` or `${workspace_loc}` for Base Directory textbox
             *   Enter `install` for Goals textbox
-            *   Enter `run, enterprise, mbee-dev` for Profiles textbox
+            *   Enter `run` for Profiles textbox
             *   Select Maven 3.X.X (whatever you chose to setup in step 2) for Maven Runtime
     *   At **JRE** tab
             *   Select **Java 8** for JRE.
@@ -148,10 +148,9 @@ Structure of the graph for each “workspace”
 
 ## 6. Example webscript in new world: modelpost
 
-Create instances of ElasticHelper and PostgresHelper
+Create instance of EmsNodeUtil
 Get all other relevant information, validation, etc. form request
 Figure out if the elements are to go to the holding bin or not
-If owner is not found, we have a problem – BAIL
 Calculate the qualified name and ID information for each node
 Add metadata for each element
 Store elements in ES
@@ -161,7 +160,7 @@ Create JSON response and return
 
 ## 7. Example webscript in new world: modelget
 
-Create instances of ElasticHelper and PostgresHelper
+Create instance of EmsNodeUtil
 Get all other relevant information, validation, etc. form request
 Access PG to get the ElasticSearch IDs for all documents that we are interested in
 Access ES via ElasticHelper and get those IDs
@@ -169,7 +168,7 @@ Create JSON response and return
 
 
 ## 8. General Pattern for WebScripts
-Create instances of ElasticHelper and PostgresHelper
+Create instance of EmsNodeUtil
 Get all other relevant information, validation, etc. form request
 Understand how to:
 
