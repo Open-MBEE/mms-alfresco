@@ -234,8 +234,7 @@ public class EmsNodeUtil {
         List<String> sysmlids = new ArrayList<>();
 
         for (int ii = 0; ii < elements.length(); ii++) {
-            String id = elements.getJSONObject(ii).getString(Sjm.SYSMLID);
-            sysmlids.add(id);
+            sysmlids.add(elements.getJSONObject(ii).getString(Sjm.SYSMLID));
         }
         List<String> elasticids = pgh.getElasticIdsFromSysmlIds(sysmlids);
         JSONArray elementsFromElastic = new JSONArray();
@@ -244,15 +243,15 @@ public class EmsNodeUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        JSONArray result = new JSONArray();
+
         for (int i = 0; i < elementsFromElastic.length(); i++) {
             JSONObject formatted = elementsFromElastic.getJSONObject(i);
             formatted.put(Sjm.PROJECTID, this.projectId);
             formatted.put(Sjm.REFID, this.workspaceName);
-            result.put(addChildViews(formatted));
+            elementsFromElastic.put(i, addChildViews(formatted));
         }
 
-        return result;
+        return elementsFromElastic;
     }
 
     public JSONArray getNodeHistory(String sysmlId) {

@@ -40,6 +40,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
@@ -62,6 +64,7 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -161,7 +164,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> model = new HashMap<>();
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
@@ -189,31 +192,36 @@ public class ModelPost extends AbstractJavaWebScript {
             commit.put("workspace2", results);
             commit.put("_creator", user);
 
-            CommitUtil.sendDeltas(commit, commitResults, projectId, myWorkspace == null ? null : myWorkspace.getId(),
-                requestSourceApplication);
+            if (CommitUtil.sendDeltas(commit, commitResults, projectId, myWorkspace == null ? null : myWorkspace.getId(),
+                requestSourceApplication)) {
 
-            Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
+                Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
 
-            newElementsObject
-                .put("elements", extended ? emsNodeUtil.addExtendedInformation(results.getJSONArray("newElements")) : results.getJSONArray("newElements"));
-            newElementsObject.put("commitId", commitResults);
-            newElementsObject.put("_timestamp", commitObject.get("timestamp"));
-            newElementsObject.put("_creator", user);
-            // Timestamp needs to be ISO format
+                newElementsObject.put("elements", extended ?
+                    emsNodeUtil.addExtendedInformation(results.getJSONArray("newElements")) :
+                    results.getJSONArray("newElements"));
+                newElementsObject.put("commitId", commitResults);
+                newElementsObject.put("_timestamp", commitObject.get("timestamp"));
+                newElementsObject.put("_creator", user);
+                // Timestamp needs to be ISO format
 
-            if (prettyPrint) {
-                result.put("res", newElementsObject.toString(4));
+                if (prettyPrint) {
+                    model.put("res", newElementsObject.toString(4));
+                } else {
+                    model.put("res", newElementsObject);
+                }
+
+                status.setCode(responseStatus.getCode());
             } else {
-                result.put("res", newElementsObject);
+                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Commit failed, please check server logs for failed items");
+                model.put("res", createResponseJson());
             }
-
-            status.setCode(responseStatus.getCode());
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        return result;
+        return model;
     }
 
     protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user, String contentType) {

@@ -101,7 +101,7 @@ public class ModelGet extends AbstractJavaWebScript {
         if (accept.contains("image") && !accept.contains("webp")) {
             model = handleArtifactGet(req, status, accept);
         } else {
-            model = handleElementGet(req, status);
+            model = handleElementGet(req, status, accept);
         }
 
         printFooter(user, logger, timer);
@@ -109,7 +109,7 @@ public class ModelGet extends AbstractJavaWebScript {
         return model;
     }
 
-    protected Map<String, Object> handleElementGet(WebScriptRequest req, Status status) {
+    protected Map<String, Object> handleElementGet(WebScriptRequest req, Status status, String accept) {
 
         Map<String, Object> model = new HashMap<>();
         JSONObject top = new JSONObject();
@@ -144,7 +144,7 @@ public class ModelGet extends AbstractJavaWebScript {
 
         status.setCode(responseStatus.getCode());
 
-        if (prettyPrint || req.getContentType().contains("webp")) {
+        if (prettyPrint || accept.contains("webp")) {
             model.put("res", top.toString(4));
         } else {
             model.put("res", top);

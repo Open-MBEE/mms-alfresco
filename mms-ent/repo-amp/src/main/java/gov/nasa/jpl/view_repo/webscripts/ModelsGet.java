@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
-
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -125,10 +124,12 @@ public class ModelsGet extends AbstractJavaWebScript {
             JSONObject top = NodeUtil.newJsonObject();
             if (elementsJson.length() > 0) {
                 top.put("elements", filterByPermission(elementsJson, req));
+                String[] accepts = req.getHeaderValues("Accept");
+                String accept = accepts[0];
                 //top.put("elements", elementsJson);
                 if (!Utils.isNullOrEmpty(response.toString()))
                     top.put("message", response.toString());
-                if (prettyPrint || req.getContentType().contains("webp")) {
+                if (prettyPrint || accept.contains("webp")) {
                     model.put("res", top.toString(4));
                 } else {
                     model.put("res", top);
