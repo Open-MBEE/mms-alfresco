@@ -17,7 +17,7 @@
         <!-- The following are default values for data location, Alfresco Community
             version, and Records Management Module version. Uncomment if you need to
             change (Note. current default version for Enterprise edition is 5.0.1) -->
-        <alfresco.version>5.0.1</alfresco.version>
+        <alfresco.version>5.0.d</alfresco.version>
         <alfresco.rm.version>2.3</alfresco.rm.version>
         <alfresco.data.location>alf_data_dev</alfresco.data.location>
 
@@ -36,7 +36,7 @@
     <parent>
         <groupId>org.alfresco.maven</groupId>
         <artifactId>alfresco-sdk-parent</artifactId>
-        <version>2.1.0</version>
+        <version>2.1.1</version>
     </parent>
 
     <!-- Here we realize the connection with the Alfresco selected platform
