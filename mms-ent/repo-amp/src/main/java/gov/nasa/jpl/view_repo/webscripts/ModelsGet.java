@@ -124,9 +124,9 @@ public class ModelsGet extends AbstractJavaWebScript {
             JSONObject top = NodeUtil.newJsonObject();
             if (elementsJson.length() > 0) {
                 top.put("elements", filterByPermission(elementsJson, req));
-                String[] accepts = req.getHeaderValues("Accept");
-                String accept = accepts[0];
                 //top.put("elements", elementsJson);
+                String[] accepts = req.getHeaderValues("Accept");
+                String accept = (accepts != null) ? accepts[0] : "";
                 if (!Utils.isNullOrEmpty(response.toString()))
                     top.put("message", response.toString());
                 if (prettyPrint || accept.contains("webp")) {

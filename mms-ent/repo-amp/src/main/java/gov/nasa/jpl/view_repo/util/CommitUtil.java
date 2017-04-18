@@ -173,6 +173,7 @@ public class CommitUtil {
                 }
             } catch (IOException e) {
                 logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+                return false;
             }
         }
 
