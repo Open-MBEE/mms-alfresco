@@ -347,19 +347,24 @@ public class ElasticHelper {
     public boolean bulkIndexElements(JSONArray bulkElements, String operation) throws JSONException, IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         // BulkableAction is generic
-        ArrayList<BulkableAction> actions = new ArrayList<BulkableAction>();
+        ArrayList<BulkableAction> actions = new ArrayList<>();
+        JSONArray currentList = new JSONArray();
         for (int i = 0; i < bulkElements.length(); i++) {
             JSONObject curr = bulkElements.getJSONObject(i);
             if (operation.equals("delete")) {
                 continue;
             } else {
                 actions.add(new Index.Builder(curr.toString()).id(curr.getString(Sjm.ELASTICID)).build());
+                currentList.put(curr);
             }
             if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.length() - 1)) {
                 BulkResult result = insertBulk(actions);
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
-                    logger.error(String.format("Failed items: %s", result.getFailedItems()));
+                    logger.error(String.format("Failed items JSON: %s", currentList));
+                    result.getFailedItems().forEach((item) -> {
+                        logger.error(String.format("Failed item: %s", item.error));
+                    });
                     return false;
                 }
                 actions.clear();

@@ -198,6 +198,7 @@ public class ModelPost extends AbstractJavaWebScript {
                 status.setCode(responseStatus.getCode());
             } else {
                 log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Commit failed, please check server logs for failed items");
+                status.setCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 model.put("res", createResponseJson());
             }
 
