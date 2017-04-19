@@ -4539,7 +4539,7 @@ public class NodeUtil {
         int moduleArrayLength = moduleDetails.length();
         JSONObject jsonModule;
         if (moduleArrayLength > 0) {
-            jsonModule = moduleDetails.getJSONObject(0);
+            jsonModule = moduleDetails.getJSONObject(moduleArrayLength - 1);
             mmsVersion = jsonModule.get("mmsVersion").toString();
         }
 
