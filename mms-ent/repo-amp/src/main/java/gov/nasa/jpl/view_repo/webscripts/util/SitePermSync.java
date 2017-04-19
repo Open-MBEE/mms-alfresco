@@ -115,7 +115,7 @@ public class SitePermSync extends AbstractJavaWebScript{
         JSONObject json = new JSONObject();
         try {
             json.put( "msgs", msgs );
-            model.put( "res", NodeUtil.jsonToString( json ) );
+            model.put( "res", json.toString() );
             status.setCode( HttpServletResponse.SC_ACCEPTED );
         } catch ( JSONException e ) {
             model.put("res", "Error creating JSON output");

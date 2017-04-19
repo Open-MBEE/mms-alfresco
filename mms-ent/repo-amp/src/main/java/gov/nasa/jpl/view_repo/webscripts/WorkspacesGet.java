@@ -97,30 +97,6 @@ public class WorkspacesGet extends AbstractJavaWebScript{
         JSONArray jArray = null;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
         jArray = emsNodeUtil.getRefsJson();
-        /*
-        if (!findDeleted) {
-            //This is for the master workspace (not located in the user home folder).
-            JSONObject interiorJson = new JSONObject();
-            WorkspaceNode.addWorkspaceNamesAndIds(interiorJson, null, true );
-            jArray.put(interiorJson);
-        }
-
-        Collection <EmsScriptNode> nodes = NodeUtil.luceneSearchElements("ASPECT:\"ems:workspace\"" );
-        for (EmsScriptNode workspaceNode : nodes) {
-            if (checkPermissions(workspaceNode, PermissionService.READ)) {
-                WorkspaceNode wsNode = new WorkspaceNode(workspaceNode.getNodeRef(), services, response);
-                if (findDeleted) {
-                    if (wsNode.isDeleted()) {
-                        jArray.put(wsNode.toJSONObject(wsNode, null));
-                    }
-                } else {
-                    if (wsNode.exists()) {
-                        jArray.put(wsNode.toJSONObject(wsNode, null));
-                    }
-                }
-            }
-        }
-        */
         json.put("refs", jArray);
         return json;
     }
@@ -130,7 +106,6 @@ public class WorkspacesGet extends AbstractJavaWebScript{
      */
     @Override
     protected boolean validateRequest (WebScriptRequest req, Status status){
-
         return checkRequestContent(req);
     }
 }

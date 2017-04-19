@@ -309,16 +309,7 @@ public class ModelGet extends AbstractJavaWebScript {
                 return new JSONArray();
             }
 
-            // get timestamp if specified
-            String commitId = req.getParameter("commitId");
-
-            String projectId = getProjectId(req);
-            String workspace = getRefId(req);
-
-            Long depth = getDepthFromRequest(req);
-            boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
-
-            return handleElementHierarchy(modelId, projectId, workspace, commitId, depth, extended);
+            return handleElementHierarchy(modelId, req);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -330,7 +321,6 @@ public class ModelGet extends AbstractJavaWebScript {
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-
 
         String elementId = req.getServiceMatch().getTemplateVars().get("elementId");
         String currentElement = emsNodeUtil.getById(elementId).getElasticId();
@@ -346,8 +336,7 @@ public class ModelGet extends AbstractJavaWebScript {
         if ((req.getParameter("commitId").isEmpty() && checkInProjectAndRef) || (commitId.equals(lastestCommitId))) {
             return emsNodeUtil.getElementByElasticID(currentElement);
         } else if (checkInProjectAndRef) {
-            JSONObject lastCommit = emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
-            return lastCommit;
+            return emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
         } else {
             return new JSONObject();
         }
@@ -360,7 +349,7 @@ public class ModelGet extends AbstractJavaWebScript {
      * @return Depth < 0 is infinite recurse, depth = 0 is just the element (if no request
      * parameter)
      */
-    private Long getDepthFromRequest(WebScriptRequest req) {
+    public Long getDepthFromRequest(WebScriptRequest req) {
         Long depth = null;
         String depthParam = req.getParameter("depth");
         if (depthParam != null) {
@@ -395,22 +384,25 @@ public class ModelGet extends AbstractJavaWebScript {
      * Recurse a view hierarchy to get all allowed elements
      *
      * @param rootSysmlid Root view to find elements for
-     * @param projectId   Id of project
-     * @param refId       Id of ref
-     * @param commitId    Id of commit
-     * @param maxDepth    depth of recursion
-     * @param extended    Add extended info to result
+     * @param req   WebScriptRequest
      * @return JSONArray of elements
      * @throws JSONException JSON element creation error
      * @throws SQLException  SQL error
      * @throws IOException   IO error
      */
 
-    protected JSONArray handleElementHierarchy(String rootSysmlid, String projectId, String refId, String commitId,
-        final Long maxDepth, boolean extended) throws JSONException, SQLException, IOException {
+    protected JSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req) throws JSONException, SQLException, IOException {
+        // get timestamp if specified
+        String commitId = req.getParameter("commitId");
+        String projectId = getProjectId(req);
+        String refId = getRefId(req);
+        Long depth = getDepthFromRequest(req);
+
+        boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
+
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-        JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, maxDepth);
+        JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
 
         JSONArray elasticElements = extended ? emsNodeUtil.addExtendedInformation(tmpElements) : tmpElements;
         JSONArray elasticElementsCleaned = new JSONArray();

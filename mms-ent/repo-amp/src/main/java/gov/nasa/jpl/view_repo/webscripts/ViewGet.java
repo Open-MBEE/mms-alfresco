@@ -73,11 +73,7 @@ public class ViewGet extends AbstractJavaWebScript {
     @Override
     protected boolean validateRequest(WebScriptRequest req, Status status) {
         String viewId = getIdFromRequest(req);
-        if (!checkRequestVariable(viewId, "id")) {
-            return false;
-        }
-
-        return true;
+        return checkRequestVariable(viewId, "id");
     }
 
     protected static String getRawViewId(WebScriptRequest req) {

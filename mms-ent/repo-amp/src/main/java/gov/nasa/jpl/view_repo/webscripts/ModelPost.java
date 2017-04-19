@@ -140,26 +140,10 @@ public class ModelPost extends AbstractJavaWebScript {
         return result;
     }
 
-    private JSONObject getPostJson(boolean jsonNotK, Object content, String expressionString) throws JSONException {
-        if (!jsonNotK) {
-            // TODO
-        } else {
-            if (content instanceof JSONObject) {
-                return (JSONObject) content;
-            } else if (content instanceof String) {
-                return new JSONObject((String) content);
-            }
-        }
-
-        return new JSONObject();
-    }
-
     protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user, String contentType) {
         JSONObject commit = new JSONObject();
         JSONObject newElementsObject = new JSONObject();
-        boolean jsonNotK = !contentType.contains("application/k");
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
-        String expressionString = req.getParameter("expression");
         WorkspaceNode myWorkspace = getWorkspace(req, user);
 
         String refId = getRefId(req);
@@ -170,7 +154,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
         try {
 
-            JSONObject postJson = getPostJson(true, !jsonNotK ? req.getContent().getContent() : req.parseContent(), expressionString);
+            JSONObject postJson = new JSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             //logger.debug(String.format("ModelPost processing %d elements.", elements.length()));
 
@@ -360,7 +344,7 @@ public class ModelPost extends AbstractJavaWebScript {
         return model;
     }
 
-    protected Path saveSvgToFilesystem(String artifactId, String extension, String content) throws Throwable {
+    protected static Path saveSvgToFilesystem(String artifactId, String extension, String content) throws Throwable {
         byte[] svgContent = content.getBytes(Charset.forName("UTF-8"));
         File tempDir = TempFileProvider.getTempDir();
         Path svgPath = Paths.get(tempDir.getAbsolutePath(), String.format("%s%s", artifactId, extension));
@@ -375,7 +359,7 @@ public class ModelPost extends AbstractJavaWebScript {
         }
     }
 
-    protected Path svgToPng(Path svgPath) throws Throwable {
+    protected static Path svgToPng(Path svgPath) throws Throwable {
         Path pngPath = Paths.get(svgPath.toString().replace(".svg", ".png"));
         try (OutputStream png_ostream = new FileOutputStream(pngPath.toString());) {
             String svg_URI_input = svgPath.toUri().toURL().toString();
@@ -389,7 +373,7 @@ public class ModelPost extends AbstractJavaWebScript {
         return pngPath;
     }
 
-    protected void synchSvgAndPngVersions(EmsScriptNode svgNode, EmsScriptNode pngNode) {
+    protected static void synchSvgAndPngVersions(EmsScriptNode svgNode, EmsScriptNode pngNode) {
         Version svgVer = svgNode.getCurrentVersion();
         String svgVerLabel = svgVer.getVersionLabel();
         Double svgVersion = Double.parseDouble(svgVerLabel);
@@ -412,10 +396,6 @@ public class ModelPost extends AbstractJavaWebScript {
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        if (!checkRequestContent(req)) {
-            return false;
-        }
-
         String elementId = req.getServiceMatch().getTemplateVars().get("elementid");
         if (elementId != null) {
             // TODO - move this to ViewModelPost - really non hierarchical post
@@ -424,6 +404,6 @@ public class ModelPost extends AbstractJavaWebScript {
             }
         }
 
-        return true;
+        return checkRequestContent(req);
     }
 }

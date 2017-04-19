@@ -125,7 +125,7 @@ public class SiteGet extends AbstractJavaWebScript {
         if (json == null) {
             model.put("res", createResponseJson());
         } else {
-            model.put("res", NodeUtil.jsonToString(json));
+            model.put("res", json);
         }
 
         status.setCode(responseStatus.getCode());
@@ -147,7 +147,7 @@ public class SiteGet extends AbstractJavaWebScript {
     private JSONArray handleSite(String projectId, WorkspaceNode workspace, Date dateTime, WebScriptRequest req)
                     throws IOException {
 
-        String orgId = getOrgId(req);
+        //String orgId = getOrgId(req);
         //populateSites(projectId, orgId, workspace, dateTime);
 
         JSONArray json = new JSONArray();
@@ -258,15 +258,7 @@ public class SiteGet extends AbstractJavaWebScript {
      * Validate the request and check some permissions
      */
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        if (!checkRequestContent(req)) {
-            return false;
-        }
-
         String id = req.getServiceMatch().getTemplateVars().get(REF_ID);
-        if (!checkRequestVariable(id, REF_ID)) {
-            return false;
-        }
-
-        return true;
+        return checkRequestContent(req) && checkRequestVariable(id, REF_ID);
     }
 }

@@ -184,8 +184,8 @@ public class ArtifactPost extends AbstractJavaWebScript {
                                 svgArtifact.getOrSetCachedVersion();
                                 if (!NodeUtil.skipSvgToPng) {
                                     try {
-                                        Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
-                                        pngPath = svgToPng(svgPath);
+                                        Path svgPath = ModelPost.saveSvgToFilesystem(artifactId, extension, content);
+                                        pngPath = ModelPost.svgToPng(svgPath);
 
                                         new EmsTransaction(this.services, this.response, this.responseStatus) {
 
@@ -204,7 +204,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                                             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
                                                             "Failed to convert SVG to PNG!\n");
                                         } else {
-                                            synchSvgAndPngVersions(svgArtifact, pngArtifact);
+                                            ModelPost.synchSvgAndPngVersions(svgArtifact, pngArtifact);
                                             pngArtifact.getOrSetCachedVersion();
                                         }
                                         Files.deleteIfExists(svgPath);
@@ -248,56 +248,5 @@ public class ArtifactPost extends AbstractJavaWebScript {
         printFooter(user, logger, timer);
 
         return model;
-    }
-
-    protected Path saveSvgToFilesystem(String artifactId, String extension, String content) throws Throwable {
-        byte[] svgContent = content.getBytes(Charset.forName("UTF-8"));
-        File tempDir = TempFileProvider.getTempDir();
-        Path svgPath = Paths.get(tempDir.getAbsolutePath(), String.format("%s%s", artifactId, extension));
-        File file = new File(svgPath.toString());
-
-        try (final InputStream in = new ByteArrayInputStream(svgContent);) {
-            file.mkdirs();
-            Files.copy(in, svgPath, StandardCopyOption.REPLACE_EXISTING);
-            return svgPath;
-        } catch (Throwable ex) {
-            throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
-        }
-    }
-
-    protected Path svgToPng(Path svgPath) throws Throwable {
-        Path pngPath = Paths.get(svgPath.toString().replace(".svg", ".png"));
-        try (OutputStream png_ostream = new FileOutputStream(pngPath.toString());) {
-            String svg_URI_input = svgPath.toUri().toURL().toString();
-            TranscoderInput input_svg_image = new TranscoderInput(svg_URI_input);
-            TranscoderOutput output_png_image = new TranscoderOutput(png_ostream);
-            PNGTranscoder my_converter = new PNGTranscoder();
-            my_converter.transcode(input_svg_image, output_png_image);
-        } catch (Throwable ex) {
-            throw new Throwable("Failed to convert SVG to PNG! " + ex.getMessage());
-        }
-        return pngPath;
-    }
-
-    protected void synchSvgAndPngVersions(EmsScriptNode svgNode, EmsScriptNode pngNode) {
-        Version svgVer = svgNode.getCurrentVersion();
-        String svgVerLabel = svgVer.getVersionLabel();
-        Double svgVersion = Double.parseDouble(svgVerLabel);
-
-        Version pngVer = pngNode.getCurrentVersion();
-        String pngVerLabel = pngVer.getVersionLabel();
-        Double pngVersion = Double.parseDouble(pngVerLabel);
-
-        int svgVerLen = svgNode.getEmsVersionHistory().length;
-        int pngVerLen = pngNode.getEmsVersionHistory().length;
-
-        while (pngVersion < svgVersion || pngVerLen < svgVerLen) {
-            pngNode.makeSureNodeRefIsNotFrozen();
-            pngNode.createVersion("creating the version history", false);
-            pngVer = pngNode.getCurrentVersion();
-            pngVerLabel = pngVer.getVersionLabel();
-            pngVersion = Double.parseDouble(pngVerLabel);
-            pngVerLen = pngNode.getEmsVersionHistory().length;
-        }
     }
 }

@@ -151,8 +151,6 @@ public class ProjectsGet extends AbstractJavaWebScript{
      */
     @Override
     protected boolean validateRequest (WebScriptRequest req, Status status){
-
         return !checkRequestContent(req);
-
     }
 }

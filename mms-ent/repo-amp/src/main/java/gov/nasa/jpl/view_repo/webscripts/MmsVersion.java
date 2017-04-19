@@ -57,9 +57,9 @@ public class MmsVersion extends AbstractJavaWebScript {
         try {
             mmsVersion = getMMSversion();
             if (prettyPrint) {
-                model.put("res", NodeUtil.jsonToString(mmsVersion, 4));
+                model.put("res", mmsVersion.toString(4));
             } else {
-                model.put("res", NodeUtil.jsonToString(mmsVersion));
+                model.put("res", mmsVersion);
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSONObject");

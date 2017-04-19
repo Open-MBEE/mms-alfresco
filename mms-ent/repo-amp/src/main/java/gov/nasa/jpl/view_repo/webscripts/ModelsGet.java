@@ -55,7 +55,7 @@ import gov.nasa.jpl.mbee.util.Utils;
  * @author cinyoung
  *
  */
-public class ModelsGet extends AbstractJavaWebScript {
+public class ModelsGet extends ModelGet {
 	static Logger logger = Logger.getLogger(ModelsGet.class);
 
     public ModelsGet() {
@@ -147,39 +147,6 @@ public class ModelsGet extends AbstractJavaWebScript {
         printFooter(user, logger, timer);
 
         return model;
-    }
-
-    /**
-     * Get the depth to recurse to from the request parameter.
-     *
-     * @param req
-     * @return Depth < 0 is infinite recurse, depth = 0 is just the element (if no request
-     *         parameter)
-     */
-    private Long getDepthFromRequest(WebScriptRequest req) {
-        Long depth = null;
-        String depthParam = req.getParameter("depth");
-        if (depthParam != null) {
-            try {
-                depth = Long.parseLong(depthParam);
-                if (depth < 0) {
-                    depth = 100000L;
-                }
-            } catch (NumberFormatException nfe) {
-                log(Level.WARN, HttpServletResponse.SC_BAD_REQUEST, "Bad depth specified, returning depth 0");
-            }
-        }
-
-        boolean recurse = getBooleanArg(req, "recurse", false);
-        if (recurse) {
-            depth = 100000L;
-        }
-
-        if (depth == null) {
-            depth = 0L;
-        }
-
-        return depth;
     }
 
     /**

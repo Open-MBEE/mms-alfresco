@@ -34,15 +34,8 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-
         String wsId = req.getServiceMatch().getTemplateVars().get(REF_ID);
-        if (checkRequestVariable(wsId, REF_ID) == false) {
-            return false;
-        }
-        if (!userHasWorkspaceLdapPermissions()) {
-            return false;
-        }
-        return true;
+        return checkRequestVariable(wsId, REF_ID) && userHasWorkspaceLdapPermissions();
     }
 
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
