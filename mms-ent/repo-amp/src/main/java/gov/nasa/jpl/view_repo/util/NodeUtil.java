@@ -3569,7 +3569,7 @@ public class NodeUtil {
 
         // Create new artifact:
         // find subfolder in site or create it
-        String artifactFolderName = "Artifacts" + (Utils.isNullOrEmpty(subfolderName) ? "" : "/" + subfolderName);
+        String artifactFolderName = Utils.isNullOrEmpty(subfolderName) ? "" : "/" + subfolderName;
 
         EmsScriptNode targetSiteNode =
                         getSiteNodeForWorkspace(targetSiteName, false, workspace, dateTime, services, response);
@@ -3703,9 +3703,7 @@ public class NodeUtil {
 
 		// Create new artifact:
 		// find subfolder in site or create it
-		String artifactFolderName = "Artifacts"
-				+ (Utils.isNullOrEmpty(subfolderName) ? "" : "/"
-						+ subfolderName);
+		String artifactFolderName = Utils.isNullOrEmpty(subfolderName) ? "" : "/" + subfolderName;
 
 		EmsScriptNode targetSiteNode = getSiteNodeForWorkspace(targetSiteName,
 				false, workspace, dateTime, services, response);

@@ -576,7 +576,7 @@ public class CommitUtil {
                 elementsArray.put(projectHoldingBin);
                 elementsArray.put(viewInstanceBin);
                 addedElements.put("addedElements", elementsArray);
-                jmsMsg.put("workspace2", addedElements);
+                jmsMsg.put("createdProject", addedElements);
                 jmsMsg.put("source", "mms");
                 sendJmsMsg(jmsMsg, TYPE_DELTA, null, projectSysmlid);
             }
