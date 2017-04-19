@@ -33,16 +33,16 @@ public class ModuleInfoGet extends DeclarativeWebScript {
     protected Map< String, Object > executeImpl( WebScriptRequest req,
                                                  Status status, Cache cache ) {
         Map<String, Object> model = new HashMap<>();
-        
+
         ModuleService moduleService = (ModuleService)this.services.getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
         JSONObject json = new JSONObject();
         JSONArray modulesJson = new JSONArray();
-        
+
         List< ModuleDetails > modules = moduleService.getAllModules();
         for (ModuleDetails md: modules) {
             JSONObject jsonModule = new JSONObject();
             jsonModule.put( "title", md.getTitle() );
-            jsonModule.put( "version", md.getVersion() );
+            jsonModule.put( "version", md.getModuleVersionNumber() );
             modulesJson.put( jsonModule );
         }
         json.put( "modules", modulesJson );
@@ -51,8 +51,8 @@ public class ModuleInfoGet extends DeclarativeWebScript {
         model.put("res", json.toString(2));
         return model;
     }
-    
-    
+
+
     //Placed within for testing purposes!
     // TODO: Remove once finished with MmsVersion service
     public static JSONObject checkMMSversion(WebScriptRequest req) {
