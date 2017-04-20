@@ -1751,7 +1751,8 @@ public class PostgresHelper {
             execUpdate(String.format(
                 "ALTER TABLE ONLY edgeProperties%s ADD CONSTRAINT edgeproperties%s_edgeid_fkey FOREIGN KEY (edgeid) REFERENCES edges%s(id)",
                 childWorkspaceNameSanitized, childWorkspaceNameSanitized, childWorkspaceNameSanitized));
-
+            execUpdate(
+                String.format("INSERT INTO edgeProperties%s SELECT * FROM edgeProperties%s", childWorkspaceNameSanitized, workspaceId));
             /*
             execUpdate(String.format(
                 "CREATE OR REPLACE RULE insert_ignore_on_edges%1$s AS "

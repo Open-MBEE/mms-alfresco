@@ -200,7 +200,8 @@ public class WorkspacesPost extends AbstractJavaWebScript{
 
             EmsScriptNode srcWs = orgNode.childByNamePath("/" + projectId + "/refs/" + sourceWorkspaceId, false, null, true);
 
-            wsJson.put(Sjm.SYSMLID, workspaceName);
+            wsJson.put(Sjm.SYSMLID, workspaceName.toLowerCase().replace("-", "_").replaceAll("\\s+", ""));
+            wsJson.put(Sjm.NAME, workspaceName);
             wsJson.put(Sjm.COMMITID, emsNodeUtil.getHeadCommit());
             wsJson.put(Sjm.CREATED, date);
             wsJson.put(Sjm.CREATOR, user);
