@@ -54,6 +54,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 
 /**
@@ -90,7 +91,7 @@ public class ModelSearch extends ModelGet {
         try {
             JSONObject top = new JSONObject();
             JSONArray elementsJson = executeSearchRequest(req, top);
-            top.put("elements", filterByPermission(elementsJson, req));
+            top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
 
             if (prettyPrint) {
                 model.put("res", top.toString(4));

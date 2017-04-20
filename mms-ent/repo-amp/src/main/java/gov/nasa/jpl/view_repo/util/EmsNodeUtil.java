@@ -723,6 +723,10 @@ public class EmsNodeUtil {
         return element;
     }
 
+    public void deleteRef(String refId) {
+        pgh.deleteRef(refId);
+    }
+
     public boolean isTag() {
         return pgh.isTag(this.workspaceName);
     }

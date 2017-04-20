@@ -121,14 +121,14 @@ public class ModelGet extends AbstractJavaWebScript {
                 JSONObject commitJson = handleCommitRequest(req, top);
                 commitJsonToArray.put(commitJson);
                 if (commitJson.length() > 0) {
-                    top.put("elements", filterByPermission(commitJsonToArray, req));
-                    //top.put("elements", commitJsonToArray);
+                    top.put(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
+                    //top.put(Sjm.ELEMENTS, commitJsonToArray);
                 }
             } else {
                 JSONArray elementsJson = handleRequest(req, top, NodeUtil.doGraphDb);
                 if (elementsJson.length() > 0) {
-                    top.put("elements", filterByPermission(elementsJson, req));
-                    //top.put("elements", elementsJson);
+                    top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
+                    //top.put(Sjm.ELEMENTS, elementsJson);
                 }
             }
             if (top.length() == 0) {

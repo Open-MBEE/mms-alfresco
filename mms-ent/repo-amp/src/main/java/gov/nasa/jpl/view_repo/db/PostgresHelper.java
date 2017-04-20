@@ -1803,9 +1803,9 @@ public class PostgresHelper {
         }
     }
 
-    public void deleteTag(String id) {
+    public void deleteRef(String id) {
         try {
-            execUpdate(String.format("UPDATE refs SET deleted = true WHERE refId = '%s' AND tag = true", id));
+            execUpdate(String.format("UPDATE refs SET deleted = true WHERE refId = '%s'", id));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {

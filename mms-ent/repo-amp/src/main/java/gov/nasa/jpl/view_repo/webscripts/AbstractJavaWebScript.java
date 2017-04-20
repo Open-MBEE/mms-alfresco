@@ -65,6 +65,7 @@ import gov.nasa.jpl.view_repo.util.EmsTransaction;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil.SearchType;
+import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 
@@ -917,7 +918,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     protected static boolean isDisplayedElementRequest( WebScriptRequest req ) {
         if ( req == null ) return false;
         String url = req.getURL();
-        boolean gotSuffix = urlEndsWith( url, "elements" );
+        boolean gotSuffix = urlEndsWith( url, Sjm.ELEMENTS );
         return gotSuffix;
     }
 

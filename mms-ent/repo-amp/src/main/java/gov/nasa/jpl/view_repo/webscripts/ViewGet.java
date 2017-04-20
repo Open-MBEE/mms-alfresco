@@ -116,7 +116,7 @@ public class ViewGet extends AbstractJavaWebScript {
             JSONArray elements = handleGetElement(viewId, projectId, workspace, gettingDisplayedElements, false, recurse);
 
             if (elements.length() > 0) {
-                model.put("elements", filterByPermission(elements, req));
+                model.put(Sjm.ELEMENTS, filterByPermission(elements, req));
                 res.put("res", model);
             } else {
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);

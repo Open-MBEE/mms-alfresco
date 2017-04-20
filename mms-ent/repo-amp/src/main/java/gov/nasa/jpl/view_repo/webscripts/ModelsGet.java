@@ -123,8 +123,8 @@ public class ModelsGet extends ModelGet {
 
             JSONObject top = NodeUtil.newJsonObject();
             if (elementsJson.length() > 0) {
-                top.put("elements", filterByPermission(elementsJson, req));
-                //top.put("elements", elementsJson);
+                top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
+                //top.put(Sjm.ELEMENTS, elementsJson);
                 String[] accepts = req.getHeaderValues("Accept");
                 String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
                 if (!Utils.isNullOrEmpty(response.toString()))
@@ -159,8 +159,8 @@ public class ModelsGet extends ModelGet {
      */
     private JSONArray handleRequest(WebScriptRequest req, final Long maxDepth) throws JSONException, IOException {
         JSONObject requestJson = (JSONObject) req.parseContent();
-        if (requestJson.has("elements")) {
-            JSONArray elementsToFindJson = requestJson.getJSONArray("elements");
+        if (requestJson.has(Sjm.ELEMENTS)) {
+            JSONArray elementsToFindJson = requestJson.getJSONArray(Sjm.ELEMENTS);
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
