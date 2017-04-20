@@ -173,7 +173,7 @@ public class ModelGet extends AbstractJavaWebScript {
         String extension = !extensionArg.equals("*") ? extensionArg : ".svg";  // Assume .svg if no extension provided
         String commitId = req.getParameter("commitId");
         Map<String, String> commitAndTimestamp = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
-        String timestamp = !Utils.isNullOrEmpty(commitAndTimestamp) ? commitAndTimestamp.get("timestamp") : null;
+        String timestamp = !Utils.isNullOrEmpty(commitAndTimestamp) ? commitAndTimestamp.get(Sjm.TIMESTAMP) : null;
         if (timestamp == null) {
             Date today = new Date();
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");

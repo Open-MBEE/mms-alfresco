@@ -1032,12 +1032,12 @@ public class PostgresHelper {
     public Map<String, String> getCommitAndTimestamp(String lookUp, String value) {
         Map<String, String> commit = new HashMap<>();
         try {
-            String query = "SELECT elasticId, timestamp FROM commits WHERE %s = '%s' AND refId = '%s';";
-            ResultSet rs = execQuery(String.format(query, lookUp, value, workspaceId));
+            String query = "SELECT elasticId, timestamp FROM commits WHERE %s = '%s';";
+            ResultSet rs = execQuery(String.format(query, lookUp, value));
 
             if (rs.next()) {
-                commit.put("commitId", rs.getString(1));
-                commit.put("timestamp", rs.getString(2));
+                commit.put(Sjm.COMMITID, rs.getString(1));
+                commit.put(Sjm.TIMESTAMP, rs.getString(2));
                 return commit;
             }
         } catch (Exception e) {

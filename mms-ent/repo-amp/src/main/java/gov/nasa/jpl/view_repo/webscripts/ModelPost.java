@@ -174,19 +174,19 @@ public class ModelPost extends AbstractJavaWebScript {
 
             // :TODO this object is not the formatted commit object
             commit.put("workspace2", results);
-            commit.put("_creator", user);
+            commit.put(Sjm.CREATOR, user);
 
             if (CommitUtil.sendDeltas(commit, commitResults, projectId, myWorkspace == null ? null : myWorkspace.getId(),
                 requestSourceApplication)) {
 
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
 
-                newElementsObject.put("elements", extended ?
+                newElementsObject.put(Sjm.ELEMENTS, extended ?
                     emsNodeUtil.addExtendedInformation(results.getJSONArray("newElements")) :
                     results.getJSONArray("newElements"));
-                newElementsObject.put("commitId", commitResults);
-                newElementsObject.put("_timestamp", commitObject.get("timestamp"));
-                newElementsObject.put("_creator", user);
+                newElementsObject.put(Sjm.COMMITID, commitResults);
+                newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
+                newElementsObject.put(Sjm.CREATOR, user);
                 // Timestamp needs to be ISO format
 
                 if (prettyPrint) {

@@ -50,6 +50,7 @@ public class Sjm {
     public static final String DESCRIPTION = "description";
     public static final String DOCUMENTATION = "documentation";
     public static final String ELEMENTIMPORTIDS = "elementImportIds";
+    public static final String ELEMENTS = "elements";
     public static final String ENDAPATHIDS = "endAPathIds";
     public static final String ENDBPATHIDS = "endBPathIds";
     public static final String ENDIDS = "endIds";
