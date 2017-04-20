@@ -123,7 +123,7 @@ public class ModelPost extends AbstractJavaWebScript {
     @Override
     protected Map<String, Object> executeImplImpl(final WebScriptRequest req, final Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        //printHeader(user, logger, req);
+        printHeader(user, logger, req, true);
         Timer timer = new Timer();
 
         Map<String, Object> result = null;
@@ -176,8 +176,7 @@ public class ModelPost extends AbstractJavaWebScript {
             commit.put("workspace2", results);
             commit.put(Sjm.CREATOR, user);
 
-            if (CommitUtil.sendDeltas(commit, commitResults, projectId, myWorkspace == null ? null : myWorkspace.getId(),
-                requestSourceApplication)) {
+            if (CommitUtil.sendDeltas(commit, commitResults, projectId, refId, requestSourceApplication)) {
 
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
 

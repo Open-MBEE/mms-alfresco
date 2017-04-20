@@ -790,13 +790,17 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     }
 
     protected void printHeader( String user, Logger logger, WebScriptRequest req ) {
+        printHeader(user, logger, req, false);
+    }
+
+    protected void printHeader( String user, Logger logger, WebScriptRequest req, boolean skipReq ) {
         logger.info(String.format("%s %s", user, req.getURL()));
         try {
-	        if (req.parseContent() != null) {
-	            logger.info(String.format("%s", req.parseContent()));
-	        }
+            if (!skipReq && req.parseContent() != null) {
+                logger.info(String.format("%s", req.parseContent()));
+            }
         } catch (Exception e) {
-        	// do nothing, just means no content when content-type was specified
+            // do nothing, just means no content when content-type was specified
         }
     }
 
