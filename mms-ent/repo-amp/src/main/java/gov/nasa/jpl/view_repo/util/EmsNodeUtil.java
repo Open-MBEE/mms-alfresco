@@ -855,7 +855,9 @@ public class EmsNodeUtil {
                 propertyASI.put(Sjm.DEPLOYMENTIDS, new JSONArray());
                 propertyASI.put(Sjm.SLOTIDS, new JSONArray());
                 propertyASI.put(Sjm.SPECIFICATION, JSONObject.NULL);
-                propertyASI.put(Sjm.CLASSIFIERIDS, new JSONArray("_15_0_be00301_1199377756297_348405_2678"));
+                JSONArray classifierids = new JSONArray();
+                classifierids.put("_15_0_be00301_1199377756297_348405_2678");
+                propertyASI.put(Sjm.CLASSIFIERIDS, classifierids);
                 propertyASI.put(Sjm.STEREOTYPEDELEMENTID, propertySysmlId);
 
                 newElements.put(propertyASI);
