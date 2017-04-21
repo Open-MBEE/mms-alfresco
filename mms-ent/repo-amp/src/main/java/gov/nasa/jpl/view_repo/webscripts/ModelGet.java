@@ -134,6 +134,9 @@ public class ModelGet extends AbstractJavaWebScript {
             if (top.length() == 0) {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
             }
+            if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+                responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
+            }
             if (!Utils.isNullOrEmpty(response.toString()))
                 top.put("message", response.toString());
 
