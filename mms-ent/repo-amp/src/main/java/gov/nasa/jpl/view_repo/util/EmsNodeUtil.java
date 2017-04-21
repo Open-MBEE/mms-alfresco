@@ -230,13 +230,8 @@ public class EmsNodeUtil {
         return new JSONObject();
     }
 
-    public JSONArray getNodesBySysmlids(JSONArray elements) {
-        List<String> sysmlids = new ArrayList<>();
-
-        for (int ii = 0; ii < elements.length(); ii++) {
-            sysmlids.add(elements.getJSONObject(ii).getString(Sjm.SYSMLID));
-        }
-        List<String> elasticids = pgh.getElasticIdsFromSysmlIds(sysmlids);
+    public JSONArray getNodesBySysmlids(Set<String> sysmlids) {
+        List<String> elasticids = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids));
         JSONArray elementsFromElastic = new JSONArray();
         try {
             elementsFromElastic = eh.getElementsFromElasticIds(elasticids);

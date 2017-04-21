@@ -480,9 +480,9 @@ public class CommitUtil {
             jmsPayload.put("source", source);
         }
 
-        jmsStatus = sendJmsMsg(jmsPayload, TYPE_DELTA, workspaceId, projectId);
+        sendJmsMsg(jmsPayload, TYPE_DELTA, workspaceId, projectId);
 
-        return jmsStatus;
+        return true;
     }
 
     public static void sendOrganizationDelta(String orgId, String orgName, String user) {

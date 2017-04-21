@@ -1318,6 +1318,7 @@ public class PostgresHelper {
             if (n == null) {
                 return;
             }
+            logger.error("DELETE FROM \"edgeproperties" + workspaceId + "\" WHERE edgeid in (SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue() + ")");
             execUpdate("DELETE FROM \"edgeproperties" + workspaceId + "\" WHERE edgeid in (SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue() + ")");
             execUpdate("DELETE FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue());
         } catch (Exception e) {

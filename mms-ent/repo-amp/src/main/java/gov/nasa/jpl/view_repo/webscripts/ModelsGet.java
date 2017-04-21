@@ -172,13 +172,7 @@ public class ModelsGet extends ModelGet {
             for (int i = 0; i < elementsToFindJson.length(); i++) {
                 uniqueElements.add(elementsToFindJson.getJSONObject(i).getString(Sjm.SYSMLID));
             }
-            JSONArray uniqueElementsToFind = new JSONArray();
-            uniqueElements.forEach((sysmlId) -> {
-                JSONObject element = new JSONObject();
-                element.put(Sjm.SYSMLID, sysmlId);
-                uniqueElementsToFind.put(element);
-            });
-            JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(uniqueElementsToFind);
+            JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(uniqueElements);
             if (maxDepth != 0) {
                 for (int i = 0; i < nodeList.length(); i++) {
                     JSONObject node = nodeList.getJSONObject(i);
