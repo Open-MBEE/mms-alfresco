@@ -152,7 +152,7 @@ public class SitePermission {
                         if (siteNode == null) {
                             return false;
                         } else {
-                            EmsScriptNode targetNode = siteNode.childByNamePath("/" + projectId + (refId != null ? "/" + refId : ""));
+                            EmsScriptNode targetNode = siteNode.childByNamePath("/" + projectId + (refId != null ? "/refs/" + refId : ""));
 
                             if (targetNode == null) {
                                 targetNode = siteNode;

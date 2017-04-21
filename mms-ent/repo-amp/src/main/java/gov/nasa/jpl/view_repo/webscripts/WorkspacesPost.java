@@ -200,7 +200,9 @@ public class WorkspacesPost extends AbstractJavaWebScript{
 
             EmsScriptNode srcWs = orgNode.childByNamePath("/" + projectId + "/refs/" + sourceWorkspaceId, false, null, true);
 
-            wsJson.put(Sjm.SYSMLID, workspaceName.toLowerCase().replace("-", "_").replaceAll("\\s+", "").replaceAll("[^A-Za-z0-9]", ""));
+            newWorkspaceId = workspaceName.toLowerCase().replace("-", "_").replaceAll("\\s+", "").replaceAll("[^A-Za-z0-9]", "");
+
+            wsJson.put(Sjm.SYSMLID, newWorkspaceId);
             wsJson.put(Sjm.NAME, workspaceName);
             wsJson.put(Sjm.COMMITID, emsNodeUtil.getHeadCommit());
             wsJson.put(Sjm.CREATED, date);
@@ -216,19 +218,19 @@ public class WorkspacesPost extends AbstractJavaWebScript{
                 return null;
             } else {
                 EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs", false, null, true);
-                EmsScriptNode dstWs = refContainerNode.createFolder(workspaceName);
+                EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId);
 
                 if (dstWs != null) {
                     // keep history of the branch
                     String srcId = srcWs.getName().equals("master") ? "master" : srcWs.getId();
                     dstWs.setProperty("cm:title", dstWs.getId() + "_" + srcId);
-                    dstWs.setProperty( "cm:name", dstWs.getName() );
+                    dstWs.setProperty("cm:name", dstWs.getName());
 
-                    dstWs.addAspect( "ems:HasWorkspace" );
-                    dstWs.setProperty("ems:workspace", dstWs.getNodeRef() );
+                    dstWs.addAspect("ems:HasWorkspace");
+                    dstWs.setProperty("ems:workspace", dstWs.getNodeRef());
 
-                    dstWs.addAspect( "ems:Workspace" );
-                    dstWs.setProperty("ems:workspace_name", workspaceName );
+                    dstWs.addAspect("ems:Workspace");
+                    dstWs.setProperty("ems:workspace_name", newWorkspaceId);
 
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag);
                     finalWorkspace = dstWs;
@@ -275,6 +277,7 @@ public class WorkspacesPost extends AbstractJavaWebScript{
 
         // Finally, apply the permissions:
         if (finalWorkspace != null) {
+            finalWorkspace.setPermission("SiteManager", user);
             if (permission.equals("write")) {
                 finalWorkspace.setPermission("SiteCollaborator", "GROUP_EVERYONE");
             } else {

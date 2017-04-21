@@ -401,7 +401,8 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             editable = SitePermission.hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null,
                             Permission.WRITE, null, permCache);
         }
-*/
+        */
+
         return editable;
     }
 
@@ -421,7 +422,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         }
         return result;
     }
-    
+
     private JSONObject filterElementByPermission(JSONObject element, String projectId, String refId,
                     String commitId, Permission permission, StringBuffer response,
                     Map<String, Map<Permission, Boolean>> permCache) {
