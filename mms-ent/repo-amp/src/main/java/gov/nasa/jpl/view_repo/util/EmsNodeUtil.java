@@ -616,7 +616,8 @@ public class EmsNodeUtil {
 
         for (int i = 0; i < elements.length(); i++) {
             JSONArray newElements = new JSONArray();
-            JSONObject o = reorderChildViews(elements.getJSONObject(i), newElements);
+            JSONObject o = elements.getJSONObject(i);
+            reorderChildViews(o, newElements);
             String sysmlid = o.optString(Sjm.SYSMLID);
             if (sysmlid == null || sysmlid.equals("")) {
                 sysmlid = createId();
