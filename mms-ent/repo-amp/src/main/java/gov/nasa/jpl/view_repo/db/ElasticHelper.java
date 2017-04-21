@@ -309,8 +309,11 @@ public class ElasticHelper {
         if (k.has(Sjm.SYSMLID)) {
             result.sysmlid = k.getString(Sjm.SYSMLID);
         }
-        result.elasticId =
-            client.execute(new Index.Builder(k.toString()).index(elementIndex).type(eType).build()).getId();
+        if (k.has(Sjm.ELASTICID)) {
+            result.elasticId = client.execute(new Index.Builder(k.toString()).id(k.getString(Sjm.ELASTICID)).index(elementIndex).type(eType).build()).getId();
+        } else {
+            result.elasticId = client.execute(new Index.Builder(k.toString()).index(elementIndex).type(eType).build()).getId();
+        }
         k.put(Sjm.ELASTICID, result.elasticId);
         result.current = k;
 

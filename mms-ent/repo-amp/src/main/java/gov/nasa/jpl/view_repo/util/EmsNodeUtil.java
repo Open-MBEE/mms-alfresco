@@ -795,6 +795,8 @@ public class EmsNodeUtil {
                 // Create Property
                 JSONObject property = new JSONObject();
                 property.put(Sjm.SYSMLID, propertySysmlId);
+                property.put(Sjm.NAME, "");
+                property.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
                 property.put(Sjm.TYPE, "Property");
                 property.put(Sjm.OWNERID, sysmlId);
                 property.put(Sjm.TYPEID, cvSysmlId);
@@ -834,6 +836,29 @@ public class EmsNodeUtil {
 
                 newElements.put(property);
 
+                // Create AppliedStereotypeInstance
+
+                JSONObject propertyASI = new JSONObject();
+                propertyASI.put(Sjm.SYSMLID, propertySysmlId + "_asi");
+                propertyASI.put(Sjm.NAME, "");
+                propertyASI.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+                propertyASI.put(Sjm.TYPE, "InstanceSpecification");
+                propertyASI.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
+                propertyASI.put(Sjm.DOCUMENTATION, "");
+                propertyASI.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+                propertyASI.put(Sjm.OWNERID, propertySysmlId);
+                propertyASI.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
+                propertyASI.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
+                propertyASI.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
+                propertyASI.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+                propertyASI.put(Sjm.VISIBILITY, JSONObject.NULL);
+                propertyASI.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
+                propertyASI.put(Sjm.DEPLOYMENTIDS, new JSONArray());
+                propertyASI.put(Sjm.SLOTIDS, new JSONArray());
+                propertyASI.put(Sjm.SPECIFICATION, JSONObject.NULL);
+                propertyASI.put(Sjm.CLASSIFIERIDS, new JSONArray("_15_0_be00301_1199377756297_348405_2678"));
+                propertyASI.put(Sjm.STEREOTYPEDELEMENTID, propertySysmlId);
+
                 // Create Associations
                 JSONObject association = new JSONObject();
                 JSONArray memberEndIds = new JSONArray();
@@ -843,6 +868,8 @@ public class EmsNodeUtil {
                 ownedEndIds.put(assocPropSysmlId);
 
                 association.put(Sjm.SYSMLID, associationSysmlId);
+                association.put(Sjm.NAME, "");
+                association.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
                 association.put(Sjm.TYPE, "Association");
                 association.put(Sjm.OWNERID, cvSysmlId);
                 association.put(Sjm.MEMBERENDIDS, memberEndIds);
@@ -852,6 +879,7 @@ public class EmsNodeUtil {
                 association.put(Sjm.DOCUMENTATION, "");
                 association.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
                 association.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
+                association.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
                 association.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
                 association.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
                 association.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
@@ -879,6 +907,8 @@ public class EmsNodeUtil {
                 // Create Association Property
                 JSONObject assocProperty = new JSONObject();
                 assocProperty.put(Sjm.SYSMLID, assocPropSysmlId);
+                assocProperty.put(Sjm.NAME, "");
+                assocProperty.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
                 assocProperty.put(Sjm.TYPE, "Property");
                 assocProperty.put(Sjm.TYPEID, sysmlId);
                 assocProperty.put(Sjm.OWNERID, associationSysmlId);

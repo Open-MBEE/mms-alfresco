@@ -188,7 +188,7 @@ public class CommitUtil {
         pgh.setProject(projectId);
         pgh.setWorkspace(workspaceId);
 
-        Boolean initialCommit = pgh.isInitialCommit();
+        //Boolean initialCommit = pgh.isInitialCommit();
 
         JSONObject ws2 = delta.getJSONObject("workspace2");
         JSONArray added = ws2.optJSONArray("addedElements");
@@ -231,6 +231,7 @@ public class CommitUtil {
                         node.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
                         node.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
                         node.put("nodetype", Integer.toString(nodeType));
+                        node.put("initialcommit", e.getString(Sjm.ELASTICID));
                         nodeInserts.add(node);
                     }
                     if (e.has(Sjm.OWNERID) && e.getString(Sjm.OWNERID) != null && e.getString(Sjm.SYSMLID) != null) {
@@ -409,9 +410,11 @@ public class CommitUtil {
                         pgh.runBulkQueries(edgePropQueries, true);
                         pgh.runBulkQueries(nodeUpdates, "updates");
                         pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, affectedSysmlIds);
+                        /*
                         if (initialCommit) {
                             pgh.updateBySysmlIds("nodes", "initialCommit", commitElasticId, affectedSysmlIds);
                         }
+                        */
                         pgh.commitTransaction();
                         pgh.cleanEdges();
                         pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);

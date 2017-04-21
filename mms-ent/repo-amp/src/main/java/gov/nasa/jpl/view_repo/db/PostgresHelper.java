@@ -829,8 +829,8 @@ public class PostgresHelper {
         String query = String.format("INSERT INTO \"edges%s\" (parent, child, edgeType) VALUES ", workspaceId);
         List<String> values = new ArrayList<>();
         edges.forEach((edge) -> {
-            values.add("((SELECT id FROM nodes WHERE sysmlid = '" + edge.get("parent")
-                + "'), (SELECT id FROM nodes WHERE sysmlid = '" + edge.get("child") + "'), " + edge.get("edgetype")
+            values.add("((SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("parent")
+                + "'), (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("child") + "'), " + edge.get("edgetype")
                 + ")");
         });
         query += StringUtils.join(values, ",") + ";";
@@ -1578,12 +1578,7 @@ public class PostgresHelper {
                 + "        and not cycle\n" + "      )\n"
                 + "      select nid,height,(not exists (select true from edges where child = nid and edgetype = ' || $2 || '))\n"
                 + "        from parents order by height desc;';\n" + "  end;\n" + "$$ language plpgsql;");
-            /*
-            execUpdate("CREATE OR REPLACE FUNCTION get_commit_chain(integer)"
-                + " returns table(id bigint, height integer, root boolean) as $$ begin"
-                + " return query execute with recursive commits_chain(height, id, path, cycle) as (select 0, commit.id, ARRAY[commit.id], false from commits commit where commit.it = ' || $1 ||'"
-                + " union select (c.height +1), cp.parent, path || cast(cp.parent as bigint), )");
-            */
+
             execUpdate("CREATE OR REPLACE FUNCTION get_immediate_parents(integer, integer, text)\n"
                 + "  returns table(sysmlid text, elasticid text) as $$\n" + "  begin\n" + "    return query\n"
                 + "    execute '\n" + "    select sysmlid, elasticid from nodes' || $3 || ' where id in\n"
@@ -1614,14 +1609,7 @@ public class PostgresHelper {
                 + "      join edges nr ON ng.path_end = nr.parent where nr.edgeType = ' || $2 || '\n" + "    )\n"
                 + "    select * from node_graph where path_end = ' || $1 || ' order by path_start, array_length(path,1)';\n"
                 + "  end;\n" + "$$ language plpgsql;");
-            /*
-            execUpdate("CREATE OR REPLACE RULE insert_ignore_on_edges AS "
-                + "ON INSERT TO edges "
-                + "WHERE parent <> null AND child <> null AND "
-                + "EXISTS (SELECT 1 FROM nodes JOIN edges AS parents ON parents.parent = nodes.id) AND "
-                + "EXISTS (SELECT 1 FROM nodes JOIN edges AS childs ON childs.child = nodes.id) "
-                + "DO INSTEAD NOTHING");
-            */
+
             execUpdate(
                 "CREATE AGGREGATE array_agg_mult(anyarray) (\n" + "    SFUNC = array_cat,\n" + "    STYPE = anyarray,\n"
                     + "    INITCOND = '{}'\n" + ");\n");
@@ -1779,9 +1767,9 @@ public class PostgresHelper {
     public boolean isTag(String refId) {
         try {
             ResultSet rs = execQuery(String
-                .format("SELECT id FROM refs WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false", refId));
+                .format("SELECT tag FROM refs WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false", refId));
             if (rs.next()) {
-                return true;
+                return rs.getBoolean(1);
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
