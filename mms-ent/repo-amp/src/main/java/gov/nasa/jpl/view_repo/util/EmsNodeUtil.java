@@ -837,7 +837,6 @@ public class EmsNodeUtil {
                 newElements.put(property);
 
                 // Create AppliedStereotypeInstance
-
                 JSONObject propertyASI = new JSONObject();
                 propertyASI.put(Sjm.SYSMLID, propertySysmlId + "_asi");
                 propertyASI.put(Sjm.NAME, "");
@@ -858,6 +857,8 @@ public class EmsNodeUtil {
                 propertyASI.put(Sjm.SPECIFICATION, JSONObject.NULL);
                 propertyASI.put(Sjm.CLASSIFIERIDS, new JSONArray("_15_0_be00301_1199377756297_348405_2678"));
                 propertyASI.put(Sjm.STEREOTYPEDELEMENTID, propertySysmlId);
+
+                newElements.put(propertyASI);
 
                 // Create Associations
                 JSONObject association = new JSONObject();
