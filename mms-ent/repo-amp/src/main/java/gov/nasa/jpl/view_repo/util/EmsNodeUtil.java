@@ -469,8 +469,7 @@ public class EmsNodeUtil {
                 pgh.getImmediateParents(elementSysmlId, PostgresHelper.DbEdgeTypes.VIEW);
 
             for (Pair<String, String> viewParent : immediateParents) {
-                Set<String> rootParents = pgh.getRootParents(viewParent.first, PostgresHelper.DbEdgeTypes.VIEW);
-                for (String rootSysmlId : rootParents) {
+                for (String rootSysmlId : pgh.getRootParents(viewParent.first, PostgresHelper.DbEdgeTypes.VIEW)) {
                     if (relatedDocumentsMap.containsKey(rootSysmlId)) {
                         relatedDocumentsMap.get(rootSysmlId).add(viewParent.first);
                     } else {

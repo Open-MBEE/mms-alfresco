@@ -9,6 +9,7 @@ import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1104,8 +1105,8 @@ public class PostgresHelper {
         return isInitial;
     }
 
-    public Set<String> getRootParents(String sysmlId, DbEdgeTypes et) {
-        Set<String> result = new HashSet<>();
+    public LinkedList<String> getRootParents(String sysmlId, DbEdgeTypes et) {
+        LinkedList<String> result = new LinkedList<>();
         try {
             Node n = getNodeFromSysmlId(sysmlId);
 

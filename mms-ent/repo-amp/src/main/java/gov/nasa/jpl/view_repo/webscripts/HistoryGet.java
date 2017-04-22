@@ -131,7 +131,7 @@ public class HistoryGet extends ModelGet {
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), getRefId(req));
             Long depth = 0L;
 
-            jsonHist = filterByPermission(emsNodeUtil.getNodeHistory(modelId), req);
+            jsonHist = emsNodeUtil.getNodeHistory(modelId);
 
 
 
