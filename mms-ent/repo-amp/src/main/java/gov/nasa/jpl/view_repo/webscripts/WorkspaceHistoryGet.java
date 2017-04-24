@@ -95,15 +95,8 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript{
 
     @Override
     protected boolean validateRequest(WebScriptRequest req, Status status) {
-        // TODO Auto-generated method stub
-        if(checkRequestContent(req) == false)
-            return false;
-
         String wsId = req.getServiceMatch().getTemplateVars().get(REF_ID);
-
-        if(checkRequestVariable(wsId, REF_ID) == false)
-            return false;
-        return true;
+        return checkRequestContent(req) && checkRequestVariable(wsId, REF_ID);
     }
 
 }

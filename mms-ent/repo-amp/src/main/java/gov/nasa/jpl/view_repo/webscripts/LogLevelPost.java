@@ -83,7 +83,7 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
         if (msg.length() > 0 ) {
             response.put( "msg", msg.toString() );
         }
-        result.put( "res", response.toString( 2 ) );
+        result.put( "res", response.toString(4) );
         status.setCode( HttpServletResponse.SC_OK );
 
         return result;

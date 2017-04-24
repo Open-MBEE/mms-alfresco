@@ -73,11 +73,7 @@ public class ViewGet extends AbstractJavaWebScript {
     @Override
     protected boolean validateRequest(WebScriptRequest req, Status status) {
         String viewId = getIdFromRequest(req);
-        if (!checkRequestVariable(viewId, "id")) {
-            return false;
-        }
-
-        return true;
+        return checkRequestVariable(viewId, "id");
     }
 
     protected static String getRawViewId(WebScriptRequest req) {
@@ -120,7 +116,7 @@ public class ViewGet extends AbstractJavaWebScript {
             JSONArray elements = handleGetElement(viewId, projectId, workspace, gettingDisplayedElements, false, recurse);
 
             if (elements.length() > 0) {
-                model.put("elements", filterByPermission(elements, req));
+                model.put(Sjm.ELEMENTS, filterByPermission(elements, req));
                 res.put("res", model);
             } else {
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);

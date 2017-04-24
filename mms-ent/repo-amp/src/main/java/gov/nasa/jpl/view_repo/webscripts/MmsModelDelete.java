@@ -91,8 +91,8 @@ public class MmsModelDelete extends AbstractJavaWebScript {
         } else {
             try {
                 JSONObject requestJson = (JSONObject) req.parseContent();
-                if (requestJson.has("elements")) {
-                    JSONArray elementsJson = requestJson.getJSONArray("elements");
+                if (requestJson.has(Sjm.ELEMENTS)) {
+                    JSONArray elementsJson = requestJson.getJSONArray(Sjm.ELEMENTS);
                     if (elementsJson != null) {
                         for (int ii = 0; ii < elementsJson.length(); ii++) {
                             String id = elementsJson.getJSONObject(ii).getString(Sjm.SYSMLID);
@@ -132,7 +132,7 @@ public class MmsModelDelete extends AbstractJavaWebScript {
                 emsNodeUtil.processCommit(commitElements, user, foundElements, foundParentElements);
             String commitResults = emsNodeUtil.insertCommitIntoElastic(formattedCommit);
             emsNodeUtil.insertCommitIntoPostgres(commitResults);
-            result.put("elements", elements);
+            result.put(Sjm.ELEMENTS, elements);
             result.put("commitId", commitResults);
         }
         return result;

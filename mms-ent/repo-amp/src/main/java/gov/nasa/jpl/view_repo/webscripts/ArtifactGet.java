@@ -125,7 +125,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
                     if (artifactIdPath.length() > (lastIndex+1)) {
 
                         String artifactId = lastIndex != -1 ? artifactIdPath.substring(lastIndex+1) : artifactIdPath;
-                        String filename = extension != null ? artifactId + extension : artifactId;
+                        String filename = artifactId + extension;
 
                         EmsScriptNode matchingNode = null;
 

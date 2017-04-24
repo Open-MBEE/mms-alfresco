@@ -95,13 +95,13 @@ public class ModelGet extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
 
         String[] accepts = req.getHeaderValues("Accept");
-        String accept = accepts[0];
+        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
         logger.error("Accept: " + accept);
 
         if (accept.contains("image") && !accept.contains("webp")) {
             model = handleArtifactGet(req, status, accept);
         } else {
-            model = handleElementGet(req, status);
+            model = handleElementGet(req, status, accept);
         }
 
         printFooter(user, logger, timer);
@@ -109,7 +109,7 @@ public class ModelGet extends AbstractJavaWebScript {
         return model;
     }
 
-    protected Map<String, Object> handleElementGet(WebScriptRequest req, Status status) {
+    protected Map<String, Object> handleElementGet(WebScriptRequest req, Status status, String accept) {
 
         Map<String, Object> model = new HashMap<>();
         JSONObject top = new JSONObject();
@@ -121,16 +121,21 @@ public class ModelGet extends AbstractJavaWebScript {
                 JSONObject commitJson = handleCommitRequest(req, top);
                 commitJsonToArray.put(commitJson);
                 if (commitJson.length() > 0) {
-                    top.put("elements", filterByPermission(commitJsonToArray, req));
+                    top.put(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
+                    //top.put(Sjm.ELEMENTS, commitJsonToArray);
                 }
             } else {
                 JSONArray elementsJson = handleRequest(req, top, NodeUtil.doGraphDb);
                 if (elementsJson.length() > 0) {
-                    top.put("elements", filterByPermission(elementsJson, req));
+                    top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
+                    //top.put(Sjm.ELEMENTS, elementsJson);
                 }
             }
             if (top.length() == 0) {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+            }
+            if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+                responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
             }
             if (!Utils.isNullOrEmpty(response.toString()))
                 top.put("message", response.toString());
@@ -142,7 +147,11 @@ public class ModelGet extends AbstractJavaWebScript {
 
         status.setCode(responseStatus.getCode());
 
-        model.put("res", top.toString(4));
+        if (prettyPrint || accept.contains("webp")) {
+            model.put("res", top.toString(4));
+        } else {
+            model.put("res", top);
+        }
 
         return model;
     }
@@ -167,7 +176,7 @@ public class ModelGet extends AbstractJavaWebScript {
         String extension = !extensionArg.equals("*") ? extensionArg : ".svg";  // Assume .svg if no extension provided
         String commitId = req.getParameter("commitId");
         Map<String, String> commitAndTimestamp = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
-        String timestamp = !Utils.isNullOrEmpty(commitAndTimestamp) ? commitAndTimestamp.get("timestamp") : null;
+        String timestamp = !Utils.isNullOrEmpty(commitAndTimestamp) ? commitAndTimestamp.get(Sjm.TIMESTAMP) : null;
         if (timestamp == null) {
             Date today = new Date();
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -303,16 +312,7 @@ public class ModelGet extends AbstractJavaWebScript {
                 return new JSONArray();
             }
 
-            // get timestamp if specified
-            String commitId = req.getParameter("commitId");
-
-            String projectId = getProjectId(req);
-            String workspace = getRefId(req);
-
-            Long depth = getDepthFromRequest(req);
-            boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
-
-            return handleElementHierarchy(modelId, projectId, workspace, commitId, depth, extended);
+            return handleElementHierarchy(modelId, req);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -324,7 +324,6 @@ public class ModelGet extends AbstractJavaWebScript {
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-
 
         String elementId = req.getServiceMatch().getTemplateVars().get("elementId");
         String currentElement = emsNodeUtil.getById(elementId).getElasticId();
@@ -340,8 +339,7 @@ public class ModelGet extends AbstractJavaWebScript {
         if ((req.getParameter("commitId").isEmpty() && checkInProjectAndRef) || (commitId.equals(lastestCommitId))) {
             return emsNodeUtil.getElementByElasticID(currentElement);
         } else if (checkInProjectAndRef) {
-            JSONObject lastCommit = emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
-            return lastCommit;
+            return emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
         } else {
             return new JSONObject();
         }
@@ -354,7 +352,7 @@ public class ModelGet extends AbstractJavaWebScript {
      * @return Depth < 0 is infinite recurse, depth = 0 is just the element (if no request
      * parameter)
      */
-    private Long getDepthFromRequest(WebScriptRequest req) {
+    public Long getDepthFromRequest(WebScriptRequest req) {
         Long depth = null;
         String depthParam = req.getParameter("depth");
         if (depthParam != null) {
@@ -389,22 +387,25 @@ public class ModelGet extends AbstractJavaWebScript {
      * Recurse a view hierarchy to get all allowed elements
      *
      * @param rootSysmlid Root view to find elements for
-     * @param projectId   Id of project
-     * @param refId       Id of ref
-     * @param commitId    Id of commit
-     * @param maxDepth    depth of recursion
-     * @param extended    Add extended info to result
+     * @param req   WebScriptRequest
      * @return JSONArray of elements
      * @throws JSONException JSON element creation error
      * @throws SQLException  SQL error
      * @throws IOException   IO error
      */
 
-    protected JSONArray handleElementHierarchy(String rootSysmlid, String projectId, String refId, String commitId,
-        final Long maxDepth, boolean extended) throws JSONException, SQLException, IOException {
+    protected JSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req) throws JSONException, SQLException, IOException {
+        // get timestamp if specified
+        String commitId = req.getParameter("commitId");
+        String projectId = getProjectId(req);
+        String refId = getRefId(req);
+        Long depth = getDepthFromRequest(req);
+
+        boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
+
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-        JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, maxDepth);
+        JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
 
         JSONArray elasticElements = extended ? emsNodeUtil.addExtendedInformation(tmpElements) : tmpElements;
         JSONArray elasticElementsCleaned = new JSONArray();

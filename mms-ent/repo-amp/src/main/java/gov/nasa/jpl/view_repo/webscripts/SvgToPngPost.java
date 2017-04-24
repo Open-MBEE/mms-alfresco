@@ -38,8 +38,6 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.actions.ActionUtil;
 import gov.nasa.jpl.view_repo.actions.SvgToPngActionExecuter;
-//import gov.nasa.jpl.view_repo.actions.HtmlToPdfActionExecuter;
-//import gov.nasa.jpl.view_repo.actions.SvgToPngActionExecuter;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 
@@ -209,7 +207,7 @@ public class SvgToPngPost extends AbstractJavaWebScript {
 		if (node == null) throw new NullArgumentException("EmsScriptNode");
 		log(String.format("\tAdding PNG for %s...", node.getName()));
 		Path svgPath = saveSvgToFileSystem(node);
-		Path pngPath = svgToPng(svgPath);
+		Path pngPath = ModelPost.svgToPng(svgPath);
 		String siteName = node.getSiteName(null, null);
 		EmsScriptNode pngArtifact = NodeUtil.updateOrCreateArtifactPng(node, pngPath, siteName, null, null, null, response, null, false);
 		if(pngArtifact == null){
@@ -238,21 +236,5 @@ public class SvgToPngPost extends AbstractJavaWebScript {
 		catch(Throwable ex){
 			throw new Throwable(String.format("Failed to save SVG to filesystem! %s", ex.getMessage()));
 		}
-	}
-
-	protected Path svgToPng(Path svgPath) throws Throwable{
-		log("\tConverting SVG to PNG...");
-		Path pngPath = Paths.get(svgPath.toString().replace(".svg", ".png"));
-		try(OutputStream png_ostream = new FileOutputStream(pngPath.toString()); ){
-			String svg_URI_input = svgPath.toUri().toURL().toString();
-			TranscoderInput input_svg_image = new TranscoderInput(svg_URI_input);
-	        TranscoderOutput output_png_image = new TranscoderOutput(png_ostream);
-	        PNGTranscoder my_converter = new PNGTranscoder();
-	        my_converter.transcode(input_svg_image, output_png_image);
-		}
-		catch(Throwable ex){
-			throw new Throwable("Failed to convert SVG to PNG! " + ex.getMessage());
-		}
-		return pngPath;
 	}
 }

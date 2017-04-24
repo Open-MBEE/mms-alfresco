@@ -65,6 +65,7 @@ import gov.nasa.jpl.view_repo.util.EmsTransaction;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil.SearchType;
+import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 
@@ -95,6 +96,8 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
 
     // keeps track of who made the call to the service
     protected String requestSourceApplication = null;
+
+    protected boolean prettyPrint = false;
 
     protected void initMemberVariables(String siteName) {
         companyhome = new ScriptNode(repository.getCompanyHome(), services);
@@ -787,13 +790,17 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     }
 
     protected void printHeader( String user, Logger logger, WebScriptRequest req ) {
+        printHeader(user, logger, req, false);
+    }
+
+    protected void printHeader( String user, Logger logger, WebScriptRequest req, boolean skipReq ) {
         logger.info(String.format("%s %s", user, req.getURL()));
         try {
-	        if (req.parseContent() != null) {
-	            logger.info(String.format("%s", req.parseContent()));
-	        }
+            if (!skipReq && req.parseContent() != null) {
+                logger.info(String.format("%s", req.parseContent()));
+            }
         } catch (Exception e) {
-        	// do nothing, just means no content when content-type was specified
+            // do nothing, just means no content when content-type was specified
         }
     }
 
@@ -915,7 +922,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     protected static boolean isDisplayedElementRequest( WebScriptRequest req ) {
         if ( req == null ) return false;
         String url = req.getURL();
-        boolean gotSuffix = urlEndsWith( url, "elements" );
+        boolean gotSuffix = urlEndsWith( url, Sjm.ELEMENTS );
         return gotSuffix;
     }
 
@@ -1129,7 +1136,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         JSONObject jsonVersion = null;
         boolean paramVal = getBooleanArg(req, "mmsVersion", false);
         if (paramVal) {
-            jsonVersion = new JSONObject();
             jsonVersion = getMMSversion();
         }
 

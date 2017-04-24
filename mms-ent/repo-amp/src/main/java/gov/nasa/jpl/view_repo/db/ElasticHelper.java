@@ -255,7 +255,7 @@ public class ElasticHelper {
             // sublist is fromIndex inclusive, toIndex exclusive
             List<String> sub = ids.subList(count, Math.min(ids.size(), count + termLimit));
             if (count == Math.min(ids.size(), count + termLimit)) {
-                sub = new ArrayList<String>();
+                sub = new ArrayList<>();
                 sub.add(ids.get(count));
             }
             JSONArray elasticids = new JSONArray();
@@ -309,8 +309,11 @@ public class ElasticHelper {
         if (k.has(Sjm.SYSMLID)) {
             result.sysmlid = k.getString(Sjm.SYSMLID);
         }
-        result.elasticId =
-            client.execute(new Index.Builder(k.toString()).index(elementIndex).type(eType).build()).getId();
+        if (k.has(Sjm.ELASTICID)) {
+            result.elasticId = client.execute(new Index.Builder(k.toString()).id(k.getString(Sjm.ELASTICID)).index(elementIndex).type(eType).build()).getId();
+        } else {
+            result.elasticId = client.execute(new Index.Builder(k.toString()).index(elementIndex).type(eType).build()).getId();
+        }
         k.put(Sjm.ELASTICID, result.elasticId);
         result.current = k;
 
@@ -344,26 +347,33 @@ public class ElasticHelper {
      * @param operation    checks for CRUD operation, does not delete documents
      * @return ElasticResult e
      */
-    public String bulkIndexElements(JSONArray bulkElements, String operation) throws JSONException, IOException {
+    public boolean bulkIndexElements(JSONArray bulkElements, String operation) throws JSONException, IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         // BulkableAction is generic
-        ArrayList<BulkableAction> actions = new ArrayList<BulkableAction>();
+        ArrayList<BulkableAction> actions = new ArrayList<>();
+        JSONArray currentList = new JSONArray();
         for (int i = 0; i < bulkElements.length(); i++) {
             JSONObject curr = bulkElements.getJSONObject(i);
             if (operation.equals("delete")) {
                 continue;
             } else {
                 actions.add(new Index.Builder(curr.toString()).id(curr.getString(Sjm.ELASTICID)).build());
+                currentList.put(curr);
             }
             if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.length() - 1)) {
                 BulkResult result = insertBulk(actions);
                 if (!result.isSucceeded()) {
-                    return result.getErrorMessage();
+                    logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
+                    logger.error(String.format("Failed items JSON: %s", currentList));
+                    result.getFailedItems().forEach((item) -> {
+                        logger.error(String.format("Failed item: %s", item.error));
+                    });
+                    return false;
                 }
                 actions.clear();
             }
         }
-        return "1";
+        return true;
     }
 
     /**
@@ -374,8 +384,7 @@ public class ElasticHelper {
      */
     private BulkResult insertBulk(List<BulkableAction> actions) throws JSONException, IOException {
         Bulk bulk = new Bulk.Builder().defaultIndex(elementIndex).defaultType("element").addAction(actions).build();
-        BulkResult result = client.execute(bulk);
-        return result;
+        return client.execute(bulk);
     }
 
     public JSONArray search(Map<String, String> params) throws IOException {

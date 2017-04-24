@@ -95,7 +95,7 @@ public class ProjectPost extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
 
                 JSONObject json = (JSONObject) req.parseContent();
-                JSONArray elementsArray = json != null ? json.optJSONArray("elements") : null;
+                JSONArray elementsArray = json != null ? json.optJSONArray(Sjm.ELEMENTS) : null;
                 JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ?
                                 elementsArray.getJSONObject(0) :
                                 new JSONObject();

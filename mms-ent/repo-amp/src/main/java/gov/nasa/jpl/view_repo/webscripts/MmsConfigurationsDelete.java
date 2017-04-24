@@ -56,7 +56,7 @@ public class MmsConfigurationsDelete extends AbstractJavaWebScript {
         try {
             if (req.getServiceMatch().getTemplateVars().containsKey("configurationId")) {
                 String id = req.getServiceMatch().getTemplateVars().get("configurationId");
-                pgh.deleteTag(id);
+                pgh.deleteRef(id);
                 JSONArray deleted = new JSONArray();
                 result.put("deleted", deleted.add(id));
             }

@@ -145,7 +145,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 				if (!Utils.isNullOrEmpty(response.toString())) {
 					result.put("message", response.toString());
 				}
-				model.put("res", NodeUtil.jsonToString(result, 2));
+				model.put("res", result);
 			} catch (JSONException e) {
 				logger.error(String.format("%s", LogUtil.getStackTrace(e)));
 			}
@@ -1039,8 +1039,8 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 	 * Kick off the actual action in the background
 	 *
 	 * @param jobNode
+     * @param postJson
 	 * @param siteName
-	 * @param productList
 	 * @param workspace
 	 */
 	public void startAction(EmsScriptNode jobNode, JSONObject postJson,

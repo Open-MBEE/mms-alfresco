@@ -24,6 +24,7 @@ import gov.nasa.jpl.view_repo.util.Acm;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 
 /**
@@ -113,7 +114,7 @@ public class ProjectsGet extends AbstractJavaWebScript{
 
         JSONObject json = new JSONObject ();
         JSONArray elements = new JSONArray();
-        json.put("elements", elements);
+        json.put(Sjm.ELEMENTS, elements);
 
         Map< String, EmsScriptNode > nodeList = searchForElements(NodeUtil.SearchType.TYPE.prefix,
                                                                   Acm.ACM_PROJECT, false,
@@ -151,8 +152,6 @@ public class ProjectsGet extends AbstractJavaWebScript{
      */
     @Override
     protected boolean validateRequest (WebScriptRequest req, Status status){
-
         return !checkRequestContent(req);
-
     }
 }

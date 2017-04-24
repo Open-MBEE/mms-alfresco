@@ -124,7 +124,7 @@
 //                                for ( EmsScriptNode element : elements ) {
 //                                    elementsJson.put( element.toJSONObject(targetWS, null) );
 //                                }
-//                           //top.put( "elements", elementsJson );
+//                           //top.put( Sjm.ELEMENTS, elementsJson );
 //                            //model.put( "res", NodeUtil.jsonToString( top, 4 ) );
 //                            }
 //                            tmpResult = handleDelete(deletedCollection, targetWS, targetId, null /*time*/, wsDiff);

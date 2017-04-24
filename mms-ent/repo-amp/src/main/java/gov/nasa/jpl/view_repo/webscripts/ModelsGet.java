@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
-
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -56,7 +55,7 @@ import gov.nasa.jpl.mbee.util.Utils;
  * @author cinyoung
  *
  */
-public class ModelsGet extends AbstractJavaWebScript {
+public class ModelsGet extends ModelGet {
 	static Logger logger = Logger.getLogger(ModelsGet.class);
 
     public ModelsGet() {
@@ -66,8 +65,6 @@ public class ModelsGet extends AbstractJavaWebScript {
     public ModelsGet(Repository repositoryHelper, ServiceRegistry registry) {
         super(repositoryHelper, registry);
     }
-
-    protected boolean prettyPrint = true;
 
     String timestamp;
     Date dateTime;
@@ -126,13 +123,17 @@ public class ModelsGet extends AbstractJavaWebScript {
 
             JSONObject top = NodeUtil.newJsonObject();
             if (elementsJson.length() > 0) {
-                top.put("elements", filterByPermission(elementsJson, req));
+                top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
+                //top.put(Sjm.ELEMENTS, elementsJson);
+                String[] accepts = req.getHeaderValues("Accept");
+                String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
                 if (!Utils.isNullOrEmpty(response.toString()))
                     top.put("message", response.toString());
-                if (prettyPrint)
-                    model.put("res", NodeUtil.jsonToString(top, 4));
-                else
-                    model.put("res", NodeUtil.jsonToString(top));
+                if (prettyPrint || accept.contains("webp")) {
+                    model.put("res", top.toString(4));
+                } else {
+                    model.put("res", top);
+                }
             } else {
                 log(Level.WARN, HttpServletResponse.SC_OK, "No elements found");
                 model.put("res", createResponseJson());
@@ -149,39 +150,6 @@ public class ModelsGet extends AbstractJavaWebScript {
     }
 
     /**
-     * Get the depth to recurse to from the request parameter.
-     *
-     * @param req
-     * @return Depth < 0 is infinite recurse, depth = 0 is just the element (if no request
-     *         parameter)
-     */
-    private Long getDepthFromRequest(WebScriptRequest req) {
-        Long depth = null;
-        String depthParam = req.getParameter("depth");
-        if (depthParam != null) {
-            try {
-                depth = Long.parseLong(depthParam);
-                if (depth < 0) {
-                    depth = 100000L;
-                }
-            } catch (NumberFormatException nfe) {
-                log(Level.WARN, HttpServletResponse.SC_BAD_REQUEST, "Bad depth specified, returning depth 0");
-            }
-        }
-
-        boolean recurse = getBooleanArg(req, "recurse", false);
-        if (recurse) {
-            depth = 100000L;
-        }
-
-        if (depth == null) {
-            depth = 0L;
-        }
-
-        return depth;
-    }
-
-    /**
      * Wrapper for handling a request and getting the appropriate JSONArray of
      * elements
      *
@@ -191,8 +159,8 @@ public class ModelsGet extends AbstractJavaWebScript {
      */
     private JSONArray handleRequest(WebScriptRequest req, final Long maxDepth) throws JSONException, IOException {
         JSONObject requestJson = (JSONObject) req.parseContent();
-        if (requestJson.has("elements")) {
-            JSONArray elementsToFindJson = requestJson.getJSONArray("elements");
+        if (requestJson.has(Sjm.ELEMENTS)) {
+            JSONArray elementsToFindJson = requestJson.getJSONArray(Sjm.ELEMENTS);
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
@@ -204,13 +172,7 @@ public class ModelsGet extends AbstractJavaWebScript {
             for (int i = 0; i < elementsToFindJson.length(); i++) {
                 uniqueElements.add(elementsToFindJson.getJSONObject(i).getString(Sjm.SYSMLID));
             }
-            JSONArray uniqueElementsToFind = new JSONArray();
-            uniqueElements.forEach((sysmlId) -> {
-                JSONObject element = new JSONObject();
-                element.put(Sjm.SYSMLID, sysmlId);
-                uniqueElementsToFind.put(element);
-            });
-            JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(uniqueElementsToFind);
+            JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(uniqueElements);
             if (maxDepth != 0) {
                 for (int i = 0; i < nodeList.length(); i++) {
                     JSONObject node = nodeList.getJSONObject(i);

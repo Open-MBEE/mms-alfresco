@@ -3569,7 +3569,7 @@ public class NodeUtil {
 
         // Create new artifact:
         // find subfolder in site or create it
-        String artifactFolderName = "Artifacts" + (Utils.isNullOrEmpty(subfolderName) ? "" : "/" + subfolderName);
+        String artifactFolderName = Utils.isNullOrEmpty(subfolderName) ? "" : "/" + subfolderName;
 
         EmsScriptNode targetSiteNode =
                         getSiteNodeForWorkspace(targetSiteName, false, workspace, dateTime, services, response);
@@ -3703,9 +3703,7 @@ public class NodeUtil {
 
 		// Create new artifact:
 		// find subfolder in site or create it
-		String artifactFolderName = "Artifacts"
-				+ (Utils.isNullOrEmpty(subfolderName) ? "" : "/"
-						+ subfolderName);
+		String artifactFolderName = Utils.isNullOrEmpty(subfolderName) ? "" : "/" + subfolderName;
 
 		EmsScriptNode targetSiteNode = getSiteNodeForWorkspace(targetSiteName,
 				false, workspace, dateTime, services, response);
@@ -4326,7 +4324,7 @@ public class NodeUtil {
         JSONObject jsonModule = new JSONObject();
         try {
             jsonModule.put("mmsTitle", module.getTitle());
-            jsonModule.put("mmsVersion", module.getVersion());
+            jsonModule.put("mmsVersion", module.getModuleVersionNumber());
             jsonModule.put("mmsAliases", module.getAliases());
             jsonModule.put("mmsClass", module.getClass());
             jsonModule.put("mmsDependencies", module.getDependencies());
@@ -4372,7 +4370,7 @@ public class NodeUtil {
                     jsonModule.put("mmsTitle", module.getTitle());
                     break;
                 case "versions":
-                    jsonModule.put("mmsVersion", module.getVersion());
+                    jsonModule.put("mmsVersion", module.getModuleVersionNumber());
                     break;
                 case "aliases":
                     jsonModule.put("mmsAliases", module.getAliases());
@@ -4447,7 +4445,7 @@ public class NodeUtil {
                     jsonDetail.put("mmsTitle", module.getTitle());
                     break;
                 case "versions":
-                    jsonDetail.put("mmsVersion", module.getVersion());
+                    jsonDetail.put("mmsVersion", module.getModuleVersionNumber());
                     break;
                 case "aliases":
                     jsonDetail.put("mmsAliases", module.getAliases());
@@ -4541,7 +4539,7 @@ public class NodeUtil {
         int moduleArrayLength = moduleDetails.length();
         JSONObject jsonModule;
         if (moduleArrayLength > 0) {
-            jsonModule = moduleDetails.getJSONObject(0);
+            jsonModule = moduleDetails.getJSONObject(moduleArrayLength - 1);
             mmsVersion = jsonModule.get("mmsVersion").toString();
         }
 

@@ -33,7 +33,7 @@ import gov.nasa.jpl.view_repo.util.NodeUtil;
 public class JmsConnection implements ConnectionInterface {
     private static Logger logger = Logger.getLogger(JmsConnection.class);
     private long sequenceId = 0;
-    private String workspace = null;
+    private String refId = null;
     private String projectId = null;
 
     private static Map<String, ConnectionInfo> connectionMap = null;
@@ -123,14 +123,14 @@ public class JmsConnection implements ConnectionInterface {
 
     @Override
     /**
-     * Changed method to synchronized to JMS message can be sent out with appropriate workspace and projectIds
+     * Changed method to synchronized to JMS message can be sent out with appropriate refId and projectIds
      * without race condition.
-     */ public synchronized boolean publish(JSONObject json, String eventType, String workspaceId, String projectId) {
+     */ public synchronized boolean publish(JSONObject json, String eventType, String refId, String projectId) {
         boolean result = false;
         try {
             json.put("sequence", sequenceId++);
             // don't do null check since null is applicable and want to reset
-            this.workspace = workspaceId;
+            this.refId = refId;
             this.projectId = projectId;
             result = publishMessage(NodeUtil.jsonToString(json, 2), eventType);
         } catch (JSONException e) {
@@ -189,10 +189,10 @@ public class JmsConnection implements ConnectionInterface {
 
             // Create a message
             TextMessage message = session.createTextMessage(msg);
-            if (workspace != null) {
-                message.setStringProperty("workspace", workspace);
+            if (refId != null) {
+                message.setStringProperty("refId", refId);
             } else {
-                message.setStringProperty("workspace", "master");
+                message.setStringProperty("refId", "master");
             }
             if (projectId != null) {
                 message.setStringProperty("projectId", projectId);
@@ -216,8 +216,8 @@ public class JmsConnection implements ConnectionInterface {
         return status;
     }
 
-    @Override public void setWorkspace(String workspace) {
-        this.workspace = workspace;
+    @Override public void setRefId(String refId) {
+        this.refId = refId;
     }
 
     @Override public void setProjectId(String projectId) {

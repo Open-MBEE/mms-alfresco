@@ -18,6 +18,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
@@ -34,15 +35,8 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-
         String wsId = req.getServiceMatch().getTemplateVars().get(REF_ID);
-        if (checkRequestVariable(wsId, REF_ID) == false) {
-            return false;
-        }
-        if (!userHasWorkspaceLdapPermissions()) {
-            return false;
-        }
-        return true;
+        return checkRequestVariable(wsId, REF_ID) && userHasWorkspaceLdapPermissions();
     }
 
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
@@ -59,13 +53,15 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
         JSONObject result = null;
         try {
             if (validateRequest(req, status)) {
-                String wsId = req.getServiceMatch().getTemplateVars().get(REF_ID);
+                String wsId = getRefId(req);
 
                 // can't delete master
                 if (wsId.equals("master")) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Cannot delete master workspace");
                     status.setCode(HttpServletResponse.SC_BAD_REQUEST);
                 } else {
+                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), wsId);
+                    emsNodeUtil.deleteRef(wsId);
                     WorkspaceNode target =
                                     WorkspaceNode.getWorkspaceFromId(wsId, getServices(), getResponse(), status, user);
                     if (target != null) {

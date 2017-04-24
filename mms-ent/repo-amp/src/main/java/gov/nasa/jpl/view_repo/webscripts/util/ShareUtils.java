@@ -126,14 +126,14 @@ public class ShareUtils {
             return false;
         }
 
-        if (!makeSharePostCall(httpClient, CREATE_SITE_URL, NodeUtil.jsonToString(json), CONTENT_TYPE_JSON,
+        if (!makeSharePostCall(httpClient, CREATE_SITE_URL, json.toString(), CONTENT_TYPE_JSON,
                         "Create site with name: " + siteId, HttpStatus.SC_OK)) {
             logger.error("Could not create site - 1st pass");
             return false;
         }
 
         // for some reason need to do this twice unsure why this is the case
-        if (!makeSharePostCall(httpClient, CREATE_SITE_URL, NodeUtil.jsonToString(json), CONTENT_TYPE_JSON,
+        if (!makeSharePostCall(httpClient, CREATE_SITE_URL, json.toString(), CONTENT_TYPE_JSON,
                         "Create site with name: " + siteId, HttpStatus.SC_OK)) {
             logger.error("Could not create site -2nd pass");
             // return false;
