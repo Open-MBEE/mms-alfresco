@@ -794,7 +794,7 @@ public class EmsNodeUtil {
                 // Create Property
                 JSONObject property = new JSONObject();
                 property.put(Sjm.SYSMLID, propertySysmlId);
-                property.put(Sjm.NAME, camelize(element.optString(Sjm.NAME)));
+                property.put(Sjm.NAME, "childView" + (i + 1));
                 property.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
                 property.put(Sjm.TYPE, "Property");
                 property.put(Sjm.OWNERID, sysmlId);
@@ -1552,7 +1552,7 @@ public class EmsNodeUtil {
         return value;
     }
 
-    private String camelize(String str) {
+    private static String camelize(String str) {
         Pattern p = Pattern.compile("_|\\s+(.)");
         Matcher m = p.matcher(str.replaceAll("[^A-Za-z0-9]", ""));
         StringBuffer sb = new StringBuffer();
