@@ -82,6 +82,8 @@ public class OrgGet extends AbstractJavaWebScript {
             }
         }
         JSONObject json = null;
+        String[] accepts = req.getHeaderValues("Accept");
+        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
         try {
             if (validateRequest(req, status)) {
@@ -123,7 +125,11 @@ public class OrgGet extends AbstractJavaWebScript {
         if (json == null) {
             model.put("res", createResponseJson());
         } else {
-            model.put("res", json);
+            if (prettyPrint || accept.contains("webp")) {
+                model.put("res", json.toString(4));
+            } else {
+                model.put("res", json);
+            }
         }
 
         status.setCode(responseStatus.getCode());

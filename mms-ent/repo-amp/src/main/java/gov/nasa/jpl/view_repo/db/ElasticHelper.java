@@ -150,8 +150,6 @@ public class ElasticHelper {
             new JSONObject().put("term", new JSONObject().put("added.id", new JSONObject().put("value", sysmlid))))));
         should.put(new JSONObject().put("nested", new JSONObject().put("path", "updated").put("query",
             new JSONObject().put("term", new JSONObject().put("updated.id", new JSONObject().put("value", sysmlid))))));
-        should.put(new JSONObject().put("nested", new JSONObject().put("path", "moved").put("query",
-            new JSONObject().put("term", new JSONObject().put("moved.id", new JSONObject().put("value", sysmlid))))));
         should.put(new JSONObject().put("nested", new JSONObject().put("path", "deleted").put("query",
             new JSONObject().put("term", new JSONObject().put("deleted.id", new JSONObject().put("value", sysmlid))))));
         JSONObject query = new JSONObject().put("size", resultLimit)
@@ -184,8 +182,6 @@ public class ElasticHelper {
             new JSONObject().put("term", new JSONObject().put("added.id", new JSONObject().put("value", sysmlid))))));
         should.put(new JSONObject().put("nested", new JSONObject().put("path", "updated").put("query",
             new JSONObject().put("term", new JSONObject().put("updated.id", new JSONObject().put("value", sysmlid))))));
-        should.put(new JSONObject().put("nested", new JSONObject().put("path", "moved").put("query",
-            new JSONObject().put("term", new JSONObject().put("moved.id", new JSONObject().put("value", sysmlid))))));
         should.put(new JSONObject().put("nested", new JSONObject().put("path", "deleted").put("query",
             new JSONObject().put("term", new JSONObject().put("deleted.id", new JSONObject().put("value", sysmlid))))));
         JSONArray must = new JSONArray();
@@ -421,10 +417,8 @@ public class ElasticHelper {
         return elements;
     }
 
-    public JSONArray search(String keyword) throws IOException {
-        // ************ I think this is fine https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
-        JSONObject queryJson = new JSONObject().put("size", resultLimit)
-            .put("query", new JSONObject().put("query_string", new JSONObject().put("query", keyword)));
+    public JSONArray search(JSONObject queryJson) throws IOException {
+        logger.debug(String.format("Search Query %s", queryJson.toString()));
 
         JSONArray elements = new JSONArray();
 

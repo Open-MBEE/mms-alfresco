@@ -359,7 +359,8 @@
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
-<!--     <bean id="webscript.gov.nasa.jpl.mms.merge.post"
+<!--
+    <bean id="webscript.gov.nasa.jpl.mms.merge.post"
         class="gov.nasa.jpl.view_repo.webscripts.WorkspacesMerge" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -380,7 +381,7 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.search.get"
+    <bean id="webscript.gov.nasa.jpl.mms.workspaces.search.post"
         class="gov.nasa.jpl.view_repo.webscripts.ModelSearch" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />

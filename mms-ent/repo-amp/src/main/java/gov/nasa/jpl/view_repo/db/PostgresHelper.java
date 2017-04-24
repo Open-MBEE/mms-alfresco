@@ -518,7 +518,7 @@ public class PostgresHelper {
                 while (mounts.next()) {
                     mountPoints.add(mounts.getString(1));
                 }
-                project.put("mounts", mountPoints);
+                project.put(Sjm.MOUNTS, mountPoints);
                 result.add(project);
             }
 
@@ -553,7 +553,7 @@ public class PostgresHelper {
                 while (mounts.next()) {
                     mountPoints.add(mounts.getString(1));
                 }
-                result.put("mounts", mountPoints);
+                result.put(Sjm.MOUNTS, mountPoints);
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
