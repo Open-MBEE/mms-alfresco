@@ -110,8 +110,9 @@ public class ModelSearch extends ModelPost {
             } else {
                 top.put("elements", filterByPermission(elementsJson, req));
             }
-            if (!Utils.isNullOrEmpty(response.toString()))
+            if (!Utils.isNullOrEmpty(response.toString())) {
                 top.put("message", response.toString());
+            }
             model.put("res", top.toString());
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not create the JSON response");
@@ -124,15 +125,6 @@ public class ModelSearch extends ModelPost {
         printFooter(user, logger, timer);
 
         return model;
-    }
-
-    private JSONArray findRelatedViews(JSONArray searchResults) {
-        for (int i = 0; i < searchResults.length(); i++) {
-            JSONObject curr = searchResults.getJSONObject(i);
-
-
-        }
-        return null;
     }
 
     private JSONArray executeSearchRequest(WebScriptRequest req, JSONObject top) throws JSONException, IOException {
