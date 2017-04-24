@@ -222,7 +222,11 @@ public class EmsNodeUtil {
     }
 
     private JSONObject getNodeBySysmlid(String sysmlid, String workspaceName) {
-        return getNodeBySysmlid(sysmlid, workspaceName, null);
+        return getNodeBySysmlid(sysmlid, workspaceName, null, true);
+    }
+
+    private JSONObject getNodeBySysmlid(String sysmlid, boolean withChildViews) {
+        return getNodeBySysmlid(sysmlid, workspaceName, null, withChildViews);
     }
 
     /**
@@ -233,7 +237,8 @@ public class EmsNodeUtil {
      * @param visited       Map of visited sysmlids when traversing to unravel childViews
      * @return
      */
-    private JSONObject getNodeBySysmlid(String sysmlid, String workspaceName, Map<String, JSONObject> visited) {
+
+    private JSONObject getNodeBySysmlid(String sysmlid, String workspaceName, Map<String, JSONObject> visited, boolean withChildViews) {
         if (!this.workspaceName.equals(workspaceName)) {
             switchWorkspace(workspaceName);
         }
@@ -253,7 +258,7 @@ public class EmsNodeUtil {
                     result.put(Sjm.PROJECTID, this.projectId);
                     result.put(Sjm.REFID, this.workspaceName);
                     visited.put(sysmlid, result);
-                    return addChildViews(result, visited);
+                    return withChildViews ? addChildViews(result, visited) : result;
                 }
             } catch (Exception e) {
                 logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -261,6 +266,7 @@ public class EmsNodeUtil {
         }
         return new JSONObject();
     }
+
 
     public JSONArray getNodesBySysmlids(Set<String> sysmlids) {
         List<String> elasticids = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids));
@@ -984,6 +990,8 @@ public class EmsNodeUtil {
             }
         }
 
+        element.remove(Sjm.CHILDVIEWS);
+
         return element;
     }
 
@@ -1312,7 +1320,7 @@ public class EmsNodeUtil {
         JSONObject existing;
 
         if (json.has(Sjm.SYSMLID)) {
-            existing = getNodeBySysmlid(json.getString(Sjm.SYSMLID));
+            existing = getNodeBySysmlid(json.getString(Sjm.SYSMLID), false);
             if (existing.has(Sjm.SYSMLID)) {
                 mergeJson(json, existing);
             }
