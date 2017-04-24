@@ -173,7 +173,7 @@ public class ModelPost extends AbstractJavaWebScript {
             results = emsNodeUtil.addCommitId(results, commitResults);
 
             // :TODO this object is not the formatted commit object
-            commit.put("workspace2", results);
+            commit.put("processed", results);
             commit.put(Sjm.CREATOR, user);
 
             if (CommitUtil.sendDeltas(commit, commitResults, projectId, refId, requestSourceApplication)) {
@@ -242,9 +242,9 @@ public class ModelPost extends AbstractJavaWebScript {
                 // Get the artifact name from the url:
                 String artifactIdPath = getArtifactId(req);
 
-                logger.error("ArtifactIdPath: " + artifactIdPath);
-                logger.error("Content: " + content);
-                logger.error("Header: " + req.getHeader("Content-Type"));
+                logger.debug("ArtifactIdPath: " + artifactIdPath);
+                logger.debug("Content: " + content);
+                logger.debug("Header: " + req.getHeader("Content-Type"));
 
                 if (artifactIdPath != null) {
                     int lastIndex = artifactIdPath.lastIndexOf("/");

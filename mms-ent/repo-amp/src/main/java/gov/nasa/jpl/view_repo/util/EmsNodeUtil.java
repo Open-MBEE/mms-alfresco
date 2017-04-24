@@ -794,7 +794,7 @@ public class EmsNodeUtil {
                 // Create Property
                 JSONObject property = new JSONObject();
                 property.put(Sjm.SYSMLID, propertySysmlId);
-                property.put(Sjm.NAME, "");
+                property.put(Sjm.NAME, camelize(element.optString(Sjm.NAME)));
                 property.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
                 property.put(Sjm.TYPE, "Property");
                 property.put(Sjm.OWNERID, sysmlId);
@@ -803,14 +803,15 @@ public class EmsNodeUtil {
                 property.put(Sjm.ELASTICID, UUID.randomUUID().toString());
                 // Default Fields
                 property.put(Sjm.ASSOCIATIONID, associationSysmlId);
-                property.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
+                JSONArray asid = new JSONArray();
+                asid.put("_15_0_be00301_1199377756297_348405_2678");
+                property.put(Sjm.APPLIEDSTEREOTYPEIDS, asid);
                 property.put(Sjm.DOCUMENTATION, "");
                 property.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
                 property.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
-                property.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
+                property.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, propertySysmlId + "_asi");
                 property.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
                 property.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
-                property.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
                 property.put(Sjm.VISIBILITY, "private");
                 property.put(Sjm.ISLEAF, false);
                 property.put(Sjm.ISSTATIC, false);
@@ -1549,5 +1550,17 @@ public class EmsNodeUtil {
         }
 
         return value;
+    }
+
+    private String camelize(String str) {
+        Pattern p = Pattern.compile("_|\\s+(.)");
+        Matcher m = p.matcher(str.replaceAll("[^A-Za-z0-9]", ""));
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            m.appendReplacement(sb, m.group(1).toUpperCase());
+        }
+        m.appendTail(sb);
+        System.out.println(sb.toString());
+        return sb.toString();
     }
 }

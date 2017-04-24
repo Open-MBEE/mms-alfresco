@@ -190,10 +190,9 @@ public class CommitUtil {
 
         //Boolean initialCommit = pgh.isInitialCommit();
 
-        JSONObject ws2 = delta.getJSONObject("workspace2");
-        JSONArray added = ws2.optJSONArray("addedElements");
-        JSONArray updated = ws2.optJSONArray("updatedElements");
-        JSONArray deleted = ws2.optJSONArray("deletedElements");
+        JSONArray added = delta.getJSONObject("processed").optJSONArray("addedElements");
+        JSONArray updated = delta.getJSONObject("processed").optJSONArray("updatedElements");
+        JSONArray deleted = delta.getJSONObject("processed").optJSONArray("deletedElements");
         String creator = delta.getString("_creator");
 
         JSONObject jmsWorkspace = new JSONObject();
