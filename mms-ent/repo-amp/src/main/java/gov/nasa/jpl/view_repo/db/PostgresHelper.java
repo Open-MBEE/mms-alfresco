@@ -968,6 +968,17 @@ public class PostgresHelper {
         }
     }
 
+    public void resurrectNode(String sysmlId) {
+        try {
+            execUpdate(
+                "UPDATE \"nodes" + workspaceId + "\" SET deleted = " + false + " WHERE sysmlid = '" + sysmlId + "'");
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+    }
+
     public void insertEdge(String parentSysmlId, String childSysmlId, DbEdgeTypes edgeType) {
 
         insertEdge(parentSysmlId, childSysmlId, edgeType, null);

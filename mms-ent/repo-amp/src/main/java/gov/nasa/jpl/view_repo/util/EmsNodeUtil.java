@@ -681,7 +681,12 @@ public class EmsNodeUtil {
                 // Get originalNode if updated
                 o.put(Sjm.MODIFIER, user);
                 o.put(Sjm.MODIFIED, date);
-                foundElements.put(sysmlid, getNodeBySysmlid(sysmlid));
+                JSONObject updating = getNodeBySysmlid(sysmlid);
+                if (updating == null) {
+                    pgh.resurrectNode(sysmlid);
+                    updating = getNodeBySysmlid(sysmlid);
+                }
+                foundElements.put(sysmlid, updating);
             }
 
             if (added || updated) {
