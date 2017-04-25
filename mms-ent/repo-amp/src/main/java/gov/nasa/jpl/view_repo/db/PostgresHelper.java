@@ -518,7 +518,7 @@ public class PostgresHelper {
                 while (mounts.next()) {
                     mountPoints.add(mounts.getString(1));
                 }
-                project.put("mounts", mountPoints);
+                project.put(Sjm.MOUNTS, mountPoints);
                 result.add(project);
             }
 
@@ -553,7 +553,7 @@ public class PostgresHelper {
                 while (mounts.next()) {
                     mountPoints.add(mounts.getString(1));
                 }
-                result.put("mounts", mountPoints);
+                result.put(Sjm.MOUNTS, mountPoints);
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -961,6 +961,17 @@ public class PostgresHelper {
         try {
             execUpdate(
                 "UPDATE \"nodes" + workspaceId + "\" SET deleted = " + true + " WHERE sysmlid = '" + sysmlId + "'");
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+    }
+
+    public void resurrectNode(String sysmlId) {
+        try {
+            execUpdate(
+                "UPDATE \"nodes" + workspaceId + "\" SET deleted = " + false + " WHERE sysmlid = '" + sysmlId + "'");
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1550,11 +1561,11 @@ public class PostgresHelper {
 
             execUpdate("CREATE OR REPLACE FUNCTION get_children(integer, integer, text, integer)\n"
                 + "  returns table(id bigint) as $$\n" + "  begin\n" + "    return query\n" + "    execute '\n"
-                + "    with recursive children(depth, nid, path, cycle) as (\n"
-                + "      select 0 as depth, node.id, ARRAY[node.id], false from ' || format('nodes%s', $3) || '\n"
-                + "        node where node.id = ' || $1 || ' and deleted = false union\n"
-                + "      select (c.depth + 1) as depth, edge.child as nid, path || cast(edge.child as bigint) as path, edge.child = ANY(path) as cycle\n"
-                + "        from ' || format('edges%s', $3) || ' edge, children c where edge.parent = nid and\n"
+                + "    with recursive children(depth, nid, path, cycle, deleted) as (\n"
+                + "      select 0 as depth, node.id, ARRAY[node.id], false, node.deleted from ' || format('nodes%s', $3) || '\n"
+                + "        node where node.id = ' || $1 || ' union\n"
+                + "      select (c.depth + 1) as depth, edge.child as nid, path || cast(edge.child as bigint) as path, edge.child = ANY(path) as cycle, node.deleted as deleted \n"
+                + "        from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and \n"
                 + "        edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || ' \n" + "      )\n"
                 + "      select distinct nid from children;';\n" + "  end;\n" + "$$ language plpgsql;");
 

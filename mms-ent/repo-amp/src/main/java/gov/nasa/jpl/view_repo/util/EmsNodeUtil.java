@@ -120,9 +120,9 @@ public class EmsNodeUtil {
             JSONObject project = getNodeBySysmlid(n.get(Sjm.SYSMLID).toString());
             project.put("orgId", orgId);
             JSONArray mounts = new JSONArray();
-            List<String> mountsList = (ArrayList<String>) n.get("mounts");
+            List<String> mountsList = (ArrayList<String>) n.get(Sjm.MOUNTS);
             if (mountsList.size() > 0) {
-                mounts = new JSONArray(n.get("mounts"));
+                mounts = new JSONArray(n.get(Sjm.MOUNTS));
             }
             project.put("mounts", mounts);
             projects.put(project);
@@ -137,7 +137,7 @@ public class EmsNodeUtil {
             switchProject(project.get(Sjm.SYSMLID).toString());
             JSONObject proj = getNodeBySysmlid(project.get(Sjm.SYSMLID).toString());
             proj.put("orgId", project.get("orgId").toString());
-            List<String> mounts = (List) project.get("mounts");
+            List<String> mounts = (List) project.get(Sjm.MOUNTS);
             JSONArray projMounts = new JSONArray();
             mounts.forEach(projMounts::put);
             proj.put("mounts", projMounts);
@@ -153,7 +153,7 @@ public class EmsNodeUtil {
             switchProject(projectId);
             JSONObject proj = getNodeBySysmlid(projectId);
             proj.put("orgId", project.get("orgId").toString());
-            List<String> mounts = (List) project.get("mounts");
+            List<String> mounts = (List) project.get(Sjm.MOUNTS);
             JSONArray projMounts = new JSONArray();
             mounts.forEach(projMounts::put);
             proj.put("mounts", projMounts);
@@ -161,6 +161,38 @@ public class EmsNodeUtil {
             return proj;
         }
         return null;
+    }
+
+    public JSONObject getProjectWithFullMounts(String projectId, List<String> found) {
+        List<String> realFound = found;
+        if (realFound == null) {
+            realFound = new ArrayList<String>();
+        }
+        Map<String, Object> project = pgh.getProject(projectId);
+
+        if (!project.isEmpty() && !project.get(Sjm.SYSMLID).toString().contains("no_project")) {
+            switchProject(projectId);
+            JSONObject proj = getNodeBySysmlid(projectId);
+            proj.put("orgId", project.get("orgId").toString());
+            JSONArray mountObject = getFullMounts(proj.get(Sjm.SYSMLID).toString(), realFound);
+            proj.put(Sjm.MOUNTS, mountObject);
+            return proj;
+        }
+        return null;
+    }
+
+    public JSONArray getFullMounts(String project, List<String> found) {
+        found.add(project);
+        JSONArray mounts = new JSONArray();
+        pgh.getNodesByType(DbNodeTypes.MOUNT).forEach((mount) -> {
+            if (found.contains(mount.getSysmlId())) {
+                return;
+            }
+            JSONObject childProject = getProjectWithFullMounts(mount.getSysmlId(), found);
+            mounts.put(childProject);
+
+        });
+        return mounts;
     }
 
     public JSONObject getElementByElementAndCommitId(String commitId, String sysmlid) {
@@ -190,7 +222,11 @@ public class EmsNodeUtil {
     }
 
     private JSONObject getNodeBySysmlid(String sysmlid, String workspaceName) {
-        return getNodeBySysmlid(sysmlid, workspaceName, null);
+        return getNodeBySysmlid(sysmlid, workspaceName, null, true);
+    }
+
+    private JSONObject getNodeBySysmlid(String sysmlid, boolean withChildViews) {
+        return getNodeBySysmlid(sysmlid, workspaceName, null, withChildViews);
     }
 
     /**
@@ -201,7 +237,8 @@ public class EmsNodeUtil {
      * @param visited       Map of visited sysmlids when traversing to unravel childViews
      * @return
      */
-    private JSONObject getNodeBySysmlid(String sysmlid, String workspaceName, Map<String, JSONObject> visited) {
+
+    private JSONObject getNodeBySysmlid(String sysmlid, String workspaceName, Map<String, JSONObject> visited, boolean withChildViews) {
         if (!this.workspaceName.equals(workspaceName)) {
             switchWorkspace(workspaceName);
         }
@@ -221,7 +258,7 @@ public class EmsNodeUtil {
                     result.put(Sjm.PROJECTID, this.projectId);
                     result.put(Sjm.REFID, this.workspaceName);
                     visited.put(sysmlid, result);
-                    return addChildViews(result, visited);
+                    return withChildViews ? addChildViews(result, visited) : result;
                 }
             } catch (Exception e) {
                 logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -229,6 +266,7 @@ public class EmsNodeUtil {
         }
         return new JSONObject();
     }
+
 
     public JSONArray getNodesBySysmlids(Set<String> sysmlids) {
         List<String> elasticids = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids));
@@ -329,15 +367,19 @@ public class EmsNodeUtil {
     }
 
     public JSONArray getChildren(String sysmlid) {
-        return getChildren(sysmlid, null);
+        return getChildren(sysmlid, DbEdgeTypes.CONTAINMENT, null);
     }
 
     public JSONArray getChildren(String sysmlid, final Long maxDepth) {
+        return getChildren(sysmlid, DbEdgeTypes.CONTAINMENT, maxDepth);
+    }
+
+    public JSONArray getChildren(String sysmlid, DbEdgeTypes dbEdge, final Long maxDepth) {
         Set<String> children = new HashSet<>();
 
         int depth = maxDepth == null ? 100000 : maxDepth.intValue();
 
-        pgh.getChildren(sysmlid, DbEdgeTypes.CONTAINMENT, depth).forEach((childId) -> {
+        pgh.getChildren(sysmlid, dbEdge, depth).forEach((childId) -> {
             children.add(childId.second);
         });
 
@@ -373,22 +415,11 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public JSONArray search(String string) {
-        return search(string, null);
-    }
-
-    public JSONArray search(String string, List<String> filters) {
+    public JSONArray search(JSONObject query) {
         try {
-            if (filters != null && !filters.contains("*") && !filters.contains("all")) {
-                Map<String, String> terms = new HashMap<>();
-                for (String filter : filters) {
-                    terms.put(filter, string);
-                }
-                return filterResultsByWorkspace(eh.search(terms));
-            }
-            return filterResultsByWorkspace(eh.search(string));
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+            return eh.search(query);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return new JSONArray();
     }
@@ -616,7 +647,6 @@ public class EmsNodeUtil {
         for (int i = 0; i < elements.length(); i++) {
             JSONArray newElements = new JSONArray();
             JSONObject o = elements.getJSONObject(i);
-            reorderChildViews(o, newElements);
             String sysmlid = o.optString(Sjm.SYSMLID);
             if (sysmlid == null || sysmlid.equals("")) {
                 sysmlid = createId();
@@ -650,10 +680,16 @@ public class EmsNodeUtil {
                 // Get originalNode if updated
                 o.put(Sjm.MODIFIER, user);
                 o.put(Sjm.MODIFIED, date);
-                foundElements.put(sysmlid, getNodeBySysmlid(sysmlid));
+                JSONObject updating = getNodeBySysmlid(sysmlid);
+                if (!updating.has(Sjm.SYSMLID)) {
+                    pgh.resurrectNode(sysmlid);
+                    updating = getNodeBySysmlid(sysmlid);
+                }
+                foundElements.put(sysmlid, updating);
             }
 
             if (added || updated) {
+                reorderChildViews(o, newElements);
                 elements.put(i, o);
             }
 
@@ -958,6 +994,8 @@ public class EmsNodeUtil {
                 element.put(Sjm.OWNEDATTRIBUTEIDS, ownedAttributes);
             }
         }
+
+        element.remove(Sjm.CHILDVIEWS);
 
         return element;
     }
@@ -1287,7 +1325,7 @@ public class EmsNodeUtil {
         JSONObject existing;
 
         if (json.has(Sjm.SYSMLID)) {
-            existing = getNodeBySysmlid(json.getString(Sjm.SYSMLID));
+            existing = getNodeBySysmlid(json.getString(Sjm.SYSMLID), false);
             if (existing.has(Sjm.SYSMLID)) {
                 mergeJson(json, existing);
             }

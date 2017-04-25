@@ -39,6 +39,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -54,16 +56,15 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
+import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
 
 /**
  * Model search service that returns a JSONArray of elements
  *
  * @author cinyoung
- *
  */
-public class ModelSearch extends ModelGet {
+public class ModelSearch extends ModelPost {
     static Logger logger = Logger.getLogger(ModelSearch.class);
 
     public ModelSearch() {
@@ -74,30 +75,45 @@ public class ModelSearch extends ModelGet {
         super(repositoryHelper, registry);
     }
 
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
+    @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         ModelSearch instance = new ModelSearch(repository, getServices());
         return instance.executeImplImpl(req, status, cache);
     }
 
-    @Override
-    protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
+    @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         printHeader(user, logger, req);
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
 
+
         try {
             JSONObject top = new JSONObject();
             JSONArray elementsJson = executeSearchRequest(req, top);
-            top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
-
-            if (prettyPrint) {
-                model.put("res", top.toString(4));
+            //        {
+            //            "id": documentId,
+            //            "projectId": projectId of document,
+            //            "name": name of document,
+            //            "refId": refid of document
+            //            "_views": [
+            //            {"name": name of view, "id": id of view, "refid": refid of view, "projectId": projectId of view] }
+            // :TODO
+            // 1) filter out/ mounts logic -- this is already done by projectsGet
+            // 2) getChildren in postgresHelper with edge type and depth (view or childview)
+            // 3) Do this twice once for view and once for childview
+            // 4) not reporting 404 on empty return
+            // paginate results
+            top.put("elements", filterByPermission(elementsJson, req));
+            if (top.length() == 0) {
+                responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
             } else {
-                model.put("res", top);
+                top.put("elements", filterByPermission(elementsJson, req));
             }
+            if (!Utils.isNullOrEmpty(response.toString())) {
+                top.put("message", response.toString());
+            }
+            model.put("res", top.toString());
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not create the JSON response");
             model.put("res", createResponseJson());
@@ -118,16 +134,18 @@ public class ModelSearch extends ModelGet {
         WorkspaceNode workspace = getWorkspace(req);
         String projectId = getProjectId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
-        String keyword = req.getParameter("keyword");
-        String filters = req.getParameter("filters");
-        if (filters != null) {
-            List<String> filterArray = Arrays.asList(filters.split(","));
-            elasticResult = emsNodeUtil.search(keyword, filterArray);
+        JSONObject json = (JSONObject) req.parseContent();
+        //String keyword = req.getParameter("keyword");
+        elasticResult = emsNodeUtil.search(json);
+        if (elasticResult.length() > 0) {
+            for (int i = 0; i < elasticResult.length(); i++) {
+                JSONArray views = emsNodeUtil.getChildren(elasticResult.getJSONObject(i).getString(
+                    Sjm.ELASTICID), DbEdgeTypes.VIEW, (long) 0);
+                elasticResult.getJSONObject(i).put("_views", views);
+                elements.put(elasticResult.getJSONObject(i));
+            }
         } else {
-            elasticResult = emsNodeUtil.search(keyword);
-        }
-        for(int i = 0; i < elasticResult.length(); i++){
-            elements.put(elasticResult.getJSONObject(i));
+
         }
 
         return elements;

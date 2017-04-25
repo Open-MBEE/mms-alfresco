@@ -364,7 +364,9 @@ public class CommitUtil {
                             } else {
                                 // look up the property in db to get aggregation type
                                 Node ownedAttributeNode = pgh.getNodeFromSysmlId(ownedAttributeId);
-                                ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                if (ownedAttributeNode != null) {
+                                    ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                }
                                 if (ownedAttribute != null) {
                                     if (ownedAttribute.has("aggregation")) {
                                         attr.put("aggregation", ownedAttribute.getString("aggregation"));
@@ -376,7 +378,9 @@ public class CommitUtil {
                             } else {
                                 if (ownedAttribute == null) {
                                     Node ownedAttributeNode = pgh.getNodeFromSysmlId(ownedAttributeId);
-                                    ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                    if (ownedAttributeNode != null) {
+                                        ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                    }
                                 }
                                 if (ownedAttribute != null && ownedAttribute.has(Sjm.TYPEID)) {
                                     attr.put(Sjm.TYPEID, ownedAttribute.getString(Sjm.TYPEID));
@@ -597,9 +601,9 @@ public class CommitUtil {
         // have to create a new node for the holding bin?? and also put a corresponding element in
         // elastic
 
-        branchJson.put("sourceWorkspace", src); // branch
+        branchJson.put("sourceRef", src); // branch
         // source
-        branchJson.put("createdWorkspace", created); // created
+        branchJson.put("createdRef", created); // created
 
         String srcId = src.optString(Sjm.SYSMLID);
 
@@ -613,7 +617,7 @@ public class CommitUtil {
             e.printStackTrace();
         }
 
-        return sendJmsMsg(branchJson, TYPE_BRANCH, null, null);
+        return sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
     }
 
     public static JSONObject getWorkspaceDetails(EmsScriptNode ws, Date date) {

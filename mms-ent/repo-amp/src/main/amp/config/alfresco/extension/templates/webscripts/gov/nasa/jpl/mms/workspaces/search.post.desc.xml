@@ -5,7 +5,7 @@
     <description>
     Search workspace for provided keywords
     </description>
-    <url>/projects/{projectId}/refs/{refId}/search?keyword={keyword}</url>
+    <url>/projects/{projectId}/refs/{refId}/search</url>
     <format default="json">argument</format>
     <authentication>user</authentication>
     <transaction>required</transaction>
