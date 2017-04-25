@@ -647,7 +647,6 @@ public class EmsNodeUtil {
         for (int i = 0; i < elements.length(); i++) {
             JSONArray newElements = new JSONArray();
             JSONObject o = elements.getJSONObject(i);
-            reorderChildViews(o, newElements);
             String sysmlid = o.optString(Sjm.SYSMLID);
             if (sysmlid == null || sysmlid.equals("")) {
                 sysmlid = createId();
@@ -682,7 +681,7 @@ public class EmsNodeUtil {
                 o.put(Sjm.MODIFIER, user);
                 o.put(Sjm.MODIFIED, date);
                 JSONObject updating = getNodeBySysmlid(sysmlid);
-                if (updating == null) {
+                if (!updating.has(Sjm.SYSMLID)) {
                     pgh.resurrectNode(sysmlid);
                     updating = getNodeBySysmlid(sysmlid);
                 }
@@ -690,6 +689,7 @@ public class EmsNodeUtil {
             }
 
             if (added || updated) {
+                reorderChildViews(o, newElements);
                 elements.put(i, o);
             }
 
