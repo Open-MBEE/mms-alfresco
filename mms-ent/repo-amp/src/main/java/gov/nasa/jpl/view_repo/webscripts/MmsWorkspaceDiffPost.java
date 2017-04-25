@@ -234,7 +234,7 @@ public class MmsWorkspaceDiffPost extends ModelPost {
                 }
 
 
-                top.put( "elements", elements );
+                top.put( Sjm.ELEMENTS, elements );
 
                 // TODO
                 Set<EmsScriptNode> updatedElements = null;//handleUpdate( top, status, targetWs, false, false,

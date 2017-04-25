@@ -40,6 +40,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
@@ -62,6 +64,7 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -120,7 +123,7 @@ public class ModelPost extends AbstractJavaWebScript {
     @Override
     protected Map<String, Object> executeImplImpl(final WebScriptRequest req, final Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        //printHeader(user, logger, req);
+        printHeader(user, logger, req, true);
         Timer timer = new Timer();
 
         Map<String, Object> result = null;
@@ -137,49 +140,30 @@ public class ModelPost extends AbstractJavaWebScript {
         return result;
     }
 
-    private JSONObject getPostJson(boolean jsonNotK, Object content, String expressionString) throws JSONException {
-        if (!jsonNotK) {
-            // TODO
-        } else {
-            if (content instanceof JSONObject) {
-                return (JSONObject) content;
-            } else if (content instanceof String) {
-                return new JSONObject((String) content);
-            }
-        }
-
-        return new JSONObject();
-    }
-
     protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user, String contentType) {
         JSONObject commit = new JSONObject();
         JSONObject newElementsObject = new JSONObject();
-        boolean jsonNotK = !contentType.contains("application/k");
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
-        String expressionString = req.getParameter("expression");
         WorkspaceNode myWorkspace = getWorkspace(req, user);
-
-        boolean nodesOnly = Boolean.parseBoolean(req.getParameter("nodes"));
-        boolean edgesOnly = !nodesOnly && Boolean.parseBoolean(req.getParameter("edges"));
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> model = new HashMap<>();
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         try {
 
-            JSONObject postJson = getPostJson(true, !jsonNotK ? req.getContent().getContent() : req.parseContent(), expressionString);
+            JSONObject postJson = new JSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             //logger.debug(String.format("ModelPost processing %d elements.", elements.length()));
 
             Map<String, JSONObject> foundElements = new HashMap<>();
             Map<String, String> foundParentElements = new HashMap<>();
 
-            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(emsNodeUtil.populateElements(postJson.getJSONArray("elements")), myWorkspace), user, foundElements, edgesOnly), foundParentElements);
+            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(emsNodeUtil.populateElements(postJson.getJSONArray(Sjm.ELEMENTS)), myWorkspace), user, foundElements), foundParentElements);
 
-            JSONObject formattedCommit = emsNodeUtil.processCommit(results, user, foundElements, foundParentElements, edgesOnly);
+            JSONObject formattedCommit = emsNodeUtil.processCommit(results, user, foundElements, foundParentElements);
             // this logic needs to be fixed because emsNodesUtil does not pass a formatted commit
             emsNodeUtil.insertCommitIntoElastic(formattedCommit);
             String commitResults = formattedCommit.getJSONObject("commit").getString(Sjm.ELASTICID);
@@ -189,29 +173,39 @@ public class ModelPost extends AbstractJavaWebScript {
             results = emsNodeUtil.addCommitId(results, commitResults);
 
             // :TODO this object is not the formatted commit object
-            commit.put("workspace2", results);
-            commit.put("_creator", user);
+            commit.put("processed", results);
+            commit.put(Sjm.CREATOR, user);
 
-            CommitUtil.sendDeltas(commit, commitResults, projectId, myWorkspace == null ? null : myWorkspace.getId(),
-                requestSourceApplication, nodesOnly, edgesOnly);
+            if (CommitUtil.sendDeltas(commit, commitResults, projectId, refId, requestSourceApplication)) {
 
-            Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
+                Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
 
-            newElementsObject
-                .put("elements", extended ? emsNodeUtil.addExtendedInformation(results.getJSONArray("newElements")) : results.getJSONArray("newElements"));
-            newElementsObject.put("commitId", commitResults);
-            newElementsObject.put("_timestamp", commitObject.get("timestamp"));
-            newElementsObject.put("_creator", user);
-            // Timestamp needs to be ISO format
-            result.put("res", newElementsObject.toString(4));
+                newElementsObject.put(Sjm.ELEMENTS, extended ?
+                    emsNodeUtil.addExtendedInformation(results.getJSONArray("newElements")) :
+                    results.getJSONArray("newElements"));
+                newElementsObject.put(Sjm.COMMITID, commitResults);
+                newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
+                newElementsObject.put(Sjm.CREATOR, user);
+                // Timestamp needs to be ISO format
 
-            status.setCode(responseStatus.getCode());
+                if (prettyPrint) {
+                    model.put("res", newElementsObject.toString(4));
+                } else {
+                    model.put("res", newElementsObject);
+                }
+
+                status.setCode(responseStatus.getCode());
+            } else {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
+                status.setCode(HttpServletResponse.SC_BAD_REQUEST);
+                model.put("res", createResponseJson());
+            }
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        return result;
+        return model;
     }
 
     protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user, String contentType) {
@@ -248,16 +242,16 @@ public class ModelPost extends AbstractJavaWebScript {
                 // Get the artifact name from the url:
                 String artifactIdPath = getArtifactId(req);
 
-                logger.error("ArtifactIdPath: " + artifactIdPath);
-                logger.error("Content: " + content);
-                logger.error("Header: " + req.getHeader("Content-Type"));
+                logger.debug("ArtifactIdPath: " + artifactIdPath);
+                logger.debug("Content: " + content);
+                logger.debug("Header: " + req.getHeader("Content-Type"));
 
                 if (artifactIdPath != null) {
                     int lastIndex = artifactIdPath.lastIndexOf("/");
 
                     if (artifactIdPath.length() > (lastIndex + 1)) {
 
-                        path = lastIndex != -1 ? artifactIdPath.substring(0, lastIndex) : "";
+                        path = projectId + "/refs/" + refId + "/" + (lastIndex != -1 ? artifactIdPath.substring(0, lastIndex) : "");
                         artifactId = lastIndex != -1 ? artifactIdPath.substring(lastIndex + 1) : artifactIdPath;
                         logger.error("artifactId: " + artifactId);
 
@@ -350,7 +344,7 @@ public class ModelPost extends AbstractJavaWebScript {
         return model;
     }
 
-    protected Path saveSvgToFilesystem(String artifactId, String extension, String content) throws Throwable {
+    protected static Path saveSvgToFilesystem(String artifactId, String extension, String content) throws Throwable {
         byte[] svgContent = content.getBytes(Charset.forName("UTF-8"));
         File tempDir = TempFileProvider.getTempDir();
         Path svgPath = Paths.get(tempDir.getAbsolutePath(), String.format("%s%s", artifactId, extension));
@@ -365,7 +359,7 @@ public class ModelPost extends AbstractJavaWebScript {
         }
     }
 
-    protected Path svgToPng(Path svgPath) throws Throwable {
+    protected static Path svgToPng(Path svgPath) throws Throwable {
         Path pngPath = Paths.get(svgPath.toString().replace(".svg", ".png"));
         try (OutputStream png_ostream = new FileOutputStream(pngPath.toString());) {
             String svg_URI_input = svgPath.toUri().toURL().toString();
@@ -379,7 +373,7 @@ public class ModelPost extends AbstractJavaWebScript {
         return pngPath;
     }
 
-    protected void synchSvgAndPngVersions(EmsScriptNode svgNode, EmsScriptNode pngNode) {
+    protected static void synchSvgAndPngVersions(EmsScriptNode svgNode, EmsScriptNode pngNode) {
         Version svgVer = svgNode.getCurrentVersion();
         String svgVerLabel = svgVer.getVersionLabel();
         Double svgVersion = Double.parseDouble(svgVerLabel);
@@ -402,10 +396,6 @@ public class ModelPost extends AbstractJavaWebScript {
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        if (!checkRequestContent(req)) {
-            return false;
-        }
-
         String elementId = req.getServiceMatch().getTemplateVars().get("elementid");
         if (elementId != null) {
             // TODO - move this to ViewModelPost - really non hierarchical post
@@ -414,6 +404,6 @@ public class ModelPost extends AbstractJavaWebScript {
             }
         }
 
-        return true;
+        return checkRequestContent(req);
     }
 }

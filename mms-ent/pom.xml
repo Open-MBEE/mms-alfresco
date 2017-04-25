@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>gov.nasa.jpl.mbee</groupId>
     <artifactId>mms-ent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>3.0.0-rc1</version>
     <name>Alfresco Repository and Share Quickstart with database and an embedded Tomcat runner.</name>
     <description>This All-in-One project allows to manage all the components involved in Alfresco development (Repo, Share, Solr4, AMPs) in one project
     </description>
@@ -17,7 +17,7 @@
         <!-- The following are default values for data location, Alfresco Community
             version, and Records Management Module version. Uncomment if you need to
             change (Note. current default version for Enterprise edition is 5.0.1) -->
-        <alfresco.version>5.0.1</alfresco.version>
+        <alfresco.version>5.0.d</alfresco.version>
         <alfresco.rm.version>2.3</alfresco.rm.version>
         <alfresco.data.location>alf_data_dev</alfresco.data.location>
 

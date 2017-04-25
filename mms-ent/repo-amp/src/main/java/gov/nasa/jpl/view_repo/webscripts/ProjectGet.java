@@ -111,7 +111,7 @@ public class ProjectGet extends AbstractJavaWebScript {
         if (json == null) {
             model.put("res", createResponseJson());
         } else {
-            model.put("res", NodeUtil.jsonToString( json ));
+            model.put("res", json);
         }
         status.setCode(responseStatus.getCode());
 

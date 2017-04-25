@@ -40,6 +40,7 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
+import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 
 public class ProductGet extends AbstractJavaWebScript {
@@ -93,7 +94,7 @@ public class ProductGet extends AbstractJavaWebScript {
 
             JSONArray elements = ViewGet.handleGetElement(productId, projectId, workspace, gettingDisplayedElements,
                             gettingContainedViews, recurse);
-            model.put(gettingDisplayedElements ? "elements" : (gettingContainedViews ? "views" : "products"), elements);
+            model.put(gettingDisplayedElements ? Sjm.ELEMENTS : (gettingContainedViews ? "views" : "products"), elements);
 
             res.put("res", model);
 

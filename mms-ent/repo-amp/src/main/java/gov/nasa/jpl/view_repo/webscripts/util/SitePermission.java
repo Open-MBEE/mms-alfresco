@@ -132,8 +132,9 @@ public class SitePermission {
     public static boolean hasPermission(String orgId, JSONObject element, String projectId, String refId, String commitId,
                     Permission permission, StringBuffer response, Map<String, Map<Permission, Boolean>> permCache) {
         boolean hasPerm = false;
+        boolean isTag = isTag(projectId, refId);
 
-        if (isAdmin()) {
+        if (isAdmin() && !isTag) {
             return true;
         }
 
@@ -152,7 +153,7 @@ public class SitePermission {
                         if (siteNode == null) {
                             return false;
                         } else {
-                            EmsScriptNode targetNode = siteNode.childByNamePath("/" + projectId + (refId != null ? "/" + refId : ""));
+                            EmsScriptNode targetNode = siteNode.childByNamePath("/" + projectId + (refId != null ? "/refs/" + refId : ""));
 
                             if (targetNode == null) {
                                 targetNode = siteNode;
@@ -175,7 +176,7 @@ public class SitePermission {
                                     hasPerm = permCache.get(targetId).get(Permission.WRITE);
                                 } else {
                                     Map<Permission, Boolean> permMap = new HashMap<>();
-                                    if (isConfiguration(projectId, refId)) {
+                                    if (isTag) {
                                         return false;
                                     } else {
                                         hasPerm = siteNode.checkPermissions("Write");
@@ -226,7 +227,7 @@ public class SitePermission {
         return emsNodeUtil.getNodeBySysmlid(elem.optString(Sjm.SYSMLID));
     }
 
-    protected static boolean isConfiguration(String projectId, String refId) {
+    protected static boolean isTag(String projectId, String refId) {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         return emsNodeUtil.isTag();
     }

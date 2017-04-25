@@ -9,7 +9,7 @@
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
         <artifactId>mms-ent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>3.0.0-rc1</version>
     </parent>
 
     <properties>
@@ -49,10 +49,10 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
                     <!-- Here is can control the order of overlay of your (WAR, AMP, etc.) dependencies
-                        | NOTE: At least one WAR dependency must be uncompressed first 
-                        | NOTE: In order to have a dependency effectively added to the WAR you need to 
-                        | explicitly mention it in the overlay section. 
-                        | NOTE: First-win resource strategy is used by the WAR plugin 
+                        | NOTE: At least one WAR dependency must be uncompressed first
+                        | NOTE: In order to have a dependency effectively added to the WAR you need to
+                        | explicitly mention it in the overlay section.
+                        | NOTE: First-win resource strategy is used by the WAR plugin
                         -->
                     <overlays>
                         <!-- The current project customizations -->

@@ -164,33 +164,35 @@ public class CommitUtil {
         return element.has(Sjm.ISSITE) && element.getBoolean(Sjm.ISSITE);
     }
 
-    private static void bulkElasticEntry(JSONArray elements, String operation) {
+    private static boolean bulkElasticEntry(JSONArray elements, String operation) {
         if (elements.length() > 0) {
             try {
-                String bulkEntry = eh.bulkIndexElements(elements, operation);
-                if (!bulkEntry.equals("1")) {
-                    logger.warn(String.format("%s", bulkEntry));
+                boolean bulkEntry = eh.bulkIndexElements(elements, operation);
+                if (!bulkEntry) {
+                    return false;
                 }
             } catch (IOException e) {
                 logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+                return false;
             }
         }
+
+        return true;
     }
 
-    private static void processDeltasForDb(JSONObject delta, String commitElasticId, String projectId,
-        String workspaceId, boolean nodesOnly, boolean edgesOnly, JSONObject jmsPayload) {
+    private static boolean processDeltasForDb(JSONObject delta, String commitElasticId, String projectId,
+        String workspaceId, JSONObject jmsPayload) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
         PostgresHelper pgh = new PostgresHelper();
         pgh.setProject(projectId);
         pgh.setWorkspace(workspaceId);
 
-        Boolean initialCommit = pgh.isInitialCommit();
+        //Boolean initialCommit = pgh.isInitialCommit();
 
-        JSONObject ws2 = delta.getJSONObject("workspace2");
-        JSONArray added = ws2.optJSONArray("addedElements");
-        JSONArray updated = ws2.optJSONArray("updatedElements");
-        JSONArray deleted = ws2.optJSONArray("deletedElements");
+        JSONArray added = delta.getJSONObject("processed").optJSONArray("addedElements");
+        JSONArray updated = delta.getJSONObject("processed").optJSONArray("updatedElements");
+        JSONArray deleted = delta.getJSONObject("processed").optJSONArray("deletedElements");
         String creator = delta.getString("_creator");
 
         JSONObject jmsWorkspace = new JSONObject();
@@ -205,35 +207,32 @@ public class CommitUtil {
         List<Pair<String, String>> addEdges = new ArrayList<>();
         Map<String, List<Pair<String, String>>> addChildViews = new HashMap<>();
         List<Pair<String, String>> documentEdges = new ArrayList<>();
-        if (!edgesOnly) {
-                bulkElasticEntry(added, "added");
-                bulkElasticEntry(updated, "updated");
-                bulkElasticEntry(deleted, "deleted");
-        }
 
-        try {
-            List<Pair<String, String>> plist = new ArrayList<>();
+        if (bulkElasticEntry(added, "added") && bulkElasticEntry(updated, "updated") && bulkElasticEntry(deleted, "deleted")) {
 
-            List<Map<String, String>> nodeInserts = new ArrayList<>();
-            List<Map<String, String>> edgeInserts = new ArrayList<>();
-            List<Map<String, String>> nodeUpdates = new ArrayList<>();
+            try {
+                List<Pair<String, String>> plist = new ArrayList<>();
 
-            List<String> edgePropQueries = new ArrayList<>();
+                List<Map<String, String>> nodeInserts = new ArrayList<>();
+                List<Map<String, String>> edgeInserts = new ArrayList<>();
+                List<Map<String, String>> nodeUpdates = new ArrayList<>();
 
-            for (int i = 0; i < added.length(); i++) {
-                JSONObject e = added.getJSONObject(i);
-                Map<String, String> node = new HashMap<>();
-                jmsAdded.put(e.getString(Sjm.SYSMLID));
-                affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
-                int nodeType = getNodeType(e).getValue();
+                List<String> edgePropQueries = new ArrayList<>();
 
-                if (e.has(Sjm.ELASTICID) && !edgesOnly) {
-                    node.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
-                    node.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
-                    node.put("nodetype", Integer.toString(nodeType));
-                    nodeInserts.add(node);
-                }
-                if (!nodesOnly) {
+                for (int i = 0; i < added.length(); i++) {
+                    JSONObject e = added.getJSONObject(i);
+                    Map<String, String> node = new HashMap<>();
+                    jmsAdded.put(e.getString(Sjm.SYSMLID));
+                    affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
+                    int nodeType = getNodeType(e).getValue();
+
+                    if (e.has(Sjm.ELASTICID)) {
+                        node.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
+                        node.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
+                        node.put("nodetype", Integer.toString(nodeType));
+                        node.put("initialcommit", e.getString(Sjm.ELASTICID));
+                        nodeInserts.add(node);
+                    }
                     if (e.has(Sjm.OWNERID) && e.getString(Sjm.OWNERID) != null && e.getString(Sjm.SYSMLID) != null) {
                         Pair<String, String> p = new Pair<>(e.getString(Sjm.OWNERID), e.getString(Sjm.SYSMLID));
                         addEdges.add(p);
@@ -262,32 +261,29 @@ public class CommitUtil {
                     if (e.has(Sjm.OWNEDATTRIBUTEIDS)) {
                         JSONArray ownedAttributes = e.getJSONArray(Sjm.OWNEDATTRIBUTEIDS);
                         for (int ii = 0; ii < ownedAttributes.length(); ii++) {
-                            Pair<String, String> p =
-                                new Pair<>(e.getString(Sjm.SYSMLID), ownedAttributes.getString(ii));
+                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), ownedAttributes.getString(ii));
                             plist.add(p);
                         }
                     }
                 }
-            }
-            addChildViews.put("added", plist);
+                addChildViews.put("added", plist);
 
-            for (int i = 0; i < deleted.length(); i++) {
-                JSONObject e = deleted.getJSONObject(i);
-                jmsDeleted.put(e.getString(Sjm.SYSMLID));
-                pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
-                pgh.deleteNode(e.getString(Sjm.SYSMLID));
-                affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
-            }
+                for (int i = 0; i < deleted.length(); i++) {
+                    JSONObject e = deleted.getJSONObject(i);
+                    jmsDeleted.put(e.getString(Sjm.SYSMLID));
+                    pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
+                    pgh.deleteNode(e.getString(Sjm.SYSMLID));
+                    affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
+                }
 
-            List<Pair<String, String>> updatedPlist = new ArrayList<>();
-            for (int i = 0; i < updated.length(); i++) {
-                JSONObject e = updated.getJSONObject(i);
-                jmsUpdated.put(e.getString(Sjm.SYSMLID));
-                affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
-                int nodeType = getNodeType(e).getValue();
-                pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
+                List<Pair<String, String>> updatedPlist = new ArrayList<>();
+                for (int i = 0; i < updated.length(); i++) {
+                    JSONObject e = updated.getJSONObject(i);
+                    jmsUpdated.put(e.getString(Sjm.SYSMLID));
+                    affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
+                    int nodeType = getNodeType(e).getValue();
+                    pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
 
-                if (!nodesOnly) {
                     if (e.has(Sjm.OWNERID) && e.getString(Sjm.OWNERID) != null && e.getString(Sjm.SYSMLID) != null) {
                         Pair<String, String> p = new Pair<>(e.getString(Sjm.OWNERID), e.getString(Sjm.SYSMLID));
                         addEdges.add(p);
@@ -316,18 +312,17 @@ public class CommitUtil {
                             updatedPlist.add(p);
                         }
                     }
+                    if (e.has(Sjm.ELASTICID)) {
+                        Map<String, String> updatedNode = new HashMap<>();
+                        updatedNode.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
+                        updatedNode.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
+                        updatedNode.put("nodetype", Integer.toString(getNodeType(e).getValue()));
+                        updatedNode.put("deleted", "false");
+                        nodeUpdates.add(updatedNode);
+                    }
                 }
-                if (e.has(Sjm.ELASTICID) && !edgesOnly) {
-                    Map<String, String> updatedNode = new HashMap<>();
-                    updatedNode.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
-                    updatedNode.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
-                    updatedNode.put("nodetype", Integer.toString(getNodeType(e).getValue()));
-                    nodeUpdates.add(updatedNode);
-                }
-            }
-            addChildViews.put("updated", updatedPlist);
+                addChildViews.put("updated", updatedPlist);
 
-            if (!nodesOnly) {
                 for (Pair<String, String> e : addEdges) {
                     Map<String, String> edge = new HashMap<>();
                     edge.put("parent", e.first);
@@ -335,9 +330,7 @@ public class CommitUtil {
                     edge.put("edgetype", Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
                     edgeInserts.add(edge);
                 }
-            }
 
-            if (!nodesOnly) {
                 for (Pair<String, String> e : documentEdges) {
                     Map<String, String> edge = new HashMap<>();
                     edge.put("parent", e.first);
@@ -345,15 +338,13 @@ public class CommitUtil {
                     edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
                     edgeInserts.add(edge);
                 }
-            }
 
-            // process any changes to childViews
-            Set<String> childViewKeys = new HashSet<>();
-            childViewKeys.add("added");
-            childViewKeys.add("updated");
+                // process any changes to childViews
+                Set<String> childViewKeys = new HashSet<>();
+                childViewKeys.add("added");
+                childViewKeys.add("updated");
 
-            try {
-                if (!nodesOnly) {
+                try {
                     Set<String> clearedViewIds = new HashSet<>();
                     for (String childViewKey : childViewKeys) {
                         for (int i = 0; i < addChildViews.get(childViewKey).size(); i++) {
@@ -373,7 +364,9 @@ public class CommitUtil {
                             } else {
                                 // look up the property in db to get aggregation type
                                 Node ownedAttributeNode = pgh.getNodeFromSysmlId(ownedAttributeId);
-                                ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                if (ownedAttributeNode != null) {
+                                    ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                }
                                 if (ownedAttribute != null) {
                                     if (ownedAttribute.has("aggregation")) {
                                         attr.put("aggregation", ownedAttribute.getString("aggregation"));
@@ -385,7 +378,9 @@ public class CommitUtil {
                             } else {
                                 if (ownedAttribute == null) {
                                     Node ownedAttributeNode = pgh.getNodeFromSysmlId(ownedAttributeId);
-                                    ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                    if (ownedAttributeNode != null) {
+                                        ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                    }
                                 }
                                 if (ownedAttribute != null && ownedAttribute.has(Sjm.TYPEID)) {
                                     attr.put(Sjm.TYPEID, ownedAttribute.getString(Sjm.TYPEID));
@@ -408,46 +403,48 @@ public class CommitUtil {
                             edgeInserts.add(edge);
                         }
                     }
-                }
-                Savepoint sp = null;
-                try {
-                    sp = pgh.startTransaction();
-                    if (!edgesOnly) {
+                    Savepoint sp = null;
+                    try {
+                        sp = pgh.startTransaction();
                         pgh.runBulkQueries(nodeInserts, "nodes");
                         pgh.commitTransaction();
                         pgh.startTransaction();
-                    }
-                    if (!nodesOnly) {
                         pgh.runBulkQueries(edgeInserts, "edges");
                         pgh.runBulkQueries(edgePropQueries, true);
-                    }
-                    if (!edgesOnly) {
                         pgh.runBulkQueries(nodeUpdates, "updates");
+                        pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, affectedSysmlIds);
+                        /*
+                        if (initialCommit) {
+                            pgh.updateBySysmlIds("nodes", "initialCommit", commitElasticId, affectedSysmlIds);
+                        }
+                        */
+                        pgh.commitTransaction();
+                        pgh.cleanEdges();
+                        pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
+                    } catch (Exception e) {
+                        try {
+                            pgh.rollBackToSavepoint(sp);
+                        } catch (SQLException se) {
+                            logger.error(String.format("%s", LogUtil.getStackTrace(se)));
+                            return false;
+                        }
+                        logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                     }
-                    pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, affectedSysmlIds);
-                    if(initialCommit) {
-                        pgh.updateBySysmlIds("nodes", "initialCommit", commitElasticId, affectedSysmlIds);
-                    }
-                    pgh.commitTransaction();
-                    pgh.cleanEdges();
-                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
-                } catch (Exception e) {
-                    try {
-                        pgh.rollBackToSavepoint(sp);
-                    } catch (SQLException se) {
-                        logger.error(String.format("%s", LogUtil.getStackTrace(se)));
-                    }
-                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                } catch (IOException e) {
+                    logger.error("Could not open elastic helper");
+                    e.printStackTrace();
+                    return false;
                 }
-            } catch (IOException e) {
-                logger.error("Could not open elastic helper");
-                e.printStackTrace();
-            }
-            // TODO: Add in the Alfresco Site creation based on type=SiteAndPackage
+                // TODO: Add in the Alfresco Site creation based on type=SiteAndPackage
 
-        } catch (Exception e1) {
-            logger.warn("Could not complete graph storage");
-            e1.printStackTrace();
+            } catch (Exception e1) {
+                logger.warn("Could not complete graph storage");
+                e1.printStackTrace();
+                return false;
+            }
+        } else {
+            logger.error("Elasticsearch insert error occurred");
+            return false;
         }
 
         jmsWorkspace.put("addedElements", jmsAdded);
@@ -455,6 +452,8 @@ public class CommitUtil {
         jmsWorkspace.put("deletedElements", jmsDeleted);
 
         jmsPayload.put("refs", jmsWorkspace);
+
+        return true;
     }
 
     /**
@@ -468,7 +467,7 @@ public class CommitUtil {
      * @throws JSONException
      */
     public static boolean sendDeltas(JSONObject deltaJson, String commitElasticId, String projectId, String workspaceId,
-        String source, boolean nodesOnly, boolean edgesOnly) throws JSONException {
+        String source) throws JSONException {
         boolean jmsStatus;
 
         JSONObject jmsPayload = new JSONObject();
@@ -479,15 +478,17 @@ public class CommitUtil {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        processDeltasForDb(deltaJson, commitElasticId, projectId, workspaceId, nodesOnly, edgesOnly, jmsPayload);
+        if (!processDeltasForDb(deltaJson, commitElasticId, projectId, workspaceId, jmsPayload)) {
+            return false;
+        }
 
         if (source != null) {
             jmsPayload.put("source", source);
         }
 
-        jmsStatus = sendJmsMsg(jmsPayload, TYPE_DELTA, workspaceId, projectId);
+        sendJmsMsg(jmsPayload, TYPE_DELTA, workspaceId, projectId);
 
-        return jmsStatus;
+        return true;
     }
 
     public static void sendOrganizationDelta(String orgId, String orgName, String user) {
@@ -581,7 +582,7 @@ public class CommitUtil {
                 elementsArray.put(projectHoldingBin);
                 elementsArray.put(viewInstanceBin);
                 addedElements.put("addedElements", elementsArray);
-                jmsMsg.put("workspace2", addedElements);
+                jmsMsg.put("createdProject", addedElements);
                 jmsMsg.put("source", "mms");
                 sendJmsMsg(jmsMsg, TYPE_DELTA, null, projectSysmlid);
             }
@@ -600,9 +601,9 @@ public class CommitUtil {
         // have to create a new node for the holding bin?? and also put a corresponding element in
         // elastic
 
-        branchJson.put("sourceWorkspace", src); // branch
+        branchJson.put("sourceRef", src); // branch
         // source
-        branchJson.put("createdWorkspace", created); // created
+        branchJson.put("createdRef", created); // created
 
         String srcId = src.optString(Sjm.SYSMLID);
 
@@ -616,7 +617,7 @@ public class CommitUtil {
             e.printStackTrace();
         }
 
-        return sendJmsMsg(branchJson, TYPE_BRANCH, null, null);
+        return sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
     }
 
     public static JSONObject getWorkspaceDetails(EmsScriptNode ws, Date date) {

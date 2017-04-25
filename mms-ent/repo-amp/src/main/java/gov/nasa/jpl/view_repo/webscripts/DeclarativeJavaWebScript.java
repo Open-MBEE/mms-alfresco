@@ -183,7 +183,9 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     }
 
                     // render response according to requested format
-                    renderFormatTemplate(format, templateModel, res.getWriter());
+                    if (templateModel.containsKey("res") && templateModel.get("res") != null) {
+                        res.getWriter().write(templateModel.get("res").toString());
+                    }
 
                     if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null) {
                         // NOTE: special case for wrapping JSON results in a javascript function callback
@@ -388,7 +390,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(permissionType)) {
             hasPerm = permCache.get(siteId).get(permissionType);
         } else {
-            hasPerm = SitePermission.hasPermission(siteId, elements.optJSONArray("elements"), projectId, refId, null,
+            hasPerm = SitePermission.hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null,
                             permissionType, null, permCache);
             Map<Permission, Boolean> permMap = new HashMap<>();
             permMap.put(permissionType, hasPerm);
@@ -398,10 +400,11 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
 
         /*
         if (permissionType != Permission.WRITE) {
-            editable = SitePermission.hasPermission(siteId, elements.optJSONArray("elements"), projectId, refId, null,
+            editable = SitePermission.hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null,
                             Permission.WRITE, null, permCache);
         }
-*/
+        */
+
         return editable;
     }
 
@@ -421,7 +424,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         }
         return result;
     }
-    
+
     private JSONObject filterElementByPermission(JSONObject element, String projectId, String refId,
                     String commitId, Permission permission, StringBuffer response,
                     Map<String, Map<Permission, Boolean>> permCache) {
@@ -480,7 +483,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             topJson = getTopJson(req, content, methodType);
             if (methodType.equalsIgnoreCase("GET")) {
                 if (topJson != null) {
-                    topJson = new JSONObject().put("elements", new JSONArray().put(topJson));
+                    topJson = new JSONObject().put(Sjm.ELEMENTS, new JSONArray().put(topJson));
                 }
             }
         } catch (Exception ex) {

@@ -9,6 +9,7 @@ import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -517,7 +518,7 @@ public class PostgresHelper {
                 while (mounts.next()) {
                     mountPoints.add(mounts.getString(1));
                 }
-                project.put("mounts", mountPoints);
+                project.put(Sjm.MOUNTS, mountPoints);
                 result.add(project);
             }
 
@@ -552,7 +553,7 @@ public class PostgresHelper {
                 while (mounts.next()) {
                     mountPoints.add(mounts.getString(1));
                 }
-                result.put("mounts", mountPoints);
+                result.put(Sjm.MOUNTS, mountPoints);
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -829,8 +830,8 @@ public class PostgresHelper {
         String query = String.format("INSERT INTO \"edges%s\" (parent, child, edgeType) VALUES ", workspaceId);
         List<String> values = new ArrayList<>();
         edges.forEach((edge) -> {
-            values.add("((SELECT id FROM nodes WHERE sysmlid = '" + edge.get("parent")
-                + "'), (SELECT id FROM nodes WHERE sysmlid = '" + edge.get("child") + "'), " + edge.get("edgetype")
+            values.add("((SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("parent")
+                + "'), (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("child") + "'), " + edge.get("edgetype")
                 + ")");
         });
         query += StringUtils.join(values, ",") + ";";
@@ -967,6 +968,17 @@ public class PostgresHelper {
         }
     }
 
+    public void resurrectNode(String sysmlId) {
+        try {
+            execUpdate(
+                "UPDATE \"nodes" + workspaceId + "\" SET deleted = " + false + " WHERE sysmlid = '" + sysmlId + "'");
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+    }
+
     public void insertEdge(String parentSysmlId, String childSysmlId, DbEdgeTypes edgeType) {
 
         insertEdge(parentSysmlId, childSysmlId, edgeType, null);
@@ -1032,12 +1044,12 @@ public class PostgresHelper {
     public Map<String, String> getCommitAndTimestamp(String lookUp, String value) {
         Map<String, String> commit = new HashMap<>();
         try {
-            String query = "SELECT elasticId, timestamp FROM commits WHERE %s = '%s' AND refId = '%s';";
-            ResultSet rs = execQuery(String.format(query, lookUp, value, workspaceId));
+            String query = "SELECT elasticId, timestamp FROM commits WHERE %s = '%s';";
+            ResultSet rs = execQuery(String.format(query, lookUp, value));
 
             if (rs.next()) {
-                commit.put("commitId", rs.getString(1));
-                commit.put("timestamp", rs.getString(2));
+                commit.put(Sjm.COMMITID, rs.getString(1));
+                commit.put(Sjm.TIMESTAMP, rs.getString(2));
                 return commit;
             }
         } catch (Exception e) {
@@ -1104,8 +1116,8 @@ public class PostgresHelper {
         return isInitial;
     }
 
-    public Set<String> getRootParents(String sysmlId, DbEdgeTypes et) {
-        Set<String> result = new HashSet<>();
+    public LinkedList<String> getRootParents(String sysmlId, DbEdgeTypes et) {
+        LinkedList<String> result = new LinkedList<>();
         try {
             Node n = getNodeFromSysmlId(sysmlId);
 
@@ -1318,8 +1330,10 @@ public class PostgresHelper {
             if (n == null) {
                 return;
             }
-            execUpdate("DELETE FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = "
-                + DbEdgeTypes.CHILDVIEW.getValue());
+            logger.error("DELETE FROM \"edgeproperties" + workspaceId + "\" WHERE edgeid in (SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue() + ")");
+            execUpdate("DELETE FROM \"edgeproperties" + workspaceId + "\" WHERE edgeid in (SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue() + ")");
+            execUpdate("UPDATE \"nodes" + workspaceId + "\" SET deleted = true WHERE id in (SELECT child FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue() + ")");
+            execUpdate("DELETE FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1335,7 +1349,7 @@ public class PostgresHelper {
                 return;
 
             execUpdate(
-                "DELETE FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " OR child = " + n.getId());
+                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1379,6 +1393,8 @@ public class PostgresHelper {
     public void deleteEdges(String parentSysmlId, DbEdgeTypes edgeType) {
         try {
             Node pn = getNodeFromSysmlId(parentSysmlId);
+            String deleteProperties = "DELETE FROM \"edgeproperties" + workspaceId + "\" WHERE edgeId in (SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = " + pn.getId() + " AND edgeType = " + edgeType.getValue() + ")";
+            execUpdate(deleteProperties);
             String query =
                 "DELETE FROM \"edges" + workspaceId + "\" WHERE parent = " + pn.getId() + " AND edgeType = " + edgeType
                     .getValue();
@@ -1505,7 +1521,7 @@ public class PostgresHelper {
             execUpdate("CREATE INDEX parentIndex on edges(parent);");
 
             execUpdate(
-                "CREATE TABLE edgeProperties(edgeId integer REFERENCES edges(id) ON DELETE CASCADE not null, key text not null, value text not null, CONSTRAINT unique_edgeproperties UNIQUE (edgeId, key));");
+                "CREATE TABLE edgeProperties(edgeId integer REFERENCES edges(id) ON UPDATE NO ACTION ON DELETE CASCADE not null, key text not null, value text not null, CONSTRAINT unique_edgeproperties UNIQUE (edgeId, key));");
 
             execUpdate("CREATE TABLE commitType(id bigserial primary key, name text not null);");
             execUpdate("CREATE INDEX commitTypeIndex on commitType(id);");
@@ -1538,18 +1554,18 @@ public class PostgresHelper {
                 + "        return -1;\n" + "      when not_null_violation then\n" + "        return -1;\n" + "  end;\n"
                 + "$$ language plpgsql;");
 
-            execUpdate("CREATE OR REPLACE FUNCTION get_edge_properties(edge integer)\n"
+            execUpdate("CREATE OR REPLACE FUNCTION get_edge_properties(edge integer, text)\n"
                 + "  returns table(key text, value text) as $$\n" + "  begin\n" + "    return query\n"
-                + "    execute '\n" + "      select key, value from edgeProperties where edgeid = ' || edge;\n"
+                + "    execute '\n" + "      select key, value from ' || (format('edgeproperties%s', $1)) || ' where edgeid = ' || edge;\n"
                 + "  end;\n" + "$$ language plpgsql;");
 
             execUpdate("CREATE OR REPLACE FUNCTION get_children(integer, integer, text, integer)\n"
                 + "  returns table(id bigint) as $$\n" + "  begin\n" + "    return query\n" + "    execute '\n"
-                + "    with recursive children(depth, nid, path, cycle) as (\n"
-                + "      select 0 as depth, node.id, ARRAY[node.id], false from ' || format('nodes%s', $3) || '\n"
-                + "        node where node.id = ' || $1 || ' and deleted = false union\n"
-                + "      select (c.depth + 1) as depth, edge.child as nid, path || cast(edge.child as bigint) as path, edge.child = ANY(path) as cycle\n"
-                + "        from ' || format('edges%s', $3) || ' edge, children c where edge.parent = nid and\n"
+                + "    with recursive children(depth, nid, path, cycle, deleted) as (\n"
+                + "      select 0 as depth, node.id, ARRAY[node.id], false, node.deleted from ' || format('nodes%s', $3) || '\n"
+                + "        node where node.id = ' || $1 || ' union\n"
+                + "      select (c.depth + 1) as depth, edge.child as nid, path || cast(edge.child as bigint) as path, edge.child = ANY(path) as cycle, node.deleted as deleted \n"
+                + "        from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and \n"
                 + "        edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || ' \n" + "      )\n"
                 + "      select distinct nid from children;';\n" + "  end;\n" + "$$ language plpgsql;");
 
@@ -1558,9 +1574,9 @@ public class PostgresHelper {
                 + "    execute '\n" + "    with childviews(sysmlid, aggregation) as (\n" + "        (\n"
                 + "        select typeid.value as sysmlid, aggregation.value as aggregation\n"
                 + "          from ' || format('edges%s', $2) || ' as edges\n"
-                + "          join ' || format('edgeProperties%s', $2) || ' as ordering on edges.id = ordering.edgeid and ordering.key = ''order''\n"
-                + "          join ' || format('edgeProperties%s', $2) || ' as aggregation on edges.id = aggregation.edgeid and aggregation.key = ''aggregation''\n"
-                + "          join ' || format('edgeProperties%s', $2) || ' as typeid on edges.id = typeid.edgeid and typeid.key = ''typeId''\n"
+                + "          join ' || format('edgeproperties%s', $2) || ' as ordering on edges.id = ordering.edgeid and ordering.key = ''order''\n"
+                + "          join ' || format('edgeproperties%s', $2) || ' as aggregation on edges.id = aggregation.edgeid and aggregation.key = ''aggregation''\n"
+                + "          join ' || format('edgeproperties%s', $2) || ' as typeid on edges.id = typeid.edgeid and typeid.key = ''typeId''\n"
                 + "          join ' || format('nodes%s', $2) || ' as child on typeid.value = child.sysmlid and (child.nodetype = 4 or child.nodetype = 12)\n"
                 + "          where edges.parent = ' || $1 || '\n" + "          order by ordering.value ASC\n"
                 + "        )\n" + "      )\n" + "      select sysmlid, aggregation from childviews;';\n" + "  end;\n"
@@ -1577,12 +1593,7 @@ public class PostgresHelper {
                 + "        and not cycle\n" + "      )\n"
                 + "      select nid,height,(not exists (select true from edges where child = nid and edgetype = ' || $2 || '))\n"
                 + "        from parents order by height desc;';\n" + "  end;\n" + "$$ language plpgsql;");
-            /*
-            execUpdate("CREATE OR REPLACE FUNCTION get_commit_chain(integer)"
-                + " returns table(id bigint, height integer, root boolean) as $$ begin"
-                + " return query execute with recursive commits_chain(height, id, path, cycle) as (select 0, commit.id, ARRAY[commit.id], false from commits commit where commit.it = ' || $1 ||'"
-                + " union select (c.height +1), cp.parent, path || cast(cp.parent as bigint), )");
-            */
+
             execUpdate("CREATE OR REPLACE FUNCTION get_immediate_parents(integer, integer, text)\n"
                 + "  returns table(sysmlid text, elasticid text) as $$\n" + "  begin\n" + "    return query\n"
                 + "    execute '\n" + "    select sysmlid, elasticid from nodes' || $3 || ' where id in\n"
@@ -1613,14 +1624,7 @@ public class PostgresHelper {
                 + "      join edges nr ON ng.path_end = nr.parent where nr.edgeType = ' || $2 || '\n" + "    )\n"
                 + "    select * from node_graph where path_end = ' || $1 || ' order by path_start, array_length(path,1)';\n"
                 + "  end;\n" + "$$ language plpgsql;");
-            /*
-            execUpdate("CREATE OR REPLACE RULE insert_ignore_on_edges AS "
-                + "ON INSERT TO edges "
-                + "WHERE parent <> null AND child <> null AND "
-                + "EXISTS (SELECT 1 FROM nodes JOIN edges AS parents ON parents.parent = nodes.id) AND "
-                + "EXISTS (SELECT 1 FROM nodes JOIN edges AS childs ON childs.child = nodes.id) "
-                + "DO INSTEAD NOTHING");
-            */
+
             execUpdate(
                 "CREATE AGGREGATE array_agg_mult(anyarray) (\n" + "    SFUNC = array_cat,\n" + "    STYPE = anyarray,\n"
                     + "    INITCOND = '{}'\n" + ");\n");
@@ -1751,7 +1755,8 @@ public class PostgresHelper {
             execUpdate(String.format(
                 "ALTER TABLE ONLY edgeProperties%s ADD CONSTRAINT edgeproperties%s_edgeid_fkey FOREIGN KEY (edgeid) REFERENCES edges%s(id)",
                 childWorkspaceNameSanitized, childWorkspaceNameSanitized, childWorkspaceNameSanitized));
-
+            execUpdate(
+                String.format("INSERT INTO edgeProperties%s SELECT * FROM edgeProperties%s", childWorkspaceNameSanitized, workspaceId));
             /*
             execUpdate(String.format(
                 "CREATE OR REPLACE RULE insert_ignore_on_edges%1$s AS "
@@ -1777,9 +1782,9 @@ public class PostgresHelper {
     public boolean isTag(String refId) {
         try {
             ResultSet rs = execQuery(String
-                .format("SELECT id FROM refs WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false", refId));
+                .format("SELECT tag FROM refs WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false", refId));
             if (rs.next()) {
-                return true;
+                return rs.getBoolean(1);
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -1802,9 +1807,9 @@ public class PostgresHelper {
         }
     }
 
-    public void deleteTag(String id) {
+    public void deleteRef(String id) {
         try {
-            execUpdate(String.format("UPDATE refs SET deleted = true WHERE refId = '%s' AND tag = true", id));
+            execUpdate(String.format("UPDATE refs SET deleted = true WHERE refId = '%s'", id));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
