@@ -163,7 +163,7 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public JSONObject getProjectWithMounts(String projectId, List<String> found) {
+    public JSONObject getProjectWithFullMounts(String projectId, List<String> found) {
         List<String> realFound = found;
         if (realFound == null) {
             realFound = new ArrayList<String>();
@@ -174,21 +174,21 @@ public class EmsNodeUtil {
             switchProject(projectId);
             JSONObject proj = getNodeBySysmlid(projectId);
             proj.put("orgId", project.get("orgId").toString());
-            JSONArray mountObject = getMounts(proj.get(Sjm.SYSMLID).toString(), realFound);
+            JSONArray mountObject = getFullMounts(proj.get(Sjm.SYSMLID).toString(), realFound);
             proj.put(Sjm.MOUNTS, mountObject);
             return proj;
         }
         return null;
     }
 
-    public JSONArray getMounts(String project, List<String> found) {
+    public JSONArray getFullMounts(String project, List<String> found) {
         found.add(project);
         JSONArray mounts = new JSONArray();
         pgh.getNodesByType(DbNodeTypes.MOUNT).forEach((mount) -> {
             if (found.contains(mount.getSysmlId())) {
                 return;
             }
-            JSONObject childProject = getProjectWithMounts(mount.getSysmlId(), found);
+            JSONObject childProject = getProjectWithFullMounts(mount.getSysmlId(), found);
             mounts.put(childProject);
 
         });

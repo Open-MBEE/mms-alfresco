@@ -364,7 +364,9 @@ public class CommitUtil {
                             } else {
                                 // look up the property in db to get aggregation type
                                 Node ownedAttributeNode = pgh.getNodeFromSysmlId(ownedAttributeId);
-                                ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                if (ownedAttributeNode != null) {
+                                    ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                }
                                 if (ownedAttribute != null) {
                                     if (ownedAttribute.has("aggregation")) {
                                         attr.put("aggregation", ownedAttribute.getString("aggregation"));
@@ -376,7 +378,9 @@ public class CommitUtil {
                             } else {
                                 if (ownedAttribute == null) {
                                     Node ownedAttributeNode = pgh.getNodeFromSysmlId(ownedAttributeId);
-                                    ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                    if (ownedAttributeNode != null) {
+                                        ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
+                                    }
                                 }
                                 if (ownedAttribute != null && ownedAttribute.has(Sjm.TYPEID)) {
                                     attr.put(Sjm.TYPEID, ownedAttribute.getString(Sjm.TYPEID));
