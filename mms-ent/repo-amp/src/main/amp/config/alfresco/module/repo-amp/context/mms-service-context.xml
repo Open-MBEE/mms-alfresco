@@ -227,6 +227,13 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
+    <bean id="webscript.gov.nasa.jpl.mms.workspaces.mounts.get"
+          class="gov.nasa.jpl.view_repo.webscripts.MountsGet" parent="webscript"
+          singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
+
     <bean id="webscript.gov.nasa.jpl.mms.workspaces.configurations.products.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsProductsGet" parent="webscript"
         singleton="false">

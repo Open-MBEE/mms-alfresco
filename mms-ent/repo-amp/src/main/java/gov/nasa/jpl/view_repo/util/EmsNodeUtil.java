@@ -181,8 +181,8 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public JSONArray getFullMounts(String project, List<String> found) {
-        found.add(project);
+    public JSONArray getFullMounts(String projectId, List<String> found) {
+        found.add(projectId);
         JSONArray mounts = new JSONArray();
         pgh.getNodesByType(DbNodeTypes.MOUNT).forEach((mount) -> {
             if (found.contains(mount.getSysmlId())) {
