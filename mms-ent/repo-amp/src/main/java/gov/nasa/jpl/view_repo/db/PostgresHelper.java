@@ -1536,7 +1536,7 @@ public class PostgresHelper {
             execUpdate("CREATE INDEX commitParentIndex on commitParent(id)");
 
             execUpdate(
-                "CREATE TABLE refs(id bigserial primary key, parent text not null, refId text not null, refName text not null, parentCommit integer, elasticId text, tag boolean DEFAULT false, timestamp timestamp DEFAULT current_timestamp, deleted boolean DEFAULT false);");
+                "CREATE TABLE refs(id bigserial primary key, parent text not null, refId text not null unique, refName text not null, parentCommit integer, elasticId text, tag boolean DEFAULT false, timestamp timestamp DEFAULT current_timestamp, deleted boolean DEFAULT false);");
             execUpdate("CREATE INDEX refsIndex on refs(id)");
 
             execUpdate(
