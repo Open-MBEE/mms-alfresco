@@ -75,11 +75,6 @@
 
     <repositories>
         <repository>
-            <id>alfresco-private-repository</id>
-            <name>alfresco-private-repository</name>
-            <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
-        </repository>
-        <repository>
             <id>alfresco-public</id>
             <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
         </repository>
@@ -113,6 +108,10 @@
                         <exclude>**/log4javascript*.js</exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.alfresco.maven.plugin</groupId>
