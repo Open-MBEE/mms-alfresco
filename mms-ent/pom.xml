@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>gov.nasa.jpl.mbee</groupId>
     <artifactId>mms-ent</artifactId>
-    <version>3.0.0-rc1</version>
+    <version>3.0.0-rc2</version>
     <name>Alfresco Repository and Share Quickstart with database and an embedded Tomcat runner.</name>
     <description>This All-in-One project allows to manage all the components involved in Alfresco development (Repo, Share, Solr4, AMPs) in one project
     </description>
@@ -19,7 +19,7 @@
             change (Note. current default version for Enterprise edition is 5.0.1) -->
         <alfresco.version>5.0.d</alfresco.version>
         <alfresco.rm.version>2.3</alfresco.rm.version>
-        <alfresco.data.location>alf_data_dev</alfresco.data.location>
+        <!-- <alfresco.data.location>alf_data_dev</alfresco.data.location> -->
 
         <!-- This control the root logging level for all apps uncomment and change,
             defaults to WARN <app.log.root.level>WARN</app.log.root.level> -->
@@ -31,12 +31,14 @@
 
         <!-- The Alfresco Share web application is accessible via this URL -->
         <share.client.url>http://localhost:8080/share</share.client.url>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <parent>
         <groupId>org.alfresco.maven</groupId>
         <artifactId>alfresco-sdk-parent</artifactId>
-        <version>2.1.0</version>
+        <version>2.1.1</version>
     </parent>
 
     <!-- Here we realize the connection with the Alfresco selected platform
@@ -75,11 +77,6 @@
 
     <repositories>
         <repository>
-            <id>alfresco-private-repository</id>
-            <name>alfresco-private-repository</name>
-            <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
-        </repository>
-        <repository>
             <id>alfresco-public</id>
             <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
         </repository>
@@ -113,6 +110,11 @@
                         <exclude>**/log4javascript*.js</exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.3</version>
             </plugin>
             <plugin>
                 <groupId>org.alfresco.maven.plugin</groupId>
