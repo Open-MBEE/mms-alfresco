@@ -14,37 +14,37 @@ import java.util.Set;
  */
 public interface Diff< T, P, ID > {
 
-    public abstract boolean areDifferent();
+    boolean areDifferent();
 
-    public abstract boolean areSame();
+    boolean areSame();
 
-    public abstract Set<T> get1();
+    Set<T> get1();
 
-    public abstract Set<T> get2();
+    Set<T> get2();
 
-    public abstract T get1( ID tid );
+    T get1(ID tid);
 
-    public abstract T get2( ID tid );
+    T get2(ID tid);
 
-    public abstract P get1( ID tid, ID pid );
+    P get1(ID tid, ID pid);
 
-    public abstract P get2( ID tid, ID pid );
+    P get2(ID tid, ID pid);
 
-    public abstract Set< T > getRemoved();
+    Set< T > getRemoved();
 
-    public abstract Set< T > getAdded();
+    Set< T > getAdded();
 
-    public abstract Set< T > getUpdated();
+    Set< T > getUpdated();
 
-    public abstract Map< ID, Map< ID, P > > getRemovedProperties();
+    Map< ID, Map< ID, P > > getRemovedProperties();
 
-    public abstract Map< ID, Map< ID, P > > getAddedProperties();
+    Map< ID, Map< ID, P > > getAddedProperties();
 
-    public abstract Map< ID, Map< ID, Pair< P, P > > > getUpdatedProperties();
+    Map< ID, Map< ID, Pair< P, P > > > getUpdatedProperties();
 
-    public abstract Map< ID, Map< ID, Pair< P, P > > > getPropertyChanges();
+    Map< ID, Map< ID, Pair< P, P > > > getPropertyChanges();
 
-    public abstract void addPropertyIdsToIgnore( Collection<ID> ids );
+    void addPropertyIdsToIgnore(Collection<ID> ids);
 
     /**
      * @param ids
@@ -52,6 +52,6 @@ public interface Diff< T, P, ID > {
      *            diff results. This is not used to filter the objects returned
      *            by {@link #get1()} and {@link #get2()}.
      */
-    public abstract Set<ID> getPropertyIdsToIgnore();
+    Set<ID> getPropertyIdsToIgnore();
 
 }

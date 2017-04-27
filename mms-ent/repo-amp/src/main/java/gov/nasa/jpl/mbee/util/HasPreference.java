@@ -5,15 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 
 public interface HasPreference< T > {
-    public boolean prefer( T t1, T t2 );
-    public int rank( T t );
-    
-    
-    public static class Helper< T > implements HasPreference< T > {
+    boolean prefer(T t1, T t2);
+    int rank(T t);
+
+
+    class Helper< T > implements HasPreference< T > {
 
         final List< T > totalOrder;
         HashMap< T, Integer > rank = new HashMap< T, Integer >();
-        
+
         public static boolean classHasPreference( Class<?> cls ) {
             boolean hasPreference = false;
             for ( Class<?> i : cls.getInterfaces() ) {
@@ -24,7 +24,7 @@ public interface HasPreference< T > {
             }
             return hasPreference;
         }
-        
+
         public Helper( List< T > totalOrder ) {
             this.totalOrder = totalOrder;
             if ( totalOrder != null ) {
@@ -34,18 +34,18 @@ public interface HasPreference< T > {
                 }
             }
         }
-        
+
         @Override
         public boolean prefer( T t1, T t2 ) {
             boolean preferred = rank.get( t1 ) < rank.get( t2 );
             return preferred;
         }
-        
+
         public int rank( T t ) {
             Integer r = rank.get( t );
             if ( r == null ) {
                 // Try to match another way.
-                
+
                 // check if classes
                 Class<?> tClass = (t instanceof Class) ? (Class<?>)t : null;
                 Class<?>[] tClasses = (Class< ? >[])( ((t instanceof Collection) && ClassUtils.areClasses( (Collection<?>)t )) ? ((Collection<?>)t).toArray() : null );
@@ -63,7 +63,7 @@ public interface HasPreference< T > {
                         }
                         if ( tcClasses != null ) equal = ClassUtils.classesMatch( tcClasses, tClasses );
                         else equal = Utils.valuesLooselyEqual( t, tc, false );
-                    } else equal = Utils.valuesLooselyEqual( t, tc, false ); 
+                    } else equal = Utils.valuesLooselyEqual( t, tc, false );
                     if ( equal ) {
                         if ( rank.containsKey( tc ) ) {
                             int rr = rank( tc );
@@ -82,6 +82,6 @@ public interface HasPreference< T > {
             if ( r != null ) return r.intValue();
             return Integer.MAX_VALUE;
         }
-        
+
     }
 }

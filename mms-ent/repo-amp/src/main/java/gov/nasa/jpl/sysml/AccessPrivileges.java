@@ -1,9 +1,9 @@
 package gov.nasa.jpl.sysml;
 
 public interface AccessPrivileges {
-    public boolean canRead();
-    public boolean canWrite();
-    public boolean canAdd();
-    public boolean canDelete();
-    public boolean canExecute();
+    boolean canRead();
+    boolean canWrite();
+    boolean canAdd();
+    boolean canDelete();
+    boolean canExecute();
 }

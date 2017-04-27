@@ -62,25 +62,21 @@ import java.util.List;
  */
 public interface Reference< RT, SM extends SystemModel< ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? > > extends Cloneable {
 
-    public abstract Reference< RT, SM > makeReference();
+    Reference< RT, SM > makeReference();
 
-    public abstract //< O, C, T, P, N, I, U, R, V, W, CT >
-            Reference< RT, SM > makeReference( SM model );//SystemModel< O, C, T, P, N, I, U, R, V, W, CT > model );
+    //< O, C, T, P, N, I, U, R, V, W, CT >
+            Reference< RT, SM > makeReference(SM model);//SystemModel< O, C, T, P, N, I, U, R, V, W, CT > model );
 
-    public abstract //< O, C, T, P, N, I, U, R, V, W, CT >
-            Reference< RT, SM > makeReference( SM model, //SystemModel< O, C, T, P, N, I, U, R, V, W, CT > model,
-                                           Object scope,
-                                           Class< RT > type,
-                                           Object specifier,
-                                           Object nextSpecifier,
-                                           boolean isTemplate );
+    //< O, C, T, P, N, I, U, R, V, W, CT >
+            Reference< RT, SM > makeReference(SM model, //SystemModel< O, C, T, P, N, I, U, R, V, W, CT > model,
+                Object scope, Class<RT> type, Object specifier, Object nextSpecifier, boolean isTemplate);
 
-    public abstract //< O, C, T, P, N, I, U, R, V, W, CT >
+    //< O, C, T, P, N, I, U, R, V, W, CT >
             //SystemModel< O, C, T, P, N, I, U, R, V, W, CT > getModel();
         SM getModel();
 
-    public abstract //< O, C, T, P, N, I, U, R, V, W, CT > void
-            void setModel( SM model ); //SystemModel< O, C, T, P, N, I, U, R, V, W, CT > model );
+    //< O, C, T, P, N, I, U, R, V, W, CT > void
+            void setModel(SM model); //SystemModel< O, C, T, P, N, I, U, R, V, W, CT > model );
 
     /**
      * The scopeReference field serves as the scope if it is not null and is not
@@ -95,9 +91,9 @@ public interface Reference< RT, SM extends SystemModel< ?, ?, ?, ?, ?, ?, ?, ?, 
      *
      * @return the object from which the reference is specified.
      */
-    public abstract Object getScope();
+    Object getScope();
 
-    public abstract void setScope( Object scope );
+    void setScope(Object scope);
 
     // want evaluateAndGetAlternatives()
     // public abstract List< Reference< ? > > getAlternatives();
@@ -108,7 +104,7 @@ public interface Reference< RT, SM extends SystemModel< ?, ?, ?, ?, ?, ?, ?, ?, 
     /**
      * @return the specifier String
      */
-    public abstract Object getSpecifier();
+    Object getSpecifier();
 
     /**
      * Sets the new specifier String to the input String after trimming empty
@@ -117,36 +113,36 @@ public interface Reference< RT, SM extends SystemModel< ?, ?, ?, ?, ?, ?, ?, ?, 
      * @param specifier
      *            the new specifier String
      */
-    public abstract void setSpecifier( Object specifier );
+    void setSpecifier(Object specifier);
 
     /**
      * @return the type of item(s) referenced
      */
-    public abstract Class< RT > getType();
+    Class< RT > getType();
 
     /**
      * @param type
      *            the type of item(s) referenced
      */
-    public abstract void setType( Class< RT > type );
+    void setType(Class<RT> type);
 
     /**
      * @return the nextSpecifier
      */
-    public abstract Object getNextSpecifier();
+    Object getNextSpecifier();
 
     /**
      * @param nextSpecifier
      *            the nextSpecifier to set
      */
-    public abstract void setNextSpecifier( Object nextSpecifier );
+    void setNextSpecifier(Object nextSpecifier);
 
 
-    public abstract boolean isTemplate();
+    boolean isTemplate();
 
-    public abstract void setIsTemplate( boolean isTemplate );
+    void setIsTemplate(boolean isTemplate);
 
-    public abstract boolean isConsistent();
+    boolean isConsistent();
 
     // /**
     // * @return the nextSpecifierString
@@ -167,11 +163,11 @@ public interface Reference< RT, SM extends SystemModel< ?, ?, ?, ?, ?, ?, ?, ?, 
      *
      * @see gov.nasa.jpl.ae.event.Expression#clone()
      */
-    public abstract Reference< RT, SM > clone() throws CloneNotSupportedException;
+    Reference< RT, SM > clone() throws CloneNotSupportedException;
 
-    public abstract List< Reference< ? extends RT, SM > > getAlternatives();
+    List< Reference< ? extends RT, SM > > getAlternatives();
 
-    public abstract Collection< RT > getItems();
+    Collection< RT > getItems();
 
     // /**
     // * Evaluate the reference and return a single object matching this

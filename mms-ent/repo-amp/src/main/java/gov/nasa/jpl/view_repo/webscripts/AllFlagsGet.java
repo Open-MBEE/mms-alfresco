@@ -232,16 +232,16 @@ public class AllFlagsGet extends FlagSet {
             NodeUtil.jsonDeepCache.clear();
             return true;
         } else if (path.equalsIgnoreCase("jsonStringCache")) {
-            NodeUtil.jsonStringCache.clear();;
+            NodeUtil.jsonStringCache.clear();
             return true;
         } else if (path.equalsIgnoreCase("propertyCache")) {
-            NodeUtil.propertyCache.clear();;
+            NodeUtil.propertyCache.clear();
             return true;
         } else if (path.equalsIgnoreCase("simpleCache")) {
             NodeUtil.simpleCache.clear();
             return true;
         } else if (path.equalsIgnoreCase("versionCache")) {
-            NodeUtil.versionCache.clear();;
+            NodeUtil.versionCache.clear();
             return true;
         } else if (path.equalsIgnoreCase("versionHistoryCache")) {
             NodeUtil.versionHistoryCache.clear();
@@ -282,13 +282,13 @@ public class AllFlagsGet extends FlagSet {
         	    return false;
         }
         return false;
-    };
+    }
 
 
     @Override
     protected String flag() {
         return getPath();
-    };
+    }
 
     @Override
     protected String flagName() {

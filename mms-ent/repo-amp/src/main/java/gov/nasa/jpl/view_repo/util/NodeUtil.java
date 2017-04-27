@@ -1880,9 +1880,9 @@ public class NodeUtil {
         return results;
     }
 
-    public static enum CacheUsed {
+    public enum CacheUsed {
         NONE, SIMPLE, FULL
-    };
+    }
 
     /**
      * Whether the query options are applicable to using the simple element cache.
@@ -2399,10 +2399,7 @@ public class NodeUtil {
             return false;
         // quick and dirty - using DictionaryService results in WARNINGS
         typeName = typeName.replace("sysml:", "");
-        if (typeName.equals("Element") || typeName.equals("Project")) {
-            return true;
-        }
-        return false;
+        return typeName.equals("Element") || typeName.equals("Project");
         // if ( Acm.getJSON2ACM().keySet().contains( typeName ) ) {
         // typeName = Acm.getJSON2ACM().get( typeName );
         // }

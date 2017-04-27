@@ -914,8 +914,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         suffix = suffix.toLowerCase().trim();
         if ( suffix.startsWith( "/" ) ) suffix = suffix.substring( 1 );
         int pos = url.lastIndexOf( '/' );
-        if (url.substring( pos+1 ).startsWith( suffix ) ) return true;
-        return false;
+        return url.substring(pos + 1).startsWith(suffix);
     }
 
 

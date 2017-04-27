@@ -54,11 +54,12 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
      *         parameters <br>
      * TODO? -- add SITE, CATEGORY, PROJECT???, PRODUCT, SNAPSHOT, CHANGESET, CONFIGURATION, ARTIFACT <br>
      */
-    public static enum ModelItem {
+    enum ModelItem {
         ELEMENT, //CONTEXT, // COMMENT
         TYPE, PROPERTY, NAME, IDENTIFIER, VALUE,
-        RELATIONSHIP, VERSION, WORKSPACE, CONSTRAINT, VIEW, VIEWPOINT;
-    };
+        RELATIONSHIP, VERSION, WORKSPACE, CONSTRAINT, VIEW, VIEWPOINT
+    }
+
 
     /**
      * Operation is a CRUD operation.  READ is the same as GET, and UPDATE is the same as SET.
@@ -68,13 +69,14 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
      * REVIEW -- Consider adding SUM, SUBTRACT, INTERSECT, UNITE, DIFF, ???<br>
      * REVIEW -- Consider adding SATISFY, OPTIMIZE
      */
-    public static enum Operation { CREATE, READ, UPDATE, DELETE,
-                                   GET, SET };
+    enum Operation { CREATE, READ, UPDATE, DELETE,
+                                   GET, SET }
+
 
     /**
      * An Object with a label for the kind of model item it is.
      */
-    public static class Item {
+    class Item {
         public ModelItem kind;
         public Object obj;
 
@@ -127,12 +129,8 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
      * @return the item(s) specified in a collection or null if the operation is
      *         prohibited or inconsistent. See {@link isAllowed}.
      */
-    public Collection< Object > op( Operation operation,
-                                    Collection< ModelItem > itemTypes,
-                                    Collection< Item > context,
-                                    Collection< Item > specifier,
-                                    U newValue,
-                                    Boolean failForMultipleItemMatches );
+    Collection< Object > op(Operation operation, Collection<ModelItem> itemTypes, Collection<Item> context,
+        Collection<Item> specifier, U newValue, Boolean failForMultipleItemMatches);
 
     /**
      * Specifies whether it is feasible to call op() with the non-null
@@ -175,12 +173,8 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
      * @return whether some operations of the kinds specified by the arguments
      *         are consistent, legal, and feasible.
      */
-     public boolean isAllowed( Operation operation,
-                               Collection< ModelItem > itemTypes,
-                               Collection< Item > context,
-                               Collection< Item > specifier,
-                               Item newValue,
-                               Boolean failForMultipleItemMatches );
+    boolean isAllowed(Operation operation, Collection<ModelItem> itemTypes, Collection<Item> context,
+        Collection<Item> specifier, Item newValue, Boolean failForMultipleItemMatches);
 
     /**
      * Either create, read/get, update/set, or delete something as specified by
@@ -205,14 +199,8 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
      *            perform the operation, and return null.
      * @return the matching or resulting item(s);
      */
-    public Collection< Object > op( Operation operation,
-                                    Collection< ModelItem > itemTypes,
-                                    Collection< Item > context,
-                                    I identifier,
-                                    N name,
-                                    V version,
-                                    U newValue,
-                                    boolean failForMultipleItemMatches );
+    Collection< Object > op(Operation operation, Collection<ModelItem> itemTypes, Collection<Item> context,
+        I identifier, N name, V version, U newValue, boolean failForMultipleItemMatches);
 
     // More specific functions that overlap with or may help implement the general functions above.
 
@@ -229,14 +217,10 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
 	 * @param version
 	 * @return the matching items
 	 */
-	public Collection<Object> get( Collection< ModelItem > itemTypes,
-				                   Collection< Item > context,
-				                   I identifier,
-				                   N name,
-				                   V version );
-    public Collection<Object> create( ModelItem item, Collection< Item > context, I identifier, N name, V version );
-    public Collection<Object> delete( ModelItem item, Collection< Item > context, I identifier, N name, V version );
-    public Collection<Object> set( ModelItem item, Collection< Item > context, I identifier, N name, V version, U newValue );
+    Collection<Object> get(Collection<ModelItem> itemTypes, Collection<Item> context, I identifier, N name, V version);
+    Collection<Object> create(ModelItem item, Collection<Item> context, I identifier, N name, V version);
+    Collection<Object> delete(ModelItem item, Collection<Item> context, I identifier, N name, V version);
+    Collection<Object> set(ModelItem item, Collection<Item> context, I identifier, N name, V version, U newValue);
     // TODO -- update args and add update() and maybe copy()/clone();
 
 //    /**
@@ -294,71 +278,71 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
 //    public Collection<E> getRelated( E element, N relationshipName, V version );
 
     // relationships
-    public boolean isDirected( R relationship );//, V version );
-    public Collection< E > getRelatedElements( R relationship );//, V version );
+    boolean isDirected(R relationship);//, V version );
+    Collection< E > getRelatedElements(R relationship);//, V version );
     /**
      * @param relationship
      * @param role a role in a relationship might be source, target, first, second, last, numerator, denominator, quotient, sender, receiver, . . .
      * @param version the version of the relationship
      * @return the element serving the named role in the relationship
      */
-    public Collection< E > getElementForRole( R relationship, N role );
-    public Collection< E >  getSource( R relationship );
-    public Collection< E >  getTarget( R relationship );
+    Collection< E > getElementForRole(R relationship, N role);
+    Collection< E >  getSource(R relationship);
+    Collection< E >  getTarget(R relationship);
 
 //    public V latestVersion( Collection<C> context );
 
     // ModelItem classes
     // ELEMENT, CONTEXT, TYPE, PROPERTY, NAME, IDENTIFIER, VALUE,
     // RELATIONSHIP, VERSION, WORKSPACE, CONSTRAINT, VIEW, VIEWPOINT
-    public Class< ? > getClass( ModelItem item );
-    public Class< E > getElementClass();
-    public Class< C > getContextClass();
-    public Class< T > getTypeClass();
-    public Class< P > getPropertyClass();
-    public Class< N > getNameClass();
-    public Class< I > getIdentifierClass();
-    public Class< U > getValueClass();
-    public Class< R > getRelationshipClass();
-    public Class< V > getVersionClass();
-    public Class< W > getWorkspaceClass();
-    public Class< CT > getConstraintClass();
-    public abstract Class< ? extends E > getViewClass();
-    public abstract Class< ? extends E > getViewpointClass();
+    Class< ? > getClass(ModelItem item);
+    Class< E > getElementClass();
+    Class< C > getContextClass();
+    Class< T > getTypeClass();
+    Class< P > getPropertyClass();
+    Class< N > getNameClass();
+    Class< I > getIdentifierClass();
+    Class< U > getValueClass();
+    Class< R > getRelationshipClass();
+    Class< V > getVersionClass();
+    Class< W > getWorkspaceClass();
+    Class< CT > getConstraintClass();
+    Class< ? extends E > getViewClass();
+    Class< ? extends E > getViewpointClass();
 
     /**
      * @param o
      * @return a conversion of the java.lang.Object to a SystemModel element or null
      */
-    public E asElement( Object o );
+    E asElement(Object o);
 
     /**
      * @param object
      * @return a conversion of the java.lang.Object to a SystemModel context or null
      */
-    public C asContext( Object o );
+    C asContext(Object o);
 
     /**
      * @param object
      * @return a Collection of contexts including either the object as a context
      *         or the contexts in the object as a Collection.
      */
-    public Collection< C > asContextCollection( Object o );
-    public T asType( Object o );
-    public P asProperty( Object o );
-    public N asName( Object o );
-    public I asIdentifier( Object o );
-    public U asValue( Object o );
-    public R asRelationship( Object o );
-    public V asVersion( Object o );
-    public W asWorkspace( Object o );
-    public CT asConstraint( Object o );
+    Collection< C > asContextCollection(Object o);
+    T asType(Object o);
+    P asProperty(Object o);
+    N asName(Object o);
+    I asIdentifier(Object o);
+    U asValue(Object o);
+    R asRelationship(Object o);
+    V asVersion(Object o);
+    W asWorkspace(Object o);
+    CT asConstraint(Object o);
 
     // general edit policies
 
-    public boolean idsAreWritable();
-    public boolean namesAreWritable();
-    public boolean versionsAreWritable();
+    boolean idsAreWritable();
+    boolean namesAreWritable();
+    boolean versionsAreWritable();
 
 //    public boolean elementsMayBeChangedForVersion( V version );
 //    public boolean typesMayBeChangedForVersion( V version );
@@ -529,9 +513,7 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
      *         for each element
      * @throws java.lang.reflect.InvocationTargetException
      */
-    public Collection< Object > map( Collection< E > elements,
-                                     MethodCall methodCall,
-                                     int indexOfElementArgument )
+    Collection< Object > map(Collection<E> elements, MethodCall methodCall, int indexOfElementArgument)
                                              throws java.lang.reflect.InvocationTargetException;
 
     /**
@@ -555,9 +537,7 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
      *         each element
      * @throws java.lang.reflect.InvocationTargetException
      */
-    public Collection< E > filter( Collection< E > elements,
-                                   MethodCall methodCall,
-                                   int indexOfElementArgument )
+    Collection< E > filter(Collection<E> elements, MethodCall methodCall, int indexOfElementArgument)
                                            throws java.lang.reflect.InvocationTargetException;
 
     /**
@@ -581,9 +561,7 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
      *         (consistent with Utils.isTrue());
      * @throws java.lang.reflect.InvocationTargetException
      */
-    public boolean forAll( Collection< E > elements,
-                           MethodCall methodCall,
-                           int indexOfElementArgument )
+    boolean forAll(Collection<E> elements, MethodCall methodCall, int indexOfElementArgument)
                                    throws java.lang.reflect.InvocationTargetException;
 
     /**
@@ -607,9 +585,7 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
      *         as true (consistent with Utils.isTrue());
      * @throws java.lang.reflect.InvocationTargetException
      */
-    public boolean thereExists( Collection< E > elements,
-                                MethodCall methodCall,
-                                int indexOfElementArgument )
+    boolean thereExists(Collection<E> elements, MethodCall methodCall, int indexOfElementArgument)
                                         throws java.lang.reflect.InvocationTargetException;
 
     /**
@@ -649,11 +625,8 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
      *         return value into the call on each element.
      * @throws java.lang.reflect.InvocationTargetException
      */
-    public Object fold( Collection< E > elements,
-                        Object initialValue,
-                        MethodCall methodCall,
-                        int indexOfElementArgument,
-                        int indexOfPriorResultArgument )
+    Object fold(Collection<E> elements, Object initialValue, MethodCall methodCall, int indexOfElementArgument,
+        int indexOfPriorResultArgument)
                                 throws java.lang.reflect.InvocationTargetException;
 
     /**
@@ -676,10 +649,8 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
      * @return the input elements in a new Collection sorted according to the method and comparator
      * @throws java.lang.reflect.InvocationTargetException
      */
-    public Collection< E > sort( Collection< E > elements,
-                                 Comparator< ? > comparator,
-                                 MethodCall methodCall,
-                                 int indexOfElementArgument )
+    Collection< E > sort(Collection<E> elements, Comparator<?> comparator, MethodCall methodCall,
+        int indexOfElementArgument)
                                          throws java.lang.reflect.InvocationTargetException;
 
     // support for problem solving
@@ -731,24 +702,24 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
 //    public Number getScore();
 
     // Constraint CRUD
-    public CT getDomainConstraint( E element, V version, W workspace );
+    CT getDomainConstraint(E element, V version, W workspace);
     // TODO -- easier i/f for adding constraint that
-    public void addConstraint( CT constraint, V version, W workspace );
-    public void addDomainConstraint( CT constraint, V version, Set<U> valueDomainSet, W workspace );
-    public void addDomainConstraint( CT constraint, V version, Pair<U,U> valueDomainRange, W workspace );
-    public void relaxDomain( CT constraint, V version, Set<U> valueDomainSet, W workspace );
-    public void relaxDomain( CT constraint, V version, Pair<U,U> valueDomainRange, W workspace );
-    public Collection<CT> getConstraintsOfElement( E element, V version, W workspace );
+    void addConstraint(CT constraint, V version, W workspace);
+    void addDomainConstraint(CT constraint, V version, Set<U> valueDomainSet, W workspace);
+    void addDomainConstraint(CT constraint, V version, Pair<U, U> valueDomainRange, W workspace);
+    void relaxDomain(CT constraint, V version, Set<U> valueDomainSet, W workspace);
+    void relaxDomain(CT constraint, V version, Pair<U, U> valueDomainRange, W workspace);
+    Collection<CT> getConstraintsOfElement(E element, V version, W workspace);
     //public Collection<CT> getConstraintsOfContext( C context );
-    public Collection<CT> getViolatedConstraintsOfElement( E element, V version );
+    Collection<CT> getViolatedConstraintsOfElement(E element, V version);
     //public Collection<CT> getViolatedConstraintsOfContext( C context );
-    public void setOptimizationFunction( Method method, Object... arguments ); // REVIEW -- should these be elements? should the function be an interface type (add F to ModelItem)?
-    public Number getScore();
+    void setOptimizationFunction(Method method, Object... arguments); // REVIEW -- should these be elements? should the function be an interface type (add F to ModelItem)?
+    Number getScore();
     //public <B> Number getScore(B objective); // TODO -- add B to class parameters?
     // TODO -- add other functions? like for delete? update?
 
     // TODO -- invoke solver/fix
-    public boolean fixConstraintViolations( E element, V version );
+    boolean fixConstraintViolations(E element, V version);
 
 
 

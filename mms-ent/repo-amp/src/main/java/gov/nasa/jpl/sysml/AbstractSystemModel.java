@@ -200,8 +200,7 @@ public abstract class AbstractSystemModel< E, C, T, P, N, I, U, R, V, W, CT >
                                   SystemModel.ModelItem newValueType,
                                   Boolean failForMultipleItemMatches ) {
         if ( Utils.isNullOrEmpty( specifiers ) ) {
-            return isAllowed( operation, itemType, contextType,
-                               (SystemModel.ModelItem)null, newValueType,
+            return isAllowed( operation, itemType, contextType, null, newValueType,
                                failForMultipleItemMatches );
         } else
         for ( SystemModel.Item specifier : specifiers ) {
@@ -237,7 +236,7 @@ public abstract class AbstractSystemModel< E, C, T, P, N, I, U, R, V, W, CT >
         //for ( boolean nullItem : new boolean[] { false, true } )
 
         if ( Utils.isNullOrEmpty( itemTypes ) ) {
-            return anyAllowed( operation, (SystemModel.ModelItem)null,
+            return anyAllowed( operation, null,
                                contexts, specifiers, newValueType,
                                failForMultipleItemMatches );
         } else for ( SystemModel.ModelItem itemType : itemTypes ) {
@@ -378,8 +377,7 @@ public abstract class AbstractSystemModel< E, C, T, P, N, I, U, R, V, W, CT >
                 ClassUtils.getMethodForArgs( AbstractSystemModel.class, "isA",
                                              item, item );
         MethodCall methodCall =
-                new MethodCall( null, method,
-                                new Object[] { null, item } );
+                new MethodCall( null, method, null, item);
         Collection< ModelItem > isItemSet =
                 MethodCall.filter( Arrays.asList( ModelItem.values() ),
                                    methodCall, 1 );
@@ -1049,8 +1047,7 @@ public abstract class AbstractSystemModel< E, C, T, P, N, I, U, R, V, W, CT >
                                   SystemModel.ModelItem specifierType,
                                   Boolean failForMultipleItemMatches ) {
         // TODO Auto-generated method stub
-        if ( contextType == null && specifierType == null ) return false;
-        return true;
+        return !(contextType == null && specifierType == null);
     }
 
     public boolean mayDelete( Collection< SystemModel.ModelItem > itemTypes,

@@ -642,8 +642,8 @@ public class Acm {
      * Enumeration for specifying which JSON serialization property set to use
      *
      */
-    public static enum JSON_TYPE_FILTER {
-        VIEW, ELEMENT, PRODUCT, COMMENT, ALL;
+    public enum JSON_TYPE_FILTER {
+        VIEW, ELEMENT, PRODUCT, COMMENT, ALL
     }
 
     /**
@@ -722,7 +722,7 @@ public class Acm {
             put( ACM_RELATIONSHIPS_AS_SOURCE, ACM_REL_AS_SOURCE );
             put( ACM_RELATIONSHIPS_AS_TARGET, ACM_REL_AS_TARGET );
             put( ACM_UNDIRECTED_RELATIONSHIPS, ACM_UNDIRECTED_REL );
-            };
+            }
     };
 
     public static final Set<String> VALUESPEC_ASPECTS = new HashSet<String>() {

@@ -29,7 +29,9 @@ public class AbstractReference< RT, SM extends SystemModel< E, C, T, P, N, I, U,
 
     // try to use ModelItem enum as interpretation
     public static class Interpretation {
-        public static enum Category { ModelItem, Related, RelatedSource, RelatedTarget, MULTIPLE, UNKNOWN };
+        public enum Category { ModelItem, Related, RelatedSource, RelatedTarget, MULTIPLE, UNKNOWN }
+
+
         Category category = Category.UNKNOWN;
         SystemModel.ModelItem modelItemInterpretation = null;
         public Interpretation() {}
@@ -255,11 +257,9 @@ public class AbstractReference< RT, SM extends SystemModel< E, C, T, P, N, I, U,
                 rels = getModel().getRelationship( (C)scopeElement, null );
                 Method method;
                 try {
-                    method = getModel().getClass().getMethod( "getSource()",
-                                                              new Class< ? >[] {} );
+                    method = getModel().getClass().getMethod( "getSource()");
                     MethodCall methodCall =
-                            new MethodCall( getModel(), method,
-                                                        new Object[]{} );
+                            new MethodCall( getModel(), method);
 
                     Collection< Object > related = MethodCall.map( rels, methodCall, 0 );
                     theItems = Utils.asList( related, getType() );
@@ -328,11 +328,9 @@ public class AbstractReference< RT, SM extends SystemModel< E, C, T, P, N, I, U,
                         rels = getModel().getRelationship( (C)scopeElement, null );
                         Method method;
                         try {
-                            method = getModel().getClass().getMethod( "getSource()",
-                                                             new Class< ? >[] {} );
+                            method = getModel().getClass().getMethod( "getSource()");
                             MethodCall methodCall =
-                                    new MethodCall( getModel(), method,
-                                                                new Object[]{} );
+                                    new MethodCall( getModel(), method);
 
                             related = MethodCall.map( rels, methodCall, 0 );
                             theItems = Utils.asList( related, getType() );
@@ -402,7 +400,7 @@ public class AbstractReference< RT, SM extends SystemModel< E, C, T, P, N, I, U,
             default:
                 Debug.error( "Unknown interpretation category " + i.category );
                 // TODO -- ERROR!
-        };
+        }
         return Collections.emptyList();
     }
 
