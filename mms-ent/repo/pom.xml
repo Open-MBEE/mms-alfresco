@@ -21,6 +21,14 @@
         <version>3.0.0-rc2</version>
     </parent>
 
+    <properties>
+        <!-- During development we set log root level to Debug,
+            this will be applicable to the log configuration in
+            repo/src/main/resources/alfresco/extension/dev-log4j.properties,
+            such as DemoComponent logging. -->
+        <app.log.root.level>DEBUG</app.log.root.level>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${alfresco.groupId}</groupId>
