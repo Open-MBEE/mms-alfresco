@@ -632,11 +632,7 @@ public class EmsScriptNode extends ScriptNode
         }
 
         AssociationRef ar = services.getNodeService().createAssociation(nodeRef, target.getNodeRef(), typeQName);
-        if (ar == null) {
-            return false;
-        } else {
-            return true;
-        }
+        return ar != null;
     }
 
     public void removeAssociations(String type) {
@@ -1428,7 +1424,7 @@ public class EmsScriptNode extends ScriptNode
             relationshipTypeName = Acm.getJSON2ACM().get(relationshipType);
         }
         boolean checkingRelationship = !Utils.isNullOrEmpty(relationshipTypeName);
-        boolean nodeHasRelationship = checkingRelationship ? this.hasAspect(relationshipTypeName) : false;
+        boolean nodeHasRelationship = checkingRelationship && this.hasAspect(relationshipTypeName);
 
         // Loop through all of the properties of the node:
         for (Entry<String, Object> entry : this.getNodeRefProperties(dateTime, ws).entrySet()) {
@@ -1522,10 +1518,7 @@ public class EmsScriptNode extends ScriptNode
 
     public boolean isReified() {
         String sysmlId = getSysmlId();
-        if (isFolder() && sysmlId != null && sysmlId.endsWith("_pkg")) {
-            return true;
-        }
-        return false;
+        return isFolder() && sysmlId != null && sysmlId.endsWith("_pkg");
     }
 
     public String getVersionLabel() {
@@ -2541,7 +2534,8 @@ public class EmsScriptNode extends ScriptNode
 
     public enum SpecEnum {
         Association, Binding, Characterizes, Conform, Connector, Constraint, Dependency, DirectedRelationship, DurationInterval, Duration, ElementValue, Expose, Expression, Generalization, InstanceSpecification, InstanceValue, Interval, LiteralBoolean, LiteralInteger, LiteralNull, LiteralReal, LiteralSet, LiteralString, LiteralUnlimitedNatural, MagicDrawData, OpaqueExpression, Operation, Package, Parameter, Product, Property, StringExpression, Succession, TimeExpression, TimeInterval, ValueSpecification, View, Viewpoint
-    };
+    }
+
 
     public static Map<String, SpecEnum> aspect2Key = new HashMap<String, SpecEnum>() {
         private static final long serialVersionUID = -2080928480362524333L;
@@ -3490,7 +3484,7 @@ public class EmsScriptNode extends ScriptNode
 
     private enum PropertyType {
         INT, LONG, DOUBLE, BOOLEAN, TEXT, DATE, NODE_REF, UNKNOWN
-    };
+    }
 
     /**
      * Get an ArrayList of property value objects of the proper type according to the property
@@ -3619,7 +3613,7 @@ public class EmsScriptNode extends ScriptNode
                             getStatus().setCode(HttpServletResponse.SC_BAD_REQUEST, msg);
                         }
                         return null;
-                };
+                }
             }
 
             // Note: No harm comes from adding null to the array, as alfresco
@@ -4078,10 +4072,7 @@ public class EmsScriptNode extends ScriptNode
         // }
         if (!scriptNodeExists())
             return false;
-        if (!includeDeleted && hasAspect("ems:Deleted")) {
-            return false;
-        }
-        return true;
+        return !(!includeDeleted && hasAspect("ems:Deleted"));
     }
 
     public boolean scriptNodeExists() {
@@ -4121,9 +4112,7 @@ public class EmsScriptNode extends ScriptNode
             e.printStackTrace();
         }
         try {
-            if (isSubType("cm:folder"))
-                return true;
-            return false;
+            return isSubType("cm:folder");
         } catch (Throwable e) {
             logger.warn("Call to isSubType() on this = " + this + " failed!");
             e.printStackTrace();
@@ -4131,20 +4120,14 @@ public class EmsScriptNode extends ScriptNode
         try {
             QName type = null;
             type = parent.getQNameType();
-            if (type != null && !services.getDictionaryService().isSubClass(type, ContentModel.TYPE_FOLDER)) {
-                return true;
-            }
-            return false;
+            return type != null && !services.getDictionaryService().isSubClass(type, ContentModel.TYPE_FOLDER);
         } catch (Throwable e) {
             logger.warn("Trying to call getQNameType() on parent = " + parent + ".");
             e.printStackTrace();
         }
         try {
             String type = getTypeShort();
-            if (type.equals("folder") || type.endsWith(":folder")) {
-                return true;
-            }
-            return false;
+            return type.equals("folder") || type.endsWith(":folder");
         } catch (Throwable e) {
             logger.warn("Trying to call getQNameType() on parent = " + parent + ".");
             e.printStackTrace();
@@ -5710,10 +5693,7 @@ public class EmsScriptNode extends ScriptNode
     }
 
     public boolean isModelElement() {
-        if (getTypeShort().equals("sysml:Element")) {
-            return true;
-        }
-        return false;
+        return getTypeShort().equals("sysml:Element");
     }
 
     public boolean hasValueSpecProperty(EmsScriptNode propVal, Date dateTime, WorkspaceNode ws) {

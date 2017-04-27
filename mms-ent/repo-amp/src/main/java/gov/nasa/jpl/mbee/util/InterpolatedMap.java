@@ -126,8 +126,7 @@ public class InterpolatedMap< K, V > extends TreeMap< K, V > {
                 if ( ( (Comparable)first ).compareTo( key ) != -1 ) return false;
                 K last = this.lastKey();
                 if ( last instanceof Comparable ) {
-                    if ( ( (Comparable)last ).compareTo( key ) != 1 ) return false;
-                    return true;
+                    return ((Comparable) last).compareTo(key) == 1;
                 }
             }
         }

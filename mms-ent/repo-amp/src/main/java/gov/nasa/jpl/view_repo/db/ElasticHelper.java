@@ -196,11 +196,7 @@ public class ElasticHelper {
         Search search = new Search.Builder(query.toString()).addIndex(elementIndex).addType("commit").build();
         SearchResult result = client.execute(search);
 
-        if (result.getTotal() > 0) {
-            return true;
-
-        }
-        return false;
+        return result.getTotal() > 0;
 
 
     }

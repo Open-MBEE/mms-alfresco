@@ -3,13 +3,13 @@ package gov.nasa.jpl.view_repo.connections;
 import org.json.JSONObject;
 
 public interface ConnectionInterface {
-    public void setRefId(String refId);
+    void setRefId(String refId);
 
-    public void setProjectId(String projectId);
+    void setProjectId(String projectId);
 
-    public boolean publish(JSONObject jsonObject, String eventType, String workspaceId, String projectId);
+    boolean publish(JSONObject jsonObject, String eventType, String workspaceId, String projectId);
 
-    public JSONObject toJson();
+    JSONObject toJson();
 
-    public void ingestJson(JSONObject json);
+    void ingestJson(JSONObject json);
 }

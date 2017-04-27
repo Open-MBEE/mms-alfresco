@@ -114,7 +114,7 @@ public class ModelGet extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
         JSONObject top = new JSONObject();
 
-        Boolean isCommit = req.getParameter("commitId") != null ? true : false;
+        Boolean isCommit = req.getParameter("commitId") != null;
         try {
             if (isCommit) {
                 JSONArray commitJsonToArray = new JSONArray();

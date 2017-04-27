@@ -5,5 +5,5 @@ package gov.nasa.jpl.sysml.view;
  *
  */
 public interface Image<E> extends Viewable<E> {
-    public String getTitle();
+    String getTitle();
 }

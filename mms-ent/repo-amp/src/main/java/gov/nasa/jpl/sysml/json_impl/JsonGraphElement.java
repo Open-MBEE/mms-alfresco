@@ -81,12 +81,7 @@ public abstract class JsonGraphElement
             gOtherParent = gOtherParent.getParent();
          }
 
-         if (gOtherParent != null)
-         {
-            return false;
-         }
-
-         return true;
+          return gOtherParent == null;
       }
       else
       {

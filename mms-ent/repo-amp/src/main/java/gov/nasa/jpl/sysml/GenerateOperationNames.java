@@ -57,7 +57,7 @@ public class GenerateOperationNames {
                             Debug.breakpoint();
                         }
                         Object newValue = new Integer(4);
-                        if ( !AbstractSystemModel.isAllowed((AbstractSystemModel)null, operation,
+                        if ( !AbstractSystemModel.isAllowed(null, operation,
                                         nullItem ? null : itemType,
                                         nullContext ? null : contextType, //new SystemModel.Item(null, contextType),
                                         nullSpec ? null : specifierType, //new SystemModel.Item(null, specifierType),

@@ -349,7 +349,7 @@ public class JsonSystemModel
                      }
                      else
                      {
-                        generalizationMap.put((String)source, (String)target);
+                        generalizationMap.put((String)source, target);
                      }
                   }
 
@@ -368,7 +368,7 @@ public class JsonSystemModel
                      }
                      else
                      {
-                        viewMap.put((String)target, (String)source);
+                        viewMap.put((String)target, source);
                      }
                   }
 
@@ -896,12 +896,8 @@ public class JsonSystemModel
 
       String viewpointID = viewpointMap.get(id);
 
-      if (ID_COLLECT_PARAM_DIAGRAM_ELEMENTS_VIEWPOINT.equals(viewpointID))
-      {
-         return true;
-      }
+       return ID_COLLECT_PARAM_DIAGRAM_ELEMENTS_VIEWPOINT.equals(viewpointID);
 
-      return false;
    }
 
    public List<JSONObject> getParametricDiagramView(String diagramID)
@@ -1473,7 +1469,7 @@ public class JsonSystemModel
       {
          // Do depth first search within the context of the owner for a match:
 
-         JSONObject owner = (JSONObject) context;
+         JSONObject owner = context;
          elementList = searchWithinContextByProperty(owner, propName, propValue);
       }
       return elementList;
@@ -1506,7 +1502,7 @@ public class JsonSystemModel
       else
       {
          // Do depth first search within the context of the owner for a match:
-         JSONObject owner = (JSONObject) context;
+         JSONObject owner = context;
          elementList = searchWithinContextBySpecialization(owner, propName, propValue);
       }
       return elementList;

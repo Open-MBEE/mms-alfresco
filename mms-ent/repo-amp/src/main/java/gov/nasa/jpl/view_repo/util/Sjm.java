@@ -138,12 +138,12 @@ public class Sjm {
     }
 
 
-    public static enum Aggregation {
+    public enum Aggregation {
         COMPOSITE("composite"), SIMPLE("simple"), NONE("none");
 
         private final String value;
 
-        private Aggregation(String value) {
+        Aggregation(String value) {
             this.value = value;
         }
 
