@@ -1279,6 +1279,39 @@ public class PostgresHelper {
         return result;
     }
 
+    /**
+     * Returns the containment group for element
+     *
+     * @param sysmlId
+     * @return
+     */
+    public String getGroup(String sysmlId) {
+        try {
+            Node n = getNodeFromSysmlId(sysmlId);
+
+            if (n == null)
+                return null;
+
+            String query = "SELECT N.sysmlid, N.elasticid, N.nodetype FROM \"nodes%s\" N JOIN "
+                + "(SELECT * FROM get_parents(%s, %d, '%s')) P ON N.id=P.id ORDER BY P.height";
+            ResultSet rs = execQuery(
+                String.format(query, workspaceId, n.getId(), DbEdgeTypes.CONTAINMENT.getValue(), workspaceId));
+
+            while (rs.next()) {
+                if (rs.getInt(3) == DbNodeTypes.SITEANDPACKAGE.getValue()) {
+                    return rs.getString(1);
+                } else if (rs.getInt(3) == DbNodeTypes.SITE.getValue()) {
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return null;
+    }
+
     // returns list of elasticId
     public List<Pair<String, String>> getChildren(String sysmlId, DbEdgeTypes et, int depth) {
         List<Pair<String, String>> result = new ArrayList<>();
