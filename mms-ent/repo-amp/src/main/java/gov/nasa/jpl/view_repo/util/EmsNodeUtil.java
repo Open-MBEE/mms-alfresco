@@ -569,6 +569,9 @@ public class EmsNodeUtil {
         for (int i = 0; i < docJson.length(); i++) {
             docJson.getJSONObject(i).put(Sjm.PROJECTID, this.projectId);
             docJson.getJSONObject(i).put(Sjm.REFID, this.workspaceName);
+            if (!docJson.getJSONObject(i).has(Sjm.SITECHARACTERIZATIONID)) {
+                docJson.getJSONObject(i).put(Sjm.SITECHARACTERIZATIONID, pgh.getGroup(docJson.getJSONObject(i).getString(Sjm.SYSMLID)));
+            }
             result.put(addChildViews(docJson.getJSONObject(i)));
         }
 
