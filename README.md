@@ -46,13 +46,25 @@
 *   Install Elasticsearch
 *   Start Elasticsearch then run `mms-mappings.sh`
 
+## 5. Install and Configure Postgresql
+*   Download Postgresql 9.x
+    * If using Postgresql as the database for Alfresco, Postgresl 9.3 is the latest supported version
+*   Install Postgresql
+*   Start Postgresql server
+*   Create a user and database for mms and then execute `mms.sql`
+
+## 6. Install and Configure ActiveMQ
+*   Download ActiveMQ
+*   Install ActiveMQ
+*   Start ActiveMQ service
+
 # Running
 ## 1. Running Alfresco
 1. Select file menu **Run** > **Run Configurations**
 2. Expand **Maven Build**
 3. Select **mms-all-in-one**
     1. Click **Run** button
-    * If you get error:-Dmaven.multiModuleProjectDirectory system propery is not set. Check $M2_HOME environment variable and mvn script match. Goto **Window -> Preference -> Java -> Installed JREs -> Edit -> Default VM arguments**  _set -Dmaven.multiModuleProjectDirectory=$M2_HOME_
+    * If you get error:-Dmaven.multiModuleProjectDirectory system property is not set. Check $M2_HOME environment variable and mvn script match. Goto **Window -> Preference -> Java -> Installed JREs -> Edit -> Default VM arguments**  _set -Dmaven.multiModuleProjectDirectory=$M2_HOME_
 
 ## 2. Testing Alfresco
 1. Enter http://localhost:8080/share/ at a browser's url address textbox.

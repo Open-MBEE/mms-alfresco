@@ -350,7 +350,7 @@ public class ModelPost extends AbstractJavaWebScript {
         Path svgPath = Paths.get(tempDir.getAbsolutePath(), String.format("%s%s", artifactId, extension));
         File file = new File(svgPath.toString());
 
-        try (final InputStream in = new ByteArrayInputStream(svgContent);) {
+        try (final InputStream in = new ByteArrayInputStream(svgContent)) {
             file.mkdirs();
             Files.copy(in, svgPath, StandardCopyOption.REPLACE_EXISTING);
             return svgPath;
@@ -361,7 +361,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
     protected static Path svgToPng(Path svgPath) throws Throwable {
         Path pngPath = Paths.get(svgPath.toString().replace(".svg", ".png"));
-        try (OutputStream png_ostream = new FileOutputStream(pngPath.toString());) {
+        try (OutputStream png_ostream = new FileOutputStream(pngPath.toString())) {
             String svg_URI_input = svgPath.toUri().toURL().toString();
             TranscoderInput input_svg_image = new TranscoderInput(svg_URI_input);
             TranscoderOutput output_png_image = new TranscoderOutput(png_ostream);

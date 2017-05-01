@@ -27,12 +27,11 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
+import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.*;
-import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -43,29 +42,29 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-/**
- *
- * @author han
- */
-public class OrgPost extends AbstractJavaWebScript {
-    static Logger logger = Logger.getLogger(OrgPost.class);
+public class MountsGet extends AbstractJavaWebScript {
 
-    public OrgPost() {
+    static Logger logger = Logger.getLogger(MountsGet.class);
+
+    public MountsGet() {
         super();
     }
 
-    public OrgPost(Repository repositoryHelper, ServiceRegistry registry) {
+    public MountsGet(Repository repositoryHelper, ServiceRegistry registry) {
         super(repositoryHelper, registry);
     }
 
+    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
+        return true;
+    }
+
     /**
-     * Webscript entry point
+     * Entry point
      */
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
-        OrgPost instance = new OrgPost(repository, getServices());
+        MountsGet instance = new MountsGet(repository, getServices());
         return instance.executeImplImpl(req, status, cache);
     }
 
@@ -75,66 +74,55 @@ public class OrgPost extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        int statusCode = HttpServletResponse.SC_OK;
 
-        try {
-            if (validateRequest(req, status)) {
+        String[] accepts = req.getHeaderValues("Accept");
+        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
+        logger.error("Accept: " + accept);
 
-                JSONObject json = (JSONObject) req.parseContent();
-                JSONArray elementsArray = json != null ? json.optJSONArray("orgs") : null;
-                JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ?
-                                elementsArray.getJSONObject(0) :
-                                new JSONObject();
-
-                String orgId = projJson.getString(Sjm.SYSMLID);
-                String orgName = projJson.getString(Sjm.NAME);
-
-                System.out.println("ORGID: " + orgId);
-
-                SiteInfo siteInfo = services.getSiteService().getSite(orgId);
-                if (siteInfo == null) {
-                    String sitePreset = "site-dashboard";
-                    String siteTitle = (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;
-                    String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
-                    if (!ShareUtils.constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
-                        // TODO: Add some logging for failed site creation
-                        log(Level.INFO, HttpServletResponse.SC_OK, "Failed to create site.\n");
-                        statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-                    } else {
-                        log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site created.\n");
-                        statusCode = HttpServletResponse.SC_OK;
-                    }
-                }
-
-                if (statusCode == HttpServletResponse.SC_OK) {
-                    CommitUtil.sendOrganizationDelta(orgId, orgName, user);
-                }
-
-            } else {
-                statusCode = responseStatus.getCode();
-            }
-        } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace:\n %s \n",
-                            e.getLocalizedMessage());
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-
-        status.setCode(statusCode);
-        model.put("res", createResponseJson());
+        model = handleMountGet(req, status, accept);
 
         printFooter(user, logger, timer);
 
         return model;
     }
 
-    /**
-     * Validate the request and check some permissions
-     */
-    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        return checkRequestContent(req);
-    }
+    protected Map<String, Object> handleMountGet(WebScriptRequest req, Status status, String accept) {
 
+        Map<String, Object> model = new HashMap<>();
+        JSONObject top = new JSONObject();
+
+        try {
+            String projectId = getProjectId(req);
+            String refId = getRefId(req);
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, null);
+            JSONArray mountsArray = new JSONArray().put(mountsJson);
+
+            if (mountsJson.length() > 0) {
+                top.put("projects", filterByPermission(mountsArray, req));
+            }
+            if (top.length() == 0) {
+                responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+            }
+            if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+                responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
+            }
+            if (!Utils.isNullOrEmpty(response.toString()))
+                top.put("message", response.toString());
+
+        } catch (JSONException e) {
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSONObject");
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+
+        status.setCode(responseStatus.getCode());
+
+        if (prettyPrint || accept.contains("webp")) {
+            model.put("res", top.toString(4));
+        } else {
+            model.put("res", top);
+        }
+
+        return model;
+    }
 }

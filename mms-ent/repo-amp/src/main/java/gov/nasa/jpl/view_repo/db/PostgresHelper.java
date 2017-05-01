@@ -36,7 +36,7 @@ public class PostgresHelper {
     private Savepoint savePoint;
 
 
-    public static enum DbEdgeTypes {
+    public enum DbEdgeTypes {
         CONTAINMENT(1), VIEW(2), TRANSCLUSION(3), CHILDVIEW(4);
 
         private final int id;
@@ -51,7 +51,7 @@ public class PostgresHelper {
     }
 
 
-    public static enum DbNodeTypes {
+    public enum DbNodeTypes {
         ELEMENT(1), SITE(2), PROJECT(3), DOCUMENT(4), COMMENT(5), CONSTRAINT(6), INSTANCESPECIFICATION(7), OPERATION(
             8), PACKAGE(9), PROPERTY(10), PARAMETER(11), VIEW(12), VIEWPOINT(13), SITEANDPACKAGE(14), HOLDINGBIN(
             15), MOUNT(16);
@@ -68,7 +68,7 @@ public class PostgresHelper {
     }
 
 
-    public static enum DbCommitTypes {
+    public enum DbCommitTypes {
         COMMIT(1), BRANCH(2), MERGE(3);
 
         private final int id;
@@ -1536,7 +1536,7 @@ public class PostgresHelper {
             execUpdate("CREATE INDEX commitParentIndex on commitParent(id)");
 
             execUpdate(
-                "CREATE TABLE refs(id bigserial primary key, parent text not null, refId text not null, refName text not null, parentCommit integer, elasticId text, tag boolean DEFAULT false, timestamp timestamp DEFAULT current_timestamp, deleted boolean DEFAULT false);");
+                "CREATE TABLE refs(id bigserial primary key, parent text not null, refId text not null unique, refName text not null, parentCommit integer, elasticId text, tag boolean DEFAULT false, timestamp timestamp DEFAULT current_timestamp, deleted boolean DEFAULT false);");
             execUpdate("CREATE INDEX refsIndex on refs(id)");
 
             execUpdate(
