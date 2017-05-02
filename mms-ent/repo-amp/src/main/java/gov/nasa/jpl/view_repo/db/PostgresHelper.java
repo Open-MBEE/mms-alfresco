@@ -166,6 +166,7 @@ public class PostgresHelper {
             this.workspaceId = "";
         } else {
             this.workspaceId = "";
+            workspaceId = workspaceId.replace("-", "_").replaceAll("\\s+", "");
             try {
                 // Try to check for either workspaceName or workspaceId
                 ResultSet rs = execQuery(String.format("SELECT refId FROM refs WHERE refId = '%s'", workspaceId));
@@ -180,7 +181,6 @@ public class PostgresHelper {
 
             if (this.workspaceId.equals("")) {
                 try {
-                    workspaceId = workspaceId.replace("-", "_").replaceAll("\\s+", "");
                     ResultSet nrs = execQuery(String.format("SELECT id FROM refs WHERE refName = '%s'", workspaceId));
                     if (nrs.next()) {
                         this.workspaceId = workspaceId;
