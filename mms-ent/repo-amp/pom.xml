@@ -159,7 +159,7 @@
                 <dependency>
                     <groupId>${alfresco.groupId}</groupId>
                     <artifactId>alfresco-enterprise-repository</artifactId>
-                    <version>${alfresco.version}</version>
+                    <version>5.0.3</version>
                     <scope>provided</scope>
                 </dependency>
             </dependencies>
@@ -171,6 +171,35 @@
             <properties>
                 <skipTests>true</skipTests>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-properties</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <overwrite>true</overwrite>
+                                    <outputDirectory>${project.build.directory}/${project.build.finalName}/config
+                                    </outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/../</directory>
+                                            <includes>
+                                                <include>mms.properties</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
@@ -261,26 +290,6 @@
                             <resources>
                                 <resource>
                                     <directory>${basedir}/resources/community/src/main/amp</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-properties</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <overwrite>true</overwrite>
-                            <outputDirectory>${project.build.directory}/${project.build.finalName}/config</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/../</directory>
-                                    <includes>
-                                        <!--<include>${deploymentName}.properties</include>-->
-                                        <include>mms.properties</include>
-                                    </includes>
                                 </resource>
                             </resources>
                         </configuration>

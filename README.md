@@ -1,5 +1,5 @@
 # mms-all-in-one
-**Alfresco version 5.0.1**
+**Alfresco version 5.0.d**
 
 # Initial Setup
 ## 1a. Import Project from git repo to Eclipse
