@@ -216,7 +216,7 @@ public class WorkspacesPost extends AbstractJavaWebScript{
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
 
 
-            if (!"master".equals(sourceWorkspaceId) && srcWs == null) {
+            if (!"master".equals(sourceWorkspaceId) && srcWs.getId() == null) {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Source workspace not found.");
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);
                 return null;
