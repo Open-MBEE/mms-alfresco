@@ -161,16 +161,16 @@ public class PostgresHelper {
         setWorkspace(workspaceName);
     }
 
-    public void setWorkspace(String workspaceName) {
-        if (workspaceName == null || workspaceName.equals("master") || workspaceName.equals("null")) {
-            workspaceId = "";
+    public void setWorkspace(String workspaceId) {
+        if (workspaceId == null || workspaceId.equals("master") || workspaceId.equals("null")) {
+            this.workspaceId = "";
         } else {
-            workspaceId = "";
+            this.workspaceId = "";
             try {
                 // Try to check for either workspaceName or workspaceId
-                ResultSet rs = execQuery(String.format("SELECT refId FROM refs WHERE refName = '%s'", workspaceName));
+                ResultSet rs = execQuery(String.format("SELECT refId FROM refs WHERE refId = '%s'", workspaceId));
                 if (rs.next()) {
-                    workspaceId = rs.getString(1);
+                    this.workspaceId = rs.getString(1);
                 }
             } catch (Exception e) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
@@ -178,12 +178,12 @@ public class PostgresHelper {
                 close();
             }
 
-            if (workspaceId.equals("")) {
+            if (this.workspaceId.equals("")) {
                 try {
-                    workspaceName = workspaceName.replace("-", "_").replaceAll("\\s+", "");
-                    ResultSet nrs = execQuery(String.format("SELECT id FROM refs WHERE refId = '%s'", workspaceName));
+                    workspaceId = workspaceId.replace("-", "_").replaceAll("\\s+", "");
+                    ResultSet nrs = execQuery(String.format("SELECT id FROM refs WHERE refName = '%s'", workspaceId));
                     if (nrs.next()) {
-                        workspaceId = workspaceName;
+                        this.workspaceId = workspaceId;
                     }
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
