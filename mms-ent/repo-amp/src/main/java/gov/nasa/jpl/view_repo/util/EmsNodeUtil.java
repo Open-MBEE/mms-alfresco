@@ -415,13 +415,13 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public JSONArray search(JSONObject query) {
+    public Map<String, String> search(JSONObject query) {
         try {
             return eh.search(query);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new JSONArray();
+        return new HashMap();
     }
 
     private JSONArray filterResultsByWorkspace(JSONArray elements) {
@@ -1286,6 +1286,10 @@ public class EmsNodeUtil {
         return orgName.equals("swsdp") || pgh.orgExists(orgName);
     }
 
+    public List<String> filterSearchResults(List<String> sysmlIds){
+        return pgh.getElasticIdsFromSysmlIds(sysmlIds);
+
+    }
     public String getSite(String sysmlid) {
         String result = null;
         for (String parent : pgh.getRootParents(sysmlid, DbEdgeTypes.CONTAINMENT)) {
@@ -1589,6 +1593,7 @@ public class EmsNodeUtil {
 
         return value;
     }
+
 
     private static String camelize(String str) {
         Pattern p = Pattern.compile("_|\\s+(.)");

@@ -32,10 +32,7 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -130,22 +127,31 @@ public class ModelSearch extends ModelPost {
     private JSONArray executeSearchRequest(WebScriptRequest req, JSONObject top) throws JSONException, IOException {
 
         JSONArray elements = new JSONArray();
-        JSONArray elasticResult = new JSONArray();
         WorkspaceNode workspace = getWorkspace(req);
         String projectId = getProjectId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
         JSONObject json = (JSONObject) req.parseContent();
         //String keyword = req.getParameter("keyword");
-        elasticResult = emsNodeUtil.search(json);
-        if (elasticResult.length() > 0) {
-            for (int i = 0; i < elasticResult.length(); i++) {
-                JSONArray views = emsNodeUtil.getChildren(elasticResult.getJSONObject(i).getString(
-                    Sjm.ELASTICID), DbEdgeTypes.VIEW, (long) 0);
-                elasticResult.getJSONObject(i).put("_views", views);
-                elements.put(elasticResult.getJSONObject(i));
+        Map<String, String> elasticResult = emsNodeUtil.search(json);
+        // filter deleted elements
+        // use postgres method to ignore deleted elements
+        // remove elements that aren't the current version
+        // return 200 and {} array for no results
+
+        //List<String> filterResults = filterSearchResults(something);
+        if (elasticResult.size() > 0) {
+            List<String> sysmlIds = emsNodeUtil.filterSearchResults(new ArrayList<>(elasticResult.keySet()));
+            for (String value : elasticResult.values()) {
+                JSONObject o = new JSONObject(value);
+                if (sysmlIds.contains(o.getString(Sjm.ELASTICID))) {
+
+                    JSONArray views = emsNodeUtil.getChildren(o.getString(Sjm.ELASTICID), DbEdgeTypes.VIEW, (long) 0);
+                    o.put("_views", views);
+                    elements.put(o);
+                }
             }
         } else {
-
+            return new JSONArray();
         }
 
         return elements;
