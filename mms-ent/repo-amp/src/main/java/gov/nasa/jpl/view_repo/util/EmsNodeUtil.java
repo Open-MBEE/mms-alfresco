@@ -818,7 +818,11 @@ public class EmsNodeUtil {
         JSONArray newChildViews = element.optJSONArray(Sjm.CHILDVIEWS);
 
         if (newChildViews != null && newChildViews.length() > 0) {
-            pgh.deleteChildViews(sysmlId).forEach(deletedElements::put);
+            pgh.deleteChildViews(sysmlId).forEach((childId) -> {
+                JSONObject child = new JSONObject();
+                child.put(Sjm.SYSMLID, childId);
+                deletedElements.put(child);
+            });
 
             JSONArray ownedAttributes = new JSONArray();
 
