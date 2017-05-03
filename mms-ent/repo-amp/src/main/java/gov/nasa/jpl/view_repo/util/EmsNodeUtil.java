@@ -638,7 +638,7 @@ public class EmsNodeUtil {
         return results;
     }
 
-    public JSONArray processElements(JSONArray elements, String user, Map<String, JSONObject> foundElements) {
+    public JSONArray processElements(JSONArray elements, String user, Map<String, JSONObject> foundElements, JSONArray deletedElements) {
 
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
@@ -692,7 +692,7 @@ public class EmsNodeUtil {
             }
 
             if (added || updated) {
-                reorderChildViews(o, newElements);
+                reorderChildViews(o, newElements, deletedElements);
                 elements.put(i, o);
             }
 
@@ -804,7 +804,7 @@ public class EmsNodeUtil {
         return o;
     }
 
-    private JSONObject reorderChildViews(JSONObject element, JSONArray newElements) {
+    private JSONObject reorderChildViews(JSONObject element, JSONArray newElements, JSONArray deletedElements) {
 
         if (!element.has(Sjm.CHILDVIEWS)) {
             return element;
@@ -818,7 +818,7 @@ public class EmsNodeUtil {
         JSONArray newChildViews = element.optJSONArray(Sjm.CHILDVIEWS);
 
         if (newChildViews != null && newChildViews.length() > 0) {
-            pgh.deleteChildViews(sysmlId);
+            pgh.deleteChildViews(sysmlId).forEach(deletedElements::put);
 
             JSONArray ownedAttributes = new JSONArray();
 
@@ -1053,12 +1053,11 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public JSONObject insertIntoElastic(JSONArray elasticElements, Map<String, String> foundParentElements) {
+    public JSONObject insertIntoElastic(JSONArray elasticElements, Map<String, String> foundParentElements, JSONArray deletedElements) {
 
         JSONArray addedElements = new JSONArray();
         JSONArray updatedElements = new JSONArray();
         JSONArray newElements = new JSONArray();
-        JSONArray deletedElements = new JSONArray();
 
         JSONObject results = new JSONObject();
 
