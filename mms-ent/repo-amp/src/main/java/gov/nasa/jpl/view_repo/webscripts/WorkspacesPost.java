@@ -196,11 +196,15 @@ public class WorkspacesPost extends AbstractJavaWebScript{
         }
 
         // Only create the workspace if the workspace id was not supplied:
-        if (newWorkspaceId == null) {
+        EmsScriptNode existingRef = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId, false, null, true);
+        if (newWorkspaceId == null || existingRef.getId() == null) {
 
             EmsScriptNode srcWs = orgNode.childByNamePath("/" + projectId + "/refs/" + sourceWorkspaceId, false, null, true);
 
-            newWorkspaceId = workspaceName.toLowerCase().replace("-", "_").replaceAll("\\s+", "").replaceAll("[^A-Za-z0-9]", "");
+            if (newWorkspaceId == null) {
+                newWorkspaceId =
+                    workspaceName.toLowerCase().replace("-", "_").replaceAll("\\s+", "").replaceAll("[^A-Za-z0-9]", "");
+            }
 
             wsJson.put(Sjm.SYSMLID, newWorkspaceId);
             wsJson.put(Sjm.NAME, workspaceName);
@@ -212,7 +216,7 @@ public class WorkspacesPost extends AbstractJavaWebScript{
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
 
 
-            if (!"master".equals(sourceWorkspaceId) && srcWs == null) {
+            if (!"master".equals(sourceWorkspaceId) && srcWs.getId() == null) {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Source workspace not found.");
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);
                 return null;
@@ -237,16 +241,12 @@ public class WorkspacesPost extends AbstractJavaWebScript{
                 }
             }
         } else {
-
-            // First try and find the workspace by id:
-            EmsScriptNode existingWs = orgNode.childByNamePath(newWorkspaceId, false, null, true);
-
             // Workspace was found, so update it:
-            if (existingWs != null) {
+            if (existingRef.getId() != null) {
 
-                if (existingWs.isDeleted()) {
+                if (existingRef.isDeleted()) {
 
-                    existingWs.removeAspect("ems:Deleted");
+                    existingRef.removeAspect("ems:Deleted");
                     log(Level.INFO, HttpServletResponse.SC_OK, "Workspace undeleted and modified");
 
                 } else {
@@ -257,12 +257,12 @@ public class WorkspacesPost extends AbstractJavaWebScript{
                 // Note: allowing duplicate workspace names, so no need to check for other
                 //       workspaces with the same name
                 if (workspaceName != null) {
-                    existingWs.createOrUpdateProperty("ems:workspace_name", workspaceName);
+                    existingRef.createOrUpdateProperty("ems:workspace_name", workspaceName);
                 }
                 if (desc != null) {
-                    existingWs.createOrUpdateProperty("ems:description", desc);
+                    existingRef.createOrUpdateProperty("ems:description", desc);
                 }
-                finalWorkspace = existingWs;
+                finalWorkspace = existingRef;
             } else {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Workspace not found.");
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);
