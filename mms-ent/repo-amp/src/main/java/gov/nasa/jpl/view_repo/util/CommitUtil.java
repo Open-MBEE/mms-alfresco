@@ -592,7 +592,7 @@ public class CommitUtil {
     }
 
     // make sure only one branch is made at a time
-    public static synchronized boolean sendBranch(String projectId, JSONObject src, JSONObject created, String elasticId, Boolean isTag) throws JSONException {
+    public static synchronized boolean sendBranch(String projectId, JSONObject src, JSONObject created, String elasticId, Boolean isTag, String source) throws JSONException {
         // FIXME: need to include branch in commit history
 
         JSONObject branchJson = new JSONObject();
@@ -604,6 +604,8 @@ public class CommitUtil {
         branchJson.put("sourceRef", src); // branch
         // source
         branchJson.put("createdRef", created); // created
+
+        branchJson.put("source", source);
 
         String srcId = src.optString(Sjm.SYSMLID);
 
