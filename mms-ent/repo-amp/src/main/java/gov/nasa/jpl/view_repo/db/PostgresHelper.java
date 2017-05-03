@@ -1263,7 +1263,7 @@ public class PostgresHelper {
                 return result;
 
             String query = "SELECT N.sysmlid, N.elasticid FROM \"nodes%s\" N JOIN "
-                + "(SELECT * FROM get_parents(%s, %d, '%s')) P ON N.id=P.id ORDER BY P.height";
+                + "(SELECT * FROM get_parents(%s, %d, '%s')) P ON N.id = P.id ORDER BY P.height";
             ResultSet rs = execQuery(
                 String.format(query, workspaceId, n.getId(), DbEdgeTypes.CONTAINMENT.getValue(), workspaceId));
 
@@ -1292,7 +1292,7 @@ public class PostgresHelper {
                 return null;
 
             String query = "SELECT N.sysmlid, N.elasticid, N.nodetype FROM \"nodes%s\" N JOIN "
-                + "(SELECT * FROM get_parents(%s, %d, '%s')) P ON N.id=P.id ORDER BY P.height";
+                + "(SELECT * FROM get_parents(%s, %d, '%s')) P ON N.id = P.id ORDER BY P.height";
             ResultSet rs = execQuery(
                 String.format(query, workspaceId, n.getId(), DbEdgeTypes.CONTAINMENT.getValue(), workspaceId));
 
