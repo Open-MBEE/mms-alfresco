@@ -13,7 +13,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.commons.lang.StringUtils;
@@ -1738,11 +1737,6 @@ public class PostgresHelper {
             String childWorkspaceNameSanitized = childWorkspaceName.replace("-", "_").replaceAll("\\s+", "");
 
             // insert record into workspace table
-            /*
-            execUpdate(String.format(
-                "INSERT INTO refs (refId, refName, parent, parentCommit, elasticId, tag) VALUES ('%s', '%s', '%s', '%s', '%s', '%b')",
-                childWorkspaceNameSanitized, workspaceName, workspaceId, getHeadCommit(), elasticId, isTag));
-            */
             insertRef(childWorkspaceNameSanitized, workspaceName, getHeadCommit(), elasticId, isTag);
 
             // copy nodes first
@@ -1762,14 +1756,6 @@ public class PostgresHelper {
             execUpdate(
                 String.format("INSERT INTO edges%s SELECT * FROM edges%s", childWorkspaceNameSanitized, workspaceId));
 
-            // copy commits tables
-            /*
-            execUpdate(String.format(
-                "CREATE TABLE commits%s (LIKE commits%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
-                childWorkspaceNameSanitized, workspaceId));
-            execUpdate(
-                String.format("INSERT INTO commits%s SELECT * FROM commits%s", childWorkspaceNameSanitized, workspaceId));
-            */
             // add constraints last otherwise they won't hold
             execUpdate(String.format(
                 "ALTER TABLE ONLY edges%s ADD CONSTRAINT edges%s_child_fkey FOREIGN KEY (child) REFERENCES nodes%s(id)",
@@ -1790,14 +1776,6 @@ public class PostgresHelper {
                 childWorkspaceNameSanitized, childWorkspaceNameSanitized, childWorkspaceNameSanitized));
             execUpdate(
                 String.format("INSERT INTO edgeProperties%s SELECT * FROM edgeProperties%s", childWorkspaceNameSanitized, workspaceId));
-            /*
-            execUpdate(String.format(
-                "CREATE OR REPLACE RULE insert_ignore_on_edges%1$s AS "
-                + "ON INSERT TO edges%1$s "
-                + "WHERE NOT EXISTS (SELECT 1 FROM nodes%1$s JOIN edges%1$s AS parents ON parents.parent = nodes%1$s.id) OR "
-                + "NOT EXISTS (SELECT 1 FROM nodes%1$s JOIN edges%1$s AS childs ON childs.child = nodes%1$s.id) "
-                + "DO INSTEAD NOTHING", childWorkspaceNameSanitized));
-            */
 
             if (isTag) {
                 execUpdate(String
@@ -1851,7 +1829,7 @@ public class PostgresHelper {
     }
 
     public Pair<String, String> getRefElastic(String refId) {
-        if (refId.isEmpty() || refId == null) {
+        if (refId == null || refId.isEmpty()) {
             refId = "master";
         }
         try {
