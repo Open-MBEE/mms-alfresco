@@ -817,7 +817,7 @@ public class EmsNodeUtil {
         String sysmlId = element.optString(Sjm.SYSMLID);
         Set<DbNodeTypes> dbnt = new HashSet<>();
         dbnt.add(DbNodeTypes.PACKAGE);
-        String ownerParentPackage = pgh.getImmediateParentOfType(element.optString(Sjm.SYSMLID), DbEdgeTypes.CONTAINMENT, dbnt);
+        String ownerParentPackage = pgh.getImmediateParentOfType(sysmlId, DbEdgeTypes.CONTAINMENT, dbnt);
         JSONArray newChildViews = element.optJSONArray(Sjm.CHILDVIEWS);
 
         if (newChildViews != null && newChildViews.length() > 0) {
