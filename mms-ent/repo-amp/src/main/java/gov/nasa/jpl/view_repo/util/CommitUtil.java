@@ -208,7 +208,7 @@ public class CommitUtil {
         Map<String, List<Pair<String, String>>> addChildViews = new HashMap<>();
         List<Pair<String, String>> documentEdges = new ArrayList<>();
 
-        if (bulkElasticEntry(added, "added") && bulkElasticEntry(updated, "updated") && bulkElasticEntry(deleted, "deleted")) {
+        if (bulkElasticEntry(added, "added") && bulkElasticEntry(updated, "updated")) {
 
             try {
                 List<Pair<String, String>> plist = new ArrayList<>();

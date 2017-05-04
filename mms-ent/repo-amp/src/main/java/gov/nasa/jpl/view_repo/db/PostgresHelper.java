@@ -1356,11 +1356,16 @@ public class PostgresHelper {
         return result;
     }
 
-    public void deleteChildViews(String sysmlId) {
+    public List<String> deleteChildViews(String sysmlId) {
+        List<String> deleted = new ArrayList<>();
         try {
             Node n = getNodeFromSysmlId(sysmlId);
             if (n == null) {
-                return;
+                return deleted;
+            }
+            ResultSet rs = execQuery("SELECT node.elasticid FROM \"edges" + workspaceId + "\" JOIN \"nodes" + workspaceId + "\" as node ON child = node.id WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue());
+            while(rs.next()) {
+                deleted.add(rs.getString(1));
             }
             logger.error("DELETE FROM \"edgeproperties" + workspaceId + "\" WHERE edgeid in (SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue() + ")");
             execUpdate("DELETE FROM \"edgeproperties" + workspaceId + "\" WHERE edgeid in (SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue() + ")");
@@ -1371,6 +1376,8 @@ public class PostgresHelper {
         } finally {
             close();
         }
+
+        return deleted;
     }
 
     public void deleteEdgesForNode(String sysmlId) {
