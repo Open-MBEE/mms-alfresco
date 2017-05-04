@@ -815,6 +815,9 @@ public class EmsNodeUtil {
         }
 
         String sysmlId = element.optString(Sjm.SYSMLID);
+        Set<DbNodeTypes> dbnt = new HashSet<>();
+        dbnt.add(DbNodeTypes.PACKAGE);
+        String ownerParentPackage = pgh.getImmediateParentOfType(element.optString(Sjm.OWNERID), DbEdgeTypes.CONTAINMENT, dbnt);
         JSONArray newChildViews = element.optJSONArray(Sjm.CHILDVIEWS);
 
         if (newChildViews != null && newChildViews.length() > 0) {
@@ -938,7 +941,7 @@ public class EmsNodeUtil {
                 association.put(Sjm.NAME, "");
                 association.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
                 association.put(Sjm.TYPE, "Association");
-                association.put(Sjm.OWNERID, cvSysmlId);
+                association.put(Sjm.OWNERID, ownerParentPackage);
                 association.put(Sjm.MEMBERENDIDS, memberEndIds);
                 association.put(Sjm.OWNEDENDIDS, ownedEndIds);
                 association.put(Sjm.ELASTICID, UUID.randomUUID().toString());
