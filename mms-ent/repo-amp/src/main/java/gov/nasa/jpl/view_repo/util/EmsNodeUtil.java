@@ -310,11 +310,11 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public JSONObject getCommit(String commitID) {
+    public JSONObject getElasticElement(String elasticId) {
         JSONObject jObj = null;
 
         try {
-            jObj = eh.getElementByElasticId(commitID);
+            jObj = eh.getElementByElasticId(elasticId);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -819,9 +819,30 @@ public class EmsNodeUtil {
 
         if (newChildViews != null && newChildViews.length() > 0) {
             pgh.deleteChildViews(sysmlId).forEach((childId) -> {
-                JSONObject child = new JSONObject();
-                child.put(Sjm.SYSMLID, childId);
-                deletedElements.put(child);
+                JSONObject child = getElasticElement(childId);
+                if (child.has(Sjm.SYSMLID)) {
+                    deletedElements.put(child);
+
+                    JSONObject association = getNodeBySysmlid(child.optString(Sjm.ASSOCIATIONID));
+                    if (association.has(Sjm.SYSMLID)) {
+                        pgh.deleteNode(association.getString(Sjm.SYSMLID));
+                        deletedElements.put(association);
+                    }
+
+                    JSONObject asi = getNodeBySysmlid(child.optString(Sjm.APPLIEDSTEREOTYPEINSTANCEID));
+                    if (asi.has(Sjm.SYSMLID)) {
+                        pgh.deleteNode(asi.getString(Sjm.SYSMLID));
+                        deletedElements.put(asi);
+                    }
+                    JSONArray assocProps = association.optJSONArray(Sjm.OWNEDENDIDS);
+                    for (int i = 0; i < assocProps.length(); i++) {
+                        JSONObject assocProp = getNodeBySysmlid(assocProps.getString(i));
+                        if (assocProp.has(Sjm.SYSMLID)) {
+                            pgh.deleteNode(assocProp.getString(Sjm.SYSMLID));
+                            deletedElements.put(assocProp);
+                        }
+                    }
+                }
             });
 
             JSONArray ownedAttributes = new JSONArray();

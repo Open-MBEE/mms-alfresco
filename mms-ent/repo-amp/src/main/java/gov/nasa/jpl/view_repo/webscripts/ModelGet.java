@@ -440,7 +440,7 @@ public class ModelGet extends AbstractJavaWebScript {
                 if (sID.equalsIgnoreCase(sysmlId)) {
                     String elasticID = jObj.getString(Sjm.ELASTICID);
                     System.err.println("Found SysmlID=" + sID + ", elasticID=" + elasticID);
-                    resObj = emsNodeUtil.getCommit(elasticID);
+                    resObj = emsNodeUtil.getElasticElement(elasticID);
                     break;
                 }
             }
@@ -454,7 +454,7 @@ public class ModelGet extends AbstractJavaWebScript {
                 if (sID.equalsIgnoreCase(sysmlId)) {
                     String elasticID = jObj.getString(Sjm.ELASTICID);
                     System.err.println("Found SysmlID=" + sID + ", elasticID=" + elasticID);
-                    resObj = emsNodeUtil.getCommit(elasticID);
+                    resObj = emsNodeUtil.getElasticElement(elasticID);
                     break;
                 }
             }

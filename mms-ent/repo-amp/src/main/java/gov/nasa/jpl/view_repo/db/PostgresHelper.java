@@ -1363,7 +1363,7 @@ public class PostgresHelper {
             if (n == null) {
                 return deleted;
             }
-            ResultSet rs = execQuery("SELECT node.sysmlid FROM \"edges" + workspaceId + "\" JOIN \"nodes" + workspaceId + "\" as node ON child = node.id WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue());
+            ResultSet rs = execQuery("SELECT node.elasticid FROM \"edges" + workspaceId + "\" JOIN \"nodes" + workspaceId + "\" as node ON child = node.id WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue());
             while(rs.next()) {
                 deleted.add(rs.getString(1));
             }
