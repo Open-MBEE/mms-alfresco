@@ -112,6 +112,7 @@ public class Sjm {
     public static final String ISSITE = "_isSite";
     public static final String MODIFIED = "_modified";
     public static final String MODIFIER = "_modifier";
+    public static final String MOUNTS = "_mounts";
     public static final String PARENTVIEWS = "_parentViews";
     public static final String PROJECTID = "_projectId";
     public static final String PROPERTIES = "_properties";
@@ -123,8 +124,6 @@ public class Sjm {
     public static final String SITES = "_sites";
     public static final String SLOTS = "_slots";
     public static final String TIMESTAMP = "_timestamp";
-
-    public static final String MOUNTS = "mounts";
 
     public static final Map<String, String> STEREOTYPEIDS;
 
