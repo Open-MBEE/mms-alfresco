@@ -310,11 +310,11 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public JSONObject getCommit(String commitID) {
+    public JSONObject getElasticElement(String elasticId) {
         JSONObject jObj = null;
 
         try {
-            jObj = eh.getElementByElasticId(commitID);
+            jObj = eh.getElementByElasticId(elasticId);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -569,6 +569,9 @@ public class EmsNodeUtil {
         for (int i = 0; i < docJson.length(); i++) {
             docJson.getJSONObject(i).put(Sjm.PROJECTID, this.projectId);
             docJson.getJSONObject(i).put(Sjm.REFID, this.workspaceName);
+            if (!docJson.getJSONObject(i).has(Sjm.SITECHARACTERIZATIONID)) {
+                docJson.getJSONObject(i).put(Sjm.SITECHARACTERIZATIONID, pgh.getGroup(docJson.getJSONObject(i).getString(Sjm.SYSMLID)));
+            }
             result.put(addChildViews(docJson.getJSONObject(i)));
         }
 
@@ -635,7 +638,7 @@ public class EmsNodeUtil {
         return results;
     }
 
-    public JSONArray processElements(JSONArray elements, String user, Map<String, JSONObject> foundElements) {
+    public JSONArray processElements(JSONArray elements, String user, Map<String, JSONObject> foundElements, JSONArray deletedElements) {
 
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
@@ -689,7 +692,7 @@ public class EmsNodeUtil {
             }
 
             if (added || updated) {
-                reorderChildViews(o, newElements);
+                reorderChildViews(o, newElements, deletedElements);
                 elements.put(i, o);
             }
 
@@ -801,7 +804,7 @@ public class EmsNodeUtil {
         return o;
     }
 
-    private JSONObject reorderChildViews(JSONObject element, JSONArray newElements) {
+    private JSONObject reorderChildViews(JSONObject element, JSONArray newElements, JSONArray deletedElements) {
 
         if (!element.has(Sjm.CHILDVIEWS)) {
             return element;
@@ -812,10 +815,38 @@ public class EmsNodeUtil {
         }
 
         String sysmlId = element.optString(Sjm.SYSMLID);
+        Set<DbNodeTypes> dbnt = new HashSet<>();
+        dbnt.add(DbNodeTypes.PACKAGE);
+        String ownerParentPackage = pgh.getImmediateParentOfType(sysmlId, DbEdgeTypes.CONTAINMENT, dbnt);
         JSONArray newChildViews = element.optJSONArray(Sjm.CHILDVIEWS);
 
         if (newChildViews != null && newChildViews.length() > 0) {
-            pgh.deleteChildViews(sysmlId);
+            pgh.deleteChildViews(sysmlId).forEach((childId) -> {
+                JSONObject child = getElasticElement(childId);
+                if (child.has(Sjm.SYSMLID)) {
+                    deletedElements.put(child);
+
+                    JSONObject association = getNodeBySysmlid(child.optString(Sjm.ASSOCIATIONID));
+                    if (association.has(Sjm.SYSMLID)) {
+                        pgh.deleteNode(association.getString(Sjm.SYSMLID));
+                        deletedElements.put(association);
+                    }
+
+                    JSONObject asi = getNodeBySysmlid(child.optString(Sjm.APPLIEDSTEREOTYPEINSTANCEID));
+                    if (asi.has(Sjm.SYSMLID)) {
+                        pgh.deleteNode(asi.getString(Sjm.SYSMLID));
+                        deletedElements.put(asi);
+                    }
+                    JSONArray assocProps = association.optJSONArray(Sjm.OWNEDENDIDS);
+                    for (int i = 0; i < assocProps.length(); i++) {
+                        JSONObject assocProp = getNodeBySysmlid(assocProps.getString(i));
+                        if (assocProp.has(Sjm.SYSMLID)) {
+                            pgh.deleteNode(assocProp.getString(Sjm.SYSMLID));
+                            deletedElements.put(assocProp);
+                        }
+                    }
+                }
+            });
 
             JSONArray ownedAttributes = new JSONArray();
 
@@ -910,7 +941,7 @@ public class EmsNodeUtil {
                 association.put(Sjm.NAME, "");
                 association.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
                 association.put(Sjm.TYPE, "Association");
-                association.put(Sjm.OWNERID, cvSysmlId);
+                association.put(Sjm.OWNERID, ownerParentPackage);
                 association.put(Sjm.MEMBERENDIDS, memberEndIds);
                 association.put(Sjm.OWNEDENDIDS, ownedEndIds);
                 association.put(Sjm.ELASTICID, UUID.randomUUID().toString());
@@ -1050,12 +1081,11 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public JSONObject insertIntoElastic(JSONArray elasticElements, Map<String, String> foundParentElements) {
+    public JSONObject insertIntoElastic(JSONArray elasticElements, Map<String, String> foundParentElements, JSONArray deletedElements) {
 
         JSONArray addedElements = new JSONArray();
         JSONArray updatedElements = new JSONArray();
         JSONArray newElements = new JSONArray();
-        JSONArray deletedElements = new JSONArray();
 
         JSONObject results = new JSONObject();
 
