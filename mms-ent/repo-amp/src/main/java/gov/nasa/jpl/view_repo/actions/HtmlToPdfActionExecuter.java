@@ -104,6 +104,8 @@ public class HtmlToPdfActionExecuter extends ActionExecuterAbstractBase {
 		String customCss = (String) action.getParameterValue(PARAM_CUSTOM_CSS);
 		String disabledCvrPg = (String)action.getParameterValue(PARAM_DISABLED_COVER_PAGE);
 
+		timeStamp = timeStamp.toLowerCase().replace("/", "-").replaceAll("\\s+", "").replaceAll("[^A-Za-z0-9]", "");
+
 		Boolean disabledCoverPage = false;
 		if(!StringUtils.isEmpty(disabledCvrPg)) disabledCoverPage = Boolean.parseBoolean(disabledCvrPg);
 
