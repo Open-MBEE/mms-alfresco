@@ -39,7 +39,6 @@ public class EmsNodeUtil {
     private String projectId = null;
     private String workspaceName = "master";
     private static Logger logger = Logger.getLogger(EmsNodeUtil.class);
-    List<Node> sites;
 
     public EmsNodeUtil() {
         try {
