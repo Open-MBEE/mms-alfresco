@@ -767,7 +767,7 @@ public class EmsNodeUtil {
         return pgh.isTag(this.workspaceName);
     }
 
-    private JSONObject addChildViews(JSONObject o) {
+    public JSONObject addChildViews(JSONObject o) {
         return addChildViews(o, null);
     }
 
