@@ -124,7 +124,7 @@ public class EmsNodeUtil {
             if (mountsList.size() > 0) {
                 mounts = new JSONArray(n.get(Sjm.MOUNTS));
             }
-            project.put("mounts", mounts);
+            project.put("_mounts", mounts);
             projects.put(project);
         });
 
@@ -140,7 +140,7 @@ public class EmsNodeUtil {
             List<String> mounts = (List) project.get(Sjm.MOUNTS);
             JSONArray projMounts = new JSONArray();
             mounts.forEach(projMounts::put);
-            proj.put("mounts", projMounts);
+            proj.put("_mounts", projMounts);
             projects.put(proj);
         });
 
@@ -156,7 +156,7 @@ public class EmsNodeUtil {
             List<String> mounts = (List) project.get(Sjm.MOUNTS);
             JSONArray projMounts = new JSONArray();
             mounts.forEach(projMounts::put);
-            proj.put("mounts", projMounts);
+            proj.put("_mounts", projMounts);
 
             return proj;
         }
