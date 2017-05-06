@@ -95,7 +95,7 @@ public class MountsGet extends AbstractJavaWebScript {
             String projectId = getProjectId(req);
             String refId = getRefId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, null);
+            JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
             JSONArray mountsArray = new JSONArray().put(mountsJson);
 
             if (mountsJson.length() > 0) {

@@ -104,6 +104,8 @@ public class HtmlToPdfActionExecuter extends ActionExecuterAbstractBase {
 		String customCss = (String) action.getParameterValue(PARAM_CUSTOM_CSS);
 		String disabledCvrPg = (String)action.getParameterValue(PARAM_DISABLED_COVER_PAGE);
 
+		timeStamp = timeStamp.toLowerCase().replace("/", "-").replaceAll("\\s+", "").replaceAll("[^A-Za-z0-9]", "");
+
 		Boolean disabledCoverPage = false;
 		if(!StringUtils.isEmpty(disabledCvrPg)) disabledCoverPage = Boolean.parseBoolean(disabledCvrPg);
 
@@ -145,7 +147,7 @@ public class HtmlToPdfActionExecuter extends ActionExecuterAbstractBase {
 		StringBuffer buf = new StringBuffer();
 		HostnameGet hostnameGet = new HostnameGet(this.repository,
 				this.services);
-		String contextUrl = hostnameGet.getAlfrescoUrl() + "/alfresco";
+		String contextUrl = hostnameGet.getAlfrescoUrl() + "/share/page/document-details?nodeRef=";
 
 		if (pdfNode == null) {
 			buf.append("HTML to PDF generation completed with errors. Please review the below link for detailed information.");
@@ -154,27 +156,27 @@ public class HtmlToPdfActionExecuter extends ActionExecuterAbstractBase {
 			buf.append(System.lineSeparator());
 			buf.append(System.lineSeparator());
 			buf.append("You can access the PDF file at ");
-			buf.append(contextUrl + pdfNode.getUrl());
+			buf.append(contextUrl + pdfNode.getNodeRef().getStoreRef().getProtocol() + "://" + pdfNode.getNodeRef().getStoreRef().getIdentifier() + "/" + pdfNode.getNodeRef().getId());
 		}
 
 		buf.append(System.lineSeparator());
 		buf.append(System.lineSeparator());
 
-		EmsScriptNode parentNode = null;
-		if(pdfNode != null) parentNode = pdfNode.getParent();
-		if(parentNode != null){
-			String shareUrl = hostnameGet.getShareUrl();
-			buf.append("Directory link: ");
-			buf.append(shareUrl);
-			buf.append("/share/page/context/mine/myfiles#filter=path%7C%2F");
-			buf.append(parentNode.getName());
-			buf.append(System.lineSeparator());
-			buf.append(System.lineSeparator());
-		}
+        //EmsScriptNode parentNode = null;
+        //if(pdfNode != null) parentNode = pdfNode.getParent();
+        //if(parentNode != null){
+        //	String shareUrl = hostnameGet.getShareUrl();
+        //	buf.append("Directory link: ");
+        //	buf.append(shareUrl);
+        //	buf.append("/share/page/repository#filter=path%7C%2F");
+        //	buf.append(parentNode.getUrl().replace("/d/d",""));
+        //	buf.append(System.lineSeparator());
+        //	buf.append(System.lineSeparator());
+        //}
 
-		buf.append("Log: ");
-		buf.append(contextUrl);
-		buf.append(logNode.getUrl());
+		//buf.append("Log: ");
+		//buf.append(contextUrl);
+		//buf.append(logNode.getUrl().replace("/d/d",""));
 
 		return buf.toString();
 	}

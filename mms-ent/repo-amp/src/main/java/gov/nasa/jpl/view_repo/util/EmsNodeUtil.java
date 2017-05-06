@@ -39,7 +39,6 @@ public class EmsNodeUtil {
     private String projectId = null;
     private String workspaceName = "master";
     private static Logger logger = Logger.getLogger(EmsNodeUtil.class);
-    List<Node> sites;
 
     public EmsNodeUtil() {
         try {
@@ -163,34 +162,37 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public JSONObject getProjectWithFullMounts(String projectId, List<String> found) {
+    public JSONObject getProjectWithFullMounts(String projectId, String refId, List<String> found) {
         List<String> realFound = found;
         if (realFound == null) {
-            realFound = new ArrayList<String>();
+            realFound = new ArrayList<>();
         }
         Map<String, Object> project = pgh.getProject(projectId);
 
         if (!project.isEmpty() && !project.get(Sjm.SYSMLID).toString().contains("no_project")) {
             switchProject(projectId);
-            JSONObject proj = getNodeBySysmlid(projectId);
-            proj.put("orgId", project.get("orgId").toString());
-            JSONArray mountObject = getFullMounts(proj.get(Sjm.SYSMLID).toString(), realFound);
-            proj.put(Sjm.MOUNTS, mountObject);
-            return proj;
+            switchWorkspace(refId);
+            JSONObject projectJson = getNodeBySysmlid(projectId);
+            projectJson.put("orgId", project.get("orgId").toString());
+            JSONArray mountObject = getFullMounts(projectJson.get(Sjm.SYSMLID).toString(), realFound);
+            projectJson.put(Sjm.MOUNTS, mountObject);
+            return projectJson;
         }
         return null;
     }
 
     public JSONArray getFullMounts(String projectId, List<String> found) {
-        found.add(projectId);
         JSONArray mounts = new JSONArray();
         pgh.getNodesByType(DbNodeTypes.MOUNT).forEach((mount) -> {
-            if (found.contains(mount.getSysmlId())) {
-                return;
+            if (!found.contains(mount.getSysmlId())) {
+                found.add(projectId);
+                JSONObject mountJson = getNodeBySysmlid(mount.getSysmlId());
+                if (mountJson.has(Sjm.MOUNTEDELEMENTPROJECTID) && mountJson.has("refId")) {
+                    JSONObject childProject =
+                        getProjectWithFullMounts(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID), mountJson.getString("refId"), found);
+                    mounts.put(childProject);
+                }
             }
-            JSONObject childProject = getProjectWithFullMounts(mount.getSysmlId(), found);
-            mounts.put(childProject);
-
         });
         return mounts;
     }
@@ -765,7 +767,7 @@ public class EmsNodeUtil {
         return pgh.isTag(this.workspaceName);
     }
 
-    private JSONObject addChildViews(JSONObject o) {
+    public JSONObject addChildViews(JSONObject o) {
         return addChildViews(o, null);
     }
 
@@ -821,6 +823,7 @@ public class EmsNodeUtil {
         JSONArray newChildViews = element.optJSONArray(Sjm.CHILDVIEWS);
 
         if (newChildViews != null && newChildViews.length() > 0) {
+            logger.error(newChildViews.toString(4));
             pgh.deleteChildViews(sysmlId).forEach((childId) -> {
                 JSONObject child = getElasticElement(childId);
                 if (child.has(Sjm.SYSMLID)) {
@@ -1019,7 +1022,7 @@ public class EmsNodeUtil {
                 newElements.put(assocProperty);
 
                 // Add OwnedAttributeIds
-                ownedAttributes.put(propertySysmlId);
+                ownedAttributes.put(i, propertySysmlId);
             }
             if (ownedAttributes.length() > 0) {
                 element.put(Sjm.OWNEDATTRIBUTEIDS, ownedAttributes);

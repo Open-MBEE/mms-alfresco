@@ -144,6 +144,7 @@ public class ModelPost extends AbstractJavaWebScript {
         JSONObject commit = new JSONObject();
         JSONObject newElementsObject = new JSONObject();
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
+        boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
         WorkspaceNode myWorkspace = getWorkspace(req, user);
 
         String refId = getRefId(req);
@@ -180,6 +181,13 @@ public class ModelPost extends AbstractJavaWebScript {
             if (CommitUtil.sendDeltas(commit, commitResults, projectId, refId, requestSourceApplication)) {
 
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
+
+                if (withChildViews) {
+                    for (int i = 0; i < results.getJSONArray("newElements").length(); i++) {
+                        results.getJSONArray("newElements")
+                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray("newElements").getJSONObject(i)));
+                    }
+                }
 
                 newElementsObject.put(Sjm.ELEMENTS, extended ?
                     emsNodeUtil.addExtendedInformation(results.getJSONArray("newElements")) :
