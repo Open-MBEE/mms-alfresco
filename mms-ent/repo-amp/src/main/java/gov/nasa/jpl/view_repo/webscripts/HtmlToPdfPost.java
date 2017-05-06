@@ -987,7 +987,6 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 	private JSONObject saveAndStartAction(WebScriptRequest req, Status status) {
 		JSONObject postJson = null;
 		WorkspaceNode workspace = getWorkspace(req);
-		EmsScriptNode siteNode = getSiteNodeFromRequest(req, false);
 		JSONObject reqPostJson = (JSONObject) req.parseContent();
 		if (reqPostJson != null) {
 			postJson = reqPostJson;
@@ -998,8 +997,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 					String user = AuthenticationUtil.getRunAsUser();
 					EmsScriptNode userHomeFolder = getUserHomeFolder(user);
 
-					postJson = handleCreate(json, siteNode.getName(),
-							userHomeFolder, workspace, status);
+					postJson = handleCreate(json, userHomeFolder, workspace, status);
 				}
 			}
 		}
@@ -1007,8 +1005,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 		return postJson;
 	}
 
-	private JSONObject handleCreate(JSONObject postJson, String siteName,
-			EmsScriptNode context, WorkspaceNode workspace, Status status)
+	private JSONObject handleCreate(JSONObject postJson, EmsScriptNode context, WorkspaceNode workspace, Status status)
 			throws JSONException {
 		EmsScriptNode jobNode = null;
 
@@ -1021,7 +1018,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 					status, response, true);
 
 			if (jobNode != null) {
-				startAction(jobNode, postJson, siteName, workspace);
+				startAction(jobNode, postJson, workspace);
 				return postJson;
 			} else {
 				log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
@@ -1040,14 +1037,11 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 	 *
 	 * @param jobNode
      * @param postJson
-	 * @param siteName
 	 * @param workspace
 	 */
-	public void startAction(EmsScriptNode jobNode, JSONObject postJson,
-			String siteName, WorkspaceNode workspace) {
+	public void startAction(EmsScriptNode jobNode, JSONObject postJson, WorkspaceNode workspace) {
 		ActionService actionService = services.getActionService();
 		Action htmlToPdfAction = actionService.createAction(HtmlToPdfActionExecuter.NAME);
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_SITE_NAME, siteName);
 		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_WORKSPACE, workspace);
 		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_DOCUMENT_ID, postJson.optString("docId"));
 		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TAG_ID, postJson.optString("tagId"));
