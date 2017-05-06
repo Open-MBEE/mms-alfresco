@@ -187,9 +187,9 @@ public class EmsNodeUtil {
             if (!found.contains(mount.getSysmlId())) {
                 found.add(projectId);
                 JSONObject mountJson = getNodeBySysmlid(mount.getSysmlId());
-                if (mountJson.has(Sjm.SYSMLID) && mountJson.has("refId")) {
+                if (mountJson.has(Sjm.MOUNTEDELEMENTPROJECTID) && mountJson.has("refId")) {
                     JSONObject childProject =
-                        getProjectWithFullMounts(mountJson.getString(Sjm.SYSMLID), mountJson.getString("refId"), found);
+                        getProjectWithFullMounts(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID), mountJson.getString("refId"), found);
                     mounts.put(childProject);
                 }
             }
@@ -823,6 +823,7 @@ public class EmsNodeUtil {
         JSONArray newChildViews = element.optJSONArray(Sjm.CHILDVIEWS);
 
         if (newChildViews != null && newChildViews.length() > 0) {
+            logger.error(newChildViews.toString(4));
             pgh.deleteChildViews(sysmlId).forEach((childId) -> {
                 JSONObject child = getElasticElement(childId);
                 if (child.has(Sjm.SYSMLID)) {
@@ -1021,7 +1022,7 @@ public class EmsNodeUtil {
                 newElements.put(assocProperty);
 
                 // Add OwnedAttributeIds
-                ownedAttributes.put(propertySysmlId);
+                ownedAttributes.put(i, propertySysmlId);
             }
             if (ownedAttributes.length() > 0) {
                 element.put(Sjm.OWNEDATTRIBUTEIDS, ownedAttributes);
