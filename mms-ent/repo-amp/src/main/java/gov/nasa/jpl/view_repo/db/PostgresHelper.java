@@ -1617,7 +1617,7 @@ public class PostgresHelper {
                 + "          join ' || format('edgeproperties%s', $2) || ' as aggregation on edges.id = aggregation.edgeid and aggregation.key = ''aggregation''\n"
                 + "          join ' || format('edgeproperties%s', $2) || ' as typeid on edges.id = typeid.edgeid and typeid.key = ''typeId''\n"
                 + "          join ' || format('nodes%s', $2) || ' as child on typeid.value = child.sysmlid and (child.nodetype = 4 or child.nodetype = 12)\n"
-                + "          where edges.parent = ' || $1 || '\n" + "          order by ordering.value ASC\n"
+                + "          where edges.parent = ' || $1 || '\n" + "          order by ordering.value::integer ASC\n"
                 + "        )\n" + "      )\n" + "      select sysmlid, aggregation from childviews;';\n" + "  end;\n"
                 + "$$ language plpgsql;");
 
