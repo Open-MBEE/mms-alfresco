@@ -405,25 +405,9 @@ public class ModelGet extends AbstractJavaWebScript {
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
 
-        JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
-
-        if (tmpElements.length() <= 0) {
-            JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
-            JSONArray mountsArray = new JSONArray().put(mountsJson);
-
-            for (int i = 0; i < mountsArray.length(); i++) {
-                tmpElements = handleMountSearch(mountsArray.getJSONObject(i).getString(Sjm.SYSMLID),
-                    mountsArray.getJSONObject(i).getString(Sjm.REFID), rootSysmlid, depth);
-                if(tmpElements.length() <= 0){
-                    break;
-                }else{
-                    continue;
-                }
-            }
-        }
-
-        JSONArray elasticElements = extended ? emsNodeUtil.addExtendedInformation(tmpElements) : tmpElements;
+        JSONArray elasticElements = handleMountSearch(mountsJson, extended, rootSysmlid, depth);
         JSONArray elasticElementsCleaned = new JSONArray();
 
         for (int i = 0; i < elasticElements.length(); i++) {
@@ -434,11 +418,23 @@ public class ModelGet extends AbstractJavaWebScript {
         return elasticElementsCleaned;
     }
 
-    protected JSONArray handleMountSearch(String projectId, String refId, String rootSysmlid, Long depth)
+    protected JSONArray handleMountSearch(JSONObject projectOb, boolean extended, String rootSysmlid, Long depth)
         throws JSONException, SQLException, IOException {
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectOb.getString(Sjm.SYSMLID), projectOb.getString(Sjm.REFID));
+        JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
+        if (tmpElements.length() > 0) {
+            JSONArray elasticElements = extended ? emsNodeUtil.addExtendedInformation(tmpElements) : tmpElements;
+            return elasticElements;
+        }
+        JSONArray mountsArray = projectOb.getJSONArray(Sjm.MOUNTS);
 
-        return emsNodeUtil.getChildren(rootSysmlid, depth);
+        for (int i = 0; i < mountsArray.length(); i++) {
+            tmpElements = handleMountSearch(mountsArray.getJSONObject(i), extended, rootSysmlid, depth);
+            if (tmpElements.length() > 0) {
+                return tmpElements;
+            }
+        }
+        return new JSONArray();
 
     }
 
