@@ -37,6 +37,7 @@ import java.util.*;
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -55,6 +56,7 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
+import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
 
 /**
  * Model search service that returns a JSONArray of elements
@@ -144,7 +146,9 @@ public class ModelSearch extends ModelPost {
             for (String value : elasticResult.values()) {
                 JSONObject o = new JSONObject(value);
                 if (sysmlIds.contains(o.getString(Sjm.ELASTICID))) {
-
+                    // :TODO get each docment the element appears in, this should be a array  -- this method only finds a string
+                    String documentsTheElementExistsIn = emsNodeUtil.getImmediateParentOfType(o.getString(Sjm.SYSMLID),DbEdgeTypes.VIEW, DbNodeTypes.DOCUMENT);
+                    // :TODO iterate through documents array and find each view in each document that contains the element
                     JSONArray views = emsNodeUtil.getChildren(o.getString(Sjm.ELASTICID), DbEdgeTypes.VIEW, (long) 0);
                     o.put("_views", views);
                     elements.put(o);
