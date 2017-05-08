@@ -387,14 +387,15 @@ public class ModelGet extends AbstractJavaWebScript {
      * Recurse a view hierarchy to get all allowed elements
      *
      * @param rootSysmlid Root view to find elements for
-     * @param req   WebScriptRequest
+     * @param req         WebScriptRequest
      * @return JSONArray of elements
      * @throws JSONException JSON element creation error
      * @throws SQLException  SQL error
      * @throws IOException   IO error
      */
 
-    protected JSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req) throws JSONException, SQLException, IOException {
+    protected JSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
+        throws JSONException, SQLException, IOException {
         // get timestamp if specified
         String commitId = req.getParameter("commitId");
         String projectId = getProjectId(req);
@@ -407,6 +408,21 @@ public class ModelGet extends AbstractJavaWebScript {
 
         JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
 
+        if (tmpElements.length() <= 0) {
+            JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
+            JSONArray mountsArray = new JSONArray().put(mountsJson);
+
+            for (int i = 0; i < mountsArray.length(); i++) {
+                tmpElements = handleMountSearch(mountsArray.getJSONObject(i).getString(Sjm.SYSMLID),
+                    mountsArray.getJSONObject(i).getString(Sjm.REFID), rootSysmlid, depth);
+                if(tmpElements.length() <= 0){
+                    break;
+                }else{
+                    continue;
+                }
+            }
+        }
+
         JSONArray elasticElements = extended ? emsNodeUtil.addExtendedInformation(tmpElements) : tmpElements;
         JSONArray elasticElementsCleaned = new JSONArray();
 
@@ -416,6 +432,14 @@ public class ModelGet extends AbstractJavaWebScript {
         }
 
         return elasticElementsCleaned;
+    }
+
+    protected JSONArray handleMountSearch(String projectId, String refId, String rootSysmlid, Long depth)
+        throws JSONException, SQLException, IOException {
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+
+        return emsNodeUtil.getChildren(rootSysmlid, depth);
+
     }
 
     /*
