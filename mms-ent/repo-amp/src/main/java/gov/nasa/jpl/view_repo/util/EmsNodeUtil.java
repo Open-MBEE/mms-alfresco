@@ -174,6 +174,7 @@ public class EmsNodeUtil {
             switchWorkspace(refId);
             JSONObject projectJson = getNodeBySysmlid(projectId);
             projectJson.put("orgId", project.get("orgId").toString());
+            realFound.add(projectId);
             JSONArray mountObject = getFullMounts(projectJson.get(Sjm.SYSMLID).toString(), realFound);
             projectJson.put(Sjm.MOUNTS, mountObject);
             return projectJson;
@@ -183,17 +184,21 @@ public class EmsNodeUtil {
 
     public JSONArray getFullMounts(String projectId, List<String> found) {
         JSONArray mounts = new JSONArray();
+        String curProjectId = this.projectId;
+        String curRefId = this.workspaceName;
         pgh.getNodesByType(DbNodeTypes.MOUNT).forEach((mount) -> {
-            if (!found.contains(mount.getSysmlId())) {
-                found.add(projectId);
-                JSONObject mountJson = getNodeBySysmlid(mount.getSysmlId());
-                if (mountJson.has(Sjm.MOUNTEDELEMENTPROJECTID) && mountJson.has("refId")) {
-                    JSONObject childProject =
-                        getProjectWithFullMounts(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID), mountJson.getString("refId"), found);
-                    if (childProject != null) {
-                        mounts.put(childProject);
-                    }
+            JSONObject mountJson = getNodeBySysmlid(mount.getSysmlId());
+            if (mountJson.has(Sjm.MOUNTEDELEMENTPROJECTID) && mountJson.has("refId")) {
+                if (found.contains(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID))) {
+                    return;
                 }
+                //EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID), mountJson.getString("refId"));
+                JSONObject childProject = getProjectWithFullMounts(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID), mountJson.getString("refId"), found);
+                if (childProject != null) {
+                    mounts.put(childProject);
+                }
+                switchProject(curProjectId);
+                switchWorkspace(curRefId);
             }
         });
         return mounts;
