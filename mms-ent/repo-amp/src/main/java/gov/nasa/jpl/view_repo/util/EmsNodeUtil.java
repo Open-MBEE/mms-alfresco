@@ -190,7 +190,9 @@ public class EmsNodeUtil {
                 if (mountJson.has(Sjm.MOUNTEDELEMENTPROJECTID) && mountJson.has("refId")) {
                     JSONObject childProject =
                         getProjectWithFullMounts(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID), mountJson.getString("refId"), found);
-                    mounts.put(childProject);
+                    if (childProject != null) {
+                        mounts.put(childProject);
+                    }
                 }
             }
         });
