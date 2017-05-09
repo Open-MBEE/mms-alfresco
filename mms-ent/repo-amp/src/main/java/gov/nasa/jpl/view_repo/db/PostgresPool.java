@@ -30,7 +30,7 @@ public class PostgresPool {
             bds.get(connectString).setPassword(EmsConfig.get("pg.pass"));
             bds.get(connectString).setInitialSize(10);
             bds.get(connectString).setMaxIdle(MAX_IDLE_CONN);
-            bds.get(connectString).setMaxActive(MAX_ACTIVE_CONN);
+            bds.get(connectString).setMaxActive((!EmsConfig.get("pg.conn.max").equals("")) ? Integer.parseInt(EmsConfig.get("pg.conn.max")) : MAX_ACTIVE_CONN);
             bds.get(connectString).setMaxWait(10000);
             bds.get(connectString).setDefaultAutoCommit(true);
             bds.get(connectString).setRemoveAbandonedTimeout(1);
@@ -63,7 +63,7 @@ public class PostgresPool {
         bds.setPassword(EmsConfig.get("pg.pass"));
         bds.setInitialSize(10);
         bds.setMaxIdle(MAX_IDLE_CONN);
-        bds.setMaxActive(MAX_ACTIVE_CONN);
+        bds.setMaxActive((!EmsConfig.get("pg.conn.max").equals("")) ? Integer.parseInt(EmsConfig.get("pg.conn.max")) : MAX_ACTIVE_CONN);
         bds.setMaxWait(10000);
         bds.setDefaultAutoCommit(true);
         bds.setRemoveAbandonedTimeout(1);
