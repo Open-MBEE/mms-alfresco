@@ -33,13 +33,13 @@
 *   Right-click **Maven Build** > **New**
     *   Enter `mms-all-in-one` for Name textbox
     *   At **Main** tab
-            *   Enter `${project_loc}` or `${workspace_loc}` for Base Directory textbox
-            *   Enter `install` for Goals textbox
-            *   Enter `run` for Profiles textbox
-            *   Select Maven 3.X.X (whatever you chose to setup in step 2) for Maven Runtime
+        *   Enter `${project_loc}` or `${workspace_loc}` for Base Directory textbox
+        *   Enter `install` for Goals textbox
+        *   Enter `run` for Profiles textbox
+        *   Select Maven 3.X.X (whatever you chose to setup in step 2) for Maven Runtime
     *   At **JRE** tab
-            *   Select **Java 8** for JRE.
-            *   If it's not installed, download and install Java 8. Afterward, return to here and select Java 8.
+        *   Select **Java 8** for JRE.
+        *   If it's not installed, download and install Java 8. Afterward, return to here and select Java 8.
 
 ## 4. Install and Configure Elastic Search
 *   Download Elasticsearch 5.X
