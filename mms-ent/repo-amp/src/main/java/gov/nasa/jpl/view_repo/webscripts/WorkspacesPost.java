@@ -197,7 +197,7 @@ public class WorkspacesPost extends AbstractJavaWebScript{
 
         // Only create the workspace if the workspace id was not supplied:
         EmsScriptNode existingRef = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId, false, null, true);
-        if (newWorkspaceId == null || existingRef.getId() == null) {
+        if (newWorkspaceId == null || existingRef == null) {
 
             EmsScriptNode srcWs = orgNode.childByNamePath("/" + projectId + "/refs/" + sourceWorkspaceId, false, null, true);
 

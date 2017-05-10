@@ -416,7 +416,10 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         String projectId = AbstractJavaWebScript.getProjectId(req);
 
         for (int i = 0; i < elements.length(); i++) {
-            JSONObject element = filterElementByPermission(elements.optJSONObject(i), projectId, refId, null, Permission.READ, null,
+            JSONObject el = elements.optJSONObject(i);
+            String refId2 = el.has(Sjm.REFID) ? el.getString(Sjm.REFID) : refId;
+            String projectId2 = el.has(Sjm.PROJECTID) ? el.getString(Sjm.PROJECTID): projectId;
+            JSONObject element = filterElementByPermission(el, projectId2, refId2, null, Permission.READ, null,
                 permCache);
             if (element != null) {
                 result.put(element);
