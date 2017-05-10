@@ -628,13 +628,13 @@ public class PostgresHelper {
 
     public List<String> getElasticIdsFromSysmlIds(List<String> sysmlids) {
         List<String> elasticIds = new ArrayList<>();
-        if (sysmlids == null)
+        if (sysmlids == null || sysmlids.isEmpty())
             return elasticIds;
 
         try {
             String query = String
                 .format("SELECT elasticid FROM \"nodes%s\" WHERE sysmlid IN (%s) AND deleted = %b", workspaceId,
-                    "'" + (sysmlids.size() > 1 ? String.join("','", sysmlids) : sysmlids.get(0)) + "'", false);
+                    "'" + String.join("','", sysmlids) + "'", false);
             ResultSet rs = execQuery(query);
             while (rs.next()) {
                 elasticIds.add(rs.getString(1));
@@ -1617,7 +1617,7 @@ public class PostgresHelper {
                 + "          join ' || format('edgeproperties%s', $2) || ' as aggregation on edges.id = aggregation.edgeid and aggregation.key = ''aggregation''\n"
                 + "          join ' || format('edgeproperties%s', $2) || ' as typeid on edges.id = typeid.edgeid and typeid.key = ''typeId''\n"
                 + "          join ' || format('nodes%s', $2) || ' as child on typeid.value = child.sysmlid and (child.nodetype = 4 or child.nodetype = 12)\n"
-                + "          where edges.parent = ' || $1 || '\n" + "          order by ordering.value ASC\n"
+                + "          where edges.parent = ' || $1 || '\n" + "          order by ordering.value::integer ASC\n"
                 + "        )\n" + "      )\n" + "      select sysmlid, aggregation from childviews;';\n" + "  end;\n"
                 + "$$ language plpgsql;");
 
@@ -1872,22 +1872,45 @@ public class PostgresHelper {
         return result;
     }
 
-    public List<Map<String, String>> getRefsCommits(String refId) {
-        List<Map<String, String>> result = new ArrayList<>();
+    public List<Map<String, Object>> getRefsCommits(String refId) {
+        return getRefsCommits(refId, 0);
+    }
+
+    public List<Map<String, Object>> getRefsCommits(String refId, int commitId) {
+        List<Map<String, Object>> result = new ArrayList<>();
         try {
+            String refIdString = refId;
             if (refId.equals("master")) {
                 refId = "";
             }
-            ResultSet rs = execQuery(String
-                .format("SELECT elasticId, creator, timestamp FROM commits WHERE refId = '%s' ORDER BY timestamp DESC",
-                    refId));
+            if (refIdString.equals("")) {
+                refIdString = "master";
+            }
+            String query = String
+                .format("SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE refId = '%s'",
+                    refId);
+
+            if (commitId != 0) {
+                query += String.format(" AND timestamp < (SELECT timestamp FROM commits WHERE id = %s)", commitId);
+            }
+            query += " ORDER BY timestamp DESC";
+
+            ResultSet rs = execQuery(query);
 
             while (rs.next()) {
-                Map<String, String> commit = new HashMap<>();
+                Map<String, Object> commit = new HashMap<>();
                 commit.put(Sjm.SYSMLID, rs.getString(1));
                 commit.put(Sjm.CREATOR, rs.getString(2));
-                commit.put(Sjm.TIMESTAMP, rs.getString(3));
+                commit.put(Sjm.TIMESTAMP, rs.getTime(3));
+                commit.put("refId", rs.getString(4));
+                commit.put("commitType", rs.getString(5));
                 result.add(commit);
+            }
+
+            rs = execQuery(String.format("SELECT parent, parentCommit FROM refs WHERE refId = '%s'", refIdString));
+            if(rs.next() && rs.getInt(2) != 0) {
+                String nextRefId = rs.getString(1);
+                result.addAll(getRefsCommits(nextRefId, rs.getInt(2)));
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));

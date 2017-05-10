@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -211,7 +212,7 @@ public class CommitUtil {
         if (bulkElasticEntry(added, "added") && bulkElasticEntry(updated, "updated")) {
 
             try {
-                List<Pair<String, String>> plist = new ArrayList<>();
+                List<Pair<String, String>> plist = new LinkedList<>();
 
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
                 List<Map<String, String>> edgeInserts = new ArrayList<>();
@@ -276,7 +277,7 @@ public class CommitUtil {
                     affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
                 }
 
-                List<Pair<String, String>> updatedPlist = new ArrayList<>();
+                List<Pair<String, String>> updatedPlist = new LinkedList<>();
                 for (int i = 0; i < updated.length(); i++) {
                     JSONObject e = updated.getJSONObject(i);
                     jmsUpdated.put(e.getString(Sjm.SYSMLID));
@@ -614,8 +615,10 @@ public class CommitUtil {
 
         try {
             pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId, isTag);
+            branchJson.put("status", "created");
         } catch (Exception e) {
             // TODO Auto-generated catch block
+            branchJson.put("status", "failed");
             e.printStackTrace();
         }
 

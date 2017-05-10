@@ -30,9 +30,11 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
+
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -51,12 +53,10 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 
 /**
- *
  * @author cinyoung
- *
  */
 public class ModelsGet extends ModelGet {
-	static Logger logger = Logger.getLogger(ModelsGet.class);
+    static Logger logger = Logger.getLogger(ModelsGet.class);
 
     public ModelsGet() {
         super();
@@ -69,8 +69,7 @@ public class ModelsGet extends ModelGet {
     String timestamp;
     Date dateTime;
 
-    @Override
-    protected boolean validateRequest(WebScriptRequest req, Status status) {
+    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         // get timestamp if specified
         timestamp = req.getParameter("timestamp");
         dateTime = TimeUtils.dateFromTimestamp(timestamp);
@@ -83,7 +82,7 @@ public class ModelsGet extends ModelGet {
                 wsFound = true;
             } else {
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Workspace with id, %s not found",
-                                wsId + (dateTime == null ? "" : " at " + dateTime));
+                    wsId + (dateTime == null ? "" : " at " + dateTime));
                 return false;
             }
         }
@@ -94,14 +93,12 @@ public class ModelsGet extends ModelGet {
     /**
      * Entry point
      */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
+    @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         ModelsGet instance = new ModelsGet(repository, getServices());
         return instance.executeImplImpl(req, status, cache);
     }
 
-    @Override
-    protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
+    @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         printHeader(user, logger, req);
         Timer timer = new Timer();
@@ -157,40 +154,68 @@ public class ModelsGet extends ModelGet {
      * @return
      * @throws IOException
      */
-    private JSONArray handleRequest(WebScriptRequest req, final Long maxDepth) throws JSONException, IOException {
+    private JSONArray handleRequest(WebScriptRequest req, final Long maxDepth)
+        throws JSONException, IOException, SQLException {
         JSONObject requestJson = (JSONObject) req.parseContent();
         if (requestJson.has(Sjm.ELEMENTS)) {
             JSONArray elementsToFindJson = requestJson.getJSONArray(Sjm.ELEMENTS);
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
+            boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
 
             JSONArray result = new JSONArray();
             Set<String> uniqueElements = new HashSet<>();
             for (int i = 0; i < elementsToFindJson.length(); i++) {
                 uniqueElements.add(elementsToFindJson.getJSONObject(i).getString(Sjm.SYSMLID));
             }
-            JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(uniqueElements);
-            if (maxDepth != 0) {
-                for (int i = 0; i < nodeList.length(); i++) {
-                    JSONObject node = nodeList.getJSONObject(i);
-                    result.put(node);
-                    JSONArray children = emsNodeUtil.getChildren(node.getString(Sjm.SYSMLID), maxDepth);
-                    for (int ii = 0; ii < children.length(); ii++ ) {
-                        if (!uniqueElements.contains(children.getJSONObject(ii).getString(Sjm.SYSMLID))) {
-                            result.put(children.getJSONObject(ii));
-                            uniqueElements.add(children.getJSONObject(ii).getString(Sjm.SYSMLID));
-                        }
-                    }
-                }
-            } else {
-                result = nodeList;
-            }
+            handleMountSearch(mountsJson, extended, maxDepth, uniqueElements, result);
             return result;
         } else {
             return new JSONArray();
         }
     }
+
+    protected void handleMountSearch(JSONObject projectOb, boolean extended, final Long maxDepth, Set<String> elementsToFind, JSONArray result)
+        throws JSONException, SQLException, IOException {
+
+        if (elementsToFind.isEmpty()) {
+            return;
+        }
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectOb.getString(Sjm.SYSMLID), projectOb.getString(Sjm.REFID));
+        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind);
+        Set<String> foundElements = new HashSet<>();
+        JSONArray curFound = new JSONArray();
+        for (int index = 0; index < nodeList.length(); index++) {
+            String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
+            if (maxDepth != 0) {
+                JSONArray children = emsNodeUtil.getChildren(id, maxDepth);
+                for (int i = 0; i < children.length(); i++) {
+                    String cid = children.getJSONObject(i).getString(Sjm.SYSMLID);
+                    if (foundElements.contains(cid)) {
+                        continue;
+                    }
+                    curFound.put(children.getJSONObject(i));
+                    foundElements.add(cid);
+                }
+            } else {
+                curFound.put(nodeList.getJSONObject(index));
+                foundElements.add(id);
+            }
+        }
+        curFound = extended ? emsNodeUtil.addExtendedInformation(curFound) : curFound;
+        for (int i = 0; i < curFound.length(); i++) {
+            result.put(curFound.get(i));
+        }
+        elementsToFind.removeAll(foundElements);
+        JSONArray mountsArray = projectOb.getJSONArray(Sjm.MOUNTS);
+
+        for (int i = 0; i < mountsArray.length(); i++) {
+            handleMountSearch(mountsArray.getJSONObject(i), extended, maxDepth, elementsToFind, result);
+        }
+    }
 }
+
