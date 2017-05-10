@@ -118,12 +118,7 @@ public class EmsNodeUtil {
             switchProject(n.get(Sjm.SYSMLID).toString());
             JSONObject project = getNodeBySysmlid(n.get(Sjm.SYSMLID).toString());
             project.put("orgId", orgId);
-            JSONArray mounts = new JSONArray();
-            List<String> mountsList = (ArrayList<String>) n.get(Sjm.MOUNTS);
-            if (mountsList.size() > 0) {
-                mounts = new JSONArray(n.get(Sjm.MOUNTS));
-            }
-            project.put("mounts", mounts);
+
             projects.put(project);
         });
 
@@ -136,10 +131,7 @@ public class EmsNodeUtil {
             switchProject(project.get(Sjm.SYSMLID).toString());
             JSONObject proj = getNodeBySysmlid(project.get(Sjm.SYSMLID).toString());
             proj.put("orgId", project.get("orgId").toString());
-            List<String> mounts = (List) project.get(Sjm.MOUNTS);
-            JSONArray projMounts = new JSONArray();
-            mounts.forEach(projMounts::put);
-            proj.put("mounts", projMounts);
+
             projects.put(proj);
         });
 
@@ -152,10 +144,6 @@ public class EmsNodeUtil {
             switchProject(projectId);
             JSONObject proj = getNodeBySysmlid(projectId);
             proj.put("orgId", project.get("orgId").toString());
-            List<String> mounts = (List) project.get(Sjm.MOUNTS);
-            JSONArray projMounts = new JSONArray();
-            mounts.forEach(projMounts::put);
-            proj.put("mounts", projMounts);
 
             return proj;
         }
@@ -186,21 +174,29 @@ public class EmsNodeUtil {
         JSONArray mounts = new JSONArray();
         String curProjectId = this.projectId;
         String curRefId = this.workspaceName;
-        pgh.getNodesByType(DbNodeTypes.MOUNT).forEach((mount) -> {
-            JSONObject mountJson = getNodeBySysmlid(mount.getSysmlId());
+        List<Node> nodes = pgh.getNodesByType(DbNodeTypes.MOUNT);
+        if (nodes.isEmpty()) {
+            return mounts;
+        }
+        Set<String> mountIds = new HashSet<String>();
+        for (int i = 0; i < nodes.size(); i++) {
+            mountIds.add(nodes.get(i).getSysmlId());
+        }
+        JSONArray nodeList = getNodesBySysmlids(mountIds);
+        for (int i = 0; i < nodeList.length(); i++) {
+            JSONObject mountJson = nodeList.getJSONObject(i);
             if (mountJson.has(Sjm.MOUNTEDELEMENTPROJECTID) && mountJson.has("refId")) {
                 if (found.contains(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID))) {
-                    return;
+                    continue;
                 }
-                //EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID), mountJson.getString("refId"));
                 JSONObject childProject = getProjectWithFullMounts(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID), mountJson.getString("refId"), found);
                 if (childProject != null) {
                     mounts.put(childProject);
                 }
-                switchProject(curProjectId);
-                switchWorkspace(curRefId);
             }
-        });
+        }
+        switchProject(curProjectId);
+        switchWorkspace(curRefId);
         return mounts;
     }
 
