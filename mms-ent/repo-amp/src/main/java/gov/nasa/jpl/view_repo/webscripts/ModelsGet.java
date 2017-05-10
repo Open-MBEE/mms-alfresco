@@ -167,68 +167,55 @@ public class ModelsGet extends ModelGet {
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
             JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
 
-            //:TODO have to reset to correct project/workspace or logic inverts
-
-
             JSONArray result = new JSONArray();
             Set<String> uniqueElements = new HashSet<>();
             for (int i = 0; i < elementsToFindJson.length(); i++) {
                 uniqueElements.add(elementsToFindJson.getJSONObject(i).getString(Sjm.SYSMLID));
             }
-            JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(uniqueElements);
-            Set<String> foundElements = new HashSet<>();
-            for (int index = 0; index < nodeList.length(); index++) {
-                foundElements.add(nodeList.getJSONObject(index).getString(Sjm.SYSMLID));
-            }
-            Set<String> diffSet = new HashSet<>(uniqueElements);
-            diffSet.removeAll(foundElements);
-
-            if (!diffSet.isEmpty()) {
-                for (String element : diffSet) {
-                    nodeList.put(handleMountSearch(mountsJson, element));
-                }
-
-            }
-            if (maxDepth != 0) {
-                for (int i = 0; i < nodeList.length(); i++) {
-                    JSONObject node = nodeList.getJSONObject(i);
-                    result.put(node);
-                    JSONArray children = emsNodeUtil.getChildren(node.getString(Sjm.SYSMLID), maxDepth);
-                    for (int ii = 0; ii < children.length(); ii++) {
-                        if (!uniqueElements.contains(children.getJSONObject(ii).getString(Sjm.SYSMLID))) {
-                            result.put(children.getJSONObject(ii));
-                            uniqueElements.add(children.getJSONObject(ii).getString(Sjm.SYSMLID));
-                        }
-                    }
-                }
-            } else {
-                result = nodeList;
-            }
-            JSONArray elasticElements = extended ? emsNodeUtil.addExtendedInformation(result) : result;
-            return elasticElements;
+            handleMountSearch(mountsJson, extended, maxDepth, uniqueElements, result);
+            return result;
         } else {
             return new JSONArray();
         }
     }
 
-    protected JSONObject handleMountSearch(JSONObject projectOb, String element)
+    protected void handleMountSearch(JSONObject projectOb, boolean extended, final Long maxDepth, Set<String> elementsToFind, JSONArray result)
         throws JSONException, SQLException, IOException {
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectOb.getString(Sjm.SYSMLID), projectOb.getString(Sjm.REFID));
-        //JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
-        JSONObject tmpElement = emsNodeUtil.getNodeBySysmlid(element);
-        if (tmpElement.length() > 0) {
-            return tmpElement;
+
+        if (elementsToFind.isEmpty()) {
+            return;
         }
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectOb.getString(Sjm.SYSMLID), projectOb.getString(Sjm.REFID));
+        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind);
+        Set<String> foundElements = new HashSet<>();
+        JSONArray curFound = new JSONArray();
+        for (int index = 0; index < nodeList.length(); index++) {
+            String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
+            if (maxDepth != 0) {
+                JSONArray children = emsNodeUtil.getChildren(id, maxDepth);
+                for (int i = 0; i < children.length(); i++) {
+                    String cid = children.getJSONObject(i).getString(Sjm.SYSMLID);
+                    if (foundElements.contains(cid)) {
+                        continue;
+                    }
+                    curFound.put(children.getJSONObject(i));
+                    foundElements.add(cid);
+                }
+            } else {
+                curFound.put(nodeList.getJSONObject(index));
+                foundElements.add(id);
+            }
+        }
+        curFound = extended ? emsNodeUtil.addExtendedInformation(curFound) : curFound;
+        for (int i = 0; i < curFound.length(); i++) {
+            result.put(curFound.get(i));
+        }
+        elementsToFind.removeAll(foundElements);
         JSONArray mountsArray = projectOb.getJSONArray(Sjm.MOUNTS);
 
         for (int i = 0; i < mountsArray.length(); i++) {
-            tmpElement = handleMountSearch(mountsArray.getJSONObject(i), element);
-            if (tmpElement.length() > 0) {
-                return tmpElement;
-            }
+            handleMountSearch(mountsArray.getJSONObject(i), extended, maxDepth, elementsToFind, result);
         }
-        return new JSONObject();
-
     }
 }
 
