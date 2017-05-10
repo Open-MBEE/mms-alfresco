@@ -1,9 +1,14 @@
 {
-  "projects": [
-    {
-      "id": "123456",
-      "name": "Initial Organization Project",
-      "type": "Project"
-    }
-  ]
+    "projects": [
+        {
+            "id": "123456",
+            "name": "Initial Organization Project",
+            "type": "Project"
+        },
+        {
+            "id": "789",
+            "name": "Project to test mounts endpoint",
+            "type": "Project"
+        }
+    ]
 }
