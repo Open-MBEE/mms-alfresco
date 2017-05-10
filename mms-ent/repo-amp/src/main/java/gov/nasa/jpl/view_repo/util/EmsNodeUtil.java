@@ -460,7 +460,7 @@ public class EmsNodeUtil {
         return new HashMap<>();
     }
 
-    private JSONArray filterResultsByWorkspace(JSONArray elements) {
+    public JSONArray filterResultsByWorkspace(JSONArray elements) {
         JSONArray filtered = new JSONArray();
         if (elements.length() <= 0) {
             return filtered;
