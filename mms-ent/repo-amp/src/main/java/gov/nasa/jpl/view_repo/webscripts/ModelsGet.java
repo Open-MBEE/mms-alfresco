@@ -180,10 +180,11 @@ public class ModelsGet extends ModelGet {
             for (int index = 0; index < nodeList.length(); index++) {
                 foundElements.add(nodeList.getJSONObject(index).getString(Sjm.SYSMLID));
             }
-            uniqueElements.removeAll(foundElements);
+            Set<String> diffSet = new HashSet<>(uniqueElements);
+            diffSet.removeAll(foundElements);
 
-            if (!uniqueElements.isEmpty()) {
-                for (String element : uniqueElements) {
+            if (!diffSet.isEmpty()) {
+                for (String element : diffSet) {
                     nodeList.put(handleMountSearch(mountsJson, element));
                 }
 
