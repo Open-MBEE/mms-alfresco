@@ -615,8 +615,10 @@ public class CommitUtil {
 
         try {
             pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId, isTag);
+            branchJson.put("status", "created");
         } catch (Exception e) {
             // TODO Auto-generated catch block
+            branchJson.put("status", "failed");
             e.printStackTrace();
         }
 

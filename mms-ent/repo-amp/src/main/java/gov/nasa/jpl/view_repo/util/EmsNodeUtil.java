@@ -297,12 +297,14 @@ public class EmsNodeUtil {
     }
 
     public JSONArray getNodeHistory(String sysmlId) {
+        JSONArray nodeHistory = new JSONArray();
         try {
-            return eh.getCommitHistory(sysmlId);
+            nodeHistory = eh.getCommitHistory(sysmlId);
+            filterCommitsByRefs(nodeHistory);
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return new JSONArray();
+        return nodeHistory;
     }
 
     public JSONArray getRefHistory(String refId) {
@@ -317,6 +319,19 @@ public class EmsNodeUtil {
         });
 
         return result;
+    }
+
+    private void filterCommitsByRefs(JSONArray commits) {
+        JSONArray refHistory = getRefHistory(this.workspaceName);
+        List<String> commitList = new ArrayList<>();
+        for (int i = 0; i < refHistory.length(); i++) {
+            commitList.add(refHistory.getJSONObject(i).getString(Sjm.SYSMLID));
+        }
+        for (int i = 0; i < commits.length(); i++) {
+            if (!commitList.contains(commits.getJSONObject(i).getString(Sjm.SYSMLID))) {
+                commits.remove(i);
+            }
+        }
     }
 
     public JSONObject getElasticElement(String elasticId) {
