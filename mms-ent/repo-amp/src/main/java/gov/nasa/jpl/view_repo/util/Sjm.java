@@ -125,8 +125,7 @@ public class Sjm {
     public static final String SITES = "_sites";
     public static final String SLOTS = "_slots";
     public static final String TIMESTAMP = "_timestamp";
-
-    public static final String MOUNTS = "_mounts";
+    
 
     public static final Map<String, String> STEREOTYPEIDS;
 
