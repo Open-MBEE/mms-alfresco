@@ -118,6 +118,12 @@ public class EmsNodeUtil {
             switchProject(n.get(Sjm.SYSMLID).toString());
             JSONObject project = getNodeBySysmlid(n.get(Sjm.SYSMLID).toString());
             project.put("orgId", orgId);
+            JSONArray mounts = new JSONArray();
+            List<String> mountsList = (ArrayList<String>) n.get(Sjm.MOUNTS);
+            if (mountsList.size() > 0) {
+                mounts = new JSONArray(n.get(Sjm.MOUNTS));
+            }
+            project.put("_mounts", mounts);
 
             projects.put(project);
         });
@@ -131,7 +137,10 @@ public class EmsNodeUtil {
             switchProject(project.get(Sjm.SYSMLID).toString());
             JSONObject proj = getNodeBySysmlid(project.get(Sjm.SYSMLID).toString());
             proj.put("orgId", project.get("orgId").toString());
-
+            List<String> mounts = (List) project.get(Sjm.MOUNTS);
+            JSONArray projMounts = new JSONArray();
+            mounts.forEach(projMounts::put);
+            proj.put("_mounts", projMounts);
             projects.put(proj);
         });
 
@@ -144,6 +153,11 @@ public class EmsNodeUtil {
             switchProject(projectId);
             JSONObject proj = getNodeBySysmlid(projectId);
             proj.put("orgId", project.get("orgId").toString());
+            List<String> mounts = (List) project.get(Sjm.MOUNTS);
+            JSONArray projMounts = new JSONArray();
+            mounts.forEach(projMounts::put);
+            proj.put("_mounts", projMounts);
+
 
             return proj;
         }
@@ -435,13 +449,13 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public JSONArray search(JSONObject query) {
+    public Map<String, String> search(JSONObject query) {
         try {
             return eh.search(query);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new JSONArray();
+        return new HashMap();
     }
 
     private JSONArray filterResultsByWorkspace(JSONArray elements) {
@@ -1337,6 +1351,10 @@ public class EmsNodeUtil {
         return orgName.equals("swsdp") || pgh.orgExists(orgName);
     }
 
+    public List<String> filterSearchResults(List<String> sysmlIds){
+        return pgh.getElasticIdsFromSysmlIds(sysmlIds);
+
+    }
     public String getSite(String sysmlid) {
         String result = null;
         for (String parent : pgh.getRootParents(sysmlid, DbEdgeTypes.CONTAINMENT)) {
@@ -1640,6 +1658,7 @@ public class EmsNodeUtil {
 
         return value;
     }
+
 
     private static String camelize(String str) {
         Pattern p = Pattern.compile("_|\\s+(.)");

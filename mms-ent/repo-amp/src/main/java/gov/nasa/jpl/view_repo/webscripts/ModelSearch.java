@@ -32,14 +32,12 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -58,6 +56,7 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
+import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
 
 /**
  * Model search service that returns a JSONArray of elements
@@ -130,22 +129,33 @@ public class ModelSearch extends ModelPost {
     private JSONArray executeSearchRequest(WebScriptRequest req, JSONObject top) throws JSONException, IOException {
 
         JSONArray elements = new JSONArray();
-        JSONArray elasticResult = new JSONArray();
         WorkspaceNode workspace = getWorkspace(req);
         String projectId = getProjectId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
         JSONObject json = (JSONObject) req.parseContent();
         //String keyword = req.getParameter("keyword");
-        elasticResult = emsNodeUtil.search(json);
-        if (elasticResult.length() > 0) {
-            for (int i = 0; i < elasticResult.length(); i++) {
-                JSONArray views = emsNodeUtil.getChildren(elasticResult.getJSONObject(i).getString(
-                    Sjm.ELASTICID), DbEdgeTypes.VIEW, (long) 0);
-                elasticResult.getJSONObject(i).put("_views", views);
-                elements.put(elasticResult.getJSONObject(i));
+        Map<String, String> elasticResult = emsNodeUtil.search(json);
+        // filter deleted elements
+        // use postgres method to ignore deleted elements
+        // remove elements that aren't the current version
+        // return 200 and {} array for no results
+
+        //List<String> filterResults = filterSearchResults(something);
+        if (elasticResult.size() > 0) {
+            List<String> sysmlIds = emsNodeUtil.filterSearchResults(new ArrayList<>(elasticResult.keySet()));
+            for (String value : elasticResult.values()) {
+                JSONObject o = new JSONObject(value);
+                if (sysmlIds.contains(o.getString(Sjm.ELASTICID))) {
+                    // :TODO get each docment the element appears in, this should be a array  -- this method only finds a string
+                    String documentsTheElementExistsIn = emsNodeUtil.getImmediateParentOfType(o.getString(Sjm.SYSMLID),DbEdgeTypes.VIEW, DbNodeTypes.DOCUMENT);
+                    // :TODO iterate through documents array and find each view in each document that contains the element
+                    JSONArray views = emsNodeUtil.getChildren(o.getString(Sjm.ELASTICID), DbEdgeTypes.VIEW, (long) 0);
+                    o.put("_views", views);
+                    elements.put(o);
+                }
             }
         } else {
-
+            return new JSONArray();
         }
 
         return elements;
