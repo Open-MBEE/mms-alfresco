@@ -309,8 +309,7 @@ public class EmsNodeUtil {
     public JSONArray getNodeHistory(String sysmlId) {
         JSONArray nodeHistory = new JSONArray();
         try {
-            nodeHistory = eh.getCommitHistory(sysmlId);
-            filterCommitsByRefs(nodeHistory);
+            nodeHistory = filterCommitsByRefs(eh.getCommitHistory(sysmlId));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -331,17 +330,20 @@ public class EmsNodeUtil {
         return result;
     }
 
-    private void filterCommitsByRefs(JSONArray commits) {
+    private JSONArray filterCommitsByRefs(JSONArray commits) {
+        JSONArray filtered = new JSONArray();
         JSONArray refHistory = getRefHistory(this.workspaceName);
         List<String> commitList = new ArrayList<>();
         for (int i = 0; i < refHistory.length(); i++) {
             commitList.add(refHistory.getJSONObject(i).getString(Sjm.SYSMLID));
         }
         for (int i = 0; i < commits.length(); i++) {
-            if (!commitList.contains(commits.getJSONObject(i).getString(Sjm.SYSMLID))) {
-                commits.remove(i);
+            if (commitList.contains(commits.getJSONObject(i).getString(Sjm.SYSMLID))) {
+                filtered.put(commits.getJSONObject(i));
             }
         }
+
+        return filtered;
     }
 
     public JSONObject getElasticElement(String elasticId) {
@@ -610,6 +612,19 @@ public class EmsNodeUtil {
         }
 
         return result;
+    }
+
+    public JSONArray addRelatedDocs(JSONArray elements) {
+        if (elements.length() > 0) {
+            for (int i = 0; i < elements.length(); i++) {
+                Set<Pair<String, String>> views = pgh.getImmediateParents(elements.getJSONObject(i).getString(Sjm.SYSMLID), DbEdgeTypes.VIEW);
+                views.forEach((pair) -> {
+
+                });
+            }
+        }
+
+        return elements;
     }
 
     private JSONArray createAddedOrDeleted(JSONArray elements) {

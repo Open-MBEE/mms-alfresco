@@ -142,15 +142,13 @@ public class ModelSearch extends ModelPost {
         JSONObject json = (JSONObject) req.parseContent();
         Map<String, String> elasticResult = emsNodeUtil.search(json);
 
-        JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
-
         Set<String> elementList = new HashSet<>();
         elasticResult.forEach((key, value) -> {
             elementList.add(key);
         });
 
         try {
-            ModelsGet.handleMountSearch(mountsJson, true, 0L, elementList, elements);
+            ModelsGet.handleMountSearch(emsNodeUtil.getProjectWithFullMounts(projectId, refId, null), true, 0L, elementList, elements);
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
