@@ -32,7 +32,12 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -129,33 +134,25 @@ public class ModelSearch extends ModelPost {
     private JSONArray executeSearchRequest(WebScriptRequest req, JSONObject top) throws JSONException, IOException {
 
         JSONArray elements = new JSONArray();
-        WorkspaceNode workspace = getWorkspace(req);
-        String projectId = getProjectId(req);
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
-        JSONObject json = (JSONObject) req.parseContent();
-        //String keyword = req.getParameter("keyword");
-        Map<String, String> elasticResult = emsNodeUtil.search(json);
-        // filter deleted elements
-        // use postgres method to ignore deleted elements
-        // remove elements that aren't the current version
-        // return 200 and {} array for no results
 
-        //List<String> filterResults = filterSearchResults(something);
-        if (elasticResult.size() > 0) {
-            List<String> sysmlIds = emsNodeUtil.filterSearchResults(new ArrayList<>(elasticResult.keySet()));
-            for (String value : elasticResult.values()) {
-                JSONObject o = new JSONObject(value);
-                if (sysmlIds.contains(o.getString(Sjm.ELASTICID))) {
-                    // :TODO get each docment the element appears in, this should be a array  -- this method only finds a string
-                    String documentsTheElementExistsIn = emsNodeUtil.getImmediateParentOfType(o.getString(Sjm.SYSMLID),DbEdgeTypes.VIEW, DbNodeTypes.DOCUMENT);
-                    // :TODO iterate through documents array and find each view in each document that contains the element
-                    JSONArray views = emsNodeUtil.getChildren(o.getString(Sjm.ELASTICID), DbEdgeTypes.VIEW, (long) 0);
-                    o.put("_views", views);
-                    elements.put(o);
-                }
-            }
-        } else {
-            return new JSONArray();
+        String projectId = getProjectId(req);
+        String refId = getRefId(req);
+
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        JSONObject json = (JSONObject) req.parseContent();
+        Map<String, String> elasticResult = emsNodeUtil.search(json);
+
+        JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
+
+        Set<String> elementList = new HashSet<>();
+        elasticResult.forEach((key, value) -> {
+            elementList.add(key);
+        });
+
+        try {
+            ModelsGet.handleMountSearch(mountsJson, true, 0L, elementList, elements);
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         return elements;

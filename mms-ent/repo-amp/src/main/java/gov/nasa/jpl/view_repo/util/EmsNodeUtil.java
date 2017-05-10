@@ -455,7 +455,7 @@ public class EmsNodeUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new HashMap();
+        return new HashMap<>();
     }
 
     private JSONArray filterResultsByWorkspace(JSONArray elements) {
@@ -967,8 +967,8 @@ public class EmsNodeUtil {
                 // Create Associations
                 JSONObject association = new JSONObject();
                 JSONArray memberEndIds = new JSONArray();
-                memberEndIds.put(assocPropSysmlId);
-                memberEndIds.put(propertySysmlId);
+                memberEndIds.put(0, propertySysmlId);
+                memberEndIds.put(1, assocPropSysmlId);
                 JSONArray ownedEndIds = new JSONArray();
                 ownedEndIds.put(assocPropSysmlId);
 
@@ -1353,8 +1353,8 @@ public class EmsNodeUtil {
 
     public List<String> filterSearchResults(List<String> sysmlIds){
         return pgh.getElasticIdsFromSysmlIds(sysmlIds);
-
     }
+
     public String getSite(String sysmlid) {
         String result = null;
         for (String parent : pgh.getRootParents(sysmlid, DbEdgeTypes.CONTAINMENT)) {
@@ -1658,7 +1658,6 @@ public class EmsNodeUtil {
 
         return value;
     }
-
 
     private static String camelize(String str) {
         Pattern p = Pattern.compile("_|\\s+(.)");

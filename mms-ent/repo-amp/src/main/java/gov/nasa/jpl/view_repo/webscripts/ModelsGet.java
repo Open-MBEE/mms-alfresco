@@ -179,13 +179,13 @@ public class ModelsGet extends ModelGet {
         }
     }
 
-    protected void handleMountSearch(JSONObject projectOb, boolean extended, final Long maxDepth, Set<String> elementsToFind, JSONArray result)
+    protected static void handleMountSearch(JSONObject mountsJson, boolean extended, final Long maxDepth, Set<String> elementsToFind, JSONArray result)
         throws JSONException, SQLException, IOException {
 
         if (elementsToFind.isEmpty()) {
             return;
         }
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectOb.getString(Sjm.SYSMLID), projectOb.getString(Sjm.REFID));
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
         JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind);
         Set<String> foundElements = new HashSet<>();
         JSONArray curFound = new JSONArray();
@@ -211,7 +211,7 @@ public class ModelsGet extends ModelGet {
             result.put(curFound.get(i));
         }
         elementsToFind.removeAll(foundElements);
-        JSONArray mountsArray = projectOb.getJSONArray(Sjm.MOUNTS);
+        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 
         for (int i = 0; i < mountsArray.length(); i++) {
             handleMountSearch(mountsArray.getJSONObject(i), extended, maxDepth, elementsToFind, result);

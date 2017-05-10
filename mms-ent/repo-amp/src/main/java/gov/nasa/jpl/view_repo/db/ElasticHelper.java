@@ -381,40 +381,6 @@ public class ElasticHelper {
         return client.execute(bulk);
     }
 
-    //    public JSONArray search(Map<String, String> params) throws IOException {
-    //
-    //        JSONArray terms = new JSONArray();
-    //        for (Map.Entry<String, String> pair : params.entrySet()) {
-    //            JSONObject term = new JSONObject();
-    //            JSONObject termContainer = new JSONObject();
-    //            term.put(pair.getKey(), pair.getValue().toLowerCase());
-    //            termContainer.put("term", term);
-    //            terms.put(termContainer);
-    //        }
-    //
-    //        JSONObject queryJson = new JSONObject().put("size", resultLimit)
-    //            .put("query", new JSONObject().put("bool", new JSONObject().put("should", terms)));
-    //        // should passes a json array that is the terms array from above
-    //
-    //        logger.debug(String.format("Search Query %s", queryJson.toString()));
-    //
-    //        JSONArray elements = new JSONArray();
-    //
-    //        Search search = new Search.Builder(queryJson.toString()).addIndex(elementIndex).build();
-    //        SearchResult result = client.execute(search);
-    //
-    //        if (result.getTotal() > 0) {
-    //            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-    //            for (int i = 0; i < hits.size(); i++) {
-    //                JSONObject o = new JSONObject(hits.get(i).getAsJsonObject().getAsJsonObject("_source").toString());
-    //                o.put(Sjm.ELASTICID, hits.get(i).getAsJsonObject().get("_id").getAsString());
-    //                elements.put(o);
-    //            }
-    //        }
-    //
-    //        return elements;
-    //    }
-
     public Map<String, String> search(JSONObject queryJson) throws IOException {
         logger.debug(String.format("Search Query %s", queryJson.toString()));
 
@@ -433,16 +399,6 @@ public class ElasticHelper {
                 elements.put(o.getString(Sjm.SYSMLID), o.toString());
             }
         }
-
-        //        if (result.getTotal() > 0) {
-        //            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-        //            for (int i = 0; i < hits.size(); i++) {
-        //                JSONObject o = new JSONObject(hits.get(i).getAsJsonObject().getAsJsonObject("_source").toString());
-        //                removeWrapper(o);
-        //                o.put(Sjm.ELASTICID, hits.get(i).getAsJsonObject().get("_id").getAsString());
-        //                elements.put(o);
-        //            }
-        //        }
 
         return elements;
     }
