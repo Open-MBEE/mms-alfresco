@@ -481,7 +481,7 @@ public class EmsNodeUtil {
         return addExtraDocs(filtered, resultMap);
     }
 
-    private JSONArray addExtraDocs(JSONArray elements, Map<String, JSONObject> existing) {
+    public JSONArray addExtraDocs(JSONArray elements, Map<String, JSONObject> existing) {
         JSONArray results = new JSONArray();
         for (int i = 0; i < elements.length(); i++) {
             JSONObject element = elements.getJSONObject(i);

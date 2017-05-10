@@ -153,7 +153,7 @@ public class ModelSearch extends ModelPost {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        return emsNodeUtil.filterResultsByWorkspace(elements);
+        return emsNodeUtil.addExtraDocs(elements, new HashMap<>());
     }
 
 }
