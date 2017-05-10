@@ -247,8 +247,8 @@ public class CommitUtil {
                     if (e.has("contents")) {
                         JSONObject contents = e.getJSONObject("contents");
                         NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
-                    } else if (e.has("instanceSpecificationSpecification")) {
-                        JSONObject iss = e.getJSONObject("instanceSpecificationSpecification");
+                    } else if (e.has("specification") && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
+                        JSONObject iss = e.getJSONObject("specification");
                         NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
                             documentEdges);
                     }
@@ -297,6 +297,15 @@ public class CommitUtil {
                     if (e.has("view2view")) {
                         JSONArray view2viewProperty = e.getJSONArray("view2view");
                         NodeUtil.processV2VEdges(e.getString(Sjm.SYSMLID), view2viewProperty, documentEdges);
+                    }
+
+                    if (e.has("contents")) {
+                        JSONObject contents = e.getJSONObject("contents");
+                        NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
+                    } else if (e.has("specification") && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
+                        JSONObject iss = e.getJSONObject("specification");
+                        NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
+                            documentEdges);
                     }
 
                     if (e.has("aggregation")) {
