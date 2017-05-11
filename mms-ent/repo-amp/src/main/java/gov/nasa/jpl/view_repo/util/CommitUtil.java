@@ -245,12 +245,16 @@ public class CommitUtil {
                     }
 
                     if (e.has("contents")) {
-                        JSONObject contents = e.getJSONObject("contents");
-                        NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
+                        JSONObject contents = e.optJSONObject("contents");
+                        if (contents != null) {
+                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
+                        }
                     } else if (e.has("specification") && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
-                        JSONObject iss = e.getJSONObject("specification");
-                        NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
-                            documentEdges);
+                        JSONObject iss = e.optJSONObject("specification");
+                        if (iss != null) {
+                            NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
+                                documentEdges);
+                        }
                     }
 
                     if (e.has("aggregation")) {
