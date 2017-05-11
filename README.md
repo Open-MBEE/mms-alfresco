@@ -1,6 +1,7 @@
 # mms-all-in-one
 **Alfresco version 5.0.d**
 
+Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
 # Initial Setup
 ## 1a. Import Project from git repo to Eclipse
 *  **Eclipse** > **File** > **Import** > **General** > **Existing Projects into Workspace**
