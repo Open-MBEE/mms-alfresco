@@ -1623,8 +1623,9 @@ public class EmsNodeUtil {
                 // No need to pass a date since this is called in the context of
                 // updating a node, so the time is the current time (which is
                 // null).
+                String subfolder = this.projectId + "/refs/" + this.workspaceName;
                 EmsScriptNode artNode = NodeUtil
-                    .updateOrCreateArtifact(name, extension, content, null, siteName, "images", ws, null, null, null,
+                    .updateOrCreateArtifact(name, extension, content, null, siteName, subfolder, ws, null, null, null,
                         false);
                 if (artNode == null || !artNode.exists()) {
                     logger.debug("Failed to pull out image data for value! " + value);
