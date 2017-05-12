@@ -12,7 +12,7 @@ public abstract class ConstantNumber extends Number implements Comparable< Numbe
     abstract public BigDecimal bigDecimalValue();
     abstract public BigInteger bigIntegerValue();
 
-    
+
     public ConstantNumber() {
         super();
     }
@@ -23,10 +23,9 @@ public abstract class ConstantNumber extends Number implements Comparable< Numbe
         if ( o == null ) return false;
         Number infVal = getValueMap().get( o.getClass() );
         if ( infVal == null ) return false;
-        if ( infVal.equals( o ) ) return true;
-        return false;
-      }
-    
+        return infVal.equals(o);
+    }
+
     @Override
     public int compareTo( Number n ) {
         if ( n == null ) return 1;

@@ -101,3 +101,15 @@ GetDocuments
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+
+UpdateElements
+    [Documentation]     "Update a existing element.  Creates versions of a element."
+    [Tags]              10
+	${post_json} =		Get File	    JsonData/UpdateElements.json
+	${result} =			Post		url=${ROOT}/projects/123456/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
+    Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+

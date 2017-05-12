@@ -58,11 +58,7 @@ public class ProductGet extends AbstractJavaWebScript {
     protected boolean validateRequest(WebScriptRequest req, Status status) {
         String productId = AbstractJavaWebScript.getIdFromRequest(req);
 
-        if (!checkRequestVariable(productId, "id")) {
-            return false;
-        }
-
-        return true;
+        return checkRequestVariable(productId, "id");
     }
 
     @Override

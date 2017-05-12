@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -208,10 +209,10 @@ public class CommitUtil {
         Map<String, List<Pair<String, String>>> addChildViews = new HashMap<>();
         List<Pair<String, String>> documentEdges = new ArrayList<>();
 
-        if (bulkElasticEntry(added, "added") && bulkElasticEntry(updated, "updated") && bulkElasticEntry(deleted, "deleted")) {
+        if (bulkElasticEntry(added, "added") && bulkElasticEntry(updated, "updated")) {
 
             try {
-                List<Pair<String, String>> plist = new ArrayList<>();
+                List<Pair<String, String>> plist = new LinkedList<>();
 
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
                 List<Map<String, String>> edgeInserts = new ArrayList<>();
@@ -244,12 +245,16 @@ public class CommitUtil {
                     }
 
                     if (e.has("contents")) {
-                        JSONObject contents = e.getJSONObject("contents");
-                        NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
-                    } else if (e.has("instanceSpecificationSpecification")) {
-                        JSONObject iss = e.getJSONObject("instanceSpecificationSpecification");
-                        NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
-                            documentEdges);
+                        JSONObject contents = e.optJSONObject("contents");
+                        if (contents != null) {
+                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
+                        }
+                    } else if (e.has("specification") && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
+                        JSONObject iss = e.optJSONObject("specification");
+                        if (iss != null) {
+                            NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
+                                documentEdges);
+                        }
                     }
 
                     if (e.has("aggregation")) {
@@ -276,7 +281,7 @@ public class CommitUtil {
                     affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
                 }
 
-                List<Pair<String, String>> updatedPlist = new ArrayList<>();
+                List<Pair<String, String>> updatedPlist = new LinkedList<>();
                 for (int i = 0; i < updated.length(); i++) {
                     JSONObject e = updated.getJSONObject(i);
                     jmsUpdated.put(e.getString(Sjm.SYSMLID));
@@ -296,6 +301,15 @@ public class CommitUtil {
                     if (e.has("view2view")) {
                         JSONArray view2viewProperty = e.getJSONArray("view2view");
                         NodeUtil.processV2VEdges(e.getString(Sjm.SYSMLID), view2viewProperty, documentEdges);
+                    }
+
+                    if (e.has("contents")) {
+                        JSONObject contents = e.getJSONObject("contents");
+                        NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
+                    } else if (e.has("specification") && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
+                        JSONObject iss = e.getJSONObject("specification");
+                        NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
+                            documentEdges);
                     }
 
                     if (e.has("aggregation")) {
@@ -592,7 +606,7 @@ public class CommitUtil {
     }
 
     // make sure only one branch is made at a time
-    public static synchronized boolean sendBranch(String projectId, JSONObject src, JSONObject created, String elasticId, Boolean isTag) throws JSONException {
+    public static synchronized boolean sendBranch(String projectId, JSONObject src, JSONObject created, String elasticId, Boolean isTag, String source) throws JSONException {
         // FIXME: need to include branch in commit history
 
         JSONObject branchJson = new JSONObject();
@@ -605,6 +619,8 @@ public class CommitUtil {
         // source
         branchJson.put("createdRef", created); // created
 
+        branchJson.put("source", source);
+
         String srcId = src.optString(Sjm.SYSMLID);
 
         PostgresHelper pgh = new PostgresHelper(srcId);
@@ -612,8 +628,10 @@ public class CommitUtil {
 
         try {
             pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId, isTag);
+            branchJson.put("status", "created");
         } catch (Exception e) {
             // TODO Auto-generated catch block
+            branchJson.put("status", "failed");
             e.printStackTrace();
         }
 

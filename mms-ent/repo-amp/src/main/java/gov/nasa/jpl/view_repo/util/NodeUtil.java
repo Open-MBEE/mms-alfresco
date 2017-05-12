@@ -1880,9 +1880,9 @@ public class NodeUtil {
         return results;
     }
 
-    public static enum CacheUsed {
+    public enum CacheUsed {
         NONE, SIMPLE, FULL
-    };
+    }
 
     /**
      * Whether the query options are applicable to using the simple element cache.
@@ -2399,10 +2399,7 @@ public class NodeUtil {
             return false;
         // quick and dirty - using DictionaryService results in WARNINGS
         typeName = typeName.replace("sysml:", "");
-        if (typeName.equals("Element") || typeName.equals("Project")) {
-            return true;
-        }
-        return false;
+        return typeName.equals("Element") || typeName.equals("Project");
         // if ( Acm.getJSON2ACM().keySet().contains( typeName ) ) {
         // typeName = Acm.getJSON2ACM().get( typeName );
         // }
@@ -4161,9 +4158,9 @@ public class NodeUtil {
             if (contents.has("operand")) {
                 JSONArray operand = contents.getJSONArray("operand");
                 for (int ii = 0; ii < operand.length(); ii++) {
-                    JSONObject value = operand.getJSONObject(ii);
-                    if (value.has("instance")) {
-                        documentEdges.add(new Pair<>(sysmlId, value.getString("instance")));
+                    JSONObject value = operand.optJSONObject(ii);
+                    if (value != null && value.has("instanceId")) {
+                        documentEdges.add(new Pair<>(sysmlId, value.getString("instanceId")));
                     }
                 }
             }
@@ -4195,8 +4192,8 @@ public class NodeUtil {
     public static void processInstanceSpecificationSpecificationJson(String sysmlId, JSONObject iss,
                     List<Pair<String, String>> documentEdges) {
         if (iss != null) {
-            if (iss.has("string")) {
-                String string = iss.getString("string");
+            if (iss.has("value") && iss.has("type") && iss.getString("type").equals("LiteralString")) {
+                String string = iss.getString("value");
                 JSONObject json = new JSONObject(string);
                 Set<Object> sources = findKeyValueInJsonObject(json, "source");
                 for (Object source : sources) {

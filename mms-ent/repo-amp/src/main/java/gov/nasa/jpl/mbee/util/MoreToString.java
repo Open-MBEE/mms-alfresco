@@ -1,29 +1,29 @@
 /*******************************************************************************
- * Copyright (c) <2013>, California Institute of Technology ("Caltech").  
+ * Copyright (c) <2013>, California Institute of Technology ("Caltech").
  * U.S. Government sponsorship acknowledged.
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without modification, are 
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
- * 
- *  - Redistributions of source code must retain the above copyright notice, this list of 
+ *
+ *  - Redistributions of source code must retain the above copyright notice, this list of
  *    conditions and the following disclaimer.
- *  - Redistributions in binary form must reproduce the above copyright notice, this list 
- *    of conditions and the following disclaimer in the documentation and/or other materials 
+ *  - Redistributions in binary form must reproduce the above copyright notice, this list
+ *    of conditions and the following disclaimer in the documentation and/or other materials
  *    provided with the distribution.
- *  - Neither the name of Caltech nor its operating division, the Jet Propulsion Laboratory, 
- *    nor the names of its contributors may be used to endorse or promote products derived 
+ *  - Neither the name of Caltech nor its operating division, the Jet Propulsion Laboratory,
+ *    nor the names of its contributors may be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS 
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY 
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER  
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON 
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 package gov.nasa.jpl.mbee.util;
@@ -51,22 +51,22 @@ import java.util.regex.Pattern;
 public interface MoreToString {
 
   // Constants to be used as options for formatting collections and arrays.
-  public static final int NO_FORMAT = -1;
-  public static final int SQUARE_BRACES = 0;
-  public static final int CURLY_BRACES = 1;
-  public static final int PARENTHESES = 2;
-  public static final int COMMA = 3;
-  public static final int PERIOD = 4;
-  public static final int EQUALS = 5;
-  
-  static final String[] prefixes = new String[]{"[","{","(","(","(","("};
-  static final String[] suffixes = new String[]{"]","}",")",")",")",")"};
-  static final String[] delimiters = new String[]{",",",",",",",",".","="};
-  public static final Map<String, String[]> formatOptions = Helper.initFormatOptions();
-  
+  int NO_FORMAT = -1;
+  int SQUARE_BRACES = 0;
+  int CURLY_BRACES = 1;
+  int PARENTHESES = 2;
+  int COMMA = 3;
+  int PERIOD = 4;
+  int EQUALS = 5;
+
+  String[] prefixes = new String[]{"[","{","(","(","(","("};
+  String[] suffixes = new String[]{"]","}",")",")",")",")"};
+  String[] delimiters = new String[]{",",",",",",",",".","="};
+  Map<String, String[]> formatOptions = Helper.initFormatOptions();
+
   /**
    * Write object recursively based on passed options.
-   * 
+   *
    * @param withHash
    *          whether to include "@" + hasCode() in the returned String.
    * @param deep
@@ -81,7 +81,7 @@ public interface MoreToString {
                    Set<Object> seen );
   /**
    * Write object recursively based on passed options.
-   * 
+   *
    * @param withHash
    *          whether to include "@" + hasCode() in the returned String.
    * @param deep
@@ -96,22 +96,22 @@ public interface MoreToString {
    */
   String toString( boolean withHash, boolean deep,
                    Set<Object> seen, Map<String, Object> otherOptions);
-  
+
   /**
    * @return a single name or value
    */
   String toShortString();
-  
-  
+
+
   /**
    * Helper class for MoreToString toString() calls. There are also functions
    * for formatting collections.
    */
-  static class Helper {
+  class Helper {
     /**
      * Helper function for MoreToString.toString() when it is not known whether
      * the input object implements MoreToString.
-     * 
+     *
      * @return ((MoreToString)object).toString(...) with the same options passed
      *         if the object does implement MoreToString; otherwise return
      *         object.toString().
@@ -120,7 +120,7 @@ public interface MoreToString {
                                    boolean deep, Set< Object > seen,
                                    Map< String, Object > otherOptions ) {
       if ( object == null ) return "null";
-      
+
       // We have to make sure we get to the right method since collections
       // require an extra boolean argument.
       if ( object.getClass().isArray() ) {
@@ -141,7 +141,7 @@ public interface MoreToString {
       if ( object instanceof Map.Entry ) {
         return toString( (Map.Entry<?,?>)object, withHash, deep, seen, otherOptions, true );
       }
-      
+
       if ( object instanceof MoreToString ) {
         return ( (MoreToString)object ).toString( withHash, deep, seen,
                                                   otherOptions );
@@ -152,7 +152,7 @@ public interface MoreToString {
     /**
      * Helper function for MoreToString.toString() when it is not known whether
      * the input object implements MoreToString.
-     * 
+     *
      * @return ((MoreToString)object).toString(...) with the same options passed
      *         if the object does implement MoreToString; otherwise return
      *         object.toString().
@@ -166,7 +166,7 @@ public interface MoreToString {
      * Helper function for MoreToString.toString() when it is not known whether
      * the input object implements MoreToString and default parameter values are
      * fine.
-     * 
+     *
      * @param object
      * @return
      */
@@ -179,7 +179,7 @@ public interface MoreToString {
      * Helper function for MoreToString.toString() when it is not known whether
      * the input object implements MoreToString and default parameter values are
      * fine.
-     * 
+     *
      * @param object
      * @return
      */
@@ -190,7 +190,7 @@ public interface MoreToString {
 
     public static String toShortString( Object object ) {
       if ( object == null ) return "null";
-      
+
       // We have to make sure we get to the right method since collections
       // require an extra boolean argument.
       if ( object instanceof Collection ) {
@@ -205,7 +205,7 @@ public interface MoreToString {
       if ( object instanceof Map.Entry ) {
         return toShortString( (Map.Entry<?,?>)object, null, true );
       }
-      
+
       if ( object instanceof MoreToString ) {
         return ( (MoreToString)object ).toShortString();
       }
@@ -299,14 +299,14 @@ public interface MoreToString {
                                               Map<String,Object> otherOptions ) {
       return toString( array, false, false, null, otherOptions );
     }
-    
+
     /**
      * Writes an array to a string with MoreToString options, including an
      * explicit format key. For example, if the format key
      * MoreToString.PARENTHESES is given, the collection will be enclosed in
      * parentheses, "(" and ")" and the default comma will be used as a
      * delimiter between elements.
-     * 
+     *
      * @param withHash
      *          whether to include "@" + hasCode() in the returned String.
      * @param deep
@@ -425,7 +425,7 @@ public interface MoreToString {
                                             int formatKey,
                                             boolean checkIfMoreToString ) {
       if ( checkIfMoreToString && entry instanceof MoreToString ) {
-        stuffOptionsFromKey( otherOptions, formatKey );      
+        stuffOptionsFromKey( otherOptions, formatKey );
         return ((MoreToString)entry).toString(withHash, deep, seen, otherOptions);
       }
       Pair< K, V > p = new Pair< K, V >( entry.getKey(), entry.getValue() );
@@ -464,7 +464,7 @@ public interface MoreToString {
       Pair< K, V > p = new Pair< K, V >( entry.getKey(), entry.getValue() );
       return toString( p, withHash, deep, seen, otherOptions,
                        prefix, delimiter, suffix, false );
-    }                                            
+    }
     public static < K, V > String toString( Pair< K, V > pair,
                                             boolean withHash, boolean deep,
                                             Set< Object > seen,
@@ -512,7 +512,7 @@ public interface MoreToString {
 //                                         Map<String,Object> otherOptions ) {
 //      return toString( collection, withHash, deep, seen, otherOptions, true );
 //    }
-    
+
     /**
      * @param map
      * @param key
@@ -520,12 +520,12 @@ public interface MoreToString {
      * @return a value in map of type T with the given key or null if not found.
      */
     public static < K ,V, T > T get( Map<K,V> map, K key, Class<T> cls ) {
-      if ( key == null ) return null;      
+      if ( key == null ) return null;
       if ( map == null ) return null;
       V v = map.get( key );
       if ( v == null ) return null;
       T t = null;
-      //try {      
+      //try {
       if ( cls.isAssignableFrom( v.getClass() ) ) {
         t = (T)v;
       }
@@ -542,7 +542,7 @@ public interface MoreToString {
     public static < K ,V, T > T get( Map<K,V> map, K key ) {
       return get( map, key, null );
     }
-    
+
     private static Map<String, String[]> initFormatOptions() {
       Map<String, String[]> optionMap = new TreeMap<String, String[]>();
       optionMap.put( "prefix", prefixes );
@@ -610,14 +610,14 @@ public interface MoreToString {
     public static boolean hasFormatOptions(Map< String, Object > options ) {
       return ( options != null && options.get( "prefix" ) != null );
     }
-    
+
     /**
      * Writes an array to a string with MoreToString options, including an
      * explicit format key. For example, if the format key
      * MoreToString.PARENTHESES is given, the collection will be enclosed in
      * parentheses, "(" and ")" and the default comma will be used as a
      * delimiter between elements.
-     * 
+     *
      * @param withHash
      *          whether to include "@" + hasCode() in the returned String.
      * @param deep
@@ -643,7 +643,7 @@ public interface MoreToString {
       stuffOptionsFromKey(otherOptions, formatKey);
       return toString( array, withHash, deep, seen, otherOptions );
     }
-    
+
     public static void stuffOptionsFromKey( Map< String, Object > options,
                                             int formatKey ) {
       if ( formatKey == NO_FORMAT ) return;
@@ -660,7 +660,7 @@ public interface MoreToString {
       options.put("delimiter", delimiter);
       options.put("suffix", suffix);
     }
-    
+
     public static void removeFormatOptions( Map< String, Object > options ) {
       if ( Utils.isNullOrEmpty( options ) ) return;
       for ( String opt : formatOptions.keySet() ) {
@@ -727,7 +727,7 @@ public interface MoreToString {
       sb.append( suffix );
       return sb.toString();
     }
-    
+
     public static List<String> fromString( String s, String prefix,
                                            String delimiter, String suffix ) {
       List<String> list = Utils.getEmptyList();
@@ -754,12 +754,12 @@ public interface MoreToString {
       list = Arrays.asList( arr ).subList( 0, length );
       return list;
     }
-    
+
     public static void fromString( Map< String, String > map, String s ) {
       fromString( map, s, "[\\[{(]\\s*", ",\\s*", "\\s*[\\]})]", "[\\[{(]\\s*",
                   "\\s*=\\s*", "\\s*[\\]})]" );
     }
-    
+
     public static void fromString( Map< String, String > map, String s,
                                    String prefix,
                                    String delimiter,
@@ -767,15 +767,15 @@ public interface MoreToString {
                                    String keyValuePrefix,
                                    String keyValueDelimiter,
                                    String keyValueSuffix ) {
-      
+
       if ( map == null ) map = new HashMap< String, String >();
       map.clear();
-      
+
       Pattern p = Pattern.compile(prefix);
       Matcher matcher = p.matcher( s );
       if ( !matcher.find() ) return;
       int start = matcher.end();
-      
+
       Pattern d = Pattern.compile( delimiter );
       Pattern kvp = Pattern.compile( keyValuePrefix );
       Pattern kvd = Pattern.compile( keyValueDelimiter );
@@ -794,7 +794,7 @@ public interface MoreToString {
         Debug.outln("matcher.end() = " + matcher.end());
         Debug.outln("\nstart = " + start);
         Debug.outln("substring = " + s.substring( start ) );
-        
+
         // find delimiter between key and value
         matcher = kvd.matcher( s.substring( start ) );
         if ( !matcher.find() ) break;
@@ -808,7 +808,7 @@ public interface MoreToString {
         Debug.outln("\nkey = " + key);
         Debug.outln("\nstart = " + start);
         Debug.outln("substring = " + s.substring( start ) );
-        
+
         // get the value between the key-value delimiter and the key-value suffix
         matcher = kvs.matcher( s.substring( start ) );
         if ( !matcher.find() ) break;
@@ -834,7 +834,7 @@ public interface MoreToString {
         matcher = d.matcher( s.substring( start ) );
         // set the start position at the end of the delimiter to get the next pair
         gotDelimiter = matcher.find();
-        
+
         if ( !foundValue ) {
           if ( gotDelimiter ) {
             foundValue = matcher.start() != 0;
@@ -846,23 +846,23 @@ public interface MoreToString {
             value = s.substring( start );
           }
           Debug.outln("\nvalue = " + value);
-          map.put( key, value );          
+          map.put( key, value );
         }
 
         if ( gotDelimiter ) {
           start = start + matcher.end();
-          
+
           Debug.outln("\nd match = " + matcher.group() );
           Debug.outln("matcher.start() = " + matcher.start());
           Debug.outln("matcher.end() = " + matcher.end());
           Debug.outln("\nstart = " + start);
           Debug.outln("substring = " + s.substring( start ) );
         }
-        
+
       }
       Debug.outln("parsed map = " + map );
     }
-    
+
     private static String readLine(String format, Object... args) {
       if (System.console() != null) {
           return System.console().readLine(format, args);
@@ -888,7 +888,7 @@ public interface MoreToString {
         System.out.print(" End index: " + m.end() + " ");
         System.out.println(m.group());
       }
-      
+
       while ( true ) {
         String patternString = readLine( "pattern:" );
         if ( patternString == null ) break;
@@ -906,11 +906,11 @@ public interface MoreToString {
 //          op = c.readLine( "call to matcher:" );
 //          if ( op == null || op.equals( "q" ) || op.equals( "quit" )
 //               || op.equals( "exit" ) ) break;
-//          
+//
 //        }
 //        if ( op == null ) break;
       }
-      
+
       Map<String, String> map = new HashMap< String, String >();
       String mapString = "{(0=2.31359797761508),(84600=2.080913063156552),(85500=2.3810581138436953)}";
       fromString( map, mapString );

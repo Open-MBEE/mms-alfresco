@@ -41,15 +41,15 @@ public interface Translator< F extends SystemModel< FO, FC, FT, FP, FN, FI, FU, 
                              FO, FC, FT, FP, FN, FI, FU, FR, FV, FW, FCT,
                              T extends SystemModel< TO, TC, TT, TP, TN, TI, TU, TR, TV, TW, TCT >,
                              TO, TC, TT, TP, TN, TI, TU, TR, TV, TW, TCT > {
-    public F getFromModel();
-    public T getToModel();
-    public void setFromModel( F fromModel );
-    public void setToModel( T toModel );
+    F getFromModel();
+    T getToModel();
+    void setFromModel(F fromModel);
+    void setToModel(T toModel);
 
     /**
      * Import from the from-model to the to-model.
      */
-    public void importModel();
+    void importModel();
 
     /**
      * Perform an Operation on something in the target system (to-model) as
@@ -101,12 +101,8 @@ public interface Translator< F extends SystemModel< FO, FC, FT, FP, FN, FI, FU, 
      * @return the item(s) specified in a collection or null if the operation is
      *         prohibited or inconsistent.
      */
-    public Collection< Object > op( Operation operation,
-                                    Collection< ModelItem > itemTypes,
-                                    Collection< Item > context,
-                                    Collection< Item > specifier,
-                                    FU newValue,
-                                    Boolean failForMultipleItemMatches );
+    Collection< Object > op(Operation operation, Collection<ModelItem> itemTypes, Collection<Item> context,
+        Collection<Item> specifier, FU newValue, Boolean failForMultipleItemMatches);
 
 
     /**
@@ -114,76 +110,76 @@ public interface Translator< F extends SystemModel< FO, FC, FT, FP, FN, FI, FU, 
      * @param fObject
      * @return the corresponding to-model object or a new to-model object (TODO -- is it added to the model?)
      */
-    public TO translateObject( FO fObject );
+    TO translateObject(FO fObject);
 
     /**
      * Translate the from-model context to a to-model context.
      * @param fContext
      * @return the corresponding to-model context or a new to-model context (TODO -- is it added to the model?)
      */
-    public TC translateContext( FC fContext );
+    TC translateContext(FC fContext);
 
     /**
      * Translate the from-model type to a to-model type.
      * @param fType
      * @return the corresponding to-model type or a new to-model type (TODO -- is it added to the model?)
      */
-    public TT translateType( FT fType );
+    TT translateType(FT fType);
 
     /**
      * Translate the from-model property to a to-model property.
      * @param fProperty
      * @return the corresponding to-model property or a new to-model property (TODO -- is it added to the model?)
      */
-    public TP translateProperty( FP fProperty );
+    TP translateProperty(FP fProperty);
 
     /**
      * Translate the from-model name to a to-model name.
      * @param fName
      * @return the corresponding to-model name or a new to-model name (TODO -- is it added to the model?)
      */
-    public TN translateName( FN fName );
+    TN translateName(FN fName);
 
     /**
      * Translate the from-model identifier to a to-model identifier.
      * @param fInterface
      * @return the corresponding to-model interface or a new to-model interface (TODO -- is it added to the model?)
      */
-    public TI translateIdentifier( FI fIdentifier );
+    TI translateIdentifier(FI fIdentifier);
 
     /**
      * Translate the from-model value to a to-model value.
      * @param fValue
      * @return the corresponding to-model value or a new to-model value (TODO -- is it added to the model?)
      */
-    public TU translateValue( FU fValue );
+    TU translateValue(FU fValue);
 
     /**
      * Translate the from-model relationship to a to-model relationship.
      * @param fRelationship
      * @return the corresponding to-model relationship or a new to-model relationship (TODO -- is it added to the model?)
      */
-    public TR translateRelationship( FR fRelationship );
+    TR translateRelationship(FR fRelationship);
 
     /**
      * Translate the from-model version to a to-model version.
      * @param fVersion
      * @return the corresponding to-model version or a new to-model version (TODO -- is it added to the model?)
      */
-    public TV translateVersion( FV fVersion );
+    TV translateVersion(FV fVersion);
 
     /**
      * Translate the from-model workspace to a to-model workspace.
      * @param fWorkspace
      * @return the corresponding to-model workspace or a new to-model workspace (TODO -- is it added to the model?)
      */
-    public TW translateWorkspace( FW fWorkspace );
+    TW translateWorkspace(FW fWorkspace);
 
     /**
      * Translate the from-model constraint to a to-model constraint.
      * @param fConstraint
      * @return the corresponding to-model constraint or a new to-model constraint (TODO -- is it added to the model?)
      */
-    public TCT translateConstraint( FCT fConstraint );
+    TCT translateConstraint(FCT fConstraint);
 
 }
