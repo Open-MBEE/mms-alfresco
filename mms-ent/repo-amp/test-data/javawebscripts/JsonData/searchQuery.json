@@ -1,0 +1,17 @@
+{"query": {
+    "bool": {
+      "must": [
+        { 
+          "match": {
+            "name": "three"
+          }
+        },
+        {
+          "terms": {
+              "_projectId": ["123456"]
+           }
+        }
+      ]
+    }
+  }
+}
