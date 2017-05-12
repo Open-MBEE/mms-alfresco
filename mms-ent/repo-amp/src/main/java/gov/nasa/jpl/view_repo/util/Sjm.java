@@ -69,6 +69,7 @@ public class Sjm {
     public static final String LOWERVALUE = "lowerValue";
     public static final String MDEXTENSIONSIDS = "mdExtensionsIds";
     public static final String MEMBERENDIDS = "memberEndIds";
+    public static final String MOUNTEDELEMENTPROJECTID = "mountedElementProjectId";
     public static final String NAME = "name";
     public static final String NAMEEXPRESSION = "nameExpression";
     public static final String NAVIGABLEOWNEDENDIDS = "navigableOwnedEndIds";
@@ -112,6 +113,7 @@ public class Sjm {
     public static final String ISSITE = "_isSite";
     public static final String MODIFIED = "_modified";
     public static final String MODIFIER = "_modifier";
+    public static final String MOUNTS = "_mounts";
     public static final String PARENTVIEWS = "_parentViews";
     public static final String PROJECTID = "_projectId";
     public static final String PROPERTIES = "_properties";
@@ -123,8 +125,7 @@ public class Sjm {
     public static final String SITES = "_sites";
     public static final String SLOTS = "_slots";
     public static final String TIMESTAMP = "_timestamp";
-
-    public static final String MOUNTS = "mounts";
+    
 
     public static final Map<String, String> STEREOTYPEIDS;
 
@@ -138,12 +139,12 @@ public class Sjm {
     }
 
 
-    public static enum Aggregation {
+    public enum Aggregation {
         COMPOSITE("composite"), SIMPLE("simple"), NONE("none");
 
         private final String value;
 
-        private Aggregation(String value) {
+        Aggregation(String value) {
             this.value = value;
         }
 

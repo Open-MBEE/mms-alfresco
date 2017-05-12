@@ -134,11 +134,7 @@ public class OrgPost extends AbstractJavaWebScript {
      * Validate the request and check some permissions
      */
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        if (!checkRequestContent(req)) {
-            return false;
-        }
-
-        return true;
+        return checkRequestContent(req);
     }
 
 }

@@ -324,7 +324,7 @@ public class Utils {
     }
     return null;
   }
-  
+
   // generic map< W, map<X, map<Y, Z> >.put(w, x, y, z)
   public static <T1, T2, T3, T4, T5 >
       T5 put( Map< T1, Map< T2, Map< T3, Map< T4, T5 > > > > map,
@@ -333,8 +333,7 @@ public class Utils {
                             map, t1, t2, t3, t4 ) ) {
       return null;
     }
-    Map< T4, T5 > innerMap = 
-            (Map< T4, T5 >)get( map, t1, t2, t3 );
+    Map< T4, T5 > innerMap = get( map, t1, t2, t3 );
     if ( innerMap == null ) {
       innerMap = new LinkedHashMap< T4, T5 >();
       put( map, t1, t2, t3, innerMap );
@@ -365,8 +364,7 @@ public class Utils {
                             map, t1, t2, t3, t4, t5 ) ) {
       return null;
     }
-    Map< T4, Map< T5, T6 > > innerMap = 
-            (Map< T4, Map< T5, T6> >)get( map, t1, t2, t3 );
+    Map< T4, Map< T5, T6 > > innerMap = get( map, t1, t2, t3 );
     if ( innerMap == null ) {
       innerMap = new LinkedHashMap< T4, Map< T5, T6 > >();
       put( map, t1, t2, t3, innerMap );
@@ -398,8 +396,7 @@ public class Utils {
       return null;
     }
     //Map< T1, Map< T2, Map< T3, ? > > > castMap = (Map< T1, Map< T2, Map< T3, ? > > >)toMap(map, Map< T1, Map< T2, Map< T3, ? > > >.class, Object.class);
-    Map< T4, Map< T5, Map< T6, T7 > > > innerMap = 
-            (Map< T4, Map< T5, Map< T6, T7 > > >)get( map, t1, t2, t3 );
+    Map< T4, Map< T5, Map< T6, T7 > > > innerMap = get( map, t1, t2, t3 );
     if ( innerMap == null ) {
       innerMap = new LinkedHashMap< T4, Map< T5, Map< T6, T7 > > >();
       put( map, t1, t2, t3, innerMap );
@@ -431,8 +428,7 @@ public class Utils {
       return null;
     }
     //Map< T1, Map< T2, Map< T3, ? > > > castMap = (Map< T1, Map< T2, Map< T3, ? > > >)toMap(map, Map< T1, Map< T2, Map< T3, ? > > >.class, Object.class);
-    Map< T4, Map< T5, Map< T6, Map< T7, T8 > > > > innerMap = 
-            (Map< T4, Map< T5, Map< T6, Map< T7, T8 > > > >)get( map, t1, t2, t3 );
+    Map< T4, Map< T5, Map< T6, Map< T7, T8 > > > > innerMap = get( map, t1, t2, t3 );
     if ( innerMap == null ) {
       innerMap = new LinkedHashMap< T4, Map< T5, Map< T6, Map< T7, T8 > > > >();
       put( map, t1, t2, t3, innerMap );
@@ -464,8 +460,7 @@ public class Utils {
       return null;
     }
     //Map< T1, Map< T2, Map< T3, ? > > > castMap = (Map< T1, Map< T2, Map< T3, ? > > >)toMap(map, Map< T1, Map< T2, Map< T3, ? > > >.class, Object.class);
-    Map< T4, Map< T5, Map< T6, Map< T7, Map< T8, T9 > > > > > innerMap = 
-            (Map< T4, Map< T5, Map< T6, Map< T7, Map< T8, T9 > > > > >)get( map, t1, t2, t3 );
+    Map< T4, Map< T5, Map< T6, Map< T7, Map< T8, T9 > > > > > innerMap = get( map, t1, t2, t3 );
     if ( innerMap == null ) {
       innerMap = new LinkedHashMap< T4, Map< T5, Map< T6, Map< T7, Map< T8, T9 > > > > >();
       put( map, t1, t2, t3, innerMap );
@@ -497,8 +492,7 @@ public class Utils {
       return null;
     }
     //Map< T1, Map< T2, Map< T3, ? > > > castMap = (Map< T1, Map< T2, Map< T3, ? > > >)toMap(map, Map< T1, Map< T2, Map< T3, ? > > >.class, Object.class);
-    Map< T4, Map< T5, Map< T6, Map< T7, Map< T8, Map< T9, T10 > > > > > > innerMap = 
-            (Map< T4, Map< T5, Map< T6, Map< T7, Map< T8, Map< T9, T10 > > > > > >)get( map, t1, t2, t3 );
+    Map< T4, Map< T5, Map< T6, Map< T7, Map< T8, Map< T9, T10 > > > > > > innerMap = get( map, t1, t2, t3 );
     if ( innerMap == null ) {
       innerMap = new LinkedHashMap< T4, Map< T5, Map< T6, Map< T7, Map< T8, Map< T9, T10 > > > > > >();
       put( map, t1, t2, t3, innerMap );
@@ -658,7 +652,7 @@ public class Utils {
       }
       return asList( newList( o ), cls );
   }
-  
+
   public static <V, T extends V> List<V> arrayAsList( T[] c ) {
       List<V> list = new ArrayList< V >();
       for ( T co : c ) {
@@ -716,8 +710,8 @@ public class Utils {
       }
       return list;
   }
-  
-  
+
+
     /**
      * @param source
      * @param newKeyType
@@ -745,7 +739,7 @@ public class Utils {
         }
         return target;
     }
-    
+
     public static <ID, T> Map<ID, T> toMap( Collection<T> set ) {
         LinkedHashMap< ID, T > map = new LinkedHashMap< ID, T >();
         for ( T t : set ) {
@@ -775,7 +769,7 @@ public class Utils {
       // TODO -- make this and other toX methods use <V, T extends V> like in toList()
     return asSet( c );
   }
-  
+
   public static <T> Set<T> asSet( T[] tArray ) {
       return toSet(tArray);
   }
@@ -968,7 +962,7 @@ public class Utils {
   public static <T1, T2> boolean valuesEqual( T1 v1, T2 v2 ) {
     return v1 == v2 || ( v1 != null && v1.equals( v2 ) );
   }
-  
+
   public static <T1, T2> boolean valuesLooselyEqual( T1 v1, T2 v2,
                                                      boolean propagate  ) {
       return valuesLooselyEqual( v1, v2, true, propagate );
@@ -987,9 +981,9 @@ public class Utils {
               Pair< Boolean, Seen< Object > > p2 = Utils.seen( vv2, true, seen2 );
               if ( p2.first ) break;
               seen2 = p2.second;
-              
+
               if ( valuesLooselyEqualNoWrap( vv1, vv2, propagate ) ) return true;
-              
+
               if ( checkWrap && vv2 instanceof Wraps )
                   vv2 = ((Wraps<?>)vv2).getValue( propagate );
               else break;
@@ -1004,14 +998,14 @@ public class Utils {
   public static <T1, T2> boolean valuesLooselyEqualNoWrap( T1 v1, T2 v2, boolean propagate  ) {
       // Plain values
       if ( valuesEqual( v1, v2 ) ) return true;
-      
+
       // Check null
       if ( v1 == null || v2 == null ) return false;
-      
+
       // Classes
       if ( v1 instanceof Class ) {
           if ( ClassUtils.classMatches( (Class<?>)v1, v2, propagate ) ) {
-              return true;  
+              return true;
           }
           if ( !( v2 instanceof Class ) ) return false;
       }
@@ -1032,13 +1026,13 @@ public class Utils {
           Iterator<?> i1 = v1c == null ? null : v1c.iterator();
           Iterator<?> i2 = v2c == null ? null : v2c.iterator();
           for ( int i = 0; i < s1; ++i ) {
-              Object vv1 = v1c == null ? v1a[i] : i1.next(); 
+              Object vv1 = v1c == null ? v1a[i] : i1.next();
               Object vv2 = v2c == null ? v2a[i] : i2.next();
               if ( !valuesLooselyEqual( vv1, vv2, propagate ) ) return false;
           }
           return true;
       }
-      
+
       // Pairs
       if ( ( v1 instanceof Pair ) && ( v2 instanceof Pair ) ) {
           Pair<?,?> p1 = (Pair<?,?>)v1;
@@ -1046,7 +1040,7 @@ public class Utils {
           return valuesLooselyEqual( p1.first, p2.first, propagate ) &&
                valuesLooselyEqual( p1.second, p2.second, propagate );
       }
-      
+
       // Map entries
       if ( ( v1 instanceof Entry ) && ( v2 instanceof Entry ) ) {
           return valuesLooselyEqual( ((Entry< ?, ? >)v1).getKey(),
@@ -1054,7 +1048,7 @@ public class Utils {
                  valuesLooselyEqual( ((Entry< ?, ? >)v1).getValue(),
                                      ((Entry< ?, ? >)v2).getValue(), propagate );
       }
-      
+
       // Maps
       if ( ( v1 instanceof Map ) && ( v2 instanceof Map ) ) {
           Map<?,?> m1 = (Map<?,?>)v1;
@@ -1066,7 +1060,7 @@ public class Utils {
           }
           return true;
       }
-      
+
       return false;
   }
 

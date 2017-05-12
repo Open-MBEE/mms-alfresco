@@ -144,6 +144,7 @@ public class ModelPost extends AbstractJavaWebScript {
         JSONObject commit = new JSONObject();
         JSONObject newElementsObject = new JSONObject();
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
+        boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
         WorkspaceNode myWorkspace = getWorkspace(req, user);
 
         String refId = getRefId(req);
@@ -161,7 +162,8 @@ public class ModelPost extends AbstractJavaWebScript {
             Map<String, JSONObject> foundElements = new HashMap<>();
             Map<String, String> foundParentElements = new HashMap<>();
 
-            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(emsNodeUtil.populateElements(postJson.getJSONArray(Sjm.ELEMENTS)), myWorkspace), user, foundElements), foundParentElements);
+            JSONArray deletedElements = new JSONArray();
+            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(emsNodeUtil.populateElements(postJson.getJSONArray(Sjm.ELEMENTS)), myWorkspace), user, foundElements, deletedElements), foundParentElements, deletedElements);
 
             JSONObject formattedCommit = emsNodeUtil.processCommit(results, user, foundElements, foundParentElements);
             // this logic needs to be fixed because emsNodesUtil does not pass a formatted commit
@@ -180,9 +182,16 @@ public class ModelPost extends AbstractJavaWebScript {
 
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
 
-                newElementsObject.put(Sjm.ELEMENTS, extended ?
+                if (withChildViews) {
+                    for (int i = 0; i < results.getJSONArray("newElements").length(); i++) {
+                        results.getJSONArray("newElements")
+                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray("newElements").getJSONObject(i)));
+                    }
+                }
+
+                newElementsObject.put(Sjm.ELEMENTS, filterByPermission(extended ?
                     emsNodeUtil.addExtendedInformation(results.getJSONArray("newElements")) :
-                    results.getJSONArray("newElements"));
+                    results.getJSONArray("newElements"), req));
                 newElementsObject.put(Sjm.COMMITID, commitResults);
                 newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
                 newElementsObject.put(Sjm.CREATOR, user);
@@ -350,7 +359,7 @@ public class ModelPost extends AbstractJavaWebScript {
         Path svgPath = Paths.get(tempDir.getAbsolutePath(), String.format("%s%s", artifactId, extension));
         File file = new File(svgPath.toString());
 
-        try (final InputStream in = new ByteArrayInputStream(svgContent);) {
+        try (final InputStream in = new ByteArrayInputStream(svgContent)) {
             file.mkdirs();
             Files.copy(in, svgPath, StandardCopyOption.REPLACE_EXISTING);
             return svgPath;
@@ -361,7 +370,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
     protected static Path svgToPng(Path svgPath) throws Throwable {
         Path pngPath = Paths.get(svgPath.toString().replace(".svg", ".png"));
-        try (OutputStream png_ostream = new FileOutputStream(pngPath.toString());) {
+        try (OutputStream png_ostream = new FileOutputStream(pngPath.toString())) {
             String svg_URI_input = svgPath.toUri().toURL().toString();
             TranscoderInput input_svg_image = new TranscoderInput(svg_URI_input);
             TranscoderOutput output_png_image = new TranscoderOutput(png_ostream);

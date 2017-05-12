@@ -11,19 +11,19 @@ import org.junit.Assert;
 
 public class TimeUtils {
 
-    public static enum Units { 
+    public enum Units {
         days(24*3600*1e9), hours(3600*1e9), minutes(60*1e9),
         seconds(1e9), milliseconds(1e6), microseconds(1e3),
         nanoseconds(1);
-        
+
         private double factor;
-        
+
         Units(double f) {
           factor = f;
         }
-        
+
         public static double conversionFactor( Units fromUnits, Units toUnits) {
-          double f = ((double)fromUnits.factor)/toUnits.factor;
+          double f = fromUnits.factor /toUnits.factor;
     //      if ( Debug.isOn() ) Debug.outln( "conversionFactor(" + fromUnits + ", " + toUnits
     //                          + ") = " + fromUnits.factor + " / " + toUnits.factor
     //                          + " = " + f );
@@ -49,7 +49,7 @@ public class TimeUtils {
               return null;
           }
         }
-    
+
         public static Units fromString( String unitsString ) {
           Units unit = null;
           try {
@@ -131,7 +131,7 @@ public class TimeUtils {
     /**
      * Parse the specified timestamp String in tee format and return the
      * corresponding Date.
-     * 
+     *
      * @param timestamp
      *            the time in tee format (yyyy-MM-dd'T'HH:mm:ss.SSSZ,
      *            yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSS,
@@ -188,7 +188,7 @@ public class TimeUtils {
     }
 
     // Converts time offset to a date-time String in Timepoint.timestamp format.
-    // Assumes t is an offset from Timepoint.epoch in Timepoint.units. 
+    // Assumes t is an offset from Timepoint.epoch in Timepoint.units.
     public static String timestampForFile() {
       String timeString =
           new SimpleDateFormat( fileTimestampFormat ).format( System.currentTimeMillis() );
@@ -198,7 +198,7 @@ public class TimeUtils {
     /**
      * Converts time in milliseconds since the "epoch" to a date-time String in
      * {@link #timestampFormat}.
-     * 
+     *
      * @param millis
      *            milliseconds since Jan 1, 1970
      * @return a timestamp String
@@ -210,7 +210,7 @@ public class TimeUtils {
           new SimpleDateFormat( timestampFormat ).format( cal.getTime() );
       return timeString;
     }
-    
+
     public static String toTimestamp( Date dateTime ) {
         return toTimestamp( dateTime.getTime() );
     }

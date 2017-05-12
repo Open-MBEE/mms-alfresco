@@ -63,19 +63,19 @@ public class ActionUtil {
     private ActionUtil() {
         // do nothing
     }
-    
+
     private static String getContextUrl() {
-        
+
         String hostname = getHostName();
         if (hostname.endsWith("/" )) {
             hostname = hostname.substring( 0, hostname.lastIndexOf( "/" ) );
-        } 
+        }
         if (!hostname.contains( "jpl.nasa.gov" )) {
             hostname += ".jpl.nasa.gov";
         }
-        return "https://" + hostname + "/alfresco"; 
+        return "https://" + hostname + "/alfresco";
     }
-    
+
     /**
      * Send off an email to the modifier of the node
      * @param node      Node whose modifier should be sent an email
@@ -86,7 +86,7 @@ public class ActionUtil {
     public static void sendEmailToModifier(EmsScriptNode node, String subject, ServiceRegistry services,
                                            String logString, String ts1, String ts2, WorkspaceNode ws1,
                                            WorkspaceNode ws2) {
-        
+
         // Save off the log
         EmsScriptNode logNode = ActionUtil.saveLogToFile(node, "text/plain", services, logString);
 
@@ -113,7 +113,7 @@ public class ActionUtil {
      */
     public static void sendEmailToModifier(EmsScriptNode node, String subject, ServiceRegistry services,
                                            String logString) {
-        
+
         // Save off the log
         EmsScriptNode logNode = ActionUtil.saveLogToFile(node, "text/plain", services, logString);
 
@@ -123,7 +123,7 @@ public class ActionUtil {
         String msg = "Log URL: " + contextUrl + logNode.getUrl();
         sendEmailToModifier(node, msg, subject, services);
     }
-    
+
     /**
      * Send off an email to the modifier of the node
      * @param node      Node whose modifier should be sent an email
@@ -175,7 +175,7 @@ public class ActionUtil {
      * @return  Log file
      */
     public static EmsScriptNode saveLogToFile(EmsScriptNode node, String mimeType, ServiceRegistry services, String data) {
-        String logName = ((String) node.getProperty("cm:name")) + ".log";
+        String logName = node.getProperty("cm:name") + ".log";
 
         // create logNode if necessary
         EmsScriptNode parent = node.getParent(null, node.getWorkspace(), false, true);
@@ -227,8 +227,7 @@ public class ActionUtil {
         if (jobPkgNode == null) return false;
         EmsScriptNode jobNode = jobPkgNode.childByNamePath(jobName);
         if (jobNode == null) return false;
-        if ( !jobNode.exists() ) return false;
-        return true;
+        return jobNode.exists();
     }
 
     public static EmsScriptNode getOrCreateJob(EmsScriptNode contextFolder,
@@ -236,12 +235,12 @@ public class ActionUtil {
                                                Status status, StringBuffer response) {
         return getOrCreateJob(contextFolder, jobName, jobType, status, response, false);
     }
-    
+
     private static EmsScriptNode getOrCreateJobImpl(EmsScriptNode jobPkgNode,
                                                   String jobName, String jobType,
-                                                  Status status, 
+                                                  Status status,
                                                   boolean generateName) {
-        
+
         EmsScriptNode jobNode = jobPkgNode.childByNamePath(jobName);
         if (jobNode == null) {
             String filename = jobName;
@@ -275,14 +274,14 @@ public class ActionUtil {
             String jobStatus = (String)jobNode.getProperties().get("{http://jpl.nasa.gov/model/ems/1.0}job_status");
             if (jobStatus != null && jobStatus.equals("Active")) {
                 Date modified = (Date)jobNode.getProperty("cm:modified");
-                status.setCode(HttpServletResponse.SC_CONFLICT, 
+                status.setCode(HttpServletResponse.SC_CONFLICT,
                                String.format( "Background job for project started at %s " +
                                               "is still active. If job is hung, use share " +
-                                              "to modify state at https://%s" + 
+                                              "to modify state at https://%s" +
                                               "/share/page/document-details?nodeRef=%s",
                                               modified, NodeUtil.getHostname(),
                                               jobNode.getNodeRef()));
-                return null;    
+                return null;
             }
         }
 
@@ -293,13 +292,13 @@ public class ActionUtil {
 
         // set the owner to original user say they can modify
         jobNode.setOwner( AuthenticationUtil.getFullyAuthenticatedUser() );
-        
+
         return jobNode;
     }
-    
+
     /**
      * Create a diff job inside contextFolder/Jobs/ws1Name/ws2Name
-     * 
+     *
      * @param contextFolder Folder to create the job node
      * @param jobName       String of the filename
      * @param jobType       The type of job being created
@@ -314,12 +313,12 @@ public class ActionUtil {
                                                    String ws1Name, String ws2Name,
                                                    Date timestamp1, Date timestamp2,
                                                    String timeString1, String timeString2,
-                                                   String jobName, 
+                                                   String jobName,
                                                    Status status, StringBuffer response,
                                                    boolean generateName) {
-        
+
         EmsScriptNode jobNode = null;
-        
+
         // to make sure no permission issues, run as admin
         String origUser = AuthenticationUtil.getFullyAuthenticatedUser();
         AuthenticationUtil.setRunAsUser( "admin" );
@@ -330,7 +329,7 @@ public class ActionUtil {
             jobPkgNode.setPermission( "SiteCollaborator", "GROUP_EVERYONE" );
             contextFolder.getOrSetCachedVersion();
         }
-        
+
         if (jobPkgNode != null) {
             // Create workspace folders:
             EmsScriptNode ws1Folder = jobPkgNode.childByNamePath(ws1Name);
@@ -339,7 +338,7 @@ public class ActionUtil {
                 ws1Folder.setPermission( "SiteCollaborator", "GROUP_EVERYONE" );
                 ws1Folder.getOrSetCachedVersion();
             }
-            
+
             if (ws1Folder != null) {
                 EmsScriptNode ws2Folder = ws1Folder.childByNamePath(ws2Name);
                 if (ws2Folder == null) {
@@ -347,7 +346,7 @@ public class ActionUtil {
                     ws2Folder.setPermission( "SiteCollaborator", "GROUP_EVERYONE" );
                     ws2Folder.getOrSetCachedVersion();
                 }
-                
+
                 if (ws2Folder != null) {
                     jobNode = getOrCreateJobImpl(ws2Folder, jobName, "ems:DiffJob", status, generateName);
                     if (jobNode != null && timeString1 != null && timeString2 != null) {
@@ -358,33 +357,33 @@ public class ActionUtil {
                 }
             }
         }
-        
+
         // make sure we're running back as the originalUser
         AuthenticationUtil.setRunAsUser( origUser );
-        
+
         return jobNode;
     }
-    
+
     /**
      * Get a diff job inside contextFolder/Jobs/ws1Name/ws2Name
      * Must supply jobName.
-     * 
+     *
      * @param contextFolder Folder to create the job node
-     * @param jobName       String of the filename 
-     * @param services 
-     * @param response 
+     * @param jobName       String of the filename
+     * @param services
+     * @param response
      * @return The found diff job node
      */
     public static EmsScriptNode getDiffJob(EmsScriptNode contextFolder,
                                            WorkspaceNode ws1, WorkspaceNode ws2,
                                            String jobName,
-                                           ServiceRegistry services, 
+                                           ServiceRegistry services,
                                            StringBuffer response) {
-        
+
         EmsScriptNode jobNode = null;
         String ws1Name = WorkspaceNode.getWorkspaceName(ws1);
         String ws2Name = WorkspaceNode.getWorkspaceName(ws2);
-        
+
         // to make sure no permission issues, run as admin
         String origUser = AuthenticationUtil.getFullyAuthenticatedUser();
         AuthenticationUtil.setRunAsUser( "admin" );
@@ -401,13 +400,13 @@ public class ActionUtil {
                 }
             }
         }
-        
+
         // make sure we're running back as the originalUser
         AuthenticationUtil.setRunAsUser( origUser );
-        
+
         return jobNode;
     }
-    
+
     /**
      * Create a job inside a particular site
      * @param contextFolder Folder to create the job node
@@ -424,9 +423,9 @@ public class ActionUtil {
                                                String jobName, String jobType,
                                                Status status, StringBuffer response,
                                                boolean generateName) {
-        
+
         EmsScriptNode jobNode = null;
-        
+
         // to make sure no permission issues, run as admin
         String origUser = AuthenticationUtil.getFullyAuthenticatedUser();
         AuthenticationUtil.setRunAsUser( "admin" );
@@ -441,14 +440,14 @@ public class ActionUtil {
                 jobPkgNode.setWorkspace( ws );
             }
         }
-        
+
         if (jobPkgNode != null) {
             jobNode = getOrCreateJobImpl(jobPkgNode, jobName, jobType, status, generateName);
         }
 
         // make sure we're running back as the originalUser
         AuthenticationUtil.setRunAsUser( origUser );
-        
+
         return jobNode;
     }
 

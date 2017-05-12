@@ -73,11 +73,7 @@ public class UpdateWorkspaceLdapGroup extends AbstractJavaWebScript {
             return false;
         }
 
-        if (!checkRequestVariable(req.getParameter( "ldapGroup" ), "ldapGroup")) {
-            return false;
-        }
-
-        return true;
+        return checkRequestVariable(req.getParameter("ldapGroup"), "ldapGroup");
     }
 
 

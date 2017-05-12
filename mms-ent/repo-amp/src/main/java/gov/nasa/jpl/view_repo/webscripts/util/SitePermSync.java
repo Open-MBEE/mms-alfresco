@@ -74,10 +74,7 @@ public class SitePermSync extends AbstractJavaWebScript{
         }
 
         String workspaceId = req.getServiceMatch().getTemplateVars().get(REF_ID);
-        if (!checkRequestVariable(workspaceId, REF_ID)) {
-            return false;
-        }
-        return true;
+        return checkRequestVariable(workspaceId, REF_ID);
     }
 
     @Override

@@ -24,6 +24,7 @@ pg.host=jdbc:postgresql://127.0.0.1/
 pg.name=POSTGRESDBNAME
 pg.user=POSTGRESUSERNAME
 pg.pass=POSTGRESPASSWORD
+pg.conn.max=96
 pg.limit.insert=5000
 pg.limit.select=1000
 

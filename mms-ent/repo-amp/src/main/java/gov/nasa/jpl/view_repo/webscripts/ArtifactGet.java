@@ -76,10 +76,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
 
     @Override
     protected boolean validateRequest(WebScriptRequest req, Status status) {
-        if (!checkRequestContent(req)) {
-            return false;
-        }
-        return true;
+        return checkRequestContent(req);
     }
 
     /**
