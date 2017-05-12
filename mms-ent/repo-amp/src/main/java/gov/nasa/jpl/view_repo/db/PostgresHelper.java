@@ -628,13 +628,13 @@ public class PostgresHelper {
 
     public List<String> getElasticIdsFromSysmlIds(List<String> sysmlids) {
         List<String> elasticIds = new ArrayList<>();
-        if (sysmlids == null)
+        if (sysmlids == null || sysmlids.isEmpty())
             return elasticIds;
 
         try {
             String query = String
                 .format("SELECT elasticid FROM \"nodes%s\" WHERE sysmlid IN (%s) AND deleted = %b", workspaceId,
-                    "'" + (sysmlids.size() > 1 ? String.join("','", sysmlids) : sysmlids.get(0)) + "'", false);
+                    "'" + String.join("','", sysmlids) + "'", false);
             ResultSet rs = execQuery(query);
             while (rs.next()) {
                 elasticIds.add(rs.getString(1));
