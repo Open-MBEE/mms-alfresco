@@ -1,0 +1,51 @@
+{
+    "_creator":"admin",
+    "elements":[
+        {
+            "isDerived":false,
+            "_modifier":"admin",
+            "documentation":"something",
+            "ownerId":"123456",
+            "type":"Property",
+            "_commitId":"90da318e-2562-4437-8728-9c3aee1b70e4",
+            "_creator":"admin",
+            "_created":"2017-05-03T16:20:13.468-0700",
+            "name":"this name is updated",
+            "id":"300",
+            "_elasticId":"d075eaeb-c393-4c1e-b200-597de1c68761",
+            "value":[
+                {
+                    "string":"dlam_string",
+                    "type":"LiteralString"
+                }
+            ],
+            "_modified":"2017-05-04T14:14:29.950-0700",
+            "_refId":"master",
+            "_projectId":"123456"
+        },
+        {
+            "isDerived":false,
+            "_modifier":"admin",
+            "documentation":"else",
+            "ownerId":"300",
+            "type":"Property",
+            "_commitId":"90da318e-2562-4437-8728-9c3aee1b70e4",
+            "_creator":"admin",
+            "_created":"2017-05-03T16:20:13.468-0700",
+            "name":"this name is also updated",
+            "id":"301",
+            "_elasticId":"ca2b4895-0573-44e2-bdfb-25ece99451c1",
+            "value":[
+                {
+                    "string":"dlam_string",
+                    "type":"LiteralString"
+                }
+            ],
+            "_modified":"2017-05-04T14:14:29.950-0700",
+            "_refId":"master",
+            "_projectId":"123456"
+        }
+    ],
+    "_timestamp":"2017-05-04 14:14:29.991364",
+    "_commitId":"90da318e-2562-4437-8728-9c3aee1b70e4"
+}

@@ -4158,9 +4158,9 @@ public class NodeUtil {
             if (contents.has("operand")) {
                 JSONArray operand = contents.getJSONArray("operand");
                 for (int ii = 0; ii < operand.length(); ii++) {
-                    JSONObject value = operand.getJSONObject(ii);
-                    if (value.has("instance")) {
-                        documentEdges.add(new Pair<>(sysmlId, value.getString("instance")));
+                    JSONObject value = operand.optJSONObject(ii);
+                    if (value != null && value.has("instanceId")) {
+                        documentEdges.add(new Pair<>(sysmlId, value.getString("instanceId")));
                     }
                 }
             }
@@ -4192,8 +4192,8 @@ public class NodeUtil {
     public static void processInstanceSpecificationSpecificationJson(String sysmlId, JSONObject iss,
                     List<Pair<String, String>> documentEdges) {
         if (iss != null) {
-            if (iss.has("string")) {
-                String string = iss.getString("string");
+            if (iss.has("value") && iss.has("type") && iss.getString("type").equals("LiteralString")) {
+                String string = iss.getString("value");
                 JSONObject json = new JSONObject(string);
                 Set<Object> sources = findKeyValueInJsonObject(json, "source");
                 for (Object source : sources) {
