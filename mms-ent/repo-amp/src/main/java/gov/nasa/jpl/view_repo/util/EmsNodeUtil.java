@@ -536,6 +536,8 @@ public class EmsNodeUtil {
                 JSONObject relatedDocObject = new JSONObject();
                 relatedDocObject.put(Sjm.SYSMLID, pair.getKey());
                 relatedDocObject.put(Sjm.PARENTVIEWS, viewIds);
+                relatedDocObject.put(Sjm.PROJECTID, this.projectId);
+                relatedDocObject.put(Sjm.REFID, this.workspaceName);
                 relatedDocuments.put(relatedDocObject);
             });
             element.put(Sjm.RELATEDDOCUMENTS, relatedDocuments);
