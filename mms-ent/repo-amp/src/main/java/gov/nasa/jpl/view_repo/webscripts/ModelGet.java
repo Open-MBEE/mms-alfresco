@@ -418,15 +418,15 @@ public class ModelGet extends AbstractJavaWebScript {
         return elasticElementsCleaned;
     }
 
-    protected JSONArray handleMountSearch(JSONObject projectOb, boolean extended, String rootSysmlid, Long depth)
+    protected JSONArray handleMountSearch(JSONObject mountsJson, boolean extended, String rootSysmlid, Long depth)
         throws JSONException, SQLException, IOException {
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectOb.getString(Sjm.SYSMLID), projectOb.getString(Sjm.REFID));
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
         JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
         if (tmpElements.length() > 0) {
             JSONArray elasticElements = extended ? emsNodeUtil.addExtendedInformation(tmpElements) : tmpElements;
             return elasticElements;
         }
-        JSONArray mountsArray = projectOb.getJSONArray(Sjm.MOUNTS);
+        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 
         for (int i = 0; i < mountsArray.length(); i++) {
             tmpElements = handleMountSearch(mountsArray.getJSONObject(i), extended, rootSysmlid, depth);

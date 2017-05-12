@@ -32,14 +32,18 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -58,6 +62,7 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
+import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
 
 /**
  * Model search service that returns a JSONArray of elements
@@ -130,25 +135,65 @@ public class ModelSearch extends ModelPost {
     private JSONArray executeSearchRequest(WebScriptRequest req, JSONObject top) throws JSONException, IOException {
 
         JSONArray elements = new JSONArray();
-        JSONArray elasticResult = new JSONArray();
-        WorkspaceNode workspace = getWorkspace(req);
-        String projectId = getProjectId(req);
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
-        JSONObject json = (JSONObject) req.parseContent();
-        //String keyword = req.getParameter("keyword");
-        elasticResult = emsNodeUtil.search(json);
-        if (elasticResult.length() > 0) {
-            for (int i = 0; i < elasticResult.length(); i++) {
-                JSONArray views = emsNodeUtil.getChildren(elasticResult.getJSONObject(i).getString(
-                    Sjm.ELASTICID), DbEdgeTypes.VIEW, (long) 0);
-                elasticResult.getJSONObject(i).put("_views", views);
-                elements.put(elasticResult.getJSONObject(i));
-            }
-        } else {
 
+        String projectId = getProjectId(req);
+        String refId = getRefId(req);
+
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        JSONObject json = (JSONObject) req.parseContent();
+        Map<String, String> elasticResult = emsNodeUtil.search(json);
+
+        Set<String> elementList = new HashSet<>();
+        elasticResult.forEach((key, value) -> {
+            elementList.add(key);
+        });
+
+        try {
+            handleMountSearch(emsNodeUtil.getProjectWithFullMounts(projectId, refId, null), true, 0L, elementList, elements);
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         return elements;
+    }
+
+    protected static void handleMountSearch(JSONObject mountsJson, boolean extended, final Long maxDepth, Set<String> elementsToFind, JSONArray result)
+        throws JSONException, SQLException, IOException {
+
+        if (elementsToFind.isEmpty()) {
+            return;
+        }
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
+        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind);
+        Set<String> foundElements = new HashSet<>();
+        JSONArray curFound = new JSONArray();
+        for (int index = 0; index < nodeList.length(); index++) {
+            String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
+            if (maxDepth != 0) {
+                JSONArray children = emsNodeUtil.getChildren(id, maxDepth);
+                for (int i = 0; i < children.length(); i++) {
+                    String cid = children.getJSONObject(i).getString(Sjm.SYSMLID);
+                    if (foundElements.contains(cid)) {
+                        continue;
+                    }
+                    curFound.put(children.getJSONObject(i));
+                    foundElements.add(cid);
+                }
+            } else {
+                curFound.put(nodeList.getJSONObject(index));
+                foundElements.add(id);
+            }
+        }
+        curFound = extended ? emsNodeUtil.addExtendedInformation(emsNodeUtil.addExtraDocs(curFound, new HashMap<>())) : emsNodeUtil.addExtraDocs(curFound, new HashMap<>());
+        for (int i = 0; i < curFound.length(); i++) {
+            result.put(curFound.get(i));
+        }
+        elementsToFind.removeAll(foundElements);
+        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
+
+        for (int i = 0; i < mountsArray.length(); i++) {
+            handleMountSearch(mountsArray.getJSONObject(i), extended, maxDepth, elementsToFind, result);
+        }
     }
 
 }

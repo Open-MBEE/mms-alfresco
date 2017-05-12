@@ -1879,7 +1879,7 @@ public class PostgresHelper {
     public List<Map<String, Object>> getRefsCommits(String refId, int commitId) {
         List<Map<String, Object>> result = new ArrayList<>();
         try {
-            String refIdString = refId;
+            String refIdString = refId.replace("-", "_").replaceAll("\\s+", "");
             if (refId.equals("master")) {
                 refId = "";
             }
