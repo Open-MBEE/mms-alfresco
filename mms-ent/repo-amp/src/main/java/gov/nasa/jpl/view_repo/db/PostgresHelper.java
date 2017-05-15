@@ -596,6 +596,21 @@ public class PostgresHelper {
         return false;
     }
 
+    public boolean isDeleted(String sysmlid) {
+        try {
+            ResultSet rs = execQuery("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + sysmlid + "' AND deleted = true");
+            if (rs.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return false;
+    }
+
     public boolean sysmlIdExists(String sysmlid) {
         try {
             ResultSet rs = execQuery("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + sysmlid + "'");

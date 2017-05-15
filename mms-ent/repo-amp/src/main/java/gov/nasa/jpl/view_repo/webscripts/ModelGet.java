@@ -306,9 +306,15 @@ public class ModelGet extends AbstractJavaWebScript {
                     break;
                 }
             }
+            String projectId = getProjectId(req);
+            String refId = getRefId(req);
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
             if (null == modelId) {
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s", modelId);
+                return new JSONArray();
+            } else if (emsNodeUtil.isDeleted(modelId)) {
+                log(Level.ERROR, HttpServletResponse.SC_GONE, "Element %s is deleted", modelId);
                 return new JSONArray();
             }
 
@@ -423,8 +429,7 @@ public class ModelGet extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
         JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
         if (tmpElements.length() > 0) {
-            JSONArray elasticElements = extended ? emsNodeUtil.addExtendedInformation(tmpElements) : tmpElements;
-            return elasticElements;
+            return extended ? emsNodeUtil.addExtendedInformation(tmpElements) : tmpElements;
         }
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 

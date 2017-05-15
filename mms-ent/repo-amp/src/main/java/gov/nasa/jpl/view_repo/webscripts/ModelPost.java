@@ -162,8 +162,9 @@ public class ModelPost extends AbstractJavaWebScript {
             Map<String, JSONObject> foundElements = new HashMap<>();
             Map<String, String> foundParentElements = new HashMap<>();
 
+            JSONArray updatedElements = new JSONArray();
             JSONArray deletedElements = new JSONArray();
-            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(emsNodeUtil.populateElements(postJson.getJSONArray(Sjm.ELEMENTS)), myWorkspace), user, foundElements, deletedElements), foundParentElements, deletedElements);
+            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(emsNodeUtil.populateElements(postJson.getJSONArray(Sjm.ELEMENTS)), myWorkspace), user, foundElements, updatedElements, deletedElements), foundParentElements, updatedElements, deletedElements);
 
             JSONObject formattedCommit = emsNodeUtil.processCommit(results, user, foundElements, foundParentElements);
             // this logic needs to be fixed because emsNodesUtil does not pass a formatted commit
