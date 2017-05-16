@@ -722,10 +722,10 @@ public class EmsNodeUtil {
                 // Get originalNode if updated
                 o.put(Sjm.MODIFIER, user);
                 o.put(Sjm.MODIFIED, date);
-                JSONObject updating = getNodeBySysmlid(sysmlid);
+                JSONObject updating = getNodeBySysmlid(sysmlid, false);
                 if (!updating.has(Sjm.SYSMLID)) {
                     pgh.resurrectNode(sysmlid);
-                    updating = getNodeBySysmlid(sysmlid);
+                    updating = getNodeBySysmlid(sysmlid, false);
                 }
                 foundElements.put(sysmlid, updating);
             }
@@ -816,11 +816,12 @@ public class EmsNodeUtil {
             String sysmlid = o.getString(Sjm.SYSMLID);
 
             JSONArray typeArray = o.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
+
             if (typeArray != null) {
+                JSONArray childViews = new JSONArray();
                 for (int i = 0; i < typeArray.length(); i++) {
                     String typeJson = typeArray.optString(i);
                     if (Sjm.STEREOTYPEIDS.containsKey(typeJson) && (Sjm.STEREOTYPEIDS.get(typeJson).matches("view|document"))) {
-                        JSONArray childViews = new JSONArray();
                         List<Map<String, String>> gotChildViews = pgh.getChildViews(sysmlid);
                         if (gotChildViews.size() > 0) {
                             for (Map<String, String> foundChildView : gotChildViews) {
@@ -832,11 +833,11 @@ public class EmsNodeUtil {
                                     childViews.put(childView);
                                 });
                             }
-                            o.put(Sjm.CHILDVIEWS, childViews);
-                            visited.put(o.getString(Sjm.SYSMLID), o);
                         }
                     }
                 }
+                o.put(Sjm.CHILDVIEWS, childViews);
+                visited.put(o.getString(Sjm.SYSMLID), o);
             }
         }
         return o;
@@ -849,6 +850,7 @@ public class EmsNodeUtil {
         if (o.has(Sjm.SYSMLID) && !visited.containsKey(o.getString(Sjm.SYSMLID))) {
             JSONArray typeArray = o.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
             if (typeArray != null) {
+                JSONArray childViews = new JSONArray();
                 for (int i = 0; i < typeArray.length(); i++) {
                     String typeJson = typeArray.optString(i);
                     if (Sjm.STEREOTYPEIDS.containsKey(typeJson) && (Sjm.STEREOTYPEIDS.get(typeJson).matches("view|document"))) {
@@ -860,37 +862,33 @@ public class EmsNodeUtil {
                             }
                         }
 
-                        JSONArray childViews = new JSONArray();
-                        JSONArray ownedAttributesJSON = new JSONArray();
-                        ownedAttributesJSON = getNodesBySysmlids(ownedAttributeSet);
+                        JSONArray ownedAttributesJSON = getNodesBySysmlids(ownedAttributeSet);
                         if (ownedAttributesJSON.length() > 0) {
-                            JSONObject ownedAttribute = ownedAttributesJSON.optJSONObject(i);
-                            if (ownedAttribute != null && ownedAttribute.getString(Sjm.TYPE).equals("Property")) {
-                                if (ownedAttribute.optString(Sjm.TYPEID) != null) {
-                                    JSONObject childView = new JSONObject();
-                                    childView.put(Sjm.SYSMLID, ownedAttribute.getString(Sjm.TYPEID));
-                                    childView.put(Sjm.AGGREGATION, ownedAttribute.getString(Sjm.AGGREGATION));
-                                    childViews.put(childView);
+                            for (int j = 0; j < ownedAttributesJSON.length(); j++) {
+                                JSONObject ownedAttribute = ownedAttributesJSON.optJSONObject(j);
+                                if (ownedAttribute != null && ownedAttribute.getString(Sjm.TYPE).equals("Property")) {
+                                    if (ownedAttribute.optString(Sjm.TYPEID) != null) {
+                                        JSONObject childView = new JSONObject();
+                                        childView.put(Sjm.SYSMLID, ownedAttribute.getString(Sjm.TYPEID));
+                                        childView.put(Sjm.AGGREGATION, ownedAttribute.getString(Sjm.AGGREGATION));
+                                        childViews.put(childView);
+                                    }
                                 }
                             }
-                            o.put(Sjm.CHILDVIEWS, childViews);
-                            visited.put(o.getString(Sjm.SYSMLID), o);
                         }
                     }
                 }
+                o.put(Sjm.CHILDVIEWS, childViews);
+                visited.put(o.getString(Sjm.SYSMLID), o);
             }
         }
         return o;
     }
 
-    private JSONObject reorderChildViews2(JSONObject element, JSONArray newElements, JSONArray updatedElements, JSONArray deletedElements) {
+    private void reorderChildViews2(JSONObject element, JSONArray newElements, JSONArray updatedElements, JSONArray deletedElements) {
 
         if (!element.has(Sjm.CHILDVIEWS)) {
-            return element;
-        } else {
-            if (!element.has(Sjm.OWNEDATTRIBUTEIDS)) {
-                return element;
-            }
+            return;
         }
 
         String sysmlId = element.optString(Sjm.SYSMLID);
@@ -898,7 +896,7 @@ public class EmsNodeUtil {
         dbnt.add(DbNodeTypes.PACKAGE);
         String ownerParentPackage = pgh.getImmediateParentOfType(sysmlId, DbEdgeTypes.CONTAINMENT, dbnt);
 
-        JSONObject oldElement = getNodeBySysmlid(element.optString(Sjm.SYSMLID));
+        JSONObject oldElement = getNodeBySysmlid(sysmlId);
 
         JSONArray oldOwnedAttributes = oldElement.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
         JSONArray newChildViews = element.optJSONArray(Sjm.CHILDVIEWS);
@@ -922,12 +920,7 @@ public class EmsNodeUtil {
             }
         }
 
-        try {
-            handleMountSearch(getProjectWithFullMounts(projectId, workspaceName, null), true, true, 0L,
-                oldOwnedAttributeSet, ownedAttributes);
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        }
+        ownedAttributes = getNodesBySysmlids(oldOwnedAttributeSet);
 
         Map<String, String> createProps = new HashMap<>();
         List<String> notAViewList = new ArrayList<>();
@@ -1000,7 +993,7 @@ public class EmsNodeUtil {
                 } else {
                     if (child.has(Sjm.SYSMLID) && child.getString(Sjm.SYSMLID) != null) {
                         JSONObject childNode = getNodeBySysmlid(child.getString(Sjm.SYSMLID));
-                        if (childNode.isNull(Sjm.SYSMLID)) {
+                        if (childNode.isNull(Sjm.SYSMLID) || childNode.optString(Sjm.SYSMLID).isEmpty()) {
                             String cvSysmlId = child.getString("id");
                             String aggregation = child.getString("aggregation");
 
@@ -1178,8 +1171,6 @@ public class EmsNodeUtil {
 
         element.put(Sjm.OWNEDATTRIBUTEIDS, ownedAttributesIds);
         element.remove(Sjm.CHILDVIEWS);
-
-        return element;
     }
 
     private JSONObject reorderChildViews(JSONObject element, JSONArray newElements, JSONArray deletedElements) {
