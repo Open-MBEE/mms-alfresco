@@ -251,7 +251,7 @@ public class EmsNodeUtil {
             visited = new HashMap<>();
         }
         if (visited.containsKey(sysmlid)) {
-            return addChildViews(visited.get(sysmlid), visited);
+            return addChildViews2(visited.get(sysmlid), visited);
         }
 
         String elasticId = pgh.getElasticIdFromSysmlId(sysmlid);
@@ -262,7 +262,7 @@ public class EmsNodeUtil {
                     result.put(Sjm.PROJECTID, this.projectId);
                     result.put(Sjm.REFID, this.workspaceName);
                     visited.put(sysmlid, result);
-                    return withChildViews ? addChildViews(result, visited) : result;
+                    return withChildViews ? addChildViews2(result, visited) : result;
                 }
             } catch (Exception e) {
                 logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -731,7 +731,7 @@ public class EmsNodeUtil {
             }
 
             if (added || updated) {
-                reorderChildViews(o, newElements, deletedElements);
+                reorderChildViews2(o, newElements, updatedElements, deletedElements);
                 elements.put(i, o);
             }
 
@@ -805,7 +805,7 @@ public class EmsNodeUtil {
     }
 
     public JSONObject addChildViews(JSONObject o) {
-        return addChildViews(o, null);
+        return addChildViews2(o, null);
     }
 
     private JSONObject addChildViews(JSONObject o, Map<String, JSONObject> visited) {
@@ -842,6 +842,47 @@ public class EmsNodeUtil {
         return o;
     }
 
+    private JSONObject addChildViews2(JSONObject o, Map<String, JSONObject> visited) {
+        if (visited == null) {
+            visited = new HashMap<>();
+        }
+        if (o.has(Sjm.SYSMLID) && !visited.containsKey(o.getString(Sjm.SYSMLID))) {
+            JSONArray typeArray = o.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
+            if (typeArray != null) {
+                for (int i = 0; i < typeArray.length(); i++) {
+                    String typeJson = typeArray.optString(i);
+                    if (Sjm.STEREOTYPEIDS.containsKey(typeJson) && (Sjm.STEREOTYPEIDS.get(typeJson).matches("view|document"))) {
+                        JSONArray ownedAttributes = o.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
+                        Set<String> ownedAttributeSet = new HashSet<>();
+                        if (ownedAttributes != null && ownedAttributes.length() > 0) {
+                            for (int j = 0; j < ownedAttributes.length(); j++) {
+                                ownedAttributeSet.add(ownedAttributes.getString(j));
+                            }
+                        }
+
+                        JSONArray childViews = new JSONArray();
+                        JSONArray ownedAttributesJSON = new JSONArray();
+                        ownedAttributesJSON = getNodesBySysmlids(ownedAttributeSet);
+                        if (ownedAttributesJSON.length() > 0) {
+                            JSONObject ownedAttribute = ownedAttributesJSON.optJSONObject(i);
+                            if (ownedAttribute != null && ownedAttribute.getString(Sjm.TYPE).equals("Property")) {
+                                if (ownedAttribute.optString(Sjm.TYPEID) != null) {
+                                    JSONObject childView = new JSONObject();
+                                    childView.put(Sjm.SYSMLID, ownedAttribute.getString(Sjm.TYPEID));
+                                    childView.put(Sjm.AGGREGATION, ownedAttribute.getString(Sjm.AGGREGATION));
+                                    childViews.put(childView);
+                                }
+                            }
+                            o.put(Sjm.CHILDVIEWS, childViews);
+                            visited.put(o.getString(Sjm.SYSMLID), o);
+                        }
+                    }
+                }
+            }
+        }
+        return o;
+    }
+
     private JSONObject reorderChildViews2(JSONObject element, JSONArray newElements, JSONArray updatedElements, JSONArray deletedElements) {
 
         if (!element.has(Sjm.CHILDVIEWS)) {
@@ -857,35 +898,94 @@ public class EmsNodeUtil {
         dbnt.add(DbNodeTypes.PACKAGE);
         String ownerParentPackage = pgh.getImmediateParentOfType(sysmlId, DbEdgeTypes.CONTAINMENT, dbnt);
 
-        JSONObject oldElement = addChildViews(getNodeBySysmlid(element.optString(Sjm.SYSMLID)));
+        JSONObject oldElement = getNodeBySysmlid(element.optString(Sjm.SYSMLID));
 
-        JSONArray oldChildViews = oldElement.optJSONArray(Sjm.CHILDVIEWS);
         JSONArray oldOwnedAttributes = oldElement.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
         JSONArray newChildViews = element.optJSONArray(Sjm.CHILDVIEWS);
-        JSONArray newOwnedAttributes = element.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
 
         JSONArray ownedAttributes = new JSONArray();
+        JSONArray ownedAttributesIds = new JSONArray();
 
-        if (oldChildViews != null && oldChildViews.length() > 0) {
-            for (int i = 0; i < oldChildViews.length(); i++) {
-                JSONObject child = oldChildViews.optJSONObject(i);
-                if (child.optString(Sjm.SYSMLID) != null && newChildViews != null && !newChildViews.toString().contains(child.optString(Sjm.SYSMLID))) {
-                    JSONObject childNode = getNodeBySysmlid(child.optString(Sjm.SYSMLID));
-                    if (childNode.optString(Sjm.SYSMLID) != null) {
-                        deletedElements.put(childNode);
-                    }
+        Set<String> oldOwnedAttributeSet = new HashSet<>();
+        if (oldOwnedAttributes != null && oldOwnedAttributes.length() > 0) {
+            for (int i = 0; i < oldOwnedAttributes.length(); i++) {
+                oldOwnedAttributeSet.add(oldOwnedAttributes.getString(i));
+            }
+        }
+
+        Set<String> newChildViewsSet = new HashSet<>();
+        if (newChildViews != null && newChildViews.length() > 0) {
+            for (int i = 0; i < newChildViews.length(); i++) {
+                if (newChildViews.optJSONObject(i) != null && newChildViews.optJSONObject(i).optString(Sjm.SYSMLID) != null) {
+                    newChildViewsSet.add(newChildViews.optJSONObject(i).optString(Sjm.SYSMLID));
                 }
             }
         }
 
-        if (oldOwnedAttributes != null && oldOwnedAttributes.length() > 0) {
-            for (int i = 0; i < oldOwnedAttributes.length(); i++) {
-                String childOwnedAttribute = oldOwnedAttributes.optString(i);
-                if (childOwnedAttribute != null && newOwnedAttributes != null && !newOwnedAttributes.toString().contains(childOwnedAttribute)) {
-                    JSONObject childNode = getNodeBySysmlid(childOwnedAttribute);
-                    if (childNode.optString(Sjm.SYSMLID) != null) {
-                        updatedElements.put(childNode);
+        try {
+            handleMountSearch(getProjectWithFullMounts(projectId, workspaceName, null), true, true, 0L,
+                oldOwnedAttributeSet, ownedAttributes);
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+
+        Map<String, String> createProps = new HashMap<>();
+        List<String> notAViewList = new ArrayList<>();
+
+        for (int i = 0; i < ownedAttributes.length(); i++) {
+            JSONObject ownedAttribute = ownedAttributes.optJSONObject(i);
+            if (ownedAttribute != null && ownedAttribute.getString(Sjm.TYPE).equals("Property")) {
+                if (ownedAttribute.optString(Sjm.TYPEID) != null) {
+                    if (!newChildViewsSet.contains(ownedAttribute.getString(Sjm.TYPEID))) {
+                        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(ownedAttribute.optString(Sjm.PROJECTID),
+                            ownedAttribute.optString(Sjm.REFID));
+                        JSONArray childViews = new JSONArray();
+                        Set<String> childViewsSet = new HashSet<>();
+                        childViewsSet.add(ownedAttribute.getString(Sjm.TYPEID));
+                        try {
+                            handleMountSearch(getProjectWithFullMounts(ownedAttribute.optString(Sjm.PROJECTID),
+                                ownedAttribute.optString(Sjm.REFID), null), true, true, 0L, childViewsSet, childViews);
+                        } catch (Exception e) {
+                            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+                        }
+
+                        if (childViews.length() > 0) {
+                            for (int j = 0; j < childViews.length(); j++) {
+                                JSONObject childView = childViews.optJSONObject(j);
+
+                                JSONArray appliedStereotypeIds = childView.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
+                                if (appliedStereotypeIds.toString().contains("_17_0_1_232f03dc_1325612611695_581988_21583")
+                                    || appliedStereotypeIds.toString().contains("_17_0_2_3_87b0275_1371477871400_792964_43374")) {
+                                    if (childView.optString(Sjm.SYSMLID) != null) {
+                                        deletedElements.put(ownedAttribute);
+                                    }
+                                    JSONObject asi = emsNodeUtil.getNodeBySysmlid(ownedAttribute.optString(Sjm.APPLIEDSTEREOTYPEINSTANCEID));
+                                    if (asi.optString(Sjm.SYSMLID) != null) {
+                                        deletedElements.put(asi);
+                                    }
+                                    JSONObject association = emsNodeUtil.getNodeBySysmlid(ownedAttribute.optString(Sjm.ASSOCIATIONID));
+                                    if (association.optString(Sjm.SYSMLID) != null) {
+                                        deletedElements.put(association);
+                                    }
+                                    JSONArray associationProps = association.optJSONArray(Sjm.OWNEDENDIDS);
+                                    for (int k = 0; k < associationProps.length(); k++) {
+                                        if (associationProps.optString(k) != null) {
+                                            JSONObject assocProp = emsNodeUtil.getNodeBySysmlid(associationProps.optString(k));
+                                            if (assocProp.optString(Sjm.SYSMLID) != null) {
+                                                deletedElements.put(assocProp);
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    notAViewList.add(ownedAttribute.getString(Sjm.SYSMLID));
+                                }
+                            }
+                        }
+                    } else {
+                        createProps.put(ownedAttribute.getString(Sjm.TYPEID), ownedAttribute.getString(Sjm.SYSMLID));
                     }
+                } else {
+                    notAViewList.add(ownedAttribute.getString(Sjm.SYSMLID));
                 }
             }
         }
@@ -893,194 +993,190 @@ public class EmsNodeUtil {
         if (newChildViews != null && newChildViews.length() > 0) {
             for (int i = 0; i < newChildViews.length(); i++) {
                 JSONObject child = newChildViews.getJSONObject(i);
-                if (child.has(Sjm.SYSMLID) && child.getString(Sjm.SYSMLID) != null) {
-                    JSONObject childNode = getNodeBySysmlid(child.getString(Sjm.SYSMLID));
-                    if (childNode.isNull(Sjm.SYSMLID)) {
-                        String cvSysmlId = child.getString("id");
-                        String aggregation = child.getString("aggregation");
+                if (createProps.containsKey(child.getString(Sjm.SYSMLID))) {
+                    if (!ownedAttributesIds.toString().contains(createProps.get(child.getString(Sjm.SYSMLID)))) {
+                        ownedAttributesIds.put(createProps.get(child.getString(Sjm.SYSMLID)));
+                    }
+                } else {
+                    if (child.has(Sjm.SYSMLID) && child.getString(Sjm.SYSMLID) != null) {
+                        JSONObject childNode = getNodeBySysmlid(child.getString(Sjm.SYSMLID));
+                        if (childNode.isNull(Sjm.SYSMLID)) {
+                            String cvSysmlId = child.getString("id");
+                            String aggregation = child.getString("aggregation");
 
-                        String propertySysmlId = createId();
-                        String associationSysmlId = createId();
-                        String assocPropSysmlId = createId();
+                            String propertySysmlId = createId();
+                            String associationSysmlId = createId();
+                            String assocPropSysmlId = createId();
 
-                        // Create Property
-                        JSONObject property = new JSONObject();
-                        property.put(Sjm.SYSMLID, propertySysmlId);
-                        property.put(Sjm.NAME, "childView" + (i + 1));
-                        property.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
-                        property.put(Sjm.TYPE, "Property");
-                        property.put(Sjm.OWNERID, sysmlId);
-                        property.put(Sjm.TYPEID, cvSysmlId);
-                        property.put(Sjm.AGGREGATION, aggregation);
-                        property.put(Sjm.ELASTICID, UUID.randomUUID().toString());
-                        // Default Fields
-                        property.put(Sjm.ASSOCIATIONID, associationSysmlId);
-                        JSONArray asid = new JSONArray();
-                        asid.put("_15_0_be00301_1199377756297_348405_2678");
-                        property.put(Sjm.APPLIEDSTEREOTYPEIDS, asid);
-                        property.put(Sjm.DOCUMENTATION, "");
-                        property.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
-                        property.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
-                        property.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, propertySysmlId + "_asi");
-                        property.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
-                        property.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
-                        property.put(Sjm.VISIBILITY, "private");
-                        property.put(Sjm.ISLEAF, false);
-                        property.put(Sjm.ISSTATIC, false);
-                        property.put(Sjm.ISORDERED, false);
-                        property.put(Sjm.ISUNIQUE, true);
-                        property.put(Sjm.LOWERVALUE, JSONObject.NULL);
-                        property.put(Sjm.UPPERVALUE, JSONObject.NULL);
-                        property.put(Sjm.ISREADONLY, false);
-                        property.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
-                        property.put(Sjm.ENDIDS, new JSONArray());
-                        property.put(Sjm.DEPLOYMENTIDS, new JSONArray());
-                        property.put(Sjm.ASSOCIATIONENDID, JSONObject.NULL);
-                        property.put(Sjm.QUALIFIERIDS, new JSONArray());
-                        property.put(Sjm.DATATYPEID, JSONObject.NULL);
-                        property.put(Sjm.DEFAULTVALUE, JSONObject.NULL);
-                        property.put(Sjm.INTERFACEID, JSONObject.NULL);
-                        property.put(Sjm.ISDERIVED, false);
-                        property.put(Sjm.ISDERIVEDUNION, false);
-                        property.put(Sjm.ISID, false);
-                        property.put(Sjm.REDEFINEDPROPERTYIDS, new JSONArray());
-                        property.put(Sjm.SUBSETTEDPROPERTYIDS, new JSONArray());
+                            // Create Property
+                            JSONObject property = new JSONObject();
+                            property.put(Sjm.SYSMLID, propertySysmlId);
+                            property.put(Sjm.NAME, "childView" + (i + 1));
+                            property.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+                            property.put(Sjm.TYPE, "Property");
+                            property.put(Sjm.OWNERID, sysmlId);
+                            property.put(Sjm.TYPEID, cvSysmlId);
+                            property.put(Sjm.AGGREGATION, aggregation);
+                            property.put(Sjm.ELASTICID, UUID.randomUUID().toString());
+                            // Default Fields
+                            property.put(Sjm.ASSOCIATIONID, associationSysmlId);
+                            JSONArray asid = new JSONArray();
+                            asid.put("_15_0_be00301_1199377756297_348405_2678");
+                            property.put(Sjm.APPLIEDSTEREOTYPEIDS, asid);
+                            property.put(Sjm.DOCUMENTATION, "");
+                            property.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+                            property.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
+                            property.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, propertySysmlId + "_asi");
+                            property.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
+                            property.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+                            property.put(Sjm.VISIBILITY, "private");
+                            property.put(Sjm.ISLEAF, false);
+                            property.put(Sjm.ISSTATIC, false);
+                            property.put(Sjm.ISORDERED, false);
+                            property.put(Sjm.ISUNIQUE, true);
+                            property.put(Sjm.LOWERVALUE, JSONObject.NULL);
+                            property.put(Sjm.UPPERVALUE, JSONObject.NULL);
+                            property.put(Sjm.ISREADONLY, false);
+                            property.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
+                            property.put(Sjm.ENDIDS, new JSONArray());
+                            property.put(Sjm.DEPLOYMENTIDS, new JSONArray());
+                            property.put(Sjm.ASSOCIATIONENDID, JSONObject.NULL);
+                            property.put(Sjm.QUALIFIERIDS, new JSONArray());
+                            property.put(Sjm.DATATYPEID, JSONObject.NULL);
+                            property.put(Sjm.DEFAULTVALUE, JSONObject.NULL);
+                            property.put(Sjm.INTERFACEID, JSONObject.NULL);
+                            property.put(Sjm.ISDERIVED, false);
+                            property.put(Sjm.ISDERIVEDUNION, false);
+                            property.put(Sjm.ISID, false);
+                            property.put(Sjm.REDEFINEDPROPERTYIDS, new JSONArray());
+                            property.put(Sjm.SUBSETTEDPROPERTYIDS, new JSONArray());
 
-                        newElements.put(property);
+                            newElements.put(property);
 
-                        // Create AppliedStereotypeInstance
-                        JSONObject propertyASI = new JSONObject();
-                        propertyASI.put(Sjm.SYSMLID, propertySysmlId + "_asi");
-                        propertyASI.put(Sjm.NAME, "");
-                        propertyASI.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
-                        propertyASI.put(Sjm.TYPE, "InstanceSpecification");
-                        propertyASI.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
-                        propertyASI.put(Sjm.DOCUMENTATION, "");
-                        propertyASI.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
-                        propertyASI.put(Sjm.OWNERID, propertySysmlId);
-                        propertyASI.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
-                        propertyASI.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
-                        propertyASI.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
-                        propertyASI.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
-                        propertyASI.put(Sjm.VISIBILITY, JSONObject.NULL);
-                        propertyASI.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
-                        propertyASI.put(Sjm.DEPLOYMENTIDS, new JSONArray());
-                        propertyASI.put(Sjm.SLOTIDS, new JSONArray());
-                        propertyASI.put(Sjm.SPECIFICATION, JSONObject.NULL);
-                        JSONArray classifierids = new JSONArray();
-                        classifierids.put("_15_0_be00301_1199377756297_348405_2678");
-                        propertyASI.put(Sjm.CLASSIFIERIDS, classifierids);
-                        propertyASI.put(Sjm.STEREOTYPEDELEMENTID, propertySysmlId);
+                            // Create AppliedStereotypeInstance
+                            JSONObject propertyASI = new JSONObject();
+                            propertyASI.put(Sjm.SYSMLID, propertySysmlId + "_asi");
+                            propertyASI.put(Sjm.NAME, "");
+                            propertyASI.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+                            propertyASI.put(Sjm.TYPE, "InstanceSpecification");
+                            propertyASI.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
+                            propertyASI.put(Sjm.DOCUMENTATION, "");
+                            propertyASI.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+                            propertyASI.put(Sjm.OWNERID, propertySysmlId);
+                            propertyASI.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
+                            propertyASI.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
+                            propertyASI.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
+                            propertyASI.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+                            propertyASI.put(Sjm.VISIBILITY, JSONObject.NULL);
+                            propertyASI.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
+                            propertyASI.put(Sjm.DEPLOYMENTIDS, new JSONArray());
+                            propertyASI.put(Sjm.SLOTIDS, new JSONArray());
+                            propertyASI.put(Sjm.SPECIFICATION, JSONObject.NULL);
+                            JSONArray classifierids = new JSONArray();
+                            classifierids.put("_15_0_be00301_1199377756297_348405_2678");
+                            propertyASI.put(Sjm.CLASSIFIERIDS, classifierids);
+                            propertyASI.put(Sjm.STEREOTYPEDELEMENTID, propertySysmlId);
 
-                        newElements.put(propertyASI);
+                            newElements.put(propertyASI);
 
-                        // Create Associations
-                        JSONObject association = new JSONObject();
-                        JSONArray memberEndIds = new JSONArray();
-                        memberEndIds.put(0, propertySysmlId);
-                        memberEndIds.put(1, assocPropSysmlId);
-                        JSONArray ownedEndIds = new JSONArray();
-                        ownedEndIds.put(assocPropSysmlId);
+                            // Create Associations
+                            JSONObject association = new JSONObject();
+                            JSONArray memberEndIds = new JSONArray();
+                            memberEndIds.put(0, propertySysmlId);
+                            memberEndIds.put(1, assocPropSysmlId);
+                            JSONArray ownedEndIds = new JSONArray();
+                            ownedEndIds.put(assocPropSysmlId);
 
-                        association.put(Sjm.SYSMLID, associationSysmlId);
-                        association.put(Sjm.NAME, "");
-                        association.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
-                        association.put(Sjm.TYPE, "Association");
-                        association.put(Sjm.OWNERID, ownerParentPackage);
-                        association.put(Sjm.MEMBERENDIDS, memberEndIds);
-                        association.put(Sjm.OWNEDENDIDS, ownedEndIds);
-                        association.put(Sjm.ELASTICID, UUID.randomUUID().toString());
-                        // Default Fields
-                        association.put(Sjm.DOCUMENTATION, "");
-                        association.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
-                        association.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
-                        association.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
-                        association.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
-                        association.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
-                        association.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
-                        association.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
-                        association.put(Sjm.VISIBILITY, "public");
-                        association.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
-                        association.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
-                        association.put(Sjm.PACKAGEIMPORTIDS, new JSONArray());
-                        association.put(Sjm.ISLEAF, false);
-                        association.put(Sjm.TEMPLATEBINDINGIDS, new JSONArray());
-                        association.put(Sjm.USECASEIDS, new JSONArray());
-                        association.put(Sjm.REPRESENTATIONID, JSONObject.NULL);
-                        association.put(Sjm.COLLABORATIONUSEIDS, new JSONArray());
-                        association.put(Sjm.GENERALIZATIONIDS, new JSONArray());
-                        association.put(Sjm.POWERTYPEEXTENTIDS, new JSONArray());
-                        association.put(Sjm.ISABSTRACT, false);
-                        association.put(Sjm.ISFINALSPECIALIZATION, false);
-                        association.put(Sjm.REDEFINEDCLASSIFIERIDS, new JSONArray());
-                        association.put(Sjm.SUBSTITUTIONIDS, new JSONArray());
-                        association.put(Sjm.ISDERIVED, false);
-                        association.put(Sjm.NAVIGABLEOWNEDENDIDS, new JSONArray());
+                            association.put(Sjm.SYSMLID, associationSysmlId);
+                            association.put(Sjm.NAME, "");
+                            association.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+                            association.put(Sjm.TYPE, "Association");
+                            association.put(Sjm.OWNERID, ownerParentPackage);
+                            association.put(Sjm.MEMBERENDIDS, memberEndIds);
+                            association.put(Sjm.OWNEDENDIDS, ownedEndIds);
+                            association.put(Sjm.ELASTICID, UUID.randomUUID().toString());
+                            // Default Fields
+                            association.put(Sjm.DOCUMENTATION, "");
+                            association.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+                            association.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
+                            association.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
+                            association.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
+                            association.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
+                            association.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+                            association.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+                            association.put(Sjm.VISIBILITY, "public");
+                            association.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
+                            association.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
+                            association.put(Sjm.PACKAGEIMPORTIDS, new JSONArray());
+                            association.put(Sjm.ISLEAF, false);
+                            association.put(Sjm.TEMPLATEBINDINGIDS, new JSONArray());
+                            association.put(Sjm.USECASEIDS, new JSONArray());
+                            association.put(Sjm.REPRESENTATIONID, JSONObject.NULL);
+                            association.put(Sjm.COLLABORATIONUSEIDS, new JSONArray());
+                            association.put(Sjm.GENERALIZATIONIDS, new JSONArray());
+                            association.put(Sjm.POWERTYPEEXTENTIDS, new JSONArray());
+                            association.put(Sjm.ISABSTRACT, false);
+                            association.put(Sjm.ISFINALSPECIALIZATION, false);
+                            association.put(Sjm.REDEFINEDCLASSIFIERIDS, new JSONArray());
+                            association.put(Sjm.SUBSTITUTIONIDS, new JSONArray());
+                            association.put(Sjm.ISDERIVED, false);
+                            association.put(Sjm.NAVIGABLEOWNEDENDIDS, new JSONArray());
 
-                        newElements.put(association);
+                            newElements.put(association);
 
-                        // Create Association Property
-                        JSONObject assocProperty = new JSONObject();
-                        assocProperty.put(Sjm.SYSMLID, assocPropSysmlId);
-                        assocProperty.put(Sjm.NAME, "");
-                        assocProperty.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
-                        assocProperty.put(Sjm.TYPE, "Property");
-                        assocProperty.put(Sjm.TYPEID, sysmlId);
-                        assocProperty.put(Sjm.OWNERID, associationSysmlId);
-                        assocProperty.put(Sjm.AGGREGATION, "none");
-                        assocProperty.put(Sjm.ELASTICID, UUID.randomUUID().toString());
-                        // Default Fields
-                        assocProperty.put(Sjm.ASSOCIATIONID, associationSysmlId);
-                        assocProperty.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
-                        assocProperty.put(Sjm.DOCUMENTATION, "");
-                        assocProperty.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
-                        assocProperty.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
-                        assocProperty.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
-                        assocProperty.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
-                        assocProperty.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
-                        assocProperty.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
-                        assocProperty.put(Sjm.VISIBILITY, "private");
-                        assocProperty.put(Sjm.ISLEAF, false);
-                        assocProperty.put(Sjm.ISSTATIC, false);
-                        assocProperty.put(Sjm.ISORDERED, false);
-                        assocProperty.put(Sjm.ISUNIQUE, true);
-                        assocProperty.put(Sjm.LOWERVALUE, JSONObject.NULL);
-                        assocProperty.put(Sjm.UPPERVALUE, JSONObject.NULL);
-                        assocProperty.put(Sjm.ISREADONLY, false);
-                        assocProperty.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
-                        assocProperty.put(Sjm.ENDIDS, new JSONArray());
-                        assocProperty.put(Sjm.DEPLOYMENTIDS, new JSONArray());
-                        assocProperty.put(Sjm.ASSOCIATIONENDID, JSONObject.NULL);
-                        assocProperty.put(Sjm.QUALIFIERIDS, new JSONArray());
-                        assocProperty.put(Sjm.DATATYPEID, JSONObject.NULL);
-                        assocProperty.put(Sjm.DEFAULTVALUE, JSONObject.NULL);
-                        assocProperty.put(Sjm.INTERFACEID, JSONObject.NULL);
-                        assocProperty.put(Sjm.ISDERIVED, false);
-                        assocProperty.put(Sjm.ISDERIVEDUNION, false);
-                        assocProperty.put(Sjm.ISID, false);
-                        assocProperty.put(Sjm.REDEFINEDPROPERTYIDS, new JSONArray());
-                        assocProperty.put(Sjm.SUBSETTEDPROPERTYIDS, new JSONArray());
+                            // Create Association Property
+                            JSONObject assocProperty = new JSONObject();
+                            assocProperty.put(Sjm.SYSMLID, assocPropSysmlId);
+                            assocProperty.put(Sjm.NAME, "");
+                            assocProperty.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+                            assocProperty.put(Sjm.TYPE, "Property");
+                            assocProperty.put(Sjm.TYPEID, sysmlId);
+                            assocProperty.put(Sjm.OWNERID, associationSysmlId);
+                            assocProperty.put(Sjm.AGGREGATION, "none");
+                            assocProperty.put(Sjm.ELASTICID, UUID.randomUUID().toString());
+                            // Default Fields
+                            assocProperty.put(Sjm.ASSOCIATIONID, associationSysmlId);
+                            assocProperty.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
+                            assocProperty.put(Sjm.DOCUMENTATION, "");
+                            assocProperty.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+                            assocProperty.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
+                            assocProperty.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
+                            assocProperty.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
+                            assocProperty.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+                            assocProperty.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+                            assocProperty.put(Sjm.VISIBILITY, "private");
+                            assocProperty.put(Sjm.ISLEAF, false);
+                            assocProperty.put(Sjm.ISSTATIC, false);
+                            assocProperty.put(Sjm.ISORDERED, false);
+                            assocProperty.put(Sjm.ISUNIQUE, true);
+                            assocProperty.put(Sjm.LOWERVALUE, JSONObject.NULL);
+                            assocProperty.put(Sjm.UPPERVALUE, JSONObject.NULL);
+                            assocProperty.put(Sjm.ISREADONLY, false);
+                            assocProperty.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
+                            assocProperty.put(Sjm.ENDIDS, new JSONArray());
+                            assocProperty.put(Sjm.DEPLOYMENTIDS, new JSONArray());
+                            assocProperty.put(Sjm.ASSOCIATIONENDID, JSONObject.NULL);
+                            assocProperty.put(Sjm.QUALIFIERIDS, new JSONArray());
+                            assocProperty.put(Sjm.DATATYPEID, JSONObject.NULL);
+                            assocProperty.put(Sjm.DEFAULTVALUE, JSONObject.NULL);
+                            assocProperty.put(Sjm.INTERFACEID, JSONObject.NULL);
+                            assocProperty.put(Sjm.ISDERIVED, false);
+                            assocProperty.put(Sjm.ISDERIVEDUNION, false);
+                            assocProperty.put(Sjm.ISID, false);
+                            assocProperty.put(Sjm.REDEFINEDPROPERTYIDS, new JSONArray());
+                            assocProperty.put(Sjm.SUBSETTEDPROPERTYIDS, new JSONArray());
 
-                        newElements.put(assocProperty);
-                        ownedAttributes.put(propertySysmlId);
-                    } else {
-                        String sysmlid = childNode.getString(Sjm.SYSMLID);
-                        List<Map<String, String>> gotChildViews = pgh.getChildViews(sysmlid);
-                        if (gotChildViews.size() > 0) {
-                            for (Map<String, String> foundChildView : gotChildViews) {
-                                Iterator<Map.Entry<String, String>> it = foundChildView.entrySet().iterator();
-                                it.forEachRemaining((pair) -> {
-                                    if (!ownedAttributes.toString().contains(pair.getKey())) {
-                                        ownedAttributes.put(pair.getKey());
-                                    }
-                                });
-                            }
+                            newElements.put(assocProperty);
+                            ownedAttributesIds.put(propertySysmlId);
                         }
                     }
                 }
             }
         }
 
+        notAViewList.forEach(ownedAttributesIds::put);
+
+        element.put(Sjm.OWNEDATTRIBUTEIDS, ownedAttributesIds);
         element.remove(Sjm.CHILDVIEWS);
 
         return element;
@@ -1738,6 +1834,45 @@ public class EmsNodeUtil {
         }
 
         return element;
+    }
+
+    public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs, final Long maxDepth, Set<String> elementsToFind, JSONArray result)
+        throws JSONException, IOException {
+
+        if (elementsToFind.isEmpty()) {
+            return;
+        }
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
+        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind);
+        Set<String> foundElements = new HashSet<>();
+        JSONArray curFound = new JSONArray();
+        for (int index = 0; index < nodeList.length(); index++) {
+            String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
+            if (maxDepth != 0) {
+                JSONArray children = emsNodeUtil.getChildren(id, maxDepth);
+                for (int i = 0; i < children.length(); i++) {
+                    String cid = children.getJSONObject(i).getString(Sjm.SYSMLID);
+                    if (foundElements.contains(cid)) {
+                        continue;
+                    }
+                    curFound.put(children.getJSONObject(i));
+                    foundElements.add(cid);
+                }
+            } else {
+                curFound.put(nodeList.getJSONObject(index));
+                foundElements.add(id);
+            }
+        }
+        curFound = extended ? emsNodeUtil.addExtendedInformation(extraDocs ? emsNodeUtil.addExtraDocs(curFound, new HashMap<>()) : curFound) : (extraDocs ? emsNodeUtil.addExtraDocs(curFound, new HashMap<>()) : curFound);
+        for (int i = 0; i < curFound.length(); i++) {
+            result.put(curFound.get(i));
+        }
+        elementsToFind.removeAll(foundElements);
+        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
+
+        for (int i = 0; i < mountsArray.length(); i++) {
+            handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result);
+        }
     }
 
     public String insertSingleElastic(JSONObject o) {
