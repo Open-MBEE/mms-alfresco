@@ -244,8 +244,8 @@ public class CommitUtil {
                             documentEdges);
                     }
 
-                    if (e.has("contents")) {
-                        JSONObject contents = e.optJSONObject("contents");
+                    if (e.has("_contents")) {
+                        JSONObject contents = e.optJSONObject("_contents");
                         if (contents != null) {
                             NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
                         }
@@ -254,6 +254,7 @@ public class CommitUtil {
                         if (iss != null) {
                             NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
                                 documentEdges);
+                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), iss, documentEdges);
                         }
                     }
 
@@ -298,18 +299,19 @@ public class CommitUtil {
                         String doc = e.getString("documentation");
                         NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc, documentEdges);
                     }
-                    if (e.has("view2view")) {
-                        JSONArray view2viewProperty = e.getJSONArray("view2view");
-                        NodeUtil.processV2VEdges(e.getString(Sjm.SYSMLID), view2viewProperty, documentEdges);
-                    }
 
-                    if (e.has("contents")) {
-                        JSONObject contents = e.getJSONObject("contents");
-                        NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
+                    if (e.has("_contents")) {
+                        JSONObject contents = e.optJSONObject("_contents");
+                        if (contents != null) {
+                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
+                        }
                     } else if (e.has("specification") && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
-                        JSONObject iss = e.getJSONObject("specification");
-                        NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
-                            documentEdges);
+                        JSONObject iss = e.optJSONObject("specification");
+                        if (iss != null) {
+                            NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
+                                documentEdges);
+                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), iss, documentEdges); //for sections
+                        }
                     }
 
                     if (e.has("aggregation")) {
