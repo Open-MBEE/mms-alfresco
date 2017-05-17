@@ -77,7 +77,7 @@ PostNewElementsToPD
 
 MountCreationPA|PB
 	[Documentation]		"Assign a mount to project (ID: PA) which is (ID: PB). Symbolically PA -> PB"
-	[Tags]				16
+	[Tags]				17
 	${post_json} =		Get File	 JsonData/CreateMountPA|PB.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/mounts		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -89,7 +89,7 @@ MountCreationPA|PB
 
 MountCreationPB|PC
 	[Documentation]		"Assign a mount to project (ID: PB) which is (ID: PC). Symbolically PB -> PC"
-	[Tags]				16
+	[Tags]				18
 	${post_json} =		Get File	 JsonData/CreateMountPB|PC.json
 	${result} =			Post		url=${ROOT}/projects/PB/refs/master/mounts		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -101,7 +101,7 @@ MountCreationPB|PC
 
 MountCreationPC|PD
 	[Documentation]		"Assign a mount to project (ID: PC) which is (ID: 121314). Symbolically PC -> PD"
-	[Tags]				16
+	[Tags]				19
 	${post_json} =		Get File	 JsonData/CreateMountPC|PD.json
 	${result} =			Post		url=${ROOT}/projects/PC/refs/master/mounts		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -124,10 +124,37 @@ MountCreationPC|PA
 	Should Match Baseline		${compare_result}
 #get single element in each project, the return object should have the right _projectId matches the project it's contained in
  # So in the next example _projectID: PB and _refId is master
-GetElementFromMountedProject
-	[Documentation]		"Gets a element that only exists in project (ID: PA) mount (ID: PB)."
-	[Tags]				17
-	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/867-5309?depth=-1		headers=&{REQ_HEADER}
+GetElementFromMountedProjectPB
+	[Documentation]		"Gets a element that only exists in project (ID: PB) from (ID: PA)."
+	[Tags]				20
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e1?depth=-1		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+GetElementFromMountedProjectPC
+	[Documentation]		"Gets a element that only exists in project (ID: PC) from (ID: PA)."
+	[Tags]				21
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e3?depth=-1		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+GetElementFromMountedProjectPD
+	[Documentation]		"Gets a element that only exists in project (ID: PD) from (ID: PA)."
+	[Tags]				22
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e5?depth=-1		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+GetElementFromMountedProjectPA|PC
+	[Documentation]		"Gets a element that only exists in project (ID: PA) from (ID: PC)."
+	[Tags]				23
+	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300?depth=-1		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
