@@ -2,17 +2,17 @@
     "elements": [
         {
             "documentation": "something",
-            "id": "867-5309",
+            "id": "e1",
             "name": "test mount object",
-            "ownerId": "789",
+            "ownerId": "PB",
             "type": "Class",
             "isDerived": false
         },
         {
             "documentation": "something",
-            "id": "contained-867",
+            "id": "e2",
             "name": "test mount object",
-            "ownerId": "867-5309",
+            "ownerId": "e1",
             "type": "Class",
             "isDerived": false
         }

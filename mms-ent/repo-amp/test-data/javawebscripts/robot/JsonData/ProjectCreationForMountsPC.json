@@ -1,7 +1,7 @@
 {
     "projects": [
         {
-            "id": "101112",
+            "id": "PC",
             "name": "mount test project PC",
             "type": "Project"
         }
