@@ -335,19 +335,23 @@ public class CommitUtil {
                 }
 
                 for (Pair<String, String> e : addEdges) {
-                    Map<String, String> edge = new HashMap<>();
-                    edge.put("parent", e.first);
-                    edge.put("child", e.second);
-                    edge.put("edgetype", Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
-                    edgeInserts.add(edge);
+                    if (!pgh.edgeExists(e.first, e.second, DbEdgeTypes.CONTAINMENT)) {
+                        Map<String, String> edge = new HashMap<>();
+                        edge.put("parent", e.first);
+                        edge.put("child", e.second);
+                        edge.put("edgetype", Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
+                        edgeInserts.add(edge);
+                    }
                 }
 
                 for (Pair<String, String> e : documentEdges) {
-                    Map<String, String> edge = new HashMap<>();
-                    edge.put("parent", e.first);
-                    edge.put("child", e.second);
-                    edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
-                    edgeInserts.add(edge);
+                    if (!pgh.edgeExists(e.first, e.second, DbEdgeTypes.VIEW)) {
+                        Map<String, String> edge = new HashMap<>();
+                        edge.put("parent", e.first);
+                        edge.put("child", e.second);
+                        edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
+                        edgeInserts.add(edge);
+                    }
                 }
 
                 Savepoint sp = null;

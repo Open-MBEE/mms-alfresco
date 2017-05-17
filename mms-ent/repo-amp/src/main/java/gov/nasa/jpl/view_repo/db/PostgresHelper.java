@@ -625,7 +625,10 @@ public class PostgresHelper {
 
     public boolean edgeExists(String parent, String child, DbEdgeTypes dbet) {
         try {
-            ResultSet rs = execQuery("SELECT id FROM \"edges" + workspaceId + "\" WHERE parent");
+            ResultSet rs = execQuery("SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = \"" + parent + "\") AND child = (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = \"" + child + "\") AND edgetype = " + dbet.getValue());
+            if (rs.next()) {
+                return true;
+            }
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
