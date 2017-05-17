@@ -1,0 +1,20 @@
+{
+    "elements": [
+        {
+            "documentation": "something",
+            "id": "1123581321",
+            "name": "test mount object",
+            "ownerId": "789",
+            "type": "Class",
+            "isDerived": false
+        },
+        {
+            "documentation": "something",
+            "id": "contained-1123581321",
+            "name": "test mount object",
+            "ownerId": "1123581321",
+            "type": "Class",
+            "isDerived": false
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "projects": [
+        {
+            "id": "101112",
+            "name": "mount test project PC",
+            "type": "Project"
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "elements": [
+        {
+            "mountedElementId": "123456_pm",
+            "mountedElementProjectId": "1234556",
+            "refId": "master",
+            "twcVersion": 1,
+            "uri": "twcloud:/61309ef2-ba58-46e7-87ee-f8cb833fbc51/90d3d806-b930-4e13-9372-441a2927b491",
+            "type": "Mount",
+            "id": "aNewMount",
+            "ownerId": "101112"
+        }
+    ]
+}

@@ -10,7 +10,7 @@ InitializeOrganization
 	${post_json} =		Get File	 JsonData/InitializeOrganization.json
 	${result} =			Post		url=${ROOT}/orgs		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     commitId
+	${filter} =			Create List     _commitId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
