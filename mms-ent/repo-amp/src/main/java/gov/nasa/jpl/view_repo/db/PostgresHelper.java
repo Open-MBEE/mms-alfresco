@@ -623,6 +623,17 @@ public class PostgresHelper {
         return false;
     }
 
+    public boolean edgeExists(String parent, String child, DbEdgeTypes dbet) {
+        try {
+            ResultSet rs = execQuery("SELECT id FROM \"edges" + workspaceId + "\" WHERE parent");
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return false;
+    }
+
     public Node getNodeFromElasticId(String elasticId) {
         try {
             ResultSet rs =
