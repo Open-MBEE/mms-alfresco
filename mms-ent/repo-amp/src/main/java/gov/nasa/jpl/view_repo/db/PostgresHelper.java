@@ -1428,7 +1428,7 @@ public class PostgresHelper {
         }
     }
 
-    public void deleteEdges(String parentSysmlId, String childSysmlId) {
+    public void deleteEdges(String parentSysmlId, String childSysmlId, DbEdgeTypes dbet) {
         try {
             Node pn = getNodeFromSysmlId(parentSysmlId);
             Node cn = getNodeFromSysmlId(childSysmlId);
@@ -1436,7 +1436,7 @@ public class PostgresHelper {
             if (pn == null || cn == null)
                 return;
 
-            execUpdate("DELETE FROM edges WHERE parent = " + pn.getId() + " AND child = " + cn.getId());
+            execUpdate("DELETE FROM edges WHERE parent = " + pn.getId() + " AND child = " + cn.getId() + " AND edgetype = " + dbet.getValue());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {

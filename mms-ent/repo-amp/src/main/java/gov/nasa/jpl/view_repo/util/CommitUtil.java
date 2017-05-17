@@ -206,7 +206,6 @@ public class CommitUtil {
         Map<String, String> aggregationTypes = new HashMap<>();
         Map<String, String> propertyTypes = new HashMap<>();
         List<Pair<String, String>> addEdges = new ArrayList<>();
-        Map<String, List<Pair<String, String>>> addChildViews = new HashMap<>();
         List<Pair<String, String>> documentEdges = new ArrayList<>();
 
         if (bulkElasticEntry(added, "added") && bulkElasticEntry(updated, "updated")) {
@@ -217,8 +216,6 @@ public class CommitUtil {
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
                 List<Map<String, String>> edgeInserts = new ArrayList<>();
                 List<Map<String, String>> nodeUpdates = new ArrayList<>();
-
-                List<String> edgePropQueries = new ArrayList<>();
 
                 for (int i = 0; i < added.length(); i++) {
                     JSONObject e = added.getJSONObject(i);
@@ -272,7 +269,6 @@ public class CommitUtil {
                         }
                     }
                 }
-                addChildViews.put("added", plist);
 
                 for (int i = 0; i < deleted.length(); i++) {
                     JSONObject e = deleted.getJSONObject(i);
@@ -337,7 +333,6 @@ public class CommitUtil {
                         nodeUpdates.add(updatedNode);
                     }
                 }
-                addChildViews.put("updated", updatedPlist);
 
                 for (Pair<String, String> e : addEdges) {
                     Map<String, String> edge = new HashMap<>();
@@ -355,101 +350,26 @@ public class CommitUtil {
                     edgeInserts.add(edge);
                 }
 
-                // process any changes to childViews
-                Set<String> childViewKeys = new HashSet<>();
-                childViewKeys.add("added");
-                childViewKeys.add("updated");
-
+                Savepoint sp = null;
                 try {
-                    Set<String> clearedViewIds = new HashSet<>();
-                    for (String childViewKey : childViewKeys) {
-                        for (int i = 0; i < addChildViews.get(childViewKey).size(); i++) {
-                            String viewId = addChildViews.get(childViewKey).get(i).first;
-                            String ownedAttributeId = addChildViews.get(childViewKey).get(i).second;
-                            if (childViewKey.equals("updated") && !clearedViewIds.contains(viewId)) {
-                                pgh.deleteEdges(viewId, DbEdgeTypes.CHILDVIEW);
-                                pgh.deleteEdges(viewId, DbEdgeTypes.VIEW);
-                                clearedViewIds.add(viewId);
-                            }
-
-                            Map<String, String> attr = new HashMap<>();
-                            attr.put("order", Integer.toString(i));
-                            JSONObject ownedAttribute = null;
-                            if (aggregationTypes.containsKey(ownedAttributeId)) {
-                                attr.put("aggregation", aggregationTypes.get(ownedAttributeId));
-                            } else {
-                                // look up the property in db to get aggregation type
-                                Node ownedAttributeNode = pgh.getNodeFromSysmlId(ownedAttributeId);
-                                if (ownedAttributeNode != null) {
-                                    ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
-                                }
-                                if (ownedAttribute != null) {
-                                    if (ownedAttribute.has("aggregation")) {
-                                        attr.put("aggregation", ownedAttribute.getString("aggregation"));
-                                    }
-                                }
-                            }
-                            if (propertyTypes.containsKey(ownedAttributeId)) {
-                                attr.put(Sjm.TYPEID, propertyTypes.get(ownedAttributeId));
-                            } else {
-                                if (ownedAttribute == null) {
-                                    Node ownedAttributeNode = pgh.getNodeFromSysmlId(ownedAttributeId);
-                                    if (ownedAttributeNode != null) {
-                                        ownedAttribute = eh.getElementByElasticId(ownedAttributeNode.getElasticId());
-                                    }
-                                }
-                                if (ownedAttribute != null && ownedAttribute.has(Sjm.TYPEID)) {
-                                    attr.put(Sjm.TYPEID, ownedAttribute.getString(Sjm.TYPEID));
-                                }
-                            }
-
-                            edgePropQueries.add(
-                                pgh.createInsertEdgePropertyQuery(viewId, ownedAttributeId, DbEdgeTypes.CHILDVIEW, attr));
-
-                            Map<String, String> chEdge = new HashMap<>();
-                            chEdge.put("parent", viewId);
-                            chEdge.put("child", ownedAttributeId);
-                            chEdge.put("edgetype", Integer.toString(DbEdgeTypes.CHILDVIEW.getValue()));
-                            edgeInserts.add(chEdge);
-
-                            Map<String, String> edge = new HashMap<>();
-                            edge.put("parent", viewId);
-                            edge.put("child", ownedAttributeId);
-                            edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
-                            edgeInserts.add(edge);
-                        }
-                    }
-                    Savepoint sp = null;
+                    sp = pgh.startTransaction();
+                    pgh.runBulkQueries(nodeInserts, "nodes");
+                    pgh.commitTransaction();
+                    pgh.startTransaction();
+                    pgh.runBulkQueries(edgeInserts, "edges");
+                    pgh.runBulkQueries(nodeUpdates, "updates");
+                    pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, affectedSysmlIds);
+                    pgh.commitTransaction();
+                    pgh.cleanEdges();
+                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
+                } catch (Exception e) {
                     try {
-                        sp = pgh.startTransaction();
-                        pgh.runBulkQueries(nodeInserts, "nodes");
-                        pgh.commitTransaction();
-                        pgh.startTransaction();
-                        pgh.runBulkQueries(edgeInserts, "edges");
-                        pgh.runBulkQueries(edgePropQueries, true);
-                        pgh.runBulkQueries(nodeUpdates, "updates");
-                        pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, affectedSysmlIds);
-                        /*
-                        if (initialCommit) {
-                            pgh.updateBySysmlIds("nodes", "initialCommit", commitElasticId, affectedSysmlIds);
-                        }
-                        */
-                        pgh.commitTransaction();
-                        pgh.cleanEdges();
-                        pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
-                    } catch (Exception e) {
-                        try {
-                            pgh.rollBackToSavepoint(sp);
-                        } catch (SQLException se) {
-                            logger.error(String.format("%s", LogUtil.getStackTrace(se)));
-                            return false;
-                        }
-                        logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                        pgh.rollBackToSavepoint(sp);
+                    } catch (SQLException se) {
+                        logger.error(String.format("%s", LogUtil.getStackTrace(se)));
+                        return false;
                     }
-                } catch (IOException e) {
-                    logger.error("Could not open elastic helper");
-                    e.printStackTrace();
-                    return false;
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
                 // TODO: Add in the Alfresco Site creation based on type=SiteAndPackage
 
