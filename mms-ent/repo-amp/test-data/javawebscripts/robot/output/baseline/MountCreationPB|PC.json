@@ -1,0 +1,20 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PB",
+            "_refId": "master",
+            "id": "aNewMount",
+            "mountedElementId": "PC_pm",
+            "mountedElementProjectId": "PC",
+            "ownerId": "PB",
+            "refId": "master",
+            "twcVersion": 1,
+            "type": "Mount",
+            "uri": "twcloud:/61309ef2-ba58-46e7-87ee-f8cb833fbc51/90d3d806-b930-4e13-9372-441a2927b491"
+        }
+    ]
+}
