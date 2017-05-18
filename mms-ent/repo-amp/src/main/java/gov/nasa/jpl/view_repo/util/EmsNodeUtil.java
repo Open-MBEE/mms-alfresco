@@ -31,6 +31,7 @@ import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbCommitTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
+import ucar.nc2.util.HashMapLRU;
 
 public class EmsNodeUtil {
 
@@ -271,8 +272,11 @@ public class EmsNodeUtil {
         return new JSONObject();
     }
 
-
     public JSONArray getNodesBySysmlids(Set<String> sysmlids) {
+        return getNodesBySysmlids(sysmlids, true);
+    }
+
+    public JSONArray getNodesBySysmlids(Set<String> sysmlids, boolean withChildViews) {
         List<String> elasticids = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids));
         JSONArray elementsFromElastic = new JSONArray();
         try {
@@ -285,7 +289,7 @@ public class EmsNodeUtil {
             JSONObject formatted = elementsFromElastic.getJSONObject(i);
             formatted.put(Sjm.PROJECTID, this.projectId);
             formatted.put(Sjm.REFID, this.workspaceName);
-            elementsFromElastic.put(i, addChildViews(formatted));
+            elementsFromElastic.put(i, withChildViews ? addChildViews(formatted) : formatted);
         }
 
         return elementsFromElastic;
@@ -667,13 +671,17 @@ public class EmsNodeUtil {
 
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
+        JSONArray newElements = new JSONArray();
+        Set<String> sysmlidsToUpdate = new HashSet<>();
+        Map<String, JSONObject> updateMap = new HashMap<>();
+        Map<String, Integer> indexMap = new HashMap<>();
+
         String holdingBinSysmlid = "holding_bin";
         if (projectId != null) {
             holdingBinSysmlid = "holding_bin_" + projectId;
         }
 
         for (int i = 0; i < elements.length(); i++) {
-            JSONArray newElements = new JSONArray();
             JSONObject o = elements.getJSONObject(i);
             String sysmlid = o.optString(Sjm.SYSMLID);
             if (sysmlid == null || sysmlid.equals("")) {
@@ -701,29 +709,43 @@ public class EmsNodeUtil {
                 o.put(Sjm.CREATED, date);
                 o.put(Sjm.MODIFIER, user);
                 o.put(Sjm.MODIFIED, date);
-            }
-
-            if (updated) {
-                logger.debug("ELEMENT UPDATED!");
-                // Get originalNode if updated
-                o.put(Sjm.MODIFIER, user);
-                o.put(Sjm.MODIFIED, date);
-                JSONObject updating = getNodeBySysmlid(sysmlid, false);
-                if (!updating.has(Sjm.SYSMLID)) {
-                    pgh.resurrectNode(sysmlid);
-                    updating = getNodeBySysmlid(sysmlid, false);
-                }
-                foundElements.put(sysmlid, updating);
-            }
-
-            if (added || updated) {
                 reorderChildViews(o, newElements, updatedElements, deletedElements);
                 elements.put(i, o);
             }
 
-            for (int ii = 0; ii < newElements.length(); ii++) {
-                elements.put(newElements.getJSONObject(ii));
+            if (updated) {
+                logger.debug("ELEMENT UPDATED!");
+                sysmlidsToUpdate.add(sysmlid);
+                updateMap.put(sysmlid, o);
+                indexMap.put(sysmlid, i);
             }
+        }
+
+        if (sysmlidsToUpdate.size() > 0) {
+            JSONArray toUpdate = getNodesBySysmlids(sysmlidsToUpdate, false);
+            for (int i = 0; i < toUpdate.length(); i ++) {
+                foundElements.put(toUpdate.getJSONObject(i).getString(Sjm.SYSMLID), toUpdate.getJSONObject(i));
+            }
+
+            updateMap.forEach((id, object) -> {
+                if (foundElements.containsKey(id)) {
+                    diffUpdateJson(object, foundElements.get(id));
+                } else {
+                    pgh.resurrectNode(id);
+                    JSONObject resurrected = getNodeBySysmlid(id);
+                    if (resurrected.optString(Sjm.SYSMLID) != null) {
+                        diffUpdateJson(object, resurrected);
+                    }
+                }
+                object.put(Sjm.MODIFIER, user);
+                object.put(Sjm.MODIFIED, date);
+                reorderChildViews(object, newElements, updatedElements, deletedElements);
+                elements.put(indexMap.get(id), object);
+            });
+        }
+
+        for (int i = 0; i < newElements.length(); i++) {
+            elements.put(newElements.getJSONObject(i));
         }
 
         return elements;
@@ -1457,19 +1479,8 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public JSONArray populateElements(JSONArray elements) {
-        for (int i = 0; i < elements.length(); i++) {
-            diffUpdateJson(elements.getJSONObject(i));
-        }
-
-        return elements;
-    }
-
-    private void diffUpdateJson(JSONObject json) {
-        JSONObject existing;
-
+    private void diffUpdateJson(JSONObject json, JSONObject existing) {
         if (json.has(Sjm.SYSMLID)) {
-            existing = getNodeBySysmlid(json.getString(Sjm.SYSMLID), false);
             if (existing.has(Sjm.SYSMLID)) {
                 mergeJson(json, existing);
             }

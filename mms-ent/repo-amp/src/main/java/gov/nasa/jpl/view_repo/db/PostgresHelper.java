@@ -816,7 +816,6 @@ public class PostgresHelper {
 
     // insert commit and insert commit edges as well
     public void insertNode(String elasticId, String sysmlId, DbNodeTypes type) {
-        Boolean initialCommit = isInitialCommit();
         try {
             Map<String, String> map = new HashMap<>();
             map.put("elasticId", elasticId);

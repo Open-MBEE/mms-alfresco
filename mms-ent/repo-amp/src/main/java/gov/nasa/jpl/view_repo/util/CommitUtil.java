@@ -165,10 +165,10 @@ public class CommitUtil {
         return element.has(Sjm.ISSITE) && element.getBoolean(Sjm.ISSITE);
     }
 
-    private static boolean bulkElasticEntry(JSONArray elements, String operation) {
+    private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh) {
         if (elements.length() > 0) {
             try {
-                boolean bulkEntry = eh.bulkIndexElements(elements, operation);
+                boolean bulkEntry = eh.bulkIndexElements(elements, operation, refresh);
                 if (!bulkEntry) {
                     return false;
                 }
@@ -182,7 +182,7 @@ public class CommitUtil {
     }
 
     private static boolean processDeltasForDb(JSONObject delta, String commitElasticId, String projectId,
-        String workspaceId, JSONObject jmsPayload) {
+        String workspaceId, JSONObject jmsPayload, boolean withChildViews) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
         PostgresHelper pgh = new PostgresHelper();
@@ -208,7 +208,7 @@ public class CommitUtil {
         List<Pair<String, String>> addEdges = new ArrayList<>();
         List<Pair<String, String>> documentEdges = new ArrayList<>();
 
-        if (bulkElasticEntry(added, "added") && bulkElasticEntry(updated, "updated")) {
+        if (bulkElasticEntry(added, "added", withChildViews) && bulkElasticEntry(updated, "updated", withChildViews)) {
 
             try {
                 List<Pair<String, String>> plist = new LinkedList<>();
@@ -407,7 +407,7 @@ public class CommitUtil {
      * @throws JSONException
      */
     public static boolean sendDeltas(JSONObject deltaJson, String commitElasticId, String projectId, String workspaceId,
-        String source) throws JSONException {
+        String source, boolean withChildViews) throws JSONException {
         boolean jmsStatus;
 
         JSONObject jmsPayload = new JSONObject();
@@ -418,7 +418,7 @@ public class CommitUtil {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        if (!processDeltasForDb(deltaJson, commitElasticId, projectId, workspaceId, jmsPayload)) {
+        if (!processDeltasForDb(deltaJson, commitElasticId, projectId, workspaceId, jmsPayload, withChildViews)) {
             return false;
         }
 

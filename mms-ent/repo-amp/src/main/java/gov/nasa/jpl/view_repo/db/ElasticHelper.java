@@ -335,6 +335,10 @@ public class ElasticHelper {
         return sysmlId2ElasticId;
     }
 
+    public boolean bulkIndexElements(JSONArray bulkElements, String operation) throws JSONException, IOException {
+        return bulkIndexElements(bulkElements, operation, false);
+    }
+
     /**
      * Index multiple JSON documents by type using the BulkAPI                        (1)
      *
@@ -342,7 +346,7 @@ public class ElasticHelper {
      * @param operation    checks for CRUD operation, does not delete documents
      * @return ElasticResult e
      */
-    public boolean bulkIndexElements(JSONArray bulkElements, String operation) throws JSONException, IOException {
+    public boolean bulkIndexElements(JSONArray bulkElements, String operation, boolean refresh) throws JSONException, IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         // BulkableAction is generic
         ArrayList<BulkableAction> actions = new ArrayList<>();
@@ -356,7 +360,7 @@ public class ElasticHelper {
                 currentList.put(curr);
             }
             if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.length() - 1)) {
-                BulkResult result = insertBulk(actions);
+                BulkResult result = insertBulk(actions, refresh);
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
@@ -377,8 +381,8 @@ public class ElasticHelper {
      * @param actions (2)
      * @return returns result of bulk index
      */
-    private BulkResult insertBulk(List<BulkableAction> actions) throws JSONException, IOException {
-        Bulk bulk = new Bulk.Builder().defaultIndex(elementIndex).defaultType("element").addAction(actions).setParameter(Parameters.REFRESH, "wait_for").build();
+    private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh) throws JSONException, IOException {
+        Bulk bulk = new Bulk.Builder().defaultIndex(elementIndex).defaultType("element").addAction(actions).setParameter(Parameters.REFRESH, refresh).build();
         return client.execute(bulk);
     }
 
