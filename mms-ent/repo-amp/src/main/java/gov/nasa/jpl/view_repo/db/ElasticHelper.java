@@ -352,8 +352,7 @@ public class ElasticHelper {
             if (operation.equals("delete")) {
                 continue;
             } else {
-                actions.add(new Index.Builder(curr.toString()).id(curr.getString(Sjm.ELASTICID)).setParameter(
-                    Parameters.REFRESH, true).build());
+                actions.add(new Index.Builder(curr.toString()).id(curr.getString(Sjm.ELASTICID)).build());
                 currentList.put(curr);
             }
             if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.length() - 1)) {
@@ -379,7 +378,7 @@ public class ElasticHelper {
      * @return returns result of bulk index
      */
     private BulkResult insertBulk(List<BulkableAction> actions) throws JSONException, IOException {
-        Bulk bulk = new Bulk.Builder().defaultIndex(elementIndex).defaultType("element").addAction(actions).build();
+        Bulk bulk = new Bulk.Builder().defaultIndex(elementIndex).defaultType("element").addAction(actions).setParameter(Parameters.REFRESH, "wait_for").build();
         return client.execute(bulk);
     }
 
