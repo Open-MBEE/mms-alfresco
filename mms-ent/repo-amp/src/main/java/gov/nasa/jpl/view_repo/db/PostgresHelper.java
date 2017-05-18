@@ -85,6 +85,10 @@ public class PostgresHelper {
         setWorkspace("master");
     }
 
+    public PostgresHelper(WorkspaceNode ref) {
+        setWorkspace(ref);
+    }
+
     public PostgresHelper(String refId) {
         setWorkspace(refId);
     }
