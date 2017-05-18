@@ -98,14 +98,26 @@ public class OrgGet extends AbstractJavaWebScript {
                         jsonArray = handleProject(projectId);
                         json = new JSONObject();
                         json.put("projects", jsonArray);
+                        if (jsonArray == null) {
+                            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Project does not exist\n");
+                            responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+                        }
                     } else if (orgId != null) {
                         jsonArray = handleOrgProjects(orgId);
                         json = new JSONObject();
                         json.put("projects", jsonArray);
+                        if (jsonArray == null) {
+                            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No projects in organization\n");
+                            responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+                        }
                     } else {
                         jsonArray = handleProjects();
                         json = new JSONObject();
                         json.put("projects", jsonArray);
+                        if (jsonArray == null) {
+                            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No projects found\n");
+                            responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+                        }
                     }
 
                 } else {
