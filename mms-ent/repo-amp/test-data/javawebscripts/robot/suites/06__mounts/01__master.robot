@@ -79,7 +79,7 @@ MountCreationPA|PB
 	[Documentation]		"Assign a mount to project (ID: PA) which is (ID: PB). Symbolically PA -> PB"
 	[Tags]				17
 	${post_json} =		Get File	 JsonData/CreateMountPA|PB.json
-	${result} =			Post		url=${ROOT}/projects/PA/refs/master/mounts		    data=${post_json}		headers=&{REQ_HEADER}
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
@@ -91,7 +91,7 @@ MountCreationPB|PC
 	[Documentation]		"Assign a mount to project (ID: PB) which is (ID: PC). Symbolically PB -> PC"
 	[Tags]				18
 	${post_json} =		Get File	 JsonData/CreateMountPB|PC.json
-	${result} =			Post		url=${ROOT}/projects/PB/refs/master/mounts		    data=${post_json}		headers=&{REQ_HEADER}
+	${result} =			Post		url=${ROOT}/projects/PB/refs/master/elements		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
@@ -103,7 +103,7 @@ MountCreationPC|PD
 	[Documentation]		"Assign a mount to project (ID: PC) which is (ID: 121314). Symbolically PC -> PD"
 	[Tags]				19
 	${post_json} =		Get File	 JsonData/CreateMountPC|PD.json
-	${result} =			Post		url=${ROOT}/projects/PC/refs/master/mounts		    data=${post_json}		headers=&{REQ_HEADER}
+	${result} =			Post		url=${ROOT}/projects/PC/refs/master/elements		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
@@ -115,7 +115,7 @@ MountCreationPC|PA
 	[Documentation]		"Assign a mount to project (ID: PC) which is (ID: PA). Symbolically PC -> PA"
 	[Tags]				16
 	${post_json} =		Get File	 JsonData/CreateMountPC|PA.json
-	${result} =			Post		url=${ROOT}/projects/PC/refs/master/mounts		    data=${post_json}		headers=&{REQ_HEADER}
+	${result} =			Post		url=${ROOT}/projects/PC/refs/master/elements	    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
