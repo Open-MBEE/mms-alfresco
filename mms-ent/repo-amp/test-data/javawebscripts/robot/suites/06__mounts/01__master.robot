@@ -123,43 +123,107 @@ MountCreationPC|PA
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 #get single element in each project, the return object should have the right _projectId matches the project it's contained in
- # So in the next example _projectID: PB and _refId is master
+ # So in the next example _projectID: PB and _refId is master.  Returns both e1 and e2 b/c of depth
 GetElementFromMountedProjectPB
 	[Documentation]		"Gets a element that only exists in project (ID: PB) from (ID: PA)."
 	[Tags]				20
-	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e1?depth=-1		headers=&{REQ_HEADER}
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e1		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+
 GetElementFromMountedProjectPC
 	[Documentation]		"Gets a element that only exists in project (ID: PC) from (ID: PA)."
 	[Tags]				21
-	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e3?depth=-1		headers=&{REQ_HEADER}
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e3		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+
 GetElementFromMountedProjectPD
 	[Documentation]		"Gets a element that only exists in project (ID: PD) from (ID: PA)."
 	[Tags]				22
-	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e5?depth=-1		headers=&{REQ_HEADER}
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e5		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+
 GetElementFromMountedProjectPA|PC
 	[Documentation]		"Gets a element that only exists in project (ID: PA) from (ID: PC)."
 	[Tags]				23
-	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300?depth=-1		headers=&{REQ_HEADER}
+	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+#get single element in each project with depth=-1 and extended=true
+GetExtendedElementFromMountedProjectPB
+	[Documentation]		"Gets a element that only exists in project (ID: PB) from (ID: PA)."
+	[Tags]				24
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e1?depth=-1&extended=true		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+GetExtendedElementFromMountedProjectPC
+	[Documentation]		"Gets a element that only exists in project (ID: PC) from (ID: PA)."
+	[Tags]				25
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e3?depth=-1&extended=true		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+GetExtendedElementFromMountedProjectPD
+	[Documentation]		"Gets a element that only exists in project (ID: PD) from (ID: PA)."
+	[Tags]				26
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e5?depth=-1&extended=true		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+GetExtendedElementFromMountedProjectPA|PC
+	[Documentation]		"Gets a element that only exists in project (ID: PA) from (ID: PC)."
+	[Tags]				27
+	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300?depth=-1&extended=true		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+#bulk element get for root only
+GetElementsFromAllMountedProjectsViaPA
+	[Documentation]		"Gets all elements that are in other projects mounted to PA."
+	[Tags]				28
+	${post_json} =		Get File	    JsonData/GetAllElementsAcrossMounts.json
+	${result} =			Put		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}       headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+# :TODO and also with depth = -1 get all elements and make sure there are no duplicates in the return
+GetExtendedElementsFromAllMountedProjectsViaPA
+	[Documentation]		"Gets all elements that are in other projects mounted to PA."
+	[Tags]				28
+	${post_json} =		Get File	    JsonData/GetAllElementsAcrossMounts.json
+	${result} =			Put		url=${ROOT}/projects/PA/refs/master/elements?depth=-1&extended=true		data=${post_json}       headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 #:TODO 1) recursive mount find, need to write method to check the response properly 2) Change the ref...?
-#get single element in each project with depth=-1 and extended=true
-#bulk element get (with both e1 and e3 in each project) with depth=-1 and extended=true
+
