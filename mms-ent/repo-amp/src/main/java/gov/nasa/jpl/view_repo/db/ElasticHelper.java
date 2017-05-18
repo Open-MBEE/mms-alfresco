@@ -31,6 +31,7 @@ import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
+import io.searchbox.params.Parameters;
 
 /**
  * @author Jason Han jason.han@jpl.nasa.gov, Laura Mann laura.mann@jpl.nasa.gov
@@ -351,7 +352,8 @@ public class ElasticHelper {
             if (operation.equals("delete")) {
                 continue;
             } else {
-                actions.add(new Index.Builder(curr.toString()).id(curr.getString(Sjm.ELASTICID)).build());
+                actions.add(new Index.Builder(curr.toString()).id(curr.getString(Sjm.ELASTICID)).setParameter(
+                    Parameters.REFRESH, true).build());
                 currentList.put(curr);
             }
             if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.length() - 1)) {
