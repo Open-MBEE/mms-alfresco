@@ -76,6 +76,21 @@ public class ModelGet extends AbstractJavaWebScript {
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
+        WorkspaceNode workspace = getWorkspace(req);
+        boolean wsFound = workspace != null && workspace.exists();
+        if (!wsFound) {
+            String refId = getRefId(req);
+            String projectId = getProjectId(req);
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            if (refId != null && refId.equalsIgnoreCase("master")) {
+                return true;
+            } else if (refId != null && !emsNodeUtil.refExists(refId)) {
+                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
+                    refId);
+                return false;
+            }
+        }
+
         return true;
     }
 

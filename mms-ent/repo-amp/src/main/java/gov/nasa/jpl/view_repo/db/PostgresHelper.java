@@ -82,15 +82,11 @@ public class PostgresHelper {
     }
 
     public PostgresHelper() {
-        this("master");
+        setWorkspace("master");
     }
 
-    public PostgresHelper(WorkspaceNode workspace) {
-        setWorkspace(workspace);
-    }
-
-    public PostgresHelper(String workspaceId) {
-        setWorkspace(workspaceId);
+    public PostgresHelper(String refId) {
+        setWorkspace(refId);
     }
 
     public void connect() {
@@ -2077,6 +2073,25 @@ public class PostgresHelper {
         String query = "SELECT count(*) FROM \"nodes" + workspaceId
             + "\" WHERE (nodetype = (SELECT id FROM nodetypes WHERE name = 'site') OR nodetype = (SELECT id FROM nodetypes WHERE name = 'siteandpackage')) AND sysmlid = '"
             + siteName + "'";
+        try {
+            ResultSet rs = execQuery(query);
+            if (rs.next()) {
+                if (rs.getInt(1) > 0) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return false;
+    }
+
+    public boolean refExists(String refId) {
+        this.workspaceId = "";
+        refId = refId.replace("-", "_").replaceAll("\\s+", "");
+        String query = String.format("SELECT count(id) FROM refs WHERE refId = '%s'", refId);
         try {
             ResultSet rs = execQuery(query);
             if (rs.next()) {

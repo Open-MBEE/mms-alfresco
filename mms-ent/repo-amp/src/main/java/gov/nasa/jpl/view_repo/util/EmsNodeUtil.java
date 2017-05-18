@@ -1449,6 +1449,10 @@ public class EmsNodeUtil {
         return orgName.equals("swsdp") || pgh.orgExists(orgName);
     }
 
+    public boolean refExists(String refId) {
+        return pgh.refExists(refId);
+    }
+
     public List<String> filterSearchResults(List<String> sysmlIds) {
         return pgh.getElasticIdsFromSysmlIds(sysmlIds);
     }
