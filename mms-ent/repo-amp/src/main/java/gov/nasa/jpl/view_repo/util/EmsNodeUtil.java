@@ -1043,6 +1043,7 @@ public class EmsNodeUtil {
                             propertyASI.put(Sjm.DOCUMENTATION, "");
                             propertyASI.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
                             propertyASI.put(Sjm.OWNERID, propertySysmlId);
+                            propertyASI.put(Sjm.ELASTICID, UUID.randomUUID().toString());
                             propertyASI.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
                             propertyASI.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
                             propertyASI.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
