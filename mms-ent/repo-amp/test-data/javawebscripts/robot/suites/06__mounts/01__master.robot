@@ -116,17 +116,17 @@ MountCreationPC|PD
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-MountCreationPC|PA
-	[Documentation]		"Assign a mount to project (ID: PC) which is (ID: PA). Symbolically PC -> PA"
-	[Tags]				16
-	${post_json} =		Get File	 JsonData/CreateMountPC|PA.json
-	${result} =			Post		url=${ROOT}/projects/PC/refs/master/elements	    data=${post_json}		headers=&{REQ_HEADER}
-	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
-	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-	Sleep				${POST_DELAY_INDEXING}
-	${compare_result} =		Compare JSON		${TEST_NAME}
-	Should Match Baseline		${compare_result}
+#MountCreationPC|PA
+#	[Documentation]		"Assign a mount to project (ID: PC) which is (ID: PA). Symbolically PC -> PA"
+#	[Tags]				16
+#	${post_json} =		Get File	 JsonData/CreateMountPC|PA.json
+#	${result} =			Post		url=${ROOT}/projects/PC/refs/master/elements	    data=${post_json}		headers=&{REQ_HEADER}
+#	Should Be Equal		${result.status_code}		${200}
+#	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+#	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+#	Sleep				${POST_DELAY_INDEXING}
+#	${compare_result} =		Compare JSON		${TEST_NAME}
+#	Should Match Baseline		${compare_result}
 ##get single element in each project, the return object should have the right _projectId matches the project it's contained in
 # # So in the next example _projectID: PB and _refId is master.  Returns both e1 and e2 b/c of depth
 GetElementFromMountedProjectPB
@@ -159,15 +159,15 @@ GetElementFromMountedProjectPD
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-GetElementFromMountedProjectPA|PC
-	[Documentation]		"Gets a element that only exists in project (ID: PA) from (ID: PC)."
-	[Tags]				23
-	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300		headers=&{REQ_HEADER}
-	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
-	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-	${compare_result} =		Compare JSON		${TEST_NAME}
-	Should Match Baseline		${compare_result}
+#GetElementFromMountedProjectPA|PC
+#	[Documentation]		"Gets a element that only exists in project (ID: PA) from (ID: PC)."
+#	[Tags]				23
+#	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300		headers=&{REQ_HEADER}
+#	Should Be Equal		${result.status_code}		${200}
+#	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+#	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+#	${compare_result} =		Compare JSON		${TEST_NAME}
+#	Should Match Baseline		${compare_result}
 ##get single element in each project with depth=-1 and extended=true
 #GetExtendedElementFromMountedProjectPB
 #	[Documentation]		"Gets a element that only exists in project (ID: PB) from (ID: PA)."
