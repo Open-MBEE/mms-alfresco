@@ -164,8 +164,6 @@ public class SitePermission {
                             if (permission == Permission.READ) {
                                 if (permCache.containsKey(targetId) && permCache.get(targetId).containsKey(Permission.READ)) {
                                     hasPerm = permCache.get(targetId).get(Permission.READ);
-                                } else if (element.optString(Sjm.SYSMLID).contains("master_")) {
-                                    hasPerm = true;
                                 } else {
                                     hasPerm = siteNode.checkPermissions("Read");
                                     Map<Permission, Boolean> permMap = new HashMap<>();
