@@ -123,7 +123,6 @@ public class ModelsGet extends ModelGet {
             JSONObject top = NodeUtil.newJsonObject();
             if (elementsJson.length() > 0) {
                 top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
-                //top.put(Sjm.ELEMENTS, elementsJson);
                 String[] accepts = req.getHeaderValues("Accept");
                 String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
                 if (!Utils.isNullOrEmpty(response.toString()))

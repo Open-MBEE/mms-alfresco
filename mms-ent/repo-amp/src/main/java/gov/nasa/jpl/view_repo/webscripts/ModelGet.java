@@ -129,39 +129,37 @@ public class ModelGet extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
         JSONObject top = new JSONObject();
 
-        Boolean isCommit = req.getParameter("commitId") != null;
-        try {
-            if (isCommit) {
-                JSONArray commitJsonToArray = new JSONArray();
-                JSONObject commitJson = handleCommitRequest(req, top);
-                commitJsonToArray.put(commitJson);
-                if (commitJson.length() > 0) {
-                    top.put(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
-                    //top.put(Sjm.ELEMENTS, commitJsonToArray);
+        if (validateRequest(req, status)) {
+            Boolean isCommit = req.getParameter("commitId") != null;
+            try {
+                if (isCommit) {
+                    JSONArray commitJsonToArray = new JSONArray();
+                    JSONObject commitJson = handleCommitRequest(req, top);
+                    commitJsonToArray.put(commitJson);
+                    if (commitJson.length() > 0) {
+                        top.put(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
+                    }
+                } else {
+                    JSONArray elementsJson = handleRequest(req, top, NodeUtil.doGraphDb);
+                    if (elementsJson.length() > 0) {
+                        top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
+                    }
                 }
-            } else {
-                JSONArray elementsJson = handleRequest(req, top, NodeUtil.doGraphDb);
-                if (elementsJson.length() > 0) {
-                    top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
-                    //top.put(Sjm.ELEMENTS, elementsJson);
+                if (top.length() == 0) {
+                    responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
                 }
+                if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+                    responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
+                }
+                if (!Utils.isNullOrEmpty(response.toString()))
+                    top.put("message", response.toString());
+            } catch (JSONException e) {
+                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSONObject");
+                logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
             }
-            if (top.length() == 0) {
-                responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
-            }
-            if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
-                responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
-            }
-            if (!Utils.isNullOrEmpty(response.toString()))
-                top.put("message", response.toString());
 
-        } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSONObject");
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+            status.setCode(responseStatus.getCode());
         }
-
-        status.setCode(responseStatus.getCode());
-
         if (prettyPrint || accept.contains("webp")) {
             model.put("res", top.toString(4));
         } else {
@@ -324,7 +322,6 @@ public class ModelGet extends AbstractJavaWebScript {
             String projectId = getProjectId(req);
             String refId = getRefId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-
             if (null == modelId) {
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s", modelId);
                 return new JSONArray();
