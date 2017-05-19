@@ -400,7 +400,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                             Permission.WRITE, null, permCache);
         }
 
-        return editable;
+        return hasPerm;
     }
 
     JSONArray filterProjectByPermission(JSONArray projects) {
@@ -459,8 +459,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
 
         if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(permission)) {
             hasPerm = permCache.get(siteId).get(permission);
-        } else if (element.optString(Sjm.SYSMLID).contains("master_")) {
-            hasPerm = true;
         } else {
             hasPerm = SitePermission.hasPermission(siteId, element, projectId, refId, commitId, permission, response,
                             permCache);

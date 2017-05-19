@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Logger;
@@ -13,10 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.db.PostgresHelper;
 
 public class SitePermission {
 
@@ -139,7 +137,7 @@ public class SitePermission {
         }
 
         if (orgId != null || (element != null && element.has(Sjm.SYSMLID))) {
-            if (Utils.isNullOrEmpty(orgId) && !Utils.isNullOrEmpty(projectId) && !Utils.isNullOrEmpty(refId)) {
+            if (Utils.isNullOrEmpty(orgId)) {
                 orgId = getElementSiteId(element.getString(Sjm.SYSMLID), projectId, refId);
             }
             if (!Utils.isNullOrEmpty(orgId)) {
@@ -211,9 +209,16 @@ public class SitePermission {
         return false;
     }
 
-    protected static String getElementSiteId(String orgId, String projectId, String refId) {
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        return emsNodeUtil.getOrganization(orgId).getJSONObject(0).getString("orgId");
+    protected static String getElementSiteId(String sysmlid, String projectId, String refId) {
+        if (projectId == null) {
+            return sysmlid;
+        } else {
+            if (refId == null) {
+                refId = "master";
+            }
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            return emsNodeUtil.getOrganization(sysmlid).getJSONObject(0).getString("orgId");
+        }
     }
 
     /**

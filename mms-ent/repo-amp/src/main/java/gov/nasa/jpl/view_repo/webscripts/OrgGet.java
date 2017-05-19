@@ -123,7 +123,7 @@ public class OrgGet extends AbstractJavaWebScript {
                 } else {
                     jsonArray = handleOrg(orgId);
                     json = new JSONObject();
-                    json.put("orgs", filterOrgsByPermission(jsonArray));
+                    json.put("orgs", jsonArray);
                     if (jsonArray == null) {
                         log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No projects found\n");
                         responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
