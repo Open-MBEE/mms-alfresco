@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -42,10 +43,6 @@ import org.springframework.extensions.webscripts.WebScriptStatus;
  */
 
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission.Permission;
 
@@ -398,14 +395,38 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         }
         editable = hasPerm;
 
-        /*
         if (permissionType != Permission.WRITE) {
             editable = SitePermission.hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null,
                             Permission.WRITE, null, permCache);
         }
-        */
 
         return editable;
+    }
+
+    JSONArray filterProjectByPermission(JSONArray projects) {
+        JSONArray result = new JSONArray();
+        Map<String, Map<Permission, Boolean>> permCache = new HashMap<>();
+
+        for (int i = 0; i < projects.length(); i++) {
+            JSONObject project = projects.optJSONObject(i);
+            if (project != null && project.has("orgId") && SitePermission.hasPermission(project.getString("orgId"), new JSONObject(), project.getString(Sjm.SYSMLID), null, null, Permission.READ, null, permCache)) {
+                result.put(project);
+            }
+        }
+        return result;
+    }
+
+    JSONArray filterOrgsByPermission(JSONArray orgs) {
+        JSONArray result = new JSONArray();
+        Map<String, Map<Permission, Boolean>> permCache = new HashMap<>();
+
+        for (int i = 0; i < orgs.length(); i++) {
+            JSONObject org = orgs.optJSONObject(i);
+            if (org != null && org.has("orgId") && SitePermission.hasPermission(org.getString("orgId"), new JSONObject(), null, null, null, Permission.READ, null, permCache)) {
+                result.put(org);
+            }
+        }
+        return result;
     }
 
     JSONArray filterByPermission(JSONArray elements, WebScriptRequest req) {
@@ -450,12 +471,10 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
 
         if (hasPerm) {
             editable = true;
-            /*
             if (permission != Permission.WRITE) {
                 editable = SitePermission.hasPermission(siteId, element, projectId, refId, commitId, Permission.WRITE,
                                 response, permCache);
             }
-            */
             element.put(Sjm.EDITABLE, editable);
             return element;
         }

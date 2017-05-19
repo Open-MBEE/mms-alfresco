@@ -138,8 +138,8 @@ public class SitePermission {
             return true;
         }
 
-        if (element != null && element.has(Sjm.SYSMLID)) {
-            if (Utils.isNullOrEmpty(orgId)) {
+        if (orgId != null || (element != null && element.has(Sjm.SYSMLID))) {
+            if (Utils.isNullOrEmpty(orgId) && !Utils.isNullOrEmpty(projectId) && !Utils.isNullOrEmpty(refId)) {
                 orgId = getElementSiteId(element.getString(Sjm.SYSMLID), projectId, refId);
             }
             if (!Utils.isNullOrEmpty(orgId)) {
@@ -153,8 +153,11 @@ public class SitePermission {
                         if (siteNode == null) {
                             return false;
                         } else {
-                            EmsScriptNode targetNode = siteNode.childByNamePath("/" + projectId + (refId != null ? "/refs/" + refId : ""));
-
+                            EmsScriptNode targetNode = null;
+                            if (projectId != null) {
+                                targetNode =
+                                    siteNode.childByNamePath("/" + projectId + (refId != null ? "/refs/" + refId : ""));
+                            }
                             if (targetNode == null) {
                                 targetNode = siteNode;
                             }

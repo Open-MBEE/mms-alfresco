@@ -161,14 +161,14 @@ public class EmsNodeUtil {
             JSONObject projectJson = getNodeBySysmlid(projectId);
             projectJson.put("orgId", project.get("orgId").toString());
             realFound.add(projectId);
-            JSONArray mountObject = getFullMounts(projectJson.get(Sjm.SYSMLID).toString(), realFound);
+            JSONArray mountObject = getFullMounts(realFound);
             projectJson.put(Sjm.MOUNTS, mountObject);
             return projectJson;
         }
         return null;
     }
 
-    public JSONArray getFullMounts(String projectId, List<String> found) {
+    public JSONArray getFullMounts(List<String> found) {
         JSONArray mounts = new JSONArray();
         String curProjectId = this.projectId;
         String curRefId = this.workspaceName;
@@ -176,7 +176,7 @@ public class EmsNodeUtil {
         if (nodes.isEmpty()) {
             return mounts;
         }
-        Set<String> mountIds = new HashSet<String>();
+        Set<String> mountIds = new HashSet<>();
         for (int i = 0; i < nodes.size(); i++) {
             mountIds.add(nodes.get(i).getSysmlId());
         }
