@@ -97,7 +97,7 @@ public class OrgGet extends AbstractJavaWebScript {
                     if (projectId != null) {
                         jsonArray = handleProject(projectId);
                         json = new JSONObject();
-                        json.put("projects", jsonArray);
+                        json.put("projects", filterByPermission(jsonArray, req));
                         if (jsonArray == null) {
                             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Project does not exist\n");
                             responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
@@ -105,7 +105,7 @@ public class OrgGet extends AbstractJavaWebScript {
                     } else if (orgId != null) {
                         jsonArray = handleOrgProjects(orgId);
                         json = new JSONObject();
-                        json.put("projects", jsonArray);
+                        json.put("projects", filterByPermission(jsonArray, req));
                         if (jsonArray == null) {
                             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No projects in organization\n");
                             responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
@@ -113,7 +113,7 @@ public class OrgGet extends AbstractJavaWebScript {
                     } else {
                         jsonArray = handleProjects();
                         json = new JSONObject();
-                        json.put("projects", jsonArray);
+                        json.put("projects", filterByPermission(jsonArray, req));
                         if (jsonArray == null) {
                             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No projects found\n");
                             responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
@@ -123,7 +123,11 @@ public class OrgGet extends AbstractJavaWebScript {
                 } else {
                     jsonArray = handleOrg(orgId);
                     json = new JSONObject();
-                    json.put("orgs", jsonArray);
+                    json.put("orgs", filterByPermission(jsonArray, req));
+                    if (jsonArray == null) {
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No projects found\n");
+                        responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+                    }
                 }
             }
         } catch (JSONException e) {
