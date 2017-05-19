@@ -12,6 +12,10 @@
                 {
                     "aggregation": "composite",
                     "id": "cv2"
+                },
+                {
+                    "aggregation": "composite",
+                    "id": "cv3"
                 }
             ],
             "_creator": "admin",
@@ -23,7 +27,8 @@
             "name": "v1",
             "ownedAttributeIds": [
                 "v1p1",
-                "v1p2"
+                "v1p2",
+                "v1p3"
             ],
             "ownerId": "package1",
             "type": "Class"
