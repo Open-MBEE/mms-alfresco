@@ -440,13 +440,13 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public Map<String, String> search(JSONObject query) {
+    public JSONArray search(JSONObject query) {
         try {
             return eh.search(query);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new HashMap<>();
+        return new JSONArray();
     }
 
     public JSONArray filterResultsByWorkspace(JSONArray elements) {

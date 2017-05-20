@@ -444,11 +444,11 @@ public class ElasticHelper {
         return client.execute(bulk);
     }
 
-    public Map<String, String> search(JSONObject queryJson) throws IOException {
+    public JSONArray search(JSONObject queryJson) throws IOException {
         logger.debug(String.format("Search Query %s", queryJson.toString()));
 
         //JSONArray elements = new JSONArray();
-        Map<String, String> elements = new HashMap<>();
+        JSONArray elements = new JSONArray();
 
         Search search = new Search.Builder(queryJson.toString()).addIndex(elementIndex).build();
         SearchResult result = client.execute(search);
@@ -459,7 +459,7 @@ public class ElasticHelper {
 
                 JSONObject o = new JSONObject(hits.get(i).getAsJsonObject().getAsJsonObject("_source").toString());
 
-                elements.put(o.getString(Sjm.SYSMLID), o.toString());
+                elements.put(o);
             }
         }
 
