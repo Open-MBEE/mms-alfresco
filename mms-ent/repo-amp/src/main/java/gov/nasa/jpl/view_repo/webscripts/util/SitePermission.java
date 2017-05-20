@@ -234,8 +234,11 @@ public class SitePermission {
     }
 
     protected static boolean isTag(String projectId, String refId) {
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        return emsNodeUtil.isTag();
+        if (projectId != null && refId != null && !refId.equals("master")) {
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            return emsNodeUtil.isTag();
+        }
+        return false;
     }
 
     protected static String findSiteId(JSONObject element, String projectId, String refId, String commitId) {

@@ -396,8 +396,12 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         editable = hasPerm;
 
         if (permissionType != Permission.WRITE) {
-            editable = SitePermission.hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null,
-                            Permission.WRITE, null, permCache);
+            if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(Permission.WRITE)) {
+                editable = permCache.get(siteId).get(Permission.WRITE);
+            } else {
+                editable = SitePermission
+                    .hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null, Permission.WRITE, null, permCache);
+            }
         }
 
         return hasPerm;
@@ -470,8 +474,13 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         if (hasPerm) {
             editable = true;
             if (permission != Permission.WRITE) {
-                editable = SitePermission.hasPermission(siteId, element, projectId, refId, commitId, Permission.WRITE,
-                                response, permCache);
+                if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(Permission.WRITE)) {
+                    editable = permCache.get(siteId).get(Permission.WRITE);
+                } else {
+                    editable = SitePermission
+                        .hasPermission(siteId, element, projectId, refId, commitId, Permission.WRITE, response,
+                            permCache);
+                }
             }
             element.put(Sjm.EDITABLE, editable);
             return element;
