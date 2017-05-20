@@ -2,7 +2,6 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -389,7 +388,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         } else {
             hasPerm = SitePermission.hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null,
                             permissionType, null, permCache);
-            Map<Permission, Boolean> permMap = new HashMap<>();
+            Map<Permission, Boolean> permMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
             permMap.put(permissionType, hasPerm);
             permCache.put(siteId, permMap);
         }
@@ -401,7 +400,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             } else {
                 editable = SitePermission
                     .hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null, Permission.WRITE, null, permCache);
-                Map<Permission, Boolean> writePermMap = new HashMap<>();
+                Map<Permission, Boolean> writePermMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
                 writePermMap.put(Permission.WRITE, editable);
                 permCache.put(siteId, writePermMap);
             }
@@ -469,7 +468,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         } else {
             hasPerm = SitePermission.hasPermission(siteId, element, projectId, refId, commitId, permission, response,
                             permCache);
-            Map<Permission, Boolean> permMap = new HashMap<>();
+            Map<Permission, Boolean> permMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
             permMap.put(permission, hasPerm);
             permCache.put(siteId, permMap);
         }
@@ -483,7 +482,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     editable = SitePermission
                         .hasPermission(siteId, element, projectId, refId, commitId, Permission.WRITE, response,
                             permCache);
-                    Map<Permission, Boolean> writePermMap = new HashMap<>();
+                    Map<Permission, Boolean> writePermMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
                     writePermMap.put(Permission.WRITE, editable);
                     permCache.put(siteId, writePermMap);
                 }
