@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.JsonElement;
 import org.apache.log4j.Logger;
@@ -27,6 +28,7 @@ import io.searchbox.core.Bulk;
 import io.searchbox.core.BulkResult;
 import io.searchbox.core.Get;
 import io.searchbox.core.Index;
+import io.searchbox.core.Update;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
@@ -375,6 +377,62 @@ public class ElasticHelper {
         return true;
     }
 
+    public boolean bulkUpdateAddElementRefs(Set<String> elements, String refId) throws JSONException, IOException {
+        int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
+        ArrayList<BulkableAction> actions = new ArrayList<>();
+        JSONArray currentList = new JSONArray();
+        String payload = new JSONObject().put("script", new JSONObject().put("inline", "if(ctx._source.containsKey(\"" +
+            Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS + ".add(\"" + refId + "\")} else {ctx._source." +
+            Sjm.INREFIDS + " = [\"" + refId + "\"]}")).toString();
+        int i = 0;
+        for (String id: elements) {
+            actions.add(new Update.Builder(payload).id(id).build());
+            currentList.put(id);
+
+            if ((((i + 1) % limit) == 0 && i != 0) || i == (elements.size() - 1)) {
+                BulkResult result = insertBulk(actions, false);
+                if (!result.isSucceeded()) {
+                    logger.error(String.format("Elastic Bulk Update Error: %s", result.getErrorMessage()));
+                    logger.error(String.format("Failed items JSON: %s", currentList));
+                    result.getFailedItems().forEach((item) -> {
+                        logger.error(String.format("Failed item: %s", item.error));
+                    });
+                    //return false;
+                }
+                actions.clear();
+            }
+            i++;
+        }
+        return true;
+    }
+
+    public boolean bulkUpdateRemoveElementRefs(Set<String> oldElements, String refId) throws JSONException, IOException {
+        int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
+        ArrayList<BulkableAction> actions = new ArrayList<>();
+        JSONArray currentList = new JSONArray();
+        String payload = new JSONObject().put("script", new JSONObject().put("inline", "if(ctx._source.containsKey(\"" +
+            Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS + ".removeAll([\"" + refId + "\"])}")).toString();
+        int i = 0;
+        for (String id: oldElements) {
+            actions.add(new Update.Builder(payload).id(id).build());
+            currentList.put(id);
+
+            if ((((i + 1) % limit) == 0 && i != 0) || i == (oldElements.size() - 1)) {
+                BulkResult result = insertBulk(actions, false);
+                if (!result.isSucceeded()) {
+                    logger.error(String.format("Elastic Bulk Update Error: %s", result.getErrorMessage()));
+                    logger.error(String.format("Failed items JSON: %s", currentList));
+                    result.getFailedItems().forEach((item) -> {
+                        logger.error(String.format("Failed item: %s", item.error));
+                    });
+                    //return false;
+                }
+                actions.clear();
+            }
+            i++;
+        }
+        return true;
+    }
     /**
      * Helper method for making bulkAPI requests                       (1)
      *

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -84,7 +86,7 @@ public class MmsModelDelete extends AbstractJavaWebScript {
         JSONArray nodesToDelete = null;
         List<String> ids = new ArrayList<>();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
-
+        Set<String> elasticIds = new HashSet<>();
         String elementId = req.getServiceMatch().getTemplateVars().get("elementId");
         if (elementId != null) {
             ids.add(elementId);
@@ -115,6 +117,7 @@ public class MmsModelDelete extends AbstractJavaWebScript {
                     JSONObject deletedElement = emsNodeUtil.deleteNode(node.optString(Sjm.SYSMLID));
                     if (deletedElement != null) {
                         elements.put(deletedElement);
+                        elasticIds.add(deletedElement.getString(Sjm.ELASTICID));
                     }
                     logger.debug(String.format("Node: %s", node));
                 }
@@ -134,6 +137,7 @@ public class MmsModelDelete extends AbstractJavaWebScript {
             emsNodeUtil.insertCommitIntoPostgres(commitResults);
             result.put(Sjm.ELEMENTS, elements);
             result.put("commitId", commitResults);
+            emsNodeUtil.updateElasticRemoveRefs(elasticIds);
         }
         return result;
     }

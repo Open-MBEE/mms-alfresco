@@ -39,7 +39,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.Set;
+import java.util.HashSet;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.JsonArray;
@@ -164,7 +165,8 @@ public class ModelPost extends AbstractJavaWebScript {
 
             JSONArray updatedElements = new JSONArray();
             JSONArray deletedElements = new JSONArray();
-            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(postJson.getJSONArray(Sjm.ELEMENTS), myWorkspace), user, foundElements, updatedElements, deletedElements), foundParentElements, updatedElements, deletedElements);
+            Set<String> oldElements = new HashSet<>();
+            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(postJson.getJSONArray(Sjm.ELEMENTS), myWorkspace), user, foundElements, updatedElements, deletedElements, oldElements), foundParentElements, updatedElements, deletedElements);
 
             JSONObject formattedCommit = emsNodeUtil.processCommit(results, user, foundElements, foundParentElements);
             // this logic needs to be fixed because emsNodesUtil does not pass a formatted commit
@@ -180,7 +182,9 @@ public class ModelPost extends AbstractJavaWebScript {
             commit.put(Sjm.CREATOR, user);
 
             if (CommitUtil.sendDeltas(commit, commitResults, projectId, refId, requestSourceApplication, withChildViews)) {
-
+                if (!oldElements.isEmpty()) {
+                    emsNodeUtil.updateElasticRemoveRefs(oldElements);//can be backgrounded if need be
+                }
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
 
                 if (withChildViews) {

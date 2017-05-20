@@ -667,7 +667,7 @@ public class EmsNodeUtil {
     }
 
     public JSONArray processElements(JSONArray elements, String user, Map<String, JSONObject> foundElements,
-        JSONArray updatedElements, JSONArray deletedElements) {
+        JSONArray updatedElements, JSONArray deletedElements, Set<String> oldElements) {
 
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
@@ -709,6 +709,7 @@ public class EmsNodeUtil {
                 o.put(Sjm.CREATED, date);
                 o.put(Sjm.MODIFIER, user);
                 o.put(Sjm.MODIFIED, date);
+                o.put(Sjm.INREFIDS, new JSONArray().put(this.workspaceName));
                 reorderChildViews(o, newElements, updatedElements, deletedElements);
                 elements.put(i, o);
             }
@@ -730,25 +731,39 @@ public class EmsNodeUtil {
             updateMap.forEach((id, object) -> {
                 if (foundElements.containsKey(id)) {
                     diffUpdateJson(object, foundElements.get(id));
+                    oldElements.add(foundElements.get(id).getString(Sjm.ELASTICID));
                 } else {
                     pgh.resurrectNode(id);
                     JSONObject resurrected = getNodeBySysmlid(id);
+                    //foundElements.put(id, resurrected); //should foundElements include resurrected?
+                    //oldElements.add(resurrected.getString(Sjm.ELASTICID));
                     if (resurrected.optString(Sjm.SYSMLID) != null) {
                         diffUpdateJson(object, resurrected);
                     }
                 }
                 object.put(Sjm.MODIFIER, user);
                 object.put(Sjm.MODIFIED, date);
+                object.put(Sjm.INREFIDS, new JSONArray().put(this.workspaceName));
                 reorderChildViews(object, newElements, updatedElements, deletedElements);
                 elements.put(indexMap.get(id), object);
             });
         }
-
+        for (int i = 0; i < deletedElements.length(); i++) {
+            oldElements.add(deletedElements.getJSONObject(i).getString(Sjm.ELASTICID));
+        }
         for (int i = 0; i < newElements.length(); i++) {
             elements.put(newElements.getJSONObject(i));
         }
 
         return elements;
+    }
+
+    public void updateElasticRemoveRefs(Set<String> elasticIds) {
+        try {
+            eh.bulkUpdateRemoveElementRefs(elasticIds, this.workspaceName);
+        } catch (IOException ex) {
+
+        }
     }
 
     public JSONObject processConfiguration(JSONObject postJson, String user, String date) {
@@ -1030,6 +1045,8 @@ public class EmsNodeUtil {
                             property.put(Sjm.ISID, false);
                             property.put(Sjm.REDEFINEDPROPERTYIDS, new JSONArray());
                             property.put(Sjm.SUBSETTEDPROPERTYIDS, new JSONArray());
+                            property.put(Sjm.INREFIDS, new JSONArray().put(this.workspaceName));
+
 
                             newElements.put(property);
 
@@ -1057,6 +1074,8 @@ public class EmsNodeUtil {
                             classifierids.put("_15_0_be00301_1199377756297_348405_2678");
                             propertyASI.put(Sjm.CLASSIFIERIDS, classifierids);
                             propertyASI.put(Sjm.STEREOTYPEDELEMENTID, propertySysmlId);
+                            propertyASI.put(Sjm.INREFIDS, new JSONArray().put(this.workspaceName));
+
 
                             newElements.put(propertyASI);
 
@@ -1102,6 +1121,8 @@ public class EmsNodeUtil {
                             association.put(Sjm.SUBSTITUTIONIDS, new JSONArray());
                             association.put(Sjm.ISDERIVED, false);
                             association.put(Sjm.NAVIGABLEOWNEDENDIDS, new JSONArray());
+                            association.put(Sjm.INREFIDS, new JSONArray().put(this.workspaceName));
+
 
                             newElements.put(association);
 
@@ -1146,6 +1167,8 @@ public class EmsNodeUtil {
                             assocProperty.put(Sjm.ISID, false);
                             assocProperty.put(Sjm.REDEFINEDPROPERTYIDS, new JSONArray());
                             assocProperty.put(Sjm.SUBSETTEDPROPERTYIDS, new JSONArray());
+                            assocProperty.put(Sjm.INREFIDS, new JSONArray().put(this.workspaceName));
+
 
                             newElements.put(assocProperty);
                             ownedAttributesIds.put(propertySysmlId);
