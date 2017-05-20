@@ -62,7 +62,7 @@ public class MmsProductsGet extends AbstractJavaWebScript {
         JSONObject jsonObject = NodeUtil.newJsonObject();
 
         try {
-            jsonObject.put("documents", filterByPermission(handleProducts(req), req));
+            jsonObject.put("documents", handleProducts(req));
             model.put("res", NodeUtil.jsonToString(jsonObject, 2));
         } catch (Exception e) {
             model.put("res", createResponseJson());
@@ -88,12 +88,7 @@ public class MmsProductsGet extends AbstractJavaWebScript {
         String projectId = getProjectId(req);
         String extended = req.getParameter("extended");
 
-        return getProducts(projectId, refId, projectId, commitId, extended != null && extended.equals("true"));
-    }
-
-    private JSONArray getProducts(String projectId, String refId, String sysmlId, String commitId, boolean extended) {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        return emsNodeUtil.getDocJson(sysmlId, commitId, extended);
+        return emsNodeUtil.getDocJson(projectId, commitId, extended != null && extended.equals("true"));
     }
-
 }

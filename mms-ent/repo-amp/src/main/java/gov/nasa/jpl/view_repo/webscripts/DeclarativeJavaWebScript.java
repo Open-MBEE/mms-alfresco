@@ -401,6 +401,9 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             } else {
                 editable = SitePermission
                     .hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null, Permission.WRITE, null, permCache);
+                Map<Permission, Boolean> writePermMap = new HashMap<>();
+                writePermMap.put(Permission.WRITE, editable);
+                permCache.put(siteId, writePermMap);
             }
         }
 
@@ -480,6 +483,9 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     editable = SitePermission
                         .hasPermission(siteId, element, projectId, refId, commitId, Permission.WRITE, response,
                             permCache);
+                    Map<Permission, Boolean> writePermMap = new HashMap<>();
+                    writePermMap.put(Permission.WRITE, editable);
+                    permCache.put(siteId, writePermMap);
                 }
             }
             element.put(Sjm.EDITABLE, editable);
