@@ -676,10 +676,7 @@ public class EmsNodeUtil {
         Map<String, JSONObject> updateMap = new HashMap<>();
         Map<String, Integer> indexMap = new HashMap<>();
 
-        String holdingBinSysmlid = "holding_bin";
-        if (projectId != null) {
-            holdingBinSysmlid = "holding_bin_" + projectId;
-        }
+        final String holdingBinSysmlid = (projectId != null) ? ("holding_bin_" + projectId) : "holding_bin";
 
         for (int i = 0; i < elements.length(); i++) {
             JSONObject o = elements.getJSONObject(i);
@@ -687,10 +684,6 @@ public class EmsNodeUtil {
             if (sysmlid == null || sysmlid.equals("")) {
                 sysmlid = createId();
                 o.put(Sjm.SYSMLID, sysmlid);
-            }
-            if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null || o.getString(Sjm.OWNERID)
-                .equalsIgnoreCase("null")) {
-                o.put(Sjm.OWNERID, holdingBinSysmlid);
             }
             // pregenerate the elasticId
             o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
@@ -710,6 +703,10 @@ public class EmsNodeUtil {
                 o.put(Sjm.MODIFIER, user);
                 o.put(Sjm.MODIFIED, date);
                 o.put(Sjm.INREFIDS, new JSONArray().put(this.workspaceName));
+                if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null || o.getString(Sjm.OWNERID)
+                    .equalsIgnoreCase("null")) {
+                    o.put(Sjm.OWNERID, holdingBinSysmlid);
+                }
                 reorderChildViews(o, newElements, updatedElements, deletedElements);
                 elements.put(i, o);
             }
@@ -744,6 +741,10 @@ public class EmsNodeUtil {
                 object.put(Sjm.MODIFIER, user);
                 object.put(Sjm.MODIFIED, date);
                 object.put(Sjm.INREFIDS, new JSONArray().put(this.workspaceName));
+                if (!object.has(Sjm.OWNERID) || object.getString(Sjm.OWNERID) == null || object.getString(Sjm.OWNERID)
+                    .equalsIgnoreCase("null")) {
+                    object.put(Sjm.OWNERID, holdingBinSysmlid);
+                }
                 reorderChildViews(object, newElements, updatedElements, deletedElements);
                 elements.put(indexMap.get(id), object);
             });
