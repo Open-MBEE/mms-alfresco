@@ -762,7 +762,8 @@ public class EmsNodeUtil {
     public void updateElasticRemoveRefs(Set<String> elasticIds) {
         try {
             String payload = new JSONObject().put("script", new JSONObject().put("inline", "if(ctx._source.containsKey(\"" +
-                Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS + ".removeAll([\"" + this.workspaceName + "\"])}")).toString();
+                Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS + ".removeAll([params.refId])}").put("params",
+                new JSONObject().put("refId", this.workspaceName))).toString();
             eh.bulkUpdateElements(elasticIds, payload);
         } catch (IOException ex) {
 

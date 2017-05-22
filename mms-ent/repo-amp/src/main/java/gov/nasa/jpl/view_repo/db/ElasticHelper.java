@@ -381,11 +381,7 @@ public class ElasticHelper {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         ArrayList<BulkableAction> actions = new ArrayList<>();
         JSONArray currentList = new JSONArray();
-        /* this will be for branching
-        String payload = new JSONObject().put("script", new JSONObject().put("inline", "if(ctx._source.containsKey(\"" +
-            Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS + ".add(\"" + refId + "\")} else {ctx._source." +
-            Sjm.INREFIDS + " = [\"" + refId + "\"]}")).toString();
-            */ 
+
         int i = 0;
         for (String id: elements) {
             actions.add(new Update.Builder(payload).id(id).build());

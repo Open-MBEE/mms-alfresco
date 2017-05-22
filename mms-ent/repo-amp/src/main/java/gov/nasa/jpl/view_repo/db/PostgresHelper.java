@@ -712,6 +712,25 @@ public class PostgresHelper {
         }
         return null;
     }
+
+    public Set<String> getElasticIds() {
+        Set<String> elasticIds = new HashSet<>();
+        try {
+            String query = String
+                .format("SELECT elasticid FROM \"nodes%s\" WHERE deleted = %b", workspaceId, false);
+            ResultSet rs = execQuery(query);
+            while (rs.next()) {
+                elasticIds.add(rs.getString(1));
+            }
+            elasticIds.remove("holding_bin"); //??
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return elasticIds;
+    }
+
     public String getElasticIdForCommit(String commitId) {
         try {
             ResultSet rs = execQuery("SELECT elasticId FROM commits WHERE id = '" + commitId + "'");
