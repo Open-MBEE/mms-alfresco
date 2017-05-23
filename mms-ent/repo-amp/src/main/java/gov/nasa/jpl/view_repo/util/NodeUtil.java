@@ -4116,7 +4116,7 @@ public class NodeUtil {
         return node;
     }
 
-    public static void processDocumentEdges(String sysmlid, String doc, List<Pair<String, String>> documentEdges) {
+    public static void processDocumentEdges(String sysmlid, String doc, Set<Pair<String, String>> documentEdges) {
         if (doc != null) {
             String MMS_TRANSCLUDE_PATTERN = "<mms-transclude.*eid=\"([^\"]*)\"";
             Pattern pattern = Pattern.compile(MMS_TRANSCLUDE_PATTERN);
@@ -4153,7 +4153,7 @@ public class NodeUtil {
     }
 
     public static void processContentsJson(String sysmlId, JSONObject contents,
-                    List<Pair<String, String>> documentEdges) {
+                    Set<Pair<String, String>> documentEdges) {
         if (contents != null) {
             if (contents.has("operand")) {
                 JSONArray operand = contents.getJSONArray("operand");
@@ -4190,7 +4190,7 @@ public class NodeUtil {
     }
 
     public static void processInstanceSpecificationSpecificationJson(String sysmlId, JSONObject iss,
-                    List<Pair<String, String>> documentEdges) {
+                    Set<Pair<String, String>> documentEdges) {
         if (iss != null) {
             if (iss.has("value") && iss.has("type") && iss.getString("type").equals("LiteralString")) {
                 String string = iss.getString("value");

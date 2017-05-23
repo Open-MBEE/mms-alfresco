@@ -201,12 +201,12 @@ public class CommitUtil {
         JSONArray jmsUpdated = new JSONArray();
         JSONArray jmsDeleted = new JSONArray();
 
-        List<String> affectedSysmlIds = new ArrayList<>();
+        Set<String> affectedSysmlIds = new HashSet<>();
 
         Map<String, String> aggregationTypes = new HashMap<>();
         Map<String, String> propertyTypes = new HashMap<>();
-        List<Pair<String, String>> addEdges = new ArrayList<>();
-        List<Pair<String, String>> documentEdges = new ArrayList<>();
+        Set<Pair<String, String>> addEdges = new HashSet<>();
+        Set<Pair<String, String>> documentEdges = new HashSet<>();
 
         if (bulkElasticEntry(added, "added", withChildViews) && bulkElasticEntry(updated, "updated", withChildViews)) {
 
@@ -340,7 +340,9 @@ public class CommitUtil {
                         edge.put("parent", e.first);
                         edge.put("child", e.second);
                         edge.put("edgetype", Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
-                        edgeInserts.add(edge);
+                        if (!edgeInserts.contains(edge)) {
+                            edgeInserts.add(edge);
+                        }
                     }
                 }
 
@@ -350,7 +352,9 @@ public class CommitUtil {
                         edge.put("parent", e.first);
                         edge.put("child", e.second);
                         edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
-                        edgeInserts.add(edge);
+                        if (!edgeInserts.contains(edge)) {
+                            edgeInserts.add(edge);
+                        }
                     }
                 }
 

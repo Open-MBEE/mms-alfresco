@@ -314,7 +314,7 @@ public class PostgresHelper {
         return -1;
     }
 
-    public void updateBySysmlIds(String table, String column, String value, List<String> sysmlIds) throws SQLException {
+    public void updateBySysmlIds(String table, String column, String value, Set<String> sysmlIds) throws Exception {
         if (sysmlIds == null || sysmlIds.isEmpty()) {
             return;
         }
@@ -323,9 +323,10 @@ public class PostgresHelper {
         String queryStarter =
             String.format("UPDATE \"%s\" SET %s = '%s' WHERE sysmlId IN ('", table + workspaceId, column, value);
         String query = queryStarter;
-        for (int i = 0; i < sysmlIds.size(); i++) {
-            query += sysmlIds.get(i) + "','";
-            if (((i + 1) % limit) == 0 || i == (sysmlIds.size() - 1)) {
+        List<String> sysmlIdsList = new ArrayList<>(sysmlIds);
+        for (int i = 0; i < sysmlIdsList.size(); i++) {
+            query += sysmlIdsList.get(i) + "','";
+            if (((i + 1) % limit) == 0 || i == (sysmlIdsList.size() - 1)) {
                 query = query.substring(0, query.length() - 2) + ");";
                 queries.add(query);
                 query = queryStarter;
@@ -334,53 +335,45 @@ public class PostgresHelper {
         runBulkQueries(queries, false);
     }
 
-    public void runBulkQueries(List<String> queries, boolean withResults) {
+    public void runBulkQueries(List<String> queries, boolean withResults) throws Exception {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
         String queryCache = "";
-        try {
-            for (int i = 0; i < queries.size(); i++) {
-                queryCache += queries.get(i);
-                if (((i + 1) % limit) == 0 || i == (queries.size() - 1)) {
-                    String storedInsert = String.format("%s", queryCache);
-                    logger.debug(String.format("Query: %s", storedInsert));
-                    if (withResults) {
-                        boolean rs = this.conn.createStatement().execute(storedInsert);
-                    } else {
-                        this.conn.createStatement().executeUpdate(storedInsert);
-                    }
-                    queryCache = "";
+        for (int i = 0; i < queries.size(); i++) {
+            queryCache += queries.get(i);
+            if (((i + 1) % limit) == 0 || i == (queries.size() - 1)) {
+                String storedInsert = String.format("%s", queryCache);
+                logger.debug(String.format("Query: %s", storedInsert));
+                if (withResults) {
+                    boolean rs = this.conn.createStatement().execute(storedInsert);
+                } else {
+                    this.conn.createStatement().executeUpdate(storedInsert);
                 }
+                queryCache = "";
             }
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
 
-    public void runBulkQueries(List<Map<String, String>> queries, String type) {
+    public void runBulkQueries(List<Map<String, String>> queries, String type) throws Exception {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
         List<Map<String, String>> queryCache = new ArrayList<>();
-        try {
-            for (int i = 0; i < queries.size(); i++) {
-                queryCache.add(queries.get(i));
-                String storedInsert = "";
-                if (((i + 1) % limit) == 0 || i == (queries.size() - 1)) {
-                    if (type.contains("nodes")) {
-                        storedInsert = createInsertNodeQuery(queryCache);
-                        logger.debug(String.format("Query: %s", storedInsert));
-                    } else if (type.contains("updates")) {
-                        storedInsert = createUpdateNodeQuery(queryCache);
-                        logger.debug(String.format("Query: %s", storedInsert));
-                        this.conn.createStatement().executeUpdate(storedInsert);
-                    } else if (type.contains("edges")) {
-                        storedInsert = createInsertEdgeQuery(queryCache);
-                        logger.debug(String.format("Query: %s", storedInsert));
-                    }
+        for (int i = 0; i < queries.size(); i++) {
+            queryCache.add(queries.get(i));
+            String storedInsert = "";
+            if (((i + 1) % limit) == 0 || i == (queries.size() - 1)) {
+                if (type.contains("nodes")) {
+                    storedInsert = createInsertNodeQuery(queryCache);
+                    logger.debug(String.format("Query: %s", storedInsert));
+                } else if (type.contains("updates")) {
+                    storedInsert = createUpdateNodeQuery(queryCache);
+                    logger.debug(String.format("Query: %s", storedInsert));
                     this.conn.createStatement().executeUpdate(storedInsert);
-                    queryCache = new ArrayList<>();
+                } else if (type.contains("edges")) {
+                    storedInsert = createInsertEdgeQuery(queryCache);
+                    logger.debug(String.format("Query: %s", storedInsert));
                 }
+                this.conn.createStatement().executeUpdate(storedInsert);
+                queryCache = new ArrayList<>();
             }
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
 
