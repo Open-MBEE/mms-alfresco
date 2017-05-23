@@ -82,15 +82,15 @@ public class PostgresHelper {
     }
 
     public PostgresHelper() {
-        this("master");
+        setWorkspace("master");
     }
 
-    public PostgresHelper(WorkspaceNode workspace) {
-        setWorkspace(workspace);
+    public PostgresHelper(WorkspaceNode ref) {
+        setWorkspace(ref);
     }
 
-    public PostgresHelper(String workspaceId) {
-        setWorkspace(workspaceId);
+    public PostgresHelper(String refId) {
+        setWorkspace(refId);
     }
 
     public void connect() {
@@ -596,10 +596,39 @@ public class PostgresHelper {
         return false;
     }
 
+    public boolean isDeleted(String sysmlid) {
+        try {
+            ResultSet rs = execQuery("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + sysmlid + "' AND deleted = true");
+            if (rs.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return false;
+    }
+
     public boolean sysmlIdExists(String sysmlid) {
         try {
             ResultSet rs = execQuery("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + sysmlid + "'");
             return rs.next();
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return false;
+    }
+
+    public boolean edgeExists(String parent, String child, DbEdgeTypes dbet) {
+        try {
+            ResultSet rs = execQuery("SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + parent + "') AND child = (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + child + "') AND edgetype = " + dbet.getValue());
+            if (rs.next()) {
+                return true;
+            }
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -787,7 +816,6 @@ public class PostgresHelper {
 
     // insert commit and insert commit edges as well
     public void insertNode(String elasticId, String sysmlId, DbNodeTypes type) {
-        Boolean initialCommit = isInitialCommit();
         try {
             Map<String, String> map = new HashMap<>();
             map.put("elasticId", elasticId);
@@ -1413,7 +1441,7 @@ public class PostgresHelper {
         }
     }
 
-    public void deleteEdges(String parentSysmlId, String childSysmlId) {
+    public void deleteEdges(String parentSysmlId, String childSysmlId, DbEdgeTypes dbet) {
         try {
             Node pn = getNodeFromSysmlId(parentSysmlId);
             Node cn = getNodeFromSysmlId(childSysmlId);
@@ -1421,7 +1449,7 @@ public class PostgresHelper {
             if (pn == null || cn == null)
                 return;
 
-            execUpdate("DELETE FROM edges WHERE parent = " + pn.getId() + " AND child = " + cn.getId());
+            execUpdate("DELETE FROM edges WHERE parent = " + pn.getId() + " AND child = " + cn.getId() + " AND edgetype = " + dbet.getValue());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -2049,6 +2077,25 @@ public class PostgresHelper {
         String query = "SELECT count(*) FROM \"nodes" + workspaceId
             + "\" WHERE (nodetype = (SELECT id FROM nodetypes WHERE name = 'site') OR nodetype = (SELECT id FROM nodetypes WHERE name = 'siteandpackage')) AND sysmlid = '"
             + siteName + "'";
+        try {
+            ResultSet rs = execQuery(query);
+            if (rs.next()) {
+                if (rs.getInt(1) > 0) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return false;
+    }
+
+    public boolean refExists(String refId) {
+        this.workspaceId = "";
+        refId = refId.replace("-", "_").replaceAll("\\s+", "");
+        String query = String.format("SELECT count(id) FROM refs WHERE refId = '%s'", refId);
         try {
             ResultSet rs = execQuery(query);
             if (rs.next()) {
