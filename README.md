@@ -1,6 +1,7 @@
 # mms-all-in-one
 **Alfresco version 5.0.d**
 
+Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
 # Initial Setup
 ## 1a. Import Project from git repo to Eclipse
 *  **Eclipse** > **File** > **Import** > **General** > **Existing Projects into Workspace**
@@ -33,25 +34,30 @@
 *   Right-click **Maven Build** > **New**
     *   Enter `mms-all-in-one` for Name textbox
     *   At **Main** tab
-            *   Enter `${project_loc}` or `${workspace_loc}` for Base Directory textbox
-            *   Enter `install` for Goals textbox
-            *   Enter `run` for Profiles textbox
-            *   Select Maven 3.X.X (whatever you chose to setup in step 2) for Maven Runtime
+        *   Enter `${project_loc}` or `${workspace_loc}` for Base Directory textbox
+        *   Enter `install` for Goals textbox
+        *   Enter `run` for Profiles textbox
+        *   Select Maven 3.X.X (whatever you chose to setup in step 2) for Maven Runtime
     *   At **JRE** tab
-            *   Select **Java 8** for JRE.
-            *   If it's not installed, download and install Java 8. Afterward, return to here and select Java 8.
+        *   Select **Java 8** for JRE.
+        *   If it's not installed, download and install Java 8. Afterward, return to here and select Java 8.
 
 ## 4. Install and Configure Elastic Search
 *   Download Elasticsearch 5.X
 *   Install Elasticsearch
-*   Start Elasticsearch then run `mms-mappings.sh`
+*   Start Elasticsearch then run `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms-mappings.sh`
 
 ## 5. Install and Configure Postgresql
 *   Download Postgresql 9.x
     * If using Postgresql as the database for Alfresco, Postgresl 9.3 is the latest supported version
 *   Install Postgresql
 *   Start Postgresql server
-*   Create a user and database for mms and then execute `mms.sql`
+*   Connect to the Postgresql server and:
+    *  Create a `mms` user (referenced by pg.user in your `mms-ent/mms.properties` file)
+       *  Ensure you set a password (referenced by pg.pass)
+    *  Create a `mms` database ( referenced by pg.name)
+*   Execute `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql`
+    * windows CMD e.g.: `psql -h localhost -p 5432 -U mms -d mms -v schema=public < C:\path\to\mms\repo\mms.sql`
 
 ## 6. Install and Configure ActiveMQ
 *   Download ActiveMQ

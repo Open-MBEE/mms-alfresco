@@ -77,12 +77,14 @@ public class ModelsGet extends ModelGet {
         WorkspaceNode workspace = getWorkspace(req);
         boolean wsFound = workspace != null && workspace.exists();
         if (!wsFound) {
-            String wsId = getRefId(req);
-            if (wsId != null && wsId.equalsIgnoreCase("master")) {
-                wsFound = true;
-            } else {
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Workspace with id, %s not found",
-                    wsId + (dateTime == null ? "" : " at " + dateTime));
+            String refId = getRefId(req);
+            String projectId = getProjectId(req);
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            if (refId != null && refId.equalsIgnoreCase("master")) {
+                return true;
+            } else if (refId != null && !emsNodeUtil.refExists(refId)) {
+                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
+                    refId + (dateTime == null ? "" : " at " + dateTime));
                 return false;
             }
         }
@@ -121,7 +123,6 @@ public class ModelsGet extends ModelGet {
             JSONObject top = NodeUtil.newJsonObject();
             if (elementsJson.length() > 0) {
                 top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
-                //top.put(Sjm.ELEMENTS, elementsJson);
                 String[] accepts = req.getHeaderValues("Accept");
                 String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
                 if (!Utils.isNullOrEmpty(response.toString()))
@@ -172,49 +173,10 @@ public class ModelsGet extends ModelGet {
             for (int i = 0; i < elementsToFindJson.length(); i++) {
                 uniqueElements.add(elementsToFindJson.getJSONObject(i).getString(Sjm.SYSMLID));
             }
-            handleMountSearch(mountsJson, extended, maxDepth, uniqueElements, result);
+            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, result);
             return result;
         } else {
             return new JSONArray();
-        }
-    }
-
-    protected static void handleMountSearch(JSONObject mountsJson, boolean extended, final Long maxDepth, Set<String> elementsToFind, JSONArray result)
-        throws JSONException, SQLException, IOException {
-
-        if (elementsToFind.isEmpty()) {
-            return;
-        }
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
-        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind);
-        Set<String> foundElements = new HashSet<>();
-        JSONArray curFound = new JSONArray();
-        for (int index = 0; index < nodeList.length(); index++) {
-            String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
-            if (maxDepth != 0) {
-                JSONArray children = emsNodeUtil.getChildren(id, maxDepth);
-                for (int i = 0; i < children.length(); i++) {
-                    String cid = children.getJSONObject(i).getString(Sjm.SYSMLID);
-                    if (foundElements.contains(cid)) {
-                        continue;
-                    }
-                    curFound.put(children.getJSONObject(i));
-                    foundElements.add(cid);
-                }
-            } else {
-                curFound.put(nodeList.getJSONObject(index));
-                foundElements.add(id);
-            }
-        }
-        curFound = extended ? emsNodeUtil.addExtendedInformation(curFound) : curFound;
-        for (int i = 0; i < curFound.length(); i++) {
-            result.put(curFound.get(i));
-        }
-        elementsToFind.removeAll(foundElements);
-        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
-
-        for (int i = 0; i < mountsArray.length(); i++) {
-            handleMountSearch(mountsArray.getJSONObject(i), extended, maxDepth, elementsToFind, result);
         }
     }
 }

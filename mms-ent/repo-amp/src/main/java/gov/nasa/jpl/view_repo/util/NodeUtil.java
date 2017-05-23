@@ -4194,12 +4194,16 @@ public class NodeUtil {
         if (iss != null) {
             if (iss.has("value") && iss.has("type") && iss.getString("type").equals("LiteralString")) {
                 String string = iss.getString("value");
-                JSONObject json = new JSONObject(string);
-                Set<Object> sources = findKeyValueInJsonObject(json, "source");
-                for (Object source : sources) {
-                    if (source instanceof String) {
-                        documentEdges.add(new Pair<>(sysmlId, (String) source));
+                try {
+                    JSONObject json = new JSONObject(string);
+                    Set<Object> sources = findKeyValueInJsonObject(json, "source");
+                    for (Object source : sources) {
+                        if (source instanceof String) {
+                            documentEdges.add(new Pair<>(sysmlId, (String) source));
+                        }
                     }
+                } catch (JSONException ex) {
+                    //case if value string isn't actually a serialized jsonobject
                 }
             }
         }

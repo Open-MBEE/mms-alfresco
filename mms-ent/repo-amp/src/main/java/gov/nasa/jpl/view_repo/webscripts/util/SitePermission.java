@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Logger;
@@ -13,10 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.db.PostgresHelper;
 
 public class SitePermission {
 
@@ -138,7 +136,7 @@ public class SitePermission {
             return true;
         }
 
-        if (element != null && element.has(Sjm.SYSMLID)) {
+        if (orgId != null || (element != null && element.has(Sjm.SYSMLID))) {
             if (Utils.isNullOrEmpty(orgId)) {
                 orgId = getElementSiteId(element.getString(Sjm.SYSMLID), projectId, refId);
             }
@@ -153,8 +151,11 @@ public class SitePermission {
                         if (siteNode == null) {
                             return false;
                         } else {
-                            EmsScriptNode targetNode = siteNode.childByNamePath("/" + projectId + (refId != null ? "/refs/" + refId : ""));
-
+                            EmsScriptNode targetNode = null;
+                            if (projectId != null) {
+                                targetNode =
+                                    siteNode.childByNamePath("/" + projectId + (refId != null ? "/refs/" + refId : ""));
+                            }
                             if (targetNode == null) {
                                 targetNode = siteNode;
                             }
@@ -163,8 +164,6 @@ public class SitePermission {
                             if (permission == Permission.READ) {
                                 if (permCache.containsKey(targetId) && permCache.get(targetId).containsKey(Permission.READ)) {
                                     hasPerm = permCache.get(targetId).get(Permission.READ);
-                                } else if (element.optString(Sjm.SYSMLID).contains("master_")) {
-                                    hasPerm = true;
                                 } else {
                                     hasPerm = siteNode.checkPermissions("Read");
                                     Map<Permission, Boolean> permMap = new HashMap<>();
@@ -208,9 +207,16 @@ public class SitePermission {
         return false;
     }
 
-    protected static String getElementSiteId(String orgId, String projectId, String refId) {
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        return emsNodeUtil.getOrganization(orgId).getJSONObject(0).getString("orgId");
+    protected static String getElementSiteId(String sysmlid, String projectId, String refId) {
+        if (projectId == null) {
+            return sysmlid;
+        } else {
+            if (refId == null) {
+                refId = "master";
+            }
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            return emsNodeUtil.getOrganization(sysmlid).getJSONObject(0).getString("orgId");
+        }
     }
 
     /**
@@ -228,8 +234,11 @@ public class SitePermission {
     }
 
     protected static boolean isTag(String projectId, String refId) {
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        return emsNodeUtil.isTag();
+        if (projectId != null && refId != null && !refId.equals("master")) {
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            return emsNodeUtil.isTag();
+        }
+        return false;
     }
 
     protected static String findSiteId(JSONObject element, String projectId, String refId, String commitId) {
