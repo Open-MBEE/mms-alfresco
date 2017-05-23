@@ -31,7 +31,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -148,7 +147,6 @@ public class OrgGet extends AbstractJavaWebScript {
      */
     private JSONArray handleOrg(String orgId) {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
-        JSONArray filteredProjects = SitePermission.checkPermission(emsNodeUtil.getOrganization(orgId), orgId, "master", null, SitePermission.Permission.READ, null).getJSONArray("allowedElements");
         return emsNodeUtil.getOrganization(orgId);
     }
 
