@@ -6,7 +6,7 @@ Resource        ../resources.robot
 
 PostNewElementsToPAHierarchy
 	[Documentation]		"Post elements to PA"
-	[Tags]				30
+	[Tags]				V1
 	${post_json} =		Get File	    JsonData/PostElementsToPAHierarchy.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -18,9 +18,9 @@ PostNewElementsToPAHierarchy
 
 PostNewElementsToPBHierarchy
 	[Documentation]		"Post elements to PB"
-	[Tags]				31
+	[Tags]				V2
 	${post_json} =		Get File	    JsonData/PostElementsToPBHierarchy.json
-	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
+	${result} =			Post		url=${ROOT}/projects/PB/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
@@ -30,7 +30,7 @@ PostNewElementsToPBHierarchy
 
 GetElementV1FromPA
 	[Documentation]		"Get element v1 in PA, return should contain _childViews "
-	[Tags]				32
+	[Tags]				V3
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/v1		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
@@ -40,7 +40,7 @@ GetElementV1FromPA
 
 PostNewElementsToPAUpdateModel
 	[Documentation]		"post these elements to PA (update model directly to add child view)"
-	[Tags]				33
+	[Tags]				V4
 	${post_json} =		Get File	    JsonData/PostElementsToPAUpdateModel.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -52,7 +52,7 @@ PostNewElementsToPAUpdateModel
 
 GetElementV1FromPAAddChildView
 	[Documentation]		"get element v1 in PA again, return adds childview"
-	[Tags]				34
+	[Tags]				V5
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/v1		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
@@ -61,9 +61,9 @@ GetElementV1FromPAAddChildView
 	Should Match Baseline		${compare_result}
 
 PostNewElementsToPAChildView
-	[Documentation]		"post to PA (add child view) with param ?childviews=true."
-	[Tags]				35
-	${post_json} =		Get File	    JsonData/PostElementsToPAChildView.json
+	[Documentation]		"post this to PA (reorder single view) with ?childviews=true."
+	[Tags]				V6
+	${post_json} =		Get File	    JsonData/PostElementsToPAAddChildView.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements?childviews=true		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
@@ -72,4 +72,27 @@ PostNewElementsToPAChildView
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
+PostNewElementsToPAChildViewAcrossMounts
+	[Documentation]		"post this to PA (add view across mount) with childviews=true"
+	[Tags]				V7
+	${post_json} =		Get File	    JsonData/PostElementsToPAAddChildViewsAcrossMounts.json
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements?childviews=true		data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
 
+ReorderChildViewAcrossMountsFromPA
+	[Documentation]		"post this to PA (reorder with view across mount) with childviews=true"
+	[Tags]				V8
+	${post_json} =		Get File	    JsonData/ReorderChildViewAcrossMountsFromPA.json
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements?childviews=true		data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+# TODO V9 get element va via PA (check view get across mounts), should return 

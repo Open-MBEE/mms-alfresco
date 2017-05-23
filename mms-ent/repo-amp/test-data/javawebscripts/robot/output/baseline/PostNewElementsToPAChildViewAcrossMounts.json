@@ -1,0 +1,193 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_appliedStereotypeIds": [
+                "_15_0_be00301_1199377756297_348405_2678"
+            ],
+            "_editable": true,
+            "_projectId": "PA",
+            "_refId": "master",
+            "aggregation": "shared",
+            "appliedStereotypeInstanceId": "MMS_1495577749526_b6d6f352-b383-41ea-87fd-0af9ab2e5a34_asi",
+            "associationEndId": null,
+            "associationId": "MMS_1495577749526_2821b878-1b41-47f4-97ee-e34fda138c6c",
+            "clientDependencyIds": [],
+            "datatypeId": null,
+            "defaultValue": null,
+            "deploymentIds": [],
+            "documentation": "",
+            "endIds": [],
+            "id": "MMS_1495577749526_b6d6f352-b383-41ea-87fd-0af9ab2e5a34",
+            "interfaceId": null,
+            "isDerived": false,
+            "isDerivedUnion": false,
+            "isID": false,
+            "isLeaf": false,
+            "isOrdered": false,
+            "isReadOnly": false,
+            "isStatic": false,
+            "isUnique": true,
+            "lowerValue": null,
+            "mdExtensionsIds": [],
+            "name": "childView4",
+            "nameExpression": null,
+            "ownerId": "v1",
+            "qualifierIds": [],
+            "redefinedPropertyIds": [],
+            "subsettedPropertyIds": [],
+            "supplierDependencyIds": [],
+            "syncElementId": null,
+            "templateParameterId": null,
+            "type": "Property",
+            "typeId": "va",
+            "upperValue": null,
+            "visibility": "private"
+        },
+        {
+            "_appliedStereotypeIds": [],
+            "_editable": true,
+            "_projectId": "PA",
+            "_refId": "master",
+            "appliedStereotypeInstanceId": null,
+            "classifierIds": [
+                "_15_0_be00301_1199377756297_348405_2678"
+            ],
+            "clientDependencyIds": [],
+            "deploymentIds": [],
+            "documentation": "",
+            "id": "MMS_1495577749526_b6d6f352-b383-41ea-87fd-0af9ab2e5a34_asi",
+            "mdExtensionsIds": [],
+            "name": "",
+            "nameExpression": null,
+            "ownerId": "MMS_1495577749526_b6d6f352-b383-41ea-87fd-0af9ab2e5a34",
+            "slotIds": [],
+            "specification": null,
+            "stereotypedElementId": "MMS_1495577749526_b6d6f352-b383-41ea-87fd-0af9ab2e5a34",
+            "supplierDependencyIds": [],
+            "syncElementId": null,
+            "templateParameterId": null,
+            "type": "InstanceSpecification",
+            "visibility": null
+        },
+        {
+            "_appliedStereotypeIds": [],
+            "_editable": true,
+            "_projectId": "PA",
+            "_refId": "master",
+            "aggregation": "none",
+            "appliedStereotypeInstanceId": null,
+            "associationEndId": null,
+            "associationId": "MMS_1495577749526_2821b878-1b41-47f4-97ee-e34fda138c6c",
+            "clientDependencyIds": [],
+            "datatypeId": null,
+            "defaultValue": null,
+            "deploymentIds": [],
+            "documentation": "",
+            "endIds": [],
+            "id": "MMS_1495577749527_57d3de3b-b271-48d7-b240-5b70e5cd657a",
+            "interfaceId": null,
+            "isDerived": false,
+            "isDerivedUnion": false,
+            "isID": false,
+            "isLeaf": false,
+            "isOrdered": false,
+            "isReadOnly": false,
+            "isStatic": false,
+            "isUnique": true,
+            "lowerValue": null,
+            "mdExtensionsIds": [],
+            "name": "",
+            "nameExpression": null,
+            "ownerId": "MMS_1495577749526_2821b878-1b41-47f4-97ee-e34fda138c6c",
+            "qualifierIds": [],
+            "redefinedPropertyIds": [],
+            "subsettedPropertyIds": [],
+            "supplierDependencyIds": [],
+            "syncElementId": null,
+            "templateParameterId": null,
+            "type": "Property",
+            "typeId": "v1",
+            "upperValue": null,
+            "visibility": "private"
+        },
+        {
+            "_appliedStereotypeIds": [],
+            "_editable": true,
+            "_projectId": "PA",
+            "_refId": "master",
+            "appliedStereotypeInstanceId": null,
+            "clientDependencyIds": [],
+            "collaborationUseIds": [],
+            "documentation": "",
+            "elementImportIds": [],
+            "generalizationIds": [],
+            "id": "MMS_1495577749526_2821b878-1b41-47f4-97ee-e34fda138c6c",
+            "isAbstract": false,
+            "isDerived": false,
+            "isFinalSpecialization": false,
+            "isLeaf": false,
+            "mdExtensionsIds": [],
+            "memberEndIds": [
+                "MMS_1495577749526_b6d6f352-b383-41ea-87fd-0af9ab2e5a34",
+                "MMS_1495577749527_57d3de3b-b271-48d7-b240-5b70e5cd657a"
+            ],
+            "name": "",
+            "nameExpression": null,
+            "navigableOwnedEndIds": [],
+            "ownedEndIds": [
+                "MMS_1495577749527_57d3de3b-b271-48d7-b240-5b70e5cd657a"
+            ],
+            "packageImportIds": [],
+            "powertypeExtentIds": [],
+            "redefinedClassifierIds": [],
+            "representationId": null,
+            "substitutionIds": [],
+            "supplierDependencyIds": [],
+            "syncElementId": null,
+            "templateBindingIds": [],
+            "templateParameterId": null,
+            "type": "Association",
+            "useCaseIds": [],
+            "visibility": "public"
+        },
+        {
+            "_appliedStereotypeIds": [
+                "_17_0_1_232f03dc_1325612611695_581988_21583"
+            ],
+            "_childViews": [
+                {
+                    "aggregation": "composite",
+                    "id": "cv3"
+                },
+                {
+                    "aggregation": "composite",
+                    "id": "cv2"
+                },
+                {
+                    "aggregation": "composite",
+                    "id": "cv1"
+                },
+                {
+                    "aggregation": "shared",
+                    "id": "va"
+                }
+            ],
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "id": "v1",
+            "name": "v1",
+            "ownedAttributeIds": [
+                "v1p3",
+                "v1p2",
+                "v1p1",
+                "MMS_1495577749526_b6d6f352-b383-41ea-87fd-0af9ab2e5a34"
+            ],
+            "ownerId": "holding_bin_PA",
+            "type": "Class"
+        }
+    ]
+}
