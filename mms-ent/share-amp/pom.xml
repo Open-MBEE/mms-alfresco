@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>share-amp</artifactId>
-    <name>Alfresco Share AMP Module</name>
+    <artifactId>mms-share-amp</artifactId>
+    <name>MMS Alfresco Share AMP Module</name>
     <packaging>amp</packaging>
-    <description>This is a sample Alfresco Share AMP project, depended upon by the share WAR module</description>
+    <description>This is the MMS Share AMP (Alfresco Module Package)</description>
 
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
