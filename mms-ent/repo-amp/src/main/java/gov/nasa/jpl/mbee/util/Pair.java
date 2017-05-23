@@ -60,13 +60,13 @@ public class Pair<A,B> implements Comparable< Pair< A, B > >, Cloneable {
   }
 
   @Override
-  public int compareTo( Pair< A, B > o ) {
-    return compareTo( o, true );
+  public int hashCode() {
+      return this.toString().hashCode();
   }
 
   @Override
-  public int hashCode() {
-    return this.toString().hashCode();
+  public int compareTo( Pair< A, B > o ) {
+    return compareTo( o, true );
   }
 
   public int compareTo( Pair< A, B > o, boolean checkId ) {
