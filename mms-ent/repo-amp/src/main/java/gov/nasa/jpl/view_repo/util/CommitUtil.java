@@ -358,6 +358,7 @@ public class CommitUtil {
                             edge.put("child", e.second);
                             edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
                             edgeInserts.add(edge);
+                            uniqueEdge.add(edgeTest);
                         }
                     }
                 }
