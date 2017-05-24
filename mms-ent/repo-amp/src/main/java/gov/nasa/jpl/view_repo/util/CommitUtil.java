@@ -213,9 +213,9 @@ public class CommitUtil {
             try {
                 List<Pair<String, String>> plist = new LinkedList<>();
 
-                List<Map<String, String>> nodeInserts = new ArrayList<>();
-                List<Map<String, String>> edgeInserts = new ArrayList<>();
-                List<Map<String, String>> nodeUpdates = new ArrayList<>();
+                Set<Map<String, String>> nodeInserts = new HashSet<>();
+                Set<Map<String, String>> edgeInserts = new HashSet<>();
+                Set<Map<String, String>> nodeUpdates = new HashSet<>();
 
                 for (int i = 0; i < added.length(); i++) {
                     JSONObject e = added.getJSONObject(i);
@@ -340,9 +340,7 @@ public class CommitUtil {
                         edge.put("parent", e.first);
                         edge.put("child", e.second);
                         edge.put("edgetype", Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
-                        if (!edgeInserts.contains(edge)) {
-                            edgeInserts.add(edge);
-                        }
+                        edgeInserts.add(edge);
                     }
                 }
 
@@ -352,20 +350,18 @@ public class CommitUtil {
                         edge.put("parent", e.first);
                         edge.put("child", e.second);
                         edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
-                        if (!edgeInserts.contains(edge)) {
-                            edgeInserts.add(edge);
-                        }
+                        edgeInserts.add(edge);
                     }
                 }
 
                 Savepoint sp = null;
                 try {
                     sp = pgh.startTransaction();
-                    pgh.runBulkQueries(nodeInserts, "nodes");
+                    pgh.runBulkQueries(new ArrayList<>(nodeInserts), "nodes");
                     pgh.commitTransaction();
                     pgh.startTransaction();
-                    pgh.runBulkQueries(edgeInserts, "edges");
-                    pgh.runBulkQueries(nodeUpdates, "updates");
+                    pgh.runBulkQueries(new ArrayList<>(edgeInserts), "edges");
+                    pgh.runBulkQueries(new ArrayList<>(nodeUpdates), "updates");
                     pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, affectedSysmlIds);
                     pgh.commitTransaction();
                     pgh.cleanEdges();
