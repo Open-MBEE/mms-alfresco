@@ -340,7 +340,9 @@ public class CommitUtil {
                         edge.put("parent", e.first);
                         edge.put("child", e.second);
                         edge.put("edgetype", Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
-                        edgeInserts.add(edge);
+                        if (!edgeInserts.contains(edge)) {
+                            edgeInserts.add(edge);
+                        }
                     }
                 }
 
@@ -350,7 +352,9 @@ public class CommitUtil {
                         edge.put("parent", e.first);
                         edge.put("child", e.second);
                         edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
-                        edgeInserts.add(edge);
+                        if (!edgeInserts.contains(edge)) {
+                            edgeInserts.add(edge);
+                        }
                     }
                 }
 
