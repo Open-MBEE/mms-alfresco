@@ -216,6 +216,7 @@ public class CommitUtil {
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
                 List<Map<String, String>> edgeInserts = new ArrayList<>();
                 List<Map<String, String>> nodeUpdates = new ArrayList<>();
+                Set<String> uniqueEdge = new HashSet<>();
 
                 for (int i = 0; i < added.length(); i++) {
                     JSONObject e = added.getJSONObject(i);
@@ -336,23 +337,26 @@ public class CommitUtil {
 
                 for (Pair<String, String> e : addEdges) {
                     if (!pgh.edgeExists(e.first, e.second, DbEdgeTypes.CONTAINMENT)) {
-                        Map<String, String> edge = new HashMap<>();
-                        edge.put("parent", e.first);
-                        edge.put("child", e.second);
-                        edge.put("edgetype", Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
-                        if (!edgeInserts.contains(edge)) {
+                        String edgeTest = e.first + e.second + DbEdgeTypes.CONTAINMENT.getValue();
+                        if (!uniqueEdge.contains(edgeTest)) {
+                            Map<String, String> edge = new HashMap<>();
+                            edge.put("parent", e.first);
+                            edge.put("child", e.second);
+                            edge.put("edgetype", Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
                             edgeInserts.add(edge);
+                            uniqueEdge.add(edgeTest);
                         }
                     }
                 }
 
                 for (Pair<String, String> e : documentEdges) {
                     if (!pgh.edgeExists(e.first, e.second, DbEdgeTypes.VIEW)) {
-                        Map<String, String> edge = new HashMap<>();
-                        edge.put("parent", e.first);
-                        edge.put("child", e.second);
-                        edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
-                        if (!edgeInserts.contains(edge)) {
+                        String edgeTest = e.first + e.second + DbEdgeTypes.VIEW.getValue();
+                        if (!uniqueEdge.contains(edgeTest)) {
+                            Map<String, String> edge = new HashMap<>();
+                            edge.put("parent", e.first);
+                            edge.put("child", e.second);
+                            edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
                             edgeInserts.add(edge);
                         }
                     }
