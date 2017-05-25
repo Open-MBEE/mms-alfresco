@@ -447,7 +447,7 @@ public class EmsNodeUtil {
             JSONObject element = elements.getJSONObject(i);
             String elementSysmlId = element.getString(Sjm.SYSMLID);
             JSONArray relatedDocuments = new JSONArray();
-            Map<String, List<String>> relatedDocumentsMap = new HashMap<>();
+            Map<String, List<JSONObject>> relatedDocumentsMap = new HashMap<>();
             /*
              might need this later but controlled by flag
             switch (element.getString(Sjm.TYPE)) {
@@ -480,15 +480,15 @@ public class EmsNodeUtil {
             for (Pair<String, String> viewParent : immediateParents) {
                 for (String rootSysmlId : pgh.getRootParents(viewParent.first, PostgresHelper.DbEdgeTypes.VIEW)) {
                     if (relatedDocumentsMap.containsKey(rootSysmlId)) {
-                        relatedDocumentsMap.get(rootSysmlId).add(viewParent.first);
+                        relatedDocumentsMap.get(rootSysmlId).add(new JSONObject().put(Sjm.SYSMLID, viewParent.first));
                     } else {
-                        List<String> viewParents = new ArrayList<>();
-                        viewParents.add(viewParent.first);
+                        List<JSONObject> viewParents = new ArrayList<>();
+                        viewParents.add(new JSONObject().put(Sjm.SYSMLID, viewParent.first));
                         relatedDocumentsMap.put(rootSysmlId, viewParents);
                     }
                 }
             }
-            Iterator<Map.Entry<String, List<String>>> it = relatedDocumentsMap.entrySet().iterator();
+            Iterator<Map.Entry<String, List<JSONObject>>> it = relatedDocumentsMap.entrySet().iterator();
             it.forEachRemaining((pair) -> {
                 JSONArray viewIds = new JSONArray();
                 pair.getValue().forEach(viewIds::put);
