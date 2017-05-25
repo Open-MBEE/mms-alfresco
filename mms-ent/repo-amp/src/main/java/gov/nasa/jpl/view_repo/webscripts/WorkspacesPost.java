@@ -106,7 +106,7 @@ public class WorkspacesPost extends AbstractJavaWebScript{
                 json = createWorkSpace(projectId, sourceWorkspaceParam, newName, copyDateTime, reqJson, user, status);
                 statusCode = status.getCode();
             } else {
-                statusCode = responseStatus.getCode();
+                statusCode = HttpServletResponse.SC_FORBIDDEN;
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "JSON malformed\n");
