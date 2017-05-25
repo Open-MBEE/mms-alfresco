@@ -172,9 +172,7 @@ public class ModelPost extends AbstractJavaWebScript {
                     }
                 }
 
-                newElementsObject.put(Sjm.ELEMENTS, filterByPermission(extended ?
-                    emsNodeUtil.addExtendedInformation(results.getJSONArray("newElements")) :
-                    results.getJSONArray("newElements"), req));
+                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray("newElements"), req)) : filterByPermission(results.getJSONArray("newElements"), req));
                 newElementsObject.put(Sjm.COMMITID, commitId);
                 newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
                 newElementsObject.put(Sjm.CREATOR, user);
