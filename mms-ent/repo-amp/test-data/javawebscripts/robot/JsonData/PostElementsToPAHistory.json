@@ -1,0 +1,10 @@
+{
+    "elements": [
+        {
+            "id": "test_history_element",
+            "name": "initial",
+            "type": "Class",
+            "ownerId": "PA"
+        }
+    ]
+}
