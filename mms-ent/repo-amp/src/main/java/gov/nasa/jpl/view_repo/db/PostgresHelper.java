@@ -669,7 +669,7 @@ public class PostgresHelper {
                 .format("SELECT elasticid FROM \"nodes%s\" WHERE sysmlid IN (%s)", workspaceId,
                     "'" + String.join("','", sysmlids) + "'");
             if (!withDeleted) {
-                query += "AND deleted = true";
+                query += "AND deleted = false";
             }
             ResultSet rs = execQuery(query);
             while (rs.next()) {
