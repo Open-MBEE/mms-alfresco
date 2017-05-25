@@ -9,7 +9,7 @@
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
         <artifactId>mms-ent</artifactId>
-        <version>3.0.0-rc3</version>
+        <version>3.0.0-rc4</version>
     </parent>
 
     <properties>
@@ -28,7 +28,7 @@
         <!-- Demonstrating the dependency / installation of the share AMP developed in the 'share-amp' module -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>share-amp</artifactId>
+            <artifactId>mms-share-amp</artifactId>
             <version>${project.version}</version>
             <type>amp</type>
         </dependency>
@@ -68,7 +68,7 @@
                         <!-- Add / sort your AMPs here -->
                         <overlay>
                             <groupId>${project.groupId}</groupId>
-                            <artifactId>share-amp</artifactId>
+                            <artifactId>mms-share-amp</artifactId>
                             <type>amp</type>
                         </overlay>
                         <!-- Uncomment if you are using RM module -->

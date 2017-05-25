@@ -161,14 +161,14 @@ public class EmsNodeUtil {
             JSONObject projectJson = getNodeBySysmlid(projectId);
             projectJson.put("orgId", project.get("orgId").toString());
             realFound.add(projectId);
-            JSONArray mountObject = getFullMounts(projectJson.get(Sjm.SYSMLID).toString(), realFound);
+            JSONArray mountObject = getFullMounts(realFound);
             projectJson.put(Sjm.MOUNTS, mountObject);
             return projectJson;
         }
         return null;
     }
 
-    public JSONArray getFullMounts(String projectId, List<String> found) {
+    public JSONArray getFullMounts(List<String> found) {
         JSONArray mounts = new JSONArray();
         String curProjectId = this.projectId;
         String curRefId = this.workspaceName;
@@ -176,7 +176,7 @@ public class EmsNodeUtil {
         if (nodes.isEmpty()) {
             return mounts;
         }
-        Set<String> mountIds = new HashSet<String>();
+        Set<String> mountIds = new HashSet<>();
         for (int i = 0; i < nodes.size(); i++) {
             mountIds.add(nodes.get(i).getSysmlId());
         }
@@ -676,10 +676,7 @@ public class EmsNodeUtil {
         Map<String, JSONObject> updateMap = new HashMap<>();
         Map<String, Integer> indexMap = new HashMap<>();
 
-        String holdingBinSysmlid = "holding_bin";
-        if (projectId != null) {
-            holdingBinSysmlid = "holding_bin_" + projectId;
-        }
+        final String holdingBinSysmlid = (projectId != null) ? ("holding_bin_" + projectId) : "holding_bin";
 
         for (int i = 0; i < elements.length(); i++) {
             JSONObject o = elements.getJSONObject(i);
@@ -687,10 +684,6 @@ public class EmsNodeUtil {
             if (sysmlid == null || sysmlid.equals("")) {
                 sysmlid = createId();
                 o.put(Sjm.SYSMLID, sysmlid);
-            }
-            if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null || o.getString(Sjm.OWNERID)
-                .equalsIgnoreCase("null")) {
-                o.put(Sjm.OWNERID, holdingBinSysmlid);
             }
             // pregenerate the elasticId
             o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
@@ -709,6 +702,10 @@ public class EmsNodeUtil {
                 o.put(Sjm.CREATED, date);
                 o.put(Sjm.MODIFIER, user);
                 o.put(Sjm.MODIFIED, date);
+                if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null || o.getString(Sjm.OWNERID)
+                    .equalsIgnoreCase("null")) {
+                    o.put(Sjm.OWNERID, holdingBinSysmlid);
+                }
                 reorderChildViews(o, newElements, updatedElements, deletedElements);
                 elements.put(i, o);
             }
@@ -739,6 +736,10 @@ public class EmsNodeUtil {
                 }
                 object.put(Sjm.MODIFIER, user);
                 object.put(Sjm.MODIFIED, date);
+                if (!object.has(Sjm.OWNERID) || object.getString(Sjm.OWNERID) == null || object.getString(Sjm.OWNERID)
+                    .equalsIgnoreCase("null")) {
+                    object.put(Sjm.OWNERID, holdingBinSysmlid);
+                }
                 reorderChildViews(object, newElements, updatedElements, deletedElements);
                 elements.put(indexMap.get(id), object);
             });
