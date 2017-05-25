@@ -666,8 +666,11 @@ public class PostgresHelper {
 
         try {
             String query = String
-                .format("SELECT elasticid FROM \"nodes%s\" WHERE sysmlid IN (%s) AND deleted = %b", workspaceId,
-                    "'" + String.join("','", sysmlids) + "'", withDeleted);
+                .format("SELECT elasticid FROM \"nodes%s\" WHERE sysmlid IN (%s)", workspaceId,
+                    "'" + String.join("','", sysmlids) + "'");
+            if (!withDeleted) {
+                query += "AND deleted = true";
+            }
             ResultSet rs = execQuery(query);
             while (rs.next()) {
                 elasticIds.add(rs.getString(1));
