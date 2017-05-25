@@ -446,11 +446,10 @@ public class EmsNodeUtil {
         for (int i = 0; i < elements.length(); i++) {
             JSONObject element = elements.getJSONObject(i);
             String elementSysmlId = element.getString(Sjm.SYSMLID);
-            JSONArray properties = new JSONArray();
-            JSONArray slots = new JSONArray();
             JSONArray relatedDocuments = new JSONArray();
             Map<String, List<String>> relatedDocumentsMap = new HashMap<>();
-
+            /*
+             might need this later but controlled by flag
             switch (element.getString(Sjm.TYPE)) {
                 case "Property":
                     if (existing.containsKey(element.getString(Sjm.OWNERID))) {
@@ -474,24 +473,7 @@ public class EmsNodeUtil {
                         existing.put(element.getString(Sjm.SYSMLID), element);
                     }
             }
-
-            JSONArray children = getChildren(elementSysmlId, 2L);
-            for (int ii = 0; ii < children.length(); ii++) {
-                JSONObject child = children.getJSONObject(ii);
-                switch (child.getString(Sjm.TYPE)) {
-                    case "Property":
-                        properties.put(child);
-                        if (!element.has(Sjm.PROPERTIES)) {
-                            element.put(Sjm.PROPERTIES, properties);
-                        }
-                    case "Slot":
-                        slots.put(child);
-                        if (!element.has(Sjm.SLOTS)) {
-                            element.put(Sjm.SLOTS, slots);
-                        }
-                }
-            }
-
+            */
             Set<Pair<String, String>> immediateParents =
                 pgh.getImmediateParents(elementSysmlId, PostgresHelper.DbEdgeTypes.VIEW);
 
@@ -519,7 +501,7 @@ public class EmsNodeUtil {
             });
             element.put(Sjm.RELATEDDOCUMENTS, relatedDocuments);
 
-            results.put(addExtendedInformationForElement(element));
+            results.put(element);
         }
 
         return results;
