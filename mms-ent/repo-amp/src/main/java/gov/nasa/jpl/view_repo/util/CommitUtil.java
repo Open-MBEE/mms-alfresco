@@ -181,7 +181,7 @@ public class CommitUtil {
         return true;
     }
 
-    private static boolean processDeltasForDb(JSONObject delta, String commitElasticId, String projectId,
+    private static boolean processDeltasForDb(JSONObject delta, String projectId,
         String workspaceId, JSONObject jmsPayload, boolean withChildViews) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
@@ -191,10 +191,12 @@ public class CommitUtil {
 
         //Boolean initialCommit = pgh.isInitialCommit();
 
-        JSONArray added = delta.getJSONObject("processed").optJSONArray("addedElements");
-        JSONArray updated = delta.getJSONObject("processed").optJSONArray("updatedElements");
-        JSONArray deleted = delta.getJSONObject("processed").optJSONArray("deletedElements");
-        String creator = delta.getString("_creator");
+        JSONArray added = delta.optJSONArray("addedElements");
+        JSONArray updated = delta.optJSONArray("updatedElements");
+        JSONArray deleted = delta.optJSONArray("deletedElements");
+
+        String creator = delta.getJSONObject("commit").getString(Sjm.CREATOR);
+        String commitElasticId = delta.getJSONObject("commit").getString(Sjm.ELASTICID);
 
         JSONObject jmsWorkspace = new JSONObject();
         JSONArray jmsAdded = new JSONArray();
@@ -216,6 +218,7 @@ public class CommitUtil {
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
                 List<Map<String, String>> edgeInserts = new ArrayList<>();
                 List<Map<String, String>> nodeUpdates = new ArrayList<>();
+                Set<String> uniqueEdge = new HashSet<>();
 
                 for (int i = 0; i < added.length(); i++) {
                     JSONObject e = added.getJSONObject(i);
@@ -336,21 +339,29 @@ public class CommitUtil {
 
                 for (Pair<String, String> e : addEdges) {
                     if (!pgh.edgeExists(e.first, e.second, DbEdgeTypes.CONTAINMENT)) {
-                        Map<String, String> edge = new HashMap<>();
-                        edge.put("parent", e.first);
-                        edge.put("child", e.second);
-                        edge.put("edgetype", Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
-                        edgeInserts.add(edge);
+                        String edgeTest = e.first + e.second + DbEdgeTypes.CONTAINMENT.getValue();
+                        if (!uniqueEdge.contains(edgeTest)) {
+                            Map<String, String> edge = new HashMap<>();
+                            edge.put("parent", e.first);
+                            edge.put("child", e.second);
+                            edge.put("edgetype", Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
+                            edgeInserts.add(edge);
+                            uniqueEdge.add(edgeTest);
+                        }
                     }
                 }
 
                 for (Pair<String, String> e : documentEdges) {
                     if (!pgh.edgeExists(e.first, e.second, DbEdgeTypes.VIEW)) {
-                        Map<String, String> edge = new HashMap<>();
-                        edge.put("parent", e.first);
-                        edge.put("child", e.second);
-                        edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
-                        edgeInserts.add(edge);
+                        String edgeTest = e.first + e.second + DbEdgeTypes.VIEW.getValue();
+                        if (!uniqueEdge.contains(edgeTest)) {
+                            Map<String, String> edge = new HashMap<>();
+                            edge.put("parent", e.first);
+                            edge.put("child", e.second);
+                            edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
+                            edgeInserts.add(edge);
+                            uniqueEdge.add(edgeTest);
+                        }
                     }
                 }
 
@@ -406,7 +417,7 @@ public class CommitUtil {
      * @return true if publish completed
      * @throws JSONException
      */
-    public static boolean sendDeltas(JSONObject deltaJson, String commitElasticId, String projectId, String workspaceId,
+    public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId,
         String source, boolean withChildViews) throws JSONException {
         boolean jmsStatus;
 
@@ -418,7 +429,7 @@ public class CommitUtil {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        if (!processDeltasForDb(deltaJson, commitElasticId, projectId, workspaceId, jmsPayload, withChildViews)) {
+        if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews)) {
             return false;
         }
 

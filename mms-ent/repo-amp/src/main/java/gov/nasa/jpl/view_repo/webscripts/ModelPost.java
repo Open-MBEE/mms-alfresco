@@ -142,7 +142,6 @@ public class ModelPost extends AbstractJavaWebScript {
     }
 
     protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user, String contentType) {
-        JSONObject commit = new JSONObject();
         JSONObject newElementsObject = new JSONObject();
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
@@ -159,33 +158,15 @@ public class ModelPost extends AbstractJavaWebScript {
             JSONObject postJson = new JSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             //logger.debug(String.format("ModelPost processing %d elements.", elements.length()));
+            Set<String> oldElasticIds = new HashSet<>();
+            JSONObject results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), myWorkspace, user, oldElasticIds);
+            String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
-            Map<String, JSONObject> foundElements = new HashMap<>();
-            Map<String, String> foundParentElements = new HashMap<>();
-
-            JSONArray updatedElements = new JSONArray();
-            JSONArray deletedElements = new JSONArray();
-            Set<String> oldElements = new HashSet<>();
-            JSONObject results = emsNodeUtil.insertIntoElastic(emsNodeUtil.processElements(emsNodeUtil.processImageData(postJson.getJSONArray(Sjm.ELEMENTS), myWorkspace), user, foundElements, updatedElements, deletedElements, oldElements), foundParentElements, updatedElements, deletedElements);
-
-            JSONObject formattedCommit = emsNodeUtil.processCommit(results, user, foundElements, foundParentElements);
-            // this logic needs to be fixed because emsNodesUtil does not pass a formatted commit
-            emsNodeUtil.insertCommitIntoElastic(formattedCommit);
-            String commitResults = formattedCommit.getJSONObject("commit").getString(Sjm.ELASTICID);
-
-            //logger.debug(String.format("Processing finished\nIndexed: %s", results));
-
-            results = emsNodeUtil.addCommitId(results, commitResults);
-
-            // :TODO this object is not the formatted commit object
-            commit.put("processed", results);
-            commit.put(Sjm.CREATOR, user);
-
-            if (CommitUtil.sendDeltas(commit, commitResults, projectId, refId, requestSourceApplication, withChildViews)) {
-                if (!oldElements.isEmpty()) {
-                    emsNodeUtil.updateElasticRemoveRefs(oldElements);//can be backgrounded if need be
+            if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, withChildViews)) {
+                if (!oldElasticIds.isEmpty()) {
+                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);//can be backgrounded if need be
                 }
-                Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitResults);
+                Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
 
                 if (withChildViews) {
                     for (int i = 0; i < results.getJSONArray("newElements").length(); i++) {
@@ -194,10 +175,8 @@ public class ModelPost extends AbstractJavaWebScript {
                     }
                 }
 
-                newElementsObject.put(Sjm.ELEMENTS, filterByPermission(extended ?
-                    emsNodeUtil.addExtendedInformation(results.getJSONArray("newElements")) :
-                    results.getJSONArray("newElements"), req));
-                newElementsObject.put(Sjm.COMMITID, commitResults);
+                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray("newElements"), req)) : filterByPermission(results.getJSONArray("newElements"), req));
+                newElementsObject.put(Sjm.COMMITID, commitId);
                 newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
                 newElementsObject.put(Sjm.CREATOR, user);
                 // Timestamp needs to be ISO format

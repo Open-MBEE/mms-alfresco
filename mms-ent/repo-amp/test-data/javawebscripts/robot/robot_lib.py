@@ -215,6 +215,26 @@ def compare_json(test_name):  # , json_object, filters):
         return False
     return ordered(baseline_json) == ordered(result_json)
 
+# def id_exists(test_name):  # , json_object, filters):
+#     """
+#     Takes a JSON object and looks for the baseline json that is specified by test_name.
+#     :param test_name:
+#     :param json_object:
+#     :param filters:
+#     :param create_baseline:
+#     :return:
+#     """
+#     result_json = None
+#     try:
+#         with open("output/results/{}.json".format(test_name.replace(' ', ''))) as result_file:
+#             result_json = json.load(result_file)
+#     except:
+#         print("Failed to open the result json")
+#         return False
+#     #look for values NEW_ASSOC, NEW_PROP1, NEW_PROP2
+#     if len(result_json) == 6
+#         return true
+#     return "Length is not 6" + len(result_json)
 
 def clear_results_dir():
     try:

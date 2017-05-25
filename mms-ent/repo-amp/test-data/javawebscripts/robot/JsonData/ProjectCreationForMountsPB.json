@@ -1,0 +1,9 @@
+{
+    "projects": [
+        {
+            "id": "PB",
+            "name": "mount test project PB",
+            "type": "Project"
+        }
+    ]
+}
