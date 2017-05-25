@@ -656,14 +656,21 @@ public class PostgresHelper {
     }
 
     public List<String> getElasticIdsFromSysmlIds(List<String> sysmlids) {
+        return getElasticIdsFromSysmlIds(sysmlids, false);
+    }
+
+    public List<String> getElasticIdsFromSysmlIds(List<String> sysmlids, boolean withDeleted) {
         List<String> elasticIds = new ArrayList<>();
         if (sysmlids == null || sysmlids.isEmpty())
             return elasticIds;
 
         try {
             String query = String
-                .format("SELECT elasticid FROM \"nodes%s\" WHERE sysmlid IN (%s) AND deleted = %b", workspaceId,
-                    "'" + String.join("','", sysmlids) + "'", false);
+                .format("SELECT elasticid FROM \"nodes%s\" WHERE sysmlid IN (%s)", workspaceId,
+                    "'" + String.join("','", sysmlids) + "'");
+            if (!withDeleted) {
+                query += "AND deleted = true";
+            }
             ResultSet rs = execQuery(query);
             while (rs.next()) {
                 elasticIds.add(rs.getString(1));

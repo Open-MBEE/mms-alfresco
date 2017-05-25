@@ -181,7 +181,7 @@ public class CommitUtil {
         return true;
     }
 
-    private static boolean processDeltasForDb(JSONObject delta, String commitElasticId, String projectId,
+    private static boolean processDeltasForDb(JSONObject delta, String projectId,
         String workspaceId, JSONObject jmsPayload, boolean withChildViews) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
@@ -191,10 +191,12 @@ public class CommitUtil {
 
         //Boolean initialCommit = pgh.isInitialCommit();
 
-        JSONArray added = delta.getJSONObject("processed").optJSONArray("addedElements");
-        JSONArray updated = delta.getJSONObject("processed").optJSONArray("updatedElements");
-        JSONArray deleted = delta.getJSONObject("processed").optJSONArray("deletedElements");
-        String creator = delta.getString("_creator");
+        JSONArray added = delta.optJSONArray("addedElements");
+        JSONArray updated = delta.optJSONArray("updatedElements");
+        JSONArray deleted = delta.optJSONArray("deletedElements");
+
+        String creator = delta.getJSONObject("commit").getString(Sjm.CREATOR);
+        String commitElasticId = delta.getJSONObject("commit").getString(Sjm.ELASTICID);
 
         JSONObject jmsWorkspace = new JSONObject();
         JSONArray jmsAdded = new JSONArray();
@@ -415,7 +417,7 @@ public class CommitUtil {
      * @return true if publish completed
      * @throws JSONException
      */
-    public static boolean sendDeltas(JSONObject deltaJson, String commitElasticId, String projectId, String workspaceId,
+    public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId,
         String source, boolean withChildViews) throws JSONException {
         boolean jmsStatus;
 
@@ -427,7 +429,7 @@ public class CommitUtil {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        if (!processDeltasForDb(deltaJson, commitElasticId, projectId, workspaceId, jmsPayload, withChildViews)) {
+        if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews)) {
             return false;
         }
 
