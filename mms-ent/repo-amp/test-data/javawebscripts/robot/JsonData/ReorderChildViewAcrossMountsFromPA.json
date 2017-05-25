@@ -1,0 +1,27 @@
+{
+    "elements": [
+        {
+            "type": "Class",
+            "id": "v1",
+            "_childViews": [
+                {
+                    "aggregation": "shared",
+                    "id": "va"
+                },
+                {
+                    "aggregation": "composite",
+                    "id": "cv2"
+                },
+                {
+                    "aggregation": "composite",
+                    "id": "cv1"
+                },
+                {
+                    "aggregation": "composite",
+                    "id": "cv3"
+                },
+            ],
+            "name": "v1",
+        }
+    ]
+}
