@@ -545,22 +545,16 @@ public class CommitUtil {
     }
 
     // make sure only one branch is made at a time
-    public static synchronized boolean sendBranch(String projectId, JSONObject src, JSONObject created, String elasticId, Boolean isTag, String source) throws JSONException {
+    public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created, String elasticId, Boolean isTag, String source) throws JSONException {
         // FIXME: need to include branch in commit history
+        JSONObject branchJson = new JSONObject();
+        branchJson.put("sourceRef", src);
+        branchJson.put("createdRef", created);
+        branchJson.put("source", source);
+        branchJson.put("status", "creating");
+
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
-            JSONObject branchJson = new JSONObject();
-
-            // TODO
-            // have to create a new node for the holding bin?? and also put a corresponding element in
-            // elastic
-
-            branchJson.put("sourceRef", src); // branch
-            // source
-            branchJson.put("createdRef", created); // created
-
-            branchJson.put("source", source);
-
             String srcId = src.optString(Sjm.SYSMLID);
 
             PostgresHelper pgh = new PostgresHelper(srcId);
@@ -580,7 +574,7 @@ public class CommitUtil {
         });
         executor.shutdown();
 
-        return true;
+        return branchJson;
     }
 
     public static JSONObject getWorkspaceDetails(EmsScriptNode ws, Date date) {
