@@ -11,6 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Logger;
@@ -545,34 +547,40 @@ public class CommitUtil {
     // make sure only one branch is made at a time
     public static synchronized boolean sendBranch(String projectId, JSONObject src, JSONObject created, String elasticId, Boolean isTag, String source) throws JSONException {
         // FIXME: need to include branch in commit history
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            JSONObject branchJson = new JSONObject();
 
-        JSONObject branchJson = new JSONObject();
+            // TODO
+            // have to create a new node for the holding bin?? and also put a corresponding element in
+            // elastic
 
-        // TODO
-        // have to create a new node for the holding bin?? and also put a corresponding element in
-        // elastic
+            branchJson.put("sourceRef", src); // branch
+            // source
+            branchJson.put("createdRef", created); // created
 
-        branchJson.put("sourceRef", src); // branch
-        // source
-        branchJson.put("createdRef", created); // created
+            branchJson.put("source", source);
 
-        branchJson.put("source", source);
+            String srcId = src.optString(Sjm.SYSMLID);
 
-        String srcId = src.optString(Sjm.SYSMLID);
+            PostgresHelper pgh = new PostgresHelper(srcId);
+            pgh.setProject(projectId);
 
-        PostgresHelper pgh = new PostgresHelper(srcId);
-        pgh.setProject(projectId);
+            try {
+                pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId,
+                    isTag);
+                branchJson.put("status", "created");
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                branchJson.put("status", "failed");
+                e.printStackTrace();
+            }
 
-        try {
-            pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId, isTag);
-            branchJson.put("status", "created");
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            branchJson.put("status", "failed");
-            e.printStackTrace();
-        }
+            sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
+        });
+        executor.shutdown();
 
-        return sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
+        return true;
     }
 
     public static JSONObject getWorkspaceDetails(EmsScriptNode ws, Date date) {
