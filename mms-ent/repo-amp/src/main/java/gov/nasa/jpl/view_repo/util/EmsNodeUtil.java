@@ -1305,7 +1305,9 @@ public class EmsNodeUtil {
     private Map<String, JSONObject> convertToMap(JSONArray elements) {
         Map<String, JSONObject> result = new HashMap<>();
         for (int i = 0; i < elements.length(); i++) {
-            result.put(elements.getJSONObject(i).getString(Sjm.SYSMLID), elements.getJSONObject(i));
+            if (elements.getJSONObject(i).optString(Sjm.SYSMLID) != null) {
+                result.put(elements.getJSONObject(i).getString(Sjm.SYSMLID), elements.getJSONObject(i));
+            }
         }
 
         return result;
