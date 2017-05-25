@@ -127,9 +127,8 @@ public class MmsModelDelete extends AbstractJavaWebScript {
             commitElements.put("movedElements", new JSONArray());
             commitElements.put("deletedElements", elements);
             Map<String, JSONObject> foundElements = new HashMap<>();
-            Map<String, String> foundParentElements = new HashMap<>();
             JSONObject formattedCommit =
-                emsNodeUtil.processCommit(commitElements, user, foundElements, foundParentElements);
+                emsNodeUtil.processCommit(commitElements, user, foundElements);
             String commitResults = emsNodeUtil.insertCommitIntoElastic(formattedCommit);
             emsNodeUtil.insertCommitIntoPostgres(commitResults);
             result.put(Sjm.ELEMENTS, elements);

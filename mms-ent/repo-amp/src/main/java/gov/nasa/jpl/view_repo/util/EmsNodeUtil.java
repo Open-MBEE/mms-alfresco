@@ -273,11 +273,11 @@ public class EmsNodeUtil {
     }
 
     public JSONArray getNodesBySysmlids(Set<String> sysmlids) {
-        return getNodesBySysmlids(sysmlids, true);
+        return getNodesBySysmlids(sysmlids, true, false);
     }
 
-    public JSONArray getNodesBySysmlids(Set<String> sysmlids, boolean withChildViews) {
-        List<String> elasticids = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids));
+    public JSONArray getNodesBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
+        List<String> elasticids = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids), withDeleted);
         JSONArray elementsFromElastic = new JSONArray();
         try {
             elementsFromElastic = eh.getElementsFromElasticIds(elasticids);
@@ -618,8 +618,7 @@ public class EmsNodeUtil {
         return commitElements;
     }
 
-    public JSONObject processCommit(JSONObject elements, String user, Map<String, JSONObject> foundElements,
-        Map<String, String> foundParentElements) {
+    public JSONObject processCommit(JSONObject elements, String user, Map<String, JSONObject> foundElements) {
 
         JSONObject o = new JSONObject();
         JSONObject results = new JSONObject();
@@ -719,7 +718,7 @@ public class EmsNodeUtil {
         }
 
         if (sysmlidsToUpdate.size() > 0) {
-            JSONArray toUpdate = getNodesBySysmlids(sysmlidsToUpdate, false);
+            JSONArray toUpdate = getNodesBySysmlids(sysmlidsToUpdate, false, false);
             for (int i = 0; i < toUpdate.length(); i ++) {
                 foundElements.put(toUpdate.getJSONObject(i).getString(Sjm.SYSMLID), toUpdate.getJSONObject(i));
             }
@@ -750,6 +749,106 @@ public class EmsNodeUtil {
         }
 
         return elements;
+    }
+
+    public JSONObject processPostJson(JSONArray elements, WorkspaceNode workspace, String user) {
+
+        JSONObject result = new JSONObject();
+
+        String date = TimeUtils.toTimestamp(new Date().getTime());
+        String organization = getOrganizationFromProject(this.projectId);
+        final String holdingBinSysmlid = (this.projectId != null) ? ("holding_bin_" + this.projectId) : "holding_bin";
+
+        String commitId = UUID.randomUUID().toString();
+        JSONObject commit = new JSONObject();
+        commit.put(Sjm.ELASTICID, commitId);
+        JSONArray commitAdded = new JSONArray();
+        JSONArray commitUpdated = new JSONArray();
+
+        JSONArray addedElements = new JSONArray();
+        JSONArray updatedElements = new JSONArray();
+        JSONArray deletedElements = new JSONArray();
+        JSONArray newElements = new JSONArray();
+
+        Map<String, JSONObject> elementMap = convertToMap(elements);
+        Set<String> sysmlids = new HashSet<>();
+        elementMap.forEach((key, value) -> {
+            sysmlids.add(key);
+        });
+
+        JSONArray existingNodes = getNodesBySysmlids(sysmlids, false, true);
+        Map<String, JSONObject> existingMap = convertToMap(existingNodes);
+
+        for (int i = 0; i < elements.length(); i++) {
+            JSONObject o = elements.getJSONObject(i);
+            String sysmlid = o.optString(Sjm.SYSMLID);
+            if (sysmlid == null || sysmlid.equals("")) {
+                sysmlid = createId();
+                o.put(Sjm.SYSMLID, sysmlid);
+            }
+
+            String content = o.toString();
+            if (isImageData(content)) {
+                content = extractAndReplaceImageData(content, workspace, organization);
+                o = new JSONObject(content);
+            }
+
+            boolean added = !existingMap.containsKey(sysmlid);
+            if (!added) diffUpdateJson(o, existingMap.get(sysmlid));
+
+            // pregenerate the elasticId
+            o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
+            o.put(Sjm.COMMITID, commitId);
+            o.put(Sjm.PROJECTID, this.projectId);
+            o.put(Sjm.REFID, this.workspaceName);
+
+            o.put(Sjm.MODIFIER, user);
+            o.put(Sjm.MODIFIED, date);
+            if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null || o.getString(Sjm.OWNERID).equalsIgnoreCase("null")) {
+                o.put(Sjm.OWNERID, holdingBinSysmlid);
+            }
+            reorderChildViews(o, newElements, updatedElements, deletedElements);
+
+            if (added) {
+                logger.debug("ELEMENT ADDED!");
+                o.put(Sjm.CREATOR, user);
+                o.put(Sjm.CREATED, date);
+                addedElements.put(o);
+
+                JSONObject newObj = new JSONObject();
+                newObj.put(Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
+                newObj.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
+                commitAdded.put(newObj);
+            } else {
+                logger.debug("ELEMENT UPDATED!");
+                updatedElements.put(o);
+
+                JSONObject parent = new JSONObject();
+                if (existingMap.containsKey(sysmlid)) {
+                    parent.put("previousElasticId", existingMap.get(sysmlid).getString(Sjm.ELASTICID));
+                }
+                parent.put(Sjm.SYSMLID, sysmlid);
+                parent.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
+                commitUpdated.put(parent);
+            }
+
+            newElements.put(o);
+        }
+
+        result.put("addedElements", addedElements);
+        result.put("updatedElements", updatedElements);
+        result.put("newElements", newElements);
+        result.put("deletedElements", deletedElements);
+
+        commit.put("added", commitAdded);
+        commit.put("updated", commitUpdated);
+        commit.put("deleted", new JSONArray());
+        commit.put(Sjm.CREATOR, user);
+        commit.put(Sjm.CREATED, date);
+
+        result.put("commit", commit);
+
+        return result;
     }
 
     public JSONObject processConfiguration(JSONObject postJson, String user, String date) {
