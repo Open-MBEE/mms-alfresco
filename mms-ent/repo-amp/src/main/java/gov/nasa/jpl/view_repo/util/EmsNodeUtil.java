@@ -209,7 +209,7 @@ public class EmsNodeUtil {
     }
 
     public Node getById(String sysmlId) {
-        return pgh.getNodeFromSysmlId(sysmlId);
+        return pgh.getNodeFromSysmlId(sysmlId, true);
     }
 
     public Boolean commitContainsElement(String elementId, String commitId) {
