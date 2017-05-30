@@ -1,4 +1,8 @@
 {
-    "id": "test_history_element",
-    "name": "master"
+    "elements": [
+        {
+            "id": "test_history_element",
+            "name": "master"
+        }
+    ]
 }

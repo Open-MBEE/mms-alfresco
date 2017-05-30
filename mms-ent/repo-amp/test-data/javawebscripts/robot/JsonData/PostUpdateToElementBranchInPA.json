@@ -1,4 +1,8 @@
 {
-    "id": "test_history_element",
-    "name": "branch"
+    "elements": [
+        {
+            "id": "test_history_element",
+            "name": "branch"
+        }
+    ]
 }

@@ -1,4 +1,8 @@
 {
-    "id": "test_history_element",
-    "name": "first"
+    "elements": [
+        {
+            "id": "test_history_element",
+            "name": "first"
+        }
+    ]
 }
