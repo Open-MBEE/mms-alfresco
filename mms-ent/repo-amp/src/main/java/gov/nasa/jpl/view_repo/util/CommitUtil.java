@@ -565,6 +565,12 @@ public class CommitUtil {
 
         try {
             pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId, isTag);
+            eh = new ElasticHelper();
+            Set<String> elementsToUpdate = pgh.getElasticIds();
+            String payload = new JSONObject().put("script", new JSONObject().put("inline", "if(ctx._source.containsKey(\"" +
+                Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS + ".add(params.refId)} else {ctx._source." +
+                Sjm.INREFIDS + " = [params.refId]}").put("params", new JSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
+            eh.bulkUpdateElements(elementsToUpdate, payload);
             branchJson.put("status", "created");
         } catch (Exception e) {
             // TODO Auto-generated catch block

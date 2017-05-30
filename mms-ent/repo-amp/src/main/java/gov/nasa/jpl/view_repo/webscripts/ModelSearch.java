@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
@@ -109,12 +110,8 @@ public class ModelSearch extends ModelPost {
             // 3) Do this twice once for view and once for childview
             // 4) not reporting 404 on empty return
             // paginate results
-            top.put("elements", filterByPermission(elementsJson, req));
-            if (top.length() == 0) {
-                responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
-            } else {
-                top.put("elements", filterByPermission(elementsJson, req));
-            }
+            top.put("elements", elementsJson);
+
             if (!Utils.isNullOrEmpty(response.toString())) {
                 top.put("message", response.toString());
             }
@@ -141,15 +138,28 @@ public class ModelSearch extends ModelPost {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         JSONObject json = (JSONObject) req.parseContent();
-        Map<String, String> elasticResult = emsNodeUtil.search(json);
-
-        Set<String> elementList = new HashSet<>();
-        elasticResult.forEach((key, value) -> {
-            elementList.add(key);
-        });
-
         try {
-            EmsNodeUtil.handleMountSearch(emsNodeUtil.getProjectWithFullMounts(projectId, refId, null), true, true, 0L, elementList, elements);
+            JSONArray elasticResult = emsNodeUtil.search(json);
+            elasticResult = filterByPermission(elasticResult, req);
+            Map<String, JSONArray> bins = new HashMap<>();
+            for (int i = 0; i < elasticResult.length(); i++) {
+                JSONObject e = elasticResult.getJSONObject(i);
+                String key = e.getString(Sjm.PROJECTID) + " " +  e.getString(Sjm.REFID);
+                if (!bins.containsKey(key)) {
+                    bins.put(key, new JSONArray());
+                }
+                JSONArray bin = bins.get(key);
+                bin.put(e);
+            }
+            for (Entry<String, JSONArray> entry: bins.entrySet()) {
+                String[] split = entry.getKey().split(" ");
+                projectId = split[0];
+                refId = split[1];
+                EmsNodeUtil util = new EmsNodeUtil(projectId, refId);
+                util.addExtendedInformation(entry.getValue());
+                util.addExtraDocs(entry.getValue(), new HashMap<>());
+            }
+            return elasticResult;
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
