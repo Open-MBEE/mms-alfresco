@@ -1,2 +1,51 @@
 {
-    "elements": []}
+    "elements": [
+        {
+            "id": "group1",
+            "_isSite": true,
+            "type": "Package",
+            "name": "group1",
+            "ownerId": "PA"
+        },
+        {
+            "id": "group2",
+            "_isSite": true,
+            "type": "Package",
+            "name": "group2",
+            "ownerId": "group1"
+        },
+        {
+            "id": "package2",
+            "ownerId": "group2",
+            "type": "Package",
+            "name": "package2"
+        },
+        {
+            "id": "doc0",
+            "ownerId": "PA",
+            "name": "doc0"
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "type": "Class",
+        },
+        {
+            "id": "doc1",
+            "ownerId": "group1",
+            "name": "doc1"
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "type": "Class",
+        },
+        {
+            "id": "doc2",
+            "ownerId": "package2",
+            "name": "doc2"
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "type": "Class",
+        }
+    ]
+}
