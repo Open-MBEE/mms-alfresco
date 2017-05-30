@@ -1,0 +1,6 @@
+{
+    "id": "newbranch",
+    "type": "Branch",
+    "name": "newBranch",
+    "parentRefId": "master"
+}
