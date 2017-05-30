@@ -39,7 +39,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.Set;
+import java.util.HashSet;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.JsonArray;
@@ -157,12 +158,14 @@ public class ModelPost extends AbstractJavaWebScript {
             JSONObject postJson = new JSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             //logger.debug(String.format("ModelPost processing %d elements.", elements.length()));
-
-            JSONObject results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), myWorkspace, user);
+            Set<String> oldElasticIds = new HashSet<>();
+            JSONObject results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), myWorkspace, user, oldElasticIds);
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
             if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, withChildViews)) {
-
+                if (!oldElasticIds.isEmpty()) {
+                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);//can be backgrounded if need be
+                }
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
 
                 if (withChildViews) {
