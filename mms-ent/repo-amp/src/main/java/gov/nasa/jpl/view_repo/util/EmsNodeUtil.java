@@ -419,11 +419,6 @@ public class EmsNodeUtil {
         return new JSONArray();
     }
 
-    public void deleteNode(String sysmlid) {
-        pgh.deleteEdgesForNode(sysmlid);
-        pgh.deleteNode(sysmlid);
-    }
-
     public JSONArray search(JSONObject query) {
         try {
             return eh.search(query);
@@ -550,66 +545,6 @@ public class EmsNodeUtil {
 
         return result;
     }
-
-    private JSONArray createAddedOrDeleted(JSONArray elements) {
-        JSONArray commitElements = new JSONArray();
-        for (int i = 0; i < elements.length(); i++) {
-            JSONObject entry = elements.getJSONObject(i);
-            JSONObject newObj = new JSONObject();
-            newObj.put(Sjm.SYSMLID, entry.optString(Sjm.SYSMLID));
-            newObj.put(Sjm.ELASTICID, entry.optString(Sjm.ELASTICID));
-            commitElements.put(newObj);
-        }
-        return commitElements;
-    }
-
-    public JSONObject processCommit(JSONObject elements, String user, Map<String, JSONObject> foundElements) {
-
-        JSONObject o = new JSONObject();
-        JSONObject results = new JSONObject();
-        String date = TimeUtils.toTimestamp(new Date().getTime());
-
-        if (isInitialCommit()) {
-            o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
-            o.put("added", new JSONObject());
-            o.put("_creator", user);
-            o.put("_created", date);
-            results.put("commit", o);
-            return results;
-        }
-
-        // Arrays of Elements to Process
-        JSONArray addedElements = elements.optJSONArray("addedElements");
-        JSONArray updatedElements = elements.optJSONArray("updatedElements");
-        JSONArray deletedElements = elements.optJSONArray("deletedElements");
-        // Keys for result
-        JSONArray added = createAddedOrDeleted(addedElements);
-        JSONArray updated = new JSONArray();
-        JSONArray deleted = createAddedOrDeleted(deletedElements);
-
-        for (int i = 0; i < updatedElements.length(); i++) {
-            JSONObject entry = updatedElements.getJSONObject(i);
-            String sysmlid = entry.getString(Sjm.SYSMLID);
-            JSONObject parent = new JSONObject();
-            if (foundElements.containsKey(sysmlid))
-                parent.put("previousElasticId", foundElements.get(sysmlid).getString(Sjm.ELASTICID));
-            parent.put(Sjm.SYSMLID, sysmlid);
-            parent.put(Sjm.ELASTICID, entry.getString(Sjm.ELASTICID));
-            updated.put(parent);
-        }
-
-        o.put("added", added);
-        o.put("updated", updated);
-        o.put("deleted", deleted);
-        o.put("_creator", user);
-        o.put("_created", date);
-        // pregenerate the elasticId
-        o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
-        results.put("commit", o);
-
-        return results;
-    }
-
 
     public JSONObject processPostJson(JSONArray elements, WorkspaceNode workspace, String user, Set<String> oldElasticIds) {
 

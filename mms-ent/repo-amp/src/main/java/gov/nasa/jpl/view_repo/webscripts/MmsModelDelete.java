@@ -7,13 +7,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Date;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,7 +63,7 @@ public class MmsModelDelete extends AbstractJavaWebScript {
         JSONObject result = null;
 
         try {
-            result = handleRequest(req);
+            result = handleRequest(req, status, user);
             if (result != null) {
                 model.put("res", result);
             } else {
@@ -75,16 +79,22 @@ public class MmsModelDelete extends AbstractJavaWebScript {
         return model;
     }
 
-    protected JSONObject handleRequest(WebScriptRequest req) throws JSONException, IOException {
+    protected JSONObject handleRequest(WebScriptRequest req, final Status status, String user) throws JSONException, IOException {
         JSONObject result = new JSONObject();
-        JSONArray elements = new JSONArray();
-        JSONObject commitElements = new JSONObject();
+        String date = TimeUtils.toTimestamp(new Date().getTime());
+
+        JSONObject res = new JSONObject();
+        String commitId = UUID.randomUUID().toString();
         JSONObject commit = new JSONObject();
-        String user = AuthenticationUtil.getRunAsUser();
+        commit.put(Sjm.ELASTICID, commitId);
+        JSONArray commitDeleted = new JSONArray();
+        JSONArray deletedElements = new JSONArray();
+
         WorkspaceNode workspace = getWorkspace(req, user);
         String projectId = getProjectId(req);
-        JSONArray nodesToDelete = null;
-        List<String> ids = new ArrayList<>();
+        String refId = getRefId(req);
+
+        Set<String> ids = new HashSet<>();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
         Set<String> elasticIds = new HashSet<>();
         String elementId = req.getServiceMatch().getTemplateVars().get("elementId");
@@ -92,7 +102,8 @@ public class MmsModelDelete extends AbstractJavaWebScript {
             ids.add(elementId);
         } else {
             try {
-                JSONObject requestJson = (JSONObject) req.parseContent();
+                JSONObject requestJson = new JSONObject(req.getContent().getContent());
+                this.populateSourceApplicationFromJson(requestJson);
                 if (requestJson.has(Sjm.ELEMENTS)) {
                     JSONArray elementsJson = requestJson.getJSONArray(Sjm.ELEMENTS);
                     if (elementsJson != null) {
@@ -103,6 +114,7 @@ public class MmsModelDelete extends AbstractJavaWebScript {
                     }
                 }
             } catch (Exception e) {
+                logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
                 response.append("Could not parse request body");
                 responseStatus.setCode(HttpServletResponse.SC_BAD_REQUEST);
                 return null;
@@ -111,12 +123,15 @@ public class MmsModelDelete extends AbstractJavaWebScript {
 
         for (String id : ids) {
             if (emsNodeUtil.getNodeBySysmlid(id).length() > 0) {
-                nodesToDelete = emsNodeUtil.getChildren(id);
+                JSONArray nodesToDelete = emsNodeUtil.getChildren(id);
                 for (int i = 0; i < nodesToDelete.length(); i++) {
                     JSONObject node = nodesToDelete.getJSONObject(i);
-                    if (node != null) {
-                        emsNodeUtil.deleteNode(node.optString(Sjm.SYSMLID));
-                        elements.put(node);
+                    if (node != null && !elasticIds.contains(node.getString(Sjm.ELASTICID))) {
+                        deletedElements.put(node);
+                        JSONObject obj = new JSONObject();
+                        obj.put(Sjm.SYSMLID, node.getString(Sjm.SYSMLID));
+                        obj.put(Sjm.ELASTICID, node.getString(Sjm.ELASTICID));
+                        commitDeleted.put(obj);
                         elasticIds.add(node.getString(Sjm.ELASTICID));
                     }
                     logger.debug(String.format("Node: %s", node));
@@ -124,20 +139,29 @@ public class MmsModelDelete extends AbstractJavaWebScript {
             }
         }
 
-        if (elements.length() > 0) {
-            commitElements.put("addedElements", new JSONArray());
-            commitElements.put("updatedElements", new JSONArray());
-            commitElements.put("movedElements", new JSONArray());
-            commitElements.put("deletedElements", elements);
-            Map<String, JSONObject> foundElements = new HashMap<>();
-            JSONObject formattedCommit =
-                emsNodeUtil.processCommit(commitElements, user, foundElements);
-            String commitResults = emsNodeUtil.insertCommitIntoElastic(formattedCommit);
-            emsNodeUtil.insertCommitIntoPostgres(commitResults);
-            result.put(Sjm.ELEMENTS, elements);
-            result.put("commitId", commitResults);
-            emsNodeUtil.updateElasticRemoveRefs(elasticIds);
+        if (deletedElements.length() > 0) {
+            result.put("addedElements", new JSONArray());
+            result.put("updatedElements", new JSONArray());
+            result.put("deletedElements", deletedElements);
+            commit.put("added", new JSONArray());
+            commit.put("updated", new JSONArray());
+            commit.put("deleted", commitDeleted);
+            commit.put(Sjm.CREATOR, user);
+            commit.put(Sjm.CREATED, date);
+            result.put("commit", commit);
+            if (CommitUtil.sendDeltas(result, projectId, refId, requestSourceApplication, false)) {
+                if (!elasticIds.isEmpty()) {
+                    emsNodeUtil.updateElasticRemoveRefs(elasticIds);
+                }
+                res.put(Sjm.ELEMENTS, deletedElements);
+                res.put(Sjm.CREATOR, user);
+                res.put(Sjm.COMMITID, commitId);
+            } else {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
+                status.setCode(HttpServletResponse.SC_BAD_REQUEST);
+                return null;
+            }
         }
-        return result;
+        return res;
     }
 }
