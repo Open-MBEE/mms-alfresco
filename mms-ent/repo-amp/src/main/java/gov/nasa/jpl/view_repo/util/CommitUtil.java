@@ -378,6 +378,7 @@ public class CommitUtil {
                     pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, affectedSysmlIds);
                     pgh.commitTransaction();
                     pgh.cleanEdges();
+                    eh.indexElement(delta.getJSONObject("commit"));
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                 } catch (Exception e) {
                     try {
