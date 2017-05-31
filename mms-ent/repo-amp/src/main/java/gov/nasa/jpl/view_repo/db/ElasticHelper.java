@@ -319,7 +319,7 @@ public class ElasticHelper {
 
     public boolean updateElement(String id, JSONObject payload) throws JSONException, IOException {
 
-        client.execute(new Update.Builder(payload).id(id).build());
+        client.execute(new Update.Builder(payload.toString()).id(id).index(elementIndex).type("element").build());
 
         return true;
     }

@@ -560,6 +560,7 @@ public class CommitUtil {
             try {
                 pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId,
                     isTag);
+                pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                 eh = new ElasticHelper();
                 Set<String> elementsToUpdate = pgh.getElasticIds();
                 String payload = new JSONObject().put("script", new JSONObject().put("inline",
@@ -576,7 +577,7 @@ public class CommitUtil {
             }
 
             try {
-                eh.updateElement(created.getString(Sjm.SYSMLID), created);
+                eh.updateElement(elasticId, new JSONObject().put("doc", created));
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
