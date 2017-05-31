@@ -102,7 +102,8 @@ public class MmsModelDelete extends AbstractJavaWebScript {
             ids.add(elementId);
         } else {
             try {
-                JSONObject requestJson = (JSONObject) req.parseContent();
+                JSONObject requestJson = new JSONObject(req.getContent().getContent());
+                this.populateSourceApplicationFromJson(requestJson);
                 if (requestJson.has(Sjm.ELEMENTS)) {
                     JSONArray elementsJson = requestJson.getJSONArray(Sjm.ELEMENTS);
                     if (elementsJson != null) {
@@ -113,6 +114,7 @@ public class MmsModelDelete extends AbstractJavaWebScript {
                     }
                 }
             } catch (Exception e) {
+                logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
                 response.append("Could not parse request body");
                 responseStatus.setCode(HttpServletResponse.SC_BAD_REQUEST);
                 return null;
