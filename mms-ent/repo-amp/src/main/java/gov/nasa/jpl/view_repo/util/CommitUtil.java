@@ -422,15 +422,8 @@ public class CommitUtil {
      */
     public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId,
         String source, boolean withChildViews) throws JSONException {
-        boolean jmsStatus;
 
         JSONObject jmsPayload = new JSONObject();
-
-        try {
-            eh = new ElasticHelper();
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
 
         if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews)) {
             return false;
