@@ -424,6 +424,11 @@ public class CommitUtil {
         String source, boolean withChildViews) throws JSONException {
 
         JSONObject jmsPayload = new JSONObject();
+        try {
+            eh = new ElasticHelper();
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
 
         if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews)) {
             return false;
