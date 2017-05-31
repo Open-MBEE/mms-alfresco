@@ -378,15 +378,19 @@ public class CommitUtil {
                     pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, affectedSysmlIds);
                     pgh.commitTransaction();
                     pgh.cleanEdges();
-                    eh.indexElement(delta);
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                 } catch (Exception e) {
                     try {
                         pgh.rollBackToSavepoint(sp);
                     } catch (SQLException se) {
                         logger.error(String.format("%s", LogUtil.getStackTrace(se)));
-                        return false;
                     }
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                    return false;
+                }
+                try {
+                    eh.indexElement(delta); //initial commit may fail to read back but does get indexed
+                } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
                 // TODO: Add in the Alfresco Site creation based on type=SiteAndPackage
