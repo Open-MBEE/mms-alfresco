@@ -317,6 +317,13 @@ public class ElasticHelper {
         return result;
     }
 
+    public boolean updateElement(String id, JSONObject payload) throws JSONException, IOException {
+
+        client.execute(new Update.Builder(payload).id(id).build());
+
+        return true;
+    }
+
     /**
      * Index multiple JSON documents by type                         (1)
      *

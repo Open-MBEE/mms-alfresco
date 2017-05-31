@@ -171,7 +171,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         String workspaceName = null;
         String desc = null;
         String elasticId = null;
-        JSONObject branchJson = new JSONObject();
         Boolean isTag = false;
         String permission = "read";  // Default is public read permission
         EmsScriptNode finalWorkspace = null;
@@ -220,6 +219,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.put(Sjm.CREATOR, user);
             wsJson.put(Sjm.MODIFIED, date);
             wsJson.put(Sjm.MODIFIER, user);
+            wsJson.put("status", "creating");
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
 
 
@@ -243,7 +243,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                     dstWs.addAspect("ems:Workspace");
                     dstWs.setProperty("ems:workspace_name", newWorkspaceId);
 
-                    branchJson = CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag, jsonObject != null ? jsonObject.optString("source") : null);
+                    CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag, jsonObject != null ? jsonObject.optString("source") : null);
                     finalWorkspace = dstWs;
                 }
             }
@@ -279,7 +279,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.put(Sjm.MODIFIED, date);
             wsJson.put(Sjm.MODIFIER, user);
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
-            branchJson = wsJson;
             emsNodeUtil.updateRef(newWorkspaceId, workspaceName, elasticId, isTag);
         }
 
@@ -294,7 +293,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             finalWorkspace.createOrUpdateProperty("ems:permission", permission);
         }
 
-        return branchJson;
+        return wsJson;
     }
 
 }

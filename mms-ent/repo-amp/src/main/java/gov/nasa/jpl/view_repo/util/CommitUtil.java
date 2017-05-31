@@ -535,7 +535,7 @@ public class CommitUtil {
                 elementsArray.put(projectHoldingBin);
                 elementsArray.put(viewInstanceBin);
                 addedElements.put("addedElements", elementsArray);
-                jmsMsg.put("createdProject", addedElements);
+                jmsMsg.put("refs", addedElements);
                 jmsMsg.put("source", "mms");
                 sendJmsMsg(jmsMsg, TYPE_DELTA, null, projectSysmlid);
             }
@@ -548,10 +548,7 @@ public class CommitUtil {
     public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created, String elasticId, Boolean isTag, String source) throws JSONException {
         // FIXME: need to include branch in commit history
         JSONObject branchJson = new JSONObject();
-        branchJson.put("sourceRef", src);
-        branchJson.put("createdRef", created);
         branchJson.put("source", source);
-        branchJson.put("status", "creating");
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
@@ -570,13 +567,22 @@ public class CommitUtil {
                         + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
                     .put("params", new JSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
                 eh.bulkUpdateElements(elementsToUpdate, payload);
-                branchJson.put("status", "created");
+                created.put("status", "created");
+
             } catch (Exception e) {
                 // TODO Auto-generated catch block
-                branchJson.put("status", "failed");
+                created.put("status", "failed");
                 e.printStackTrace();
             }
 
+            try {
+                eh.updateElement(created.getString(Sjm.SYSMLID), created);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            branchJson.put("createdRef", created);
             sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
         });
         executor.shutdown();
