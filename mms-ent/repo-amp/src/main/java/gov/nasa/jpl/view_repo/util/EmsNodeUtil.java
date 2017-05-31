@@ -209,7 +209,7 @@ public class EmsNodeUtil {
     }
 
     public Node getById(String sysmlId) {
-        return pgh.getNodeFromSysmlId(sysmlId);
+        return pgh.getNodeFromSysmlId(sysmlId, true);
     }
 
     public Boolean commitContainsElement(String elementId, String commitId) {
@@ -419,17 +419,9 @@ public class EmsNodeUtil {
         return new JSONArray();
     }
 
-    public JSONObject deleteNode(String sysmlid) {
-        JSONObject original = getNodeBySysmlid(sysmlid);
+    public void deleteNode(String sysmlid) {
         pgh.deleteEdgesForNode(sysmlid);
         pgh.deleteNode(sysmlid);
-        try {
-            return original;
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-
-        return null;
     }
 
     public JSONArray search(JSONObject query) {

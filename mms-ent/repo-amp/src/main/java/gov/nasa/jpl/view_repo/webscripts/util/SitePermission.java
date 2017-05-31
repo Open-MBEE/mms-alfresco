@@ -195,6 +195,11 @@ public class SitePermission {
         return hasPerm;
     }
 
+    public static boolean hasPermissionToBranch(String orgId, String projectId, String refId) {
+        EmsScriptNode targetNode = getSiteNode(orgId).childByNamePath("/" + projectId + "/refs/" + refId);
+        return targetNode.checkPermissions("Read");
+    }
+
     public static boolean isAdmin() {
         List<String> userGroups = NodeUtil.getUserGroups(NodeUtil.getUserName());
         for (String adminString : adminList) {

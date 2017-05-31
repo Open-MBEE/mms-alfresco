@@ -114,10 +114,10 @@ public class MmsModelDelete extends AbstractJavaWebScript {
                 nodesToDelete = emsNodeUtil.getChildren(id);
                 for (int i = 0; i < nodesToDelete.length(); i++) {
                     JSONObject node = nodesToDelete.getJSONObject(i);
-                    JSONObject deletedElement = emsNodeUtil.deleteNode(node.optString(Sjm.SYSMLID));
-                    if (deletedElement != null) {
-                        elements.put(deletedElement);
-                        elasticIds.add(deletedElement.getString(Sjm.ELASTICID));
+                    if (node != null) {
+                        emsNodeUtil.deleteNode(node.optString(Sjm.SYSMLID));
+                        elements.put(node);
+                        elasticIds.add(node.getString(Sjm.ELASTICID));
                     }
                     logger.debug(String.format("Node: %s", node));
                 }
