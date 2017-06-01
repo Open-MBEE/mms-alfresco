@@ -713,7 +713,7 @@ public class CommitUtil {
     public static boolean createOrUpdateSiteChar(JSONObject siteChar, String projectId, String refId, ServiceRegistry services) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        String folderName = siteChar.optString(Sjm.NAME) + "_" + siteChar.optString(Sjm.SYSMLID);
+        String folderName = siteChar.optString(Sjm.NAME);
         String folderId = siteChar.optString(Sjm.SYSMLID);
 
         if (services != null && folderName != null && folderId != null) {
@@ -730,18 +730,19 @@ public class CommitUtil {
                 EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary", false, null, true);
                 if (documentLibrary == null) {
                     documentLibrary = site.createFolder("documentLibrary");
+                    documentLibrary.createOrUpdateProperty(Acm.CM_TITLE, "Document Library");
                 }
                 EmsScriptNode projectDocumentLibrary = documentLibrary.childByNamePath(projectId, false, null, true);
                 if (projectDocumentLibrary == null) {
                     projectDocumentLibrary = documentLibrary.createFolder(projectId);
                 }
-                EmsScriptNode siteCharFolder = projectDocumentLibrary.childByNamePath(folderName, false, null, true);
+                EmsScriptNode siteCharFolder = projectDocumentLibrary.childByNamePath(folderId, false, null, true);
                 if (siteCharFolder == null) {
-                    siteCharFolder = documentLibrary.createFolder(folderName);
-                    siteCharFolder.createOrUpdateProperty(Acm.ACM_ID, folderId);
+                    siteCharFolder = projectDocumentLibrary.createFolder(folderId);
+                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
                     return true;
                 } else {
-                    siteCharFolder.createOrUpdateProperty(Acm.ACM_NAME, folderName);
+                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
                     return true;
                 }
             }

@@ -155,6 +155,7 @@ public class SiteGet extends AbstractJavaWebScript {
         PostgresHelper pgh = new PostgresHelper();
         pgh.setProject(projectId);
         pgh.setWorkspace(workspace);
+        String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         ElasticHelper eh = new ElasticHelper();
         List<String> ids = new ArrayList<>();
         List<String> alfs = new ArrayList<>();
@@ -191,6 +192,8 @@ public class SiteGet extends AbstractJavaWebScript {
                 siteNodes.forEach((n)->{
                     if (n.getSysmlId().equals(o.getString(Sjm.SYSMLID))) {
                         if (n.getNodeType() == DbNodeTypes.SITEANDPACKAGE.getValue()) {
+                            String path = "path|/Sites/" + orgId + "/documentLibrary/" + projectId + "/" + n.getSysmlId();
+                            String siteUrl = "/share/page/repository/#filter=";
                             Set<DbNodeTypes> sites = new HashSet<>();
                             sites.add(DbNodeTypes.SITE);
                             sites.add(DbNodeTypes.SITEANDPACKAGE);
