@@ -376,6 +376,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String siteId = emsNodeUtil.getOrganizationFromProject(projectId);
+        String cacheKey = projectId + "_" + refId;
 
         JSONObject elements = getElementsJson(req, methodType);
 
@@ -383,26 +384,26 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             return true;
         }
 
-        if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(permissionType)) {
-            hasPerm = permCache.get(siteId).get(permissionType);
+        if (permCache.containsKey(cacheKey) && permCache.get(cacheKey).containsKey(permissionType)) {
+            hasPerm = permCache.get(cacheKey).get(permissionType);
         } else {
             hasPerm = SitePermission.hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null,
                             permissionType, null, permCache);
-            Map<Permission, Boolean> permMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
+            Map<Permission, Boolean> permMap = permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
             permMap.put(permissionType, hasPerm);
-            permCache.put(siteId, permMap);
+            permCache.put(cacheKey, permMap);
         }
         editable = hasPerm;
 
         if (permissionType != Permission.WRITE) {
-            if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(Permission.WRITE)) {
-                editable = permCache.get(siteId).get(Permission.WRITE);
+            if (permCache.containsKey(cacheKey) && permCache.get(cacheKey).containsKey(Permission.WRITE)) {
+                editable = permCache.get(cacheKey).get(Permission.WRITE);
             } else {
                 editable = SitePermission
                     .hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null, Permission.WRITE, null, permCache);
-                Map<Permission, Boolean> writePermMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
+                Map<Permission, Boolean> writePermMap = permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
                 writePermMap.put(Permission.WRITE, editable);
-                permCache.put(siteId, writePermMap);
+                permCache.put(cacheKey, writePermMap);
             }
         }
 
@@ -462,29 +463,30 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         Boolean hasPerm;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String siteId = emsNodeUtil.getSite(element.optString(Sjm.SYSMLID));
+        String cacheKey = projectId + "_" + refId;
 
-        if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(permission)) {
-            hasPerm = permCache.get(siteId).get(permission);
+        if (permCache.containsKey(cacheKey) && permCache.get(cacheKey).containsKey(permission)) {
+            hasPerm = permCache.get(cacheKey).get(permission);
         } else {
             hasPerm = SitePermission.hasPermission(siteId, element, projectId, refId, commitId, permission, response,
                             permCache);
-            Map<Permission, Boolean> permMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
+            Map<Permission, Boolean> permMap = permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
             permMap.put(permission, hasPerm);
-            permCache.put(siteId, permMap);
+            permCache.put(cacheKey, permMap);
         }
 
         if (hasPerm) {
             editable = true;
             if (permission != Permission.WRITE) {
-                if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(Permission.WRITE)) {
-                    editable = permCache.get(siteId).get(Permission.WRITE);
+                if (permCache.containsKey(cacheKey) && permCache.get(cacheKey).containsKey(Permission.WRITE)) {
+                    editable = permCache.get(cacheKey).get(Permission.WRITE);
                 } else {
                     editable = SitePermission
                         .hasPermission(siteId, element, projectId, refId, commitId, Permission.WRITE, response,
                             permCache);
-                    Map<Permission, Boolean> writePermMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
+                    Map<Permission, Boolean> writePermMap = permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
                     writePermMap.put(Permission.WRITE, editable);
-                    permCache.put(siteId, writePermMap);
+                    permCache.put(cacheKey, writePermMap);
                 }
             }
             element.put(Sjm.EDITABLE, editable);
