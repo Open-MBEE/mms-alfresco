@@ -907,7 +907,7 @@ public class EmsNodeUtil {
                 } else {
                     if (child.has(Sjm.SYSMLID) && child.getString(Sjm.SYSMLID) != null) {
                         JSONObject childNode = getNodeBySysmlid(child.getString(Sjm.SYSMLID));
-                        if (childNode.isNull(Sjm.SYSMLID) || childNode.optString(Sjm.SYSMLID).isEmpty()) {
+                        if (childNode.has(Sjm.SYSMLID) && childNode.optString(Sjm.SYSMLID) != null) {
                             String cvSysmlId = child.getString("id");
                             String aggregation = child.getString("aggregation");
 
