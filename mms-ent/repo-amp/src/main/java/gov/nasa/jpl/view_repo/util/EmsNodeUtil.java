@@ -602,7 +602,7 @@ public class EmsNodeUtil {
             if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null || o.getString(Sjm.OWNERID).equalsIgnoreCase("null")) {
                 o.put(Sjm.OWNERID, holdingBinSysmlid);
             }
-            reorderChildViews(o, newElements, updatedElements, deletedElements, commitAdded, commitUpdated, commitDeleted, commitId, user, date, oldElasticIds);
+            reorderChildViews(o, newElements, addedElements, updatedElements, deletedElements, commitAdded, commitUpdated, commitDeleted, commitId, user, date, oldElasticIds);
 
             if (added) {
                 logger.debug("ELEMENT ADDED!");
@@ -776,7 +776,7 @@ public class EmsNodeUtil {
         return o;
     }
 
-    private void reorderChildViews(JSONObject element, JSONArray newElements, JSONArray updatedElements, JSONArray deletedElements, JSONArray commitAdded, JSONArray commitUpdated, JSONArray commitDeleted, String commitId, String creator, String now, Set<String> oldElasticIds) {
+    private void reorderChildViews(JSONObject element, JSONArray newElements, JSONArray addedElements, JSONArray updatedElements, JSONArray deletedElements, JSONArray commitAdded, JSONArray commitUpdated, JSONArray commitDeleted, String commitId, String creator, String now, Set<String> oldElasticIds) {
 
         if (!element.has(Sjm.CHILDVIEWS)) {
             return;
@@ -967,6 +967,7 @@ public class EmsNodeUtil {
                             property.put(Sjm.MODIFIED, now);
 
                             newElements.put(property);
+                            addedElements.put(property);
                             JSONObject newProperty = new JSONObject();
                             newProperty.put(Sjm.SYSMLID, property.getString(Sjm.SYSMLID));
                             newProperty.put(Sjm.ELASTICID, property.getString(Sjm.ELASTICID));
@@ -1006,6 +1007,7 @@ public class EmsNodeUtil {
                             propertyASI.put(Sjm.MODIFIED, now);
 
                             newElements.put(propertyASI);
+                            addedElements.put(propertyASI);
                             JSONObject newASI = new JSONObject();
                             newASI.put(Sjm.SYSMLID, property.getString(Sjm.SYSMLID));
                             newASI.put(Sjm.ELASTICID, property.getString(Sjm.ELASTICID));
@@ -1063,6 +1065,7 @@ public class EmsNodeUtil {
                             association.put(Sjm.MODIFIED, now);
 
                             newElements.put(association);
+                            addedElements.put(association);
                             JSONObject newAssociation = new JSONObject();
                             newAssociation.put(Sjm.SYSMLID, property.getString(Sjm.SYSMLID));
                             newAssociation.put(Sjm.ELASTICID, property.getString(Sjm.ELASTICID));
@@ -1119,6 +1122,7 @@ public class EmsNodeUtil {
                             assocProperty.put(Sjm.MODIFIED, now);
 
                             newElements.put(assocProperty);
+                            addedElements.put(assocProperty);
                             JSONObject newAssociationProperty = new JSONObject();
                             newAssociationProperty.put(Sjm.SYSMLID, property.getString(Sjm.SYSMLID));
                             newAssociationProperty.put(Sjm.ELASTICID, property.getString(Sjm.ELASTICID));
