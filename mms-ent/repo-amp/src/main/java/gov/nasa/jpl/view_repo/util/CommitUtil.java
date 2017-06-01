@@ -11,6 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Logger;
@@ -382,8 +384,13 @@ public class CommitUtil {
                         pgh.rollBackToSavepoint(sp);
                     } catch (SQLException se) {
                         logger.error(String.format("%s", LogUtil.getStackTrace(se)));
-                        return false;
                     }
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                    return false;
+                }
+                try {
+                    eh.indexElement(delta); //initial commit may fail to read back but does get indexed
+                } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
                 // TODO: Add in the Alfresco Site creation based on type=SiteAndPackage
@@ -419,10 +426,8 @@ public class CommitUtil {
      */
     public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId,
         String source, boolean withChildViews) throws JSONException {
-        boolean jmsStatus;
 
         JSONObject jmsPayload = new JSONObject();
-
         try {
             eh = new ElasticHelper();
         } catch (Exception e) {
@@ -533,7 +538,7 @@ public class CommitUtil {
                 elementsArray.put(projectHoldingBin);
                 elementsArray.put(viewInstanceBin);
                 addedElements.put("addedElements", elementsArray);
-                jmsMsg.put("createdProject", addedElements);
+                jmsMsg.put("refs", addedElements);
                 jmsMsg.put("source", "mms");
                 sendJmsMsg(jmsMsg, TYPE_DELTA, null, projectSysmlid);
             }
@@ -543,42 +548,50 @@ public class CommitUtil {
     }
 
     // make sure only one branch is made at a time
-    public static synchronized boolean sendBranch(String projectId, JSONObject src, JSONObject created, String elasticId, Boolean isTag, String source) throws JSONException {
+    public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created, String elasticId, Boolean isTag, String source) throws JSONException {
         // FIXME: need to include branch in commit history
-
         JSONObject branchJson = new JSONObject();
-
-        // TODO
-        // have to create a new node for the holding bin?? and also put a corresponding element in
-        // elastic
-
-        branchJson.put("sourceRef", src); // branch
-        // source
-        branchJson.put("createdRef", created); // created
-
         branchJson.put("source", source);
 
-        String srcId = src.optString(Sjm.SYSMLID);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            String srcId = src.optString(Sjm.SYSMLID);
 
-        PostgresHelper pgh = new PostgresHelper(srcId);
-        pgh.setProject(projectId);
+            PostgresHelper pgh = new PostgresHelper(srcId);
+            pgh.setProject(projectId);
 
-        try {
-            pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId, isTag);
-            eh = new ElasticHelper();
-            Set<String> elementsToUpdate = pgh.getElasticIds();
-            String payload = new JSONObject().put("script", new JSONObject().put("inline", "if(ctx._source.containsKey(\"" +
-                Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS + ".add(params.refId)} else {ctx._source." +
-                Sjm.INREFIDS + " = [params.refId]}").put("params", new JSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
-            eh.bulkUpdateElements(elementsToUpdate, payload);
-            branchJson.put("status", "created");
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            branchJson.put("status", "failed");
-            e.printStackTrace();
-        }
+            try {
+                pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId,
+                    isTag);
+                pgh.setWorkspace(created.getString(Sjm.SYSMLID));
+                eh = new ElasticHelper();
+                Set<String> elementsToUpdate = pgh.getElasticIds();
+                String payload = new JSONObject().put("script", new JSONObject().put("inline",
+                    "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
+                        + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
+                    .put("params", new JSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
+                eh.bulkUpdateElements(elementsToUpdate, payload);
+                created.put("status", "created");
 
-        return sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                created.put("status", "failed");
+                e.printStackTrace();
+            }
+
+            try {
+                eh.updateElement(elasticId, new JSONObject().put("doc", created));
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            branchJson.put("createdRef", created);
+            sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
+        });
+        executor.shutdown();
+
+        return branchJson;
     }
 
     public static JSONObject getWorkspaceDetails(EmsScriptNode ws, Date date) {

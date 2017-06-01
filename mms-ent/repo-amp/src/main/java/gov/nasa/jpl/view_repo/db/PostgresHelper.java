@@ -702,9 +702,15 @@ public class PostgresHelper {
     }
 
     public Node getNodeFromSysmlId(String sysmlId) {
+        return getNodeFromSysmlId(sysmlId, false);
+    }
+
+    public Node getNodeFromSysmlId(String sysmlId, boolean withDeleted) {
         try {
-            String query =
-                "SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = '" + sysmlId + "' AND deleted = " + false;
+            String query = "SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = '" + sysmlId;
+            if (!withDeleted) {
+                query += "' AND deleted = " + false;
+            }
             ResultSet rs = execQuery(query);
             if (rs.next()) {
                 return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5),
