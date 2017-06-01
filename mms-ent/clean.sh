@@ -58,7 +58,10 @@ done
 
 
 if [[ "$OSTYPE" == "darwin" ]]; then
-    dropdb -U $dbuser _123456
+    dropdb -U $dbuser _PA
+    dropdb -U $dbuser _PB
+    dropdb -U $dbuser _PC
+    dropdb -U $dbuser _PD
     dropdb -U $dbuser $usedb
     createdb -U $dbuser $usedb
     psql -U $dbuser -f ./repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql $usedb
@@ -68,7 +71,31 @@ else
 
         $EXPECT <<EOD
 log_user 0
-spawn dropdb -U $dbuser _123456
+spawn dropdb -U $dbuser _PA
+expect "*Password*"
+send "$password\r"
+expect eof
+EOD
+
+        $EXPECT <<EOD
+log_user 0
+spawn dropdb -U $dbuser _PB
+expect "*Password*"
+send "$password\r"
+expect eof
+EOD
+
+        $EXPECT <<EOD
+log_user 0
+spawn dropdb -U $dbuser _PC
+expect "*Password*"
+send "$password\r"
+expect eof
+EOD
+
+        $EXPECT <<EOD
+log_user 0
+spawn dropdb -U $dbuser _PD
 expect "*Password*"
 send "$password\r"
 expect eof
@@ -99,7 +126,10 @@ expect eof
 EOD
 
     else
-        dropdb -U $dbuser _123456
+        dropdb -U $dbuser _PA
+        dropdb -U $dbuser _PB
+        dropdb -U $dbuser _PC
+        dropdb -U $dbuser _PD
         dropdb -U $dbuser $usedb
         createdb -U $dbuser $usedb
         psql -U $dbuser -f ./repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql $usedb

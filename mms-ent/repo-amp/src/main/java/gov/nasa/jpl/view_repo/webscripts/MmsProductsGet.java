@@ -62,8 +62,8 @@ public class MmsProductsGet extends AbstractJavaWebScript {
         JSONObject jsonObject = NodeUtil.newJsonObject();
 
         try {
-            jsonObject.put("documents", handleProducts(req));
-            model.put("res", NodeUtil.jsonToString(jsonObject, 2));
+            jsonObject.put("documents", filterByPermission(handleProducts(req), req));
+            model.put("res", jsonObject.toString());
         } catch (Exception e) {
             model.put("res", createResponseJson());
             if (e instanceof JSONException) {

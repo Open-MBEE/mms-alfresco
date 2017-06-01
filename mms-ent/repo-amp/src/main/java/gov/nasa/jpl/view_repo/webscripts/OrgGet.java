@@ -98,35 +98,32 @@ public class OrgGet extends AbstractJavaWebScript {
                         jsonArray = handleProject(projectId);
                         json = new JSONObject();
                         json.put("projects", filterProjectByPermission(jsonArray));
-                        if (jsonArray == null) {
+                        if (jsonArray.length() == 0) {
                             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Project does not exist\n");
                             responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+                        } else if (json.getJSONArray("projects").length() == 0) {
+                            responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
                         }
                     } else if (orgId != null) {
                         jsonArray = handleOrgProjects(orgId);
                         json = new JSONObject();
                         json.put("projects", filterProjectByPermission(jsonArray));
-                        if (jsonArray == null) {
-                            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No projects in organization\n");
-                            responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
-                        }
                     } else {
                         jsonArray = handleProjects();
                         json = new JSONObject();
                         json.put("projects", filterProjectByPermission(jsonArray));
-                        if (jsonArray == null) {
-                            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No projects found\n");
-                            responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
-                        }
                     }
 
                 } else {
                     jsonArray = handleOrg(orgId);
                     json = new JSONObject();
-                    json.put("orgs", jsonArray);
-                    if (jsonArray == null) {
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No projects found\n");
-                        responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+                    json.put("orgs", filterOrgsByPermission(jsonArray));
+                    if (orgId != null) {
+                        if (jsonArray.length() == 0) {
+                            responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+                        } else if (json.getJSONArray("orgs").length() == 0) {
+                            responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
+                        }
                     }
                 }
             }
@@ -181,7 +178,10 @@ public class OrgGet extends AbstractJavaWebScript {
     private JSONArray handleProject(String projectId) {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
         JSONArray projects = new JSONArray();
-        projects.put(emsNodeUtil.getProject(projectId));
+        JSONObject project = emsNodeUtil.getProject(projectId);
+        if (project != null) {
+            projects.put(project);
+        }
         return projects;
     }
 

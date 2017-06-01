@@ -98,10 +98,15 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             Map<String, Object> model;
 
             String projectId = req.getServiceMatch().getTemplateVars().get("projectId");
-
-            if (projectId == null || hasPermission(req, res)) {
+            Boolean perm = hasPermission(req, res);
+            if (projectId == null || (perm != null && perm)) {
                 model = executeImpl(req, status, cache);
             } else {
+                if (perm == null) {
+                    status.setMessage("Not Found!");
+                    res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
                 status.setMessage("Access denied!");
                 res.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
@@ -361,15 +366,13 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         return createTemplateParameters(req, res, model);
     }
 
-    private boolean hasPermission(WebScriptRequest req, WebScriptResponse res) {
-        Boolean hasPerm = false;
+    private Boolean hasPermission(WebScriptRequest req, WebScriptResponse res) {
         String descriptionPath = getDescription().getDescPath();
         String methodType = getMethod(descriptionPath);
         Permission permissionType = getPermissionType(methodType);
-        Map<String, Map<Permission, Boolean>> permCache = new HashMap<>();
 
-        if (isAllowablePath(descriptionPath))
-            return true;
+        //if (isAllowablePath(descriptionPath))
+          //  return true;
 
         String refId = AbstractJavaWebScript.getRefId(req);
         String projectId = AbstractJavaWebScript.getProjectId(req);
@@ -377,46 +380,18 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String siteId = emsNodeUtil.getOrganizationFromProject(projectId);
 
-        JSONObject elements = getElementsJson(req, methodType);
-
-        if (elements == null) {
-            return true;
-        }
-
-        if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(permissionType)) {
-            hasPerm = permCache.get(siteId).get(permissionType);
-        } else {
-            hasPerm = SitePermission.hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null,
-                            permissionType, null, permCache);
-            Map<Permission, Boolean> permMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
-            permMap.put(permissionType, hasPerm);
-            permCache.put(siteId, permMap);
-        }
-        editable = hasPerm;
-
-        if (permissionType != Permission.WRITE) {
-            if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(Permission.WRITE)) {
-                editable = permCache.get(siteId).get(Permission.WRITE);
-            } else {
-                editable = SitePermission
-                    .hasPermission(siteId, elements.optJSONArray(Sjm.ELEMENTS), projectId, refId, null, Permission.WRITE, null, permCache);
-                Map<Permission, Boolean> writePermMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
-                writePermMap.put(Permission.WRITE, editable);
-                permCache.put(siteId, writePermMap);
-            }
-        }
-
-        return hasPerm;
+        return SitePermission.hasPermission(siteId, projectId, refId, permissionType);
     }
 
     JSONArray filterProjectByPermission(JSONArray projects) {
         JSONArray result = new JSONArray();
-        Map<String, Map<Permission, Boolean>> permCache = new HashMap<>();
-
         for (int i = 0; i < projects.length(); i++) {
             JSONObject project = projects.optJSONObject(i);
-            if (project != null && project.has("orgId") && SitePermission.hasPermission(project.getString("orgId"), new JSONObject(), project.getString(Sjm.SYSMLID), null, null, Permission.READ, null, permCache)) {
-                result.put(project);
+            if (project != null && project.has("orgId")) {
+                Boolean perm = SitePermission.hasPermission(project.getString("orgId"), project.getString(Sjm.SYSMLID), null, Permission.READ);
+                if (perm != null && perm) {
+                    result.put(project);
+                }
             }
         }
         return result;
@@ -424,12 +399,13 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
 
     JSONArray filterOrgsByPermission(JSONArray orgs) {
         JSONArray result = new JSONArray();
-        Map<String, Map<Permission, Boolean>> permCache = new HashMap<>();
-
         for (int i = 0; i < orgs.length(); i++) {
             JSONObject org = orgs.optJSONObject(i);
-            if (org != null && org.has("orgId") && SitePermission.hasPermission(org.getString("orgId"), new JSONObject(), null, null, null, Permission.READ, null, permCache)) {
-                result.put(org);
+            if (org != null && org.has("id")) {
+                Boolean perm = SitePermission.hasPermission(org.getString("id"), null, null, Permission.READ);
+                if (perm != null && perm) {
+                    result.put(org);
+                }
             }
         }
         return result;
@@ -438,7 +414,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     JSONArray filterByPermission(JSONArray elements, WebScriptRequest req) {
         JSONArray result = new JSONArray();
         Map<String, Map<Permission, Boolean>> permCache = new HashMap<>();
-
+        Map<String, String> projectSite = new HashMap<>();
         String refId = AbstractJavaWebScript.getRefId(req);
         String projectId = AbstractJavaWebScript.getProjectId(req);
 
@@ -446,8 +422,8 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             JSONObject el = elements.optJSONObject(i);
             String refId2 = el.has(Sjm.REFID) ? el.getString(Sjm.REFID) : refId;
             String projectId2 = el.has(Sjm.PROJECTID) ? el.getString(Sjm.PROJECTID): projectId;
-            JSONObject element = filterElementByPermission(el, projectId2, refId2, null, Permission.READ, null,
-                permCache);
+            JSONObject element = filterElementByPermission(el, projectId2, refId2, Permission.READ,
+                permCache, projectSite);
             if (element != null) {
                 result.put(element);
             }
@@ -456,35 +432,40 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     }
 
     private JSONObject filterElementByPermission(JSONObject element, String projectId, String refId,
-                    String commitId, Permission permission, StringBuffer response,
-                    Map<String, Map<Permission, Boolean>> permCache) {
+                     Permission permission, Map<String, Map<Permission, Boolean>> permCache,
+                                                 Map<String, String> projectSite) {
         // temp fix to skip permission checking
         Boolean hasPerm;
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        String siteId = emsNodeUtil.getSite(element.optString(Sjm.SYSMLID));
-
-        if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(permission)) {
-            hasPerm = permCache.get(siteId).get(permission);
+        String siteId = null;
+        if (projectSite.containsKey(projectId)) {
+            siteId = projectSite.get(projectId);
         } else {
-            hasPerm = SitePermission.hasPermission(siteId, element, projectId, refId, commitId, permission, response,
-                            permCache);
-            Map<Permission, Boolean> permMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
-            permMap.put(permission, hasPerm);
-            permCache.put(siteId, permMap);
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            siteId = emsNodeUtil.getSite(element.optString(Sjm.SYSMLID));
+            projectSite.put(projectId, siteId);
+        }
+
+        String cacheKey = projectId + "_" + refId;
+
+        if (permCache.containsKey(cacheKey) && permCache.get(cacheKey).containsKey(permission)) {
+            hasPerm = permCache.get(cacheKey).get(permission);
+        } else {
+            hasPerm = SitePermission.hasPermission(siteId, projectId, refId, permission);
+            Map<Permission, Boolean> permMap = permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
+            permMap.put(permission, (hasPerm == null) ? false : hasPerm);
+            permCache.put(cacheKey, permMap);
         }
 
         if (hasPerm) {
             editable = true;
             if (permission != Permission.WRITE) {
-                if (permCache.containsKey(siteId) && permCache.get(siteId).containsKey(Permission.WRITE)) {
-                    editable = permCache.get(siteId).get(Permission.WRITE);
+                if (permCache.containsKey(cacheKey) && permCache.get(cacheKey).containsKey(Permission.WRITE)) {
+                    editable = permCache.get(cacheKey).get(Permission.WRITE);
                 } else {
-                    editable = SitePermission
-                        .hasPermission(siteId, element, projectId, refId, commitId, Permission.WRITE, response,
-                            permCache);
-                    Map<Permission, Boolean> writePermMap = permCache.containsKey(siteId) ? permCache.get(siteId) : new HashMap<>();
+                    editable = SitePermission.hasPermission(siteId, projectId, refId, Permission.WRITE);
+                    Map<Permission, Boolean> writePermMap = permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
                     writePermMap.put(Permission.WRITE, editable);
-                    permCache.put(siteId, writePermMap);
+                    permCache.put(cacheKey, writePermMap);
                 }
             }
             element.put(Sjm.EDITABLE, editable);
