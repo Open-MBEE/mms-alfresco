@@ -107,25 +107,25 @@ public class SitePermission {
         return rtnJson;
     }
 
-    public static boolean hasPermission(String orgId, String projectId, String refId, Permission permission) {
+    public static Boolean hasPermission(String orgId, String projectId, String refId, Permission permission) {
         boolean hasPerm = false;
         boolean isTag = isTag(projectId, refId);
 
         if (isAdmin() && !isTag) {
             return true;
         }
-        if (orgId == null) {
-            return false;
+        if (Utils.isNullOrEmpty(orgId)) {
+            return null;
         }
         EmsScriptNode targetNode = getSiteNode(orgId);
         if (targetNode == null) {
-            return false;
+            return null;
         }
         if (projectId != null) {
             targetNode = targetNode.childByNamePath("/" + projectId + (refId != null ? "/refs/" + refId : ""));
         }
         if (targetNode == null) {
-            return false;
+            return null;
         }
         if (permission == Permission.READ) {
             hasPerm = targetNode.checkPermissions("Read");
