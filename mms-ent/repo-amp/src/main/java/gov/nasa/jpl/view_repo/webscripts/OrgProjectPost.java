@@ -97,7 +97,7 @@ public class OrgProjectPost extends AbstractJavaWebScript {
                 SiteInfo siteInfo = services.getSiteService().getSite(orgId);
                 if (siteInfo != null) {
 
-                    CommitUtil.sendProjectDelta(projJson, projectId, orgId, user);
+                    CommitUtil.sendProjectDelta(projJson, orgId, user);
 
                     if (projectId != null && !projectId.equals(NO_SITE_ID)) {
                         statusCode = updateOrCreateProject(projJson, projectId, orgId);

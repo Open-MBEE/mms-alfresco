@@ -244,7 +244,7 @@ public class SiteGet extends AbstractJavaWebScript {
                         o.put(Sjm.NAME, name + "_no_project");
                         o.put(Sjm.SYSMLID, name + "_no_project");
                         o.put(Sjm.TYPE, "Project");
-                        CommitUtil.sendProjectDelta(o, name, orgId, user);
+                        CommitUtil.sendProjectDelta(o, orgId, user);
                     }
                 }
 
