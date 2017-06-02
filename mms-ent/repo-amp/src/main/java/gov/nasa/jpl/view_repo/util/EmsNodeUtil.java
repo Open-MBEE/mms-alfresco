@@ -461,6 +461,7 @@ public class EmsNodeUtil {
                     }
             }
             */
+            Map<String, Set<String>> docView = new HashMap<>();
             Set<Pair<String, Integer>> parentViews = pgh.getParentsOfType(elementSysmlId, PostgresHelper.DbEdgeTypes.VIEW);
            // Set<Pair<String, String>> immediateParents =
             //    pgh.getImmediateParents(elementSysmlId, PostgresHelper.DbEdgeTypes.VIEW);
@@ -474,11 +475,14 @@ public class EmsNodeUtil {
                     if (doc.second != DbNodeTypes.DOCUMENT.getValue()) {
                         continue;
                     }
-                    if (relatedDocumentsMap.containsKey(doc.first)) {
+                    if (relatedDocumentsMap.containsKey(doc.first) && !docView.get(doc.first).contains(parentView.first)) {
                         relatedDocumentsMap.get(doc.first).add(new JSONObject().put(Sjm.SYSMLID, parentView.first));
+                        docView.get(doc.first).add(parentView.first);
                     } else {
+                        docView.put(doc.first, new HashSet<String>());
                         List<JSONObject> viewParents = new ArrayList<>();
                         viewParents.add(new JSONObject().put(Sjm.SYSMLID, parentView.first));
+                        docView.get(doc.first).add(parentView.first);
                         relatedDocumentsMap.put(doc.first, viewParents);
                     }
                 }
