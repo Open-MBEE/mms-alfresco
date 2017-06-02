@@ -1459,7 +1459,7 @@ public class PostgresHelper {
                 return;
 
             execUpdate(
-                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId());
+                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId() + " OR parent = " + n.getId());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1467,15 +1467,15 @@ public class PostgresHelper {
         }
     }
 
-    public void deleteEdgesForChildNode(String sysmlId, DbEdgeTypes edgeType) {
+    public void deleteEdgesForNode(String sysmlId, boolean child, DbEdgeTypes edgeType) {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
 
             if (n == null)
                 return;
-
+            String column = child ? "child" : "parent";
             execUpdate(
-                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId() + " AND edgeType = " + edgeType
+                "DELETE FROM \"edges" + workspaceId + "\" WHERE " + column + " = " + n.getId() + " AND edgeType = " + edgeType
                     .getValue());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
