@@ -1,0 +1,39 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_appliedStereotypeIds": [
+                "_17_0_1_232f03dc_1325612611695_581988_21583"
+            ],
+            "_childViews": [
+                {
+                    "aggregation": "composite",
+                    "id": "cv3"
+                },
+                {
+                    "aggregation": "composite",
+                    "id": "cv2"
+                },
+                {
+                    "aggregation": "composite",
+                    "id": "cv1"
+                }
+            ],
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "id": "v1",
+            "name": "v1",
+            "ownedAttributeIds": [
+                "v1p3",
+                "v1p2",
+                "v1p1"
+            ],
+            "ownerId": "holding_bin_PA",
+            "type": "Class"
+        }
+    ]
+}
+

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.JsonElement;
 import org.apache.log4j.Logger;
@@ -27,6 +28,7 @@ import io.searchbox.core.Bulk;
 import io.searchbox.core.BulkResult;
 import io.searchbox.core.Get;
 import io.searchbox.core.Index;
+import io.searchbox.core.Update;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
@@ -315,6 +317,13 @@ public class ElasticHelper {
         return result;
     }
 
+    public boolean updateElement(String id, JSONObject payload) throws JSONException, IOException {
+
+        client.execute(new Update.Builder(payload.toString()).id(id).index(elementIndex).type("element").build());
+
+        return true;
+    }
+
     /**
      * Index multiple JSON documents by type                         (1)
      *
@@ -375,6 +384,33 @@ public class ElasticHelper {
         return true;
     }
 
+    public boolean bulkUpdateElements(Set<String> elements, String payload) throws JSONException, IOException {
+        int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
+        ArrayList<BulkableAction> actions = new ArrayList<>();
+        JSONArray currentList = new JSONArray();
+
+        int i = 0;
+        for (String id: elements) {
+            actions.add(new Update.Builder(payload).id(id).build());
+            currentList.put(id);
+
+            if ((((i + 1) % limit) == 0 && i != 0) || i == (elements.size() - 1)) {
+                BulkResult result = insertBulk(actions, false);
+                if (!result.isSucceeded()) {
+                    logger.error(String.format("Elastic Bulk Update Error: %s", result.getErrorMessage()));
+                    logger.error(String.format("Failed items JSON: %s", currentList));
+                    result.getFailedItems().forEach((item) -> {
+                        logger.error(String.format("Failed item: %s", item.error));
+                    });
+                    //return false;
+                }
+                actions.clear();
+            }
+            i++;
+        }
+        return true;
+    }
+
     /**
      * Helper method for making bulkAPI requests                       (1)
      *
@@ -386,11 +422,11 @@ public class ElasticHelper {
         return client.execute(bulk);
     }
 
-    public Map<String, String> search(JSONObject queryJson) throws IOException {
+    public JSONArray search(JSONObject queryJson) throws IOException {
         logger.debug(String.format("Search Query %s", queryJson.toString()));
 
         //JSONArray elements = new JSONArray();
-        Map<String, String> elements = new HashMap<>();
+        JSONArray elements = new JSONArray();
 
         Search search = new Search.Builder(queryJson.toString()).addIndex(elementIndex).build();
         SearchResult result = client.execute(search);
@@ -401,7 +437,7 @@ public class ElasticHelper {
 
                 JSONObject o = new JSONObject(hits.get(i).getAsJsonObject().getAsJsonObject("_source").toString());
 
-                elements.put(o.getString(Sjm.SYSMLID), o.toString());
+                elements.put(o);
             }
         }
 

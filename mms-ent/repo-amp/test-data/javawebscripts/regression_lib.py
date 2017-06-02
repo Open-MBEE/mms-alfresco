@@ -666,7 +666,7 @@ def run_curl_test(test_num, test_name, test_desc, curl_cmd, use_json_diff=False,
                 #p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 #cp, err = p.communicate()
                 #if len(cp) == 0:
-                #cp = ".:%s:%s:%s:%s:../../target/repo-amp/lib/json-20140107.jar:../../target/mms-repo-ent-war/WEB-INF/lib/json-20140107.jar:../../target/mms-repo-war/WEB-INF/lib/json-20140107.jar:../../target/mms-repo-war/WEB-INF/lib/json-20090211.jar:../../target/repo-amp/lib/mbee_util-2.2.0-SNAPSHOT.jar:../../target/classes"%(mbee_util_jar_path(),mbee_util_jar_path2(),mbee_util_jar_path3(),mbee_util_jar_path4())
+                #cp = ".:%s:%s:%s:%s:../../target/mms-amp/lib/json-20140107.jar:../../target/mms-repo-ent-war/WEB-INF/lib/json-20140107.jar:../../target/mms-repo-war/WEB-INF/lib/json-20140107.jar:../../target/mms-repo-war/WEB-INF/lib/json-20090211.jar:../../target/mms-amp/lib/mbee_util-2.2.0-SNAPSHOT.jar:../../target/classes"%(mbee_util_jar_path(),mbee_util_jar_path2(),mbee_util_jar_path3(),mbee_util_jar_path4())
                 #diff_cmd = 'java -cp "%s" gov.nasa.jpl.view_repo.util.JsonDiff' % cp.strip()
 
                 #commands.getoutput("head -n -1 " + baseline_json + " | jq --sort-keys '[.elements[] | select(.name != null)] | sort_by(.name, .sysmlid)' > " + baseline_sorted_json)

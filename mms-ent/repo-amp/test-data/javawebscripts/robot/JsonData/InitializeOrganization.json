@@ -1,8 +1,8 @@
 {
-  "orgs": [
-    {
-      "id": "initorg",
-      "name": "Initial Organization"
-    }
-  ]
+    "orgs": [
+        {
+            "id": "initorg",
+            "name": "Initial Organization"
+        }
+    ]
 }

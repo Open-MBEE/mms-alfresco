@@ -37,10 +37,12 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.view_repo.util.*;
+import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -60,7 +62,7 @@ import gov.nasa.jpl.mbee.util.Utils;
  *
  */
 
-public class WorkspacesPost extends AbstractJavaWebScript{
+public class WorkspacesPost extends AbstractJavaWebScript {
 	static Logger logger = Logger.getLogger(WorkspacesPost.class);
 
     public WorkspacesPost() {
@@ -73,7 +75,11 @@ public class WorkspacesPost extends AbstractJavaWebScript{
 
     @Override
     protected boolean validateRequest(WebScriptRequest req, Status status) {
-        return checkRequestContent(req) && userHasWorkspaceLdapPermissions();
+        String projectId = getProjectId(req);
+        String refId = getRefId(req);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
+        return checkRequestContent(req) && SitePermission.hasPermissionToBranch(orgId, projectId, refId);
     }
 
     @Override
@@ -106,7 +112,7 @@ public class WorkspacesPost extends AbstractJavaWebScript{
                 json = createWorkSpace(projectId, sourceWorkspaceParam, newName, copyDateTime, reqJson, user, status);
                 statusCode = status.getCode();
             } else {
-                statusCode = responseStatus.getCode();
+                statusCode = HttpServletResponse.SC_FORBIDDEN;
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "JSON malformed\n");
@@ -213,6 +219,7 @@ public class WorkspacesPost extends AbstractJavaWebScript{
             wsJson.put(Sjm.CREATOR, user);
             wsJson.put(Sjm.MODIFIED, date);
             wsJson.put(Sjm.MODIFIER, user);
+            wsJson.put("status", "creating");
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
 
 

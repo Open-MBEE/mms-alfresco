@@ -1,0 +1,17 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PB",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "e1",
+            "isDerived": false,
+            "name": "test mount object",
+            "ownerId": "PB",
+            "type": "Class"
+        }
+    ]
+}

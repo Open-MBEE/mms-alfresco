@@ -4,7 +4,7 @@
             "documentation": "something",
             "id": "300",
             "name": "three hundred",
-            "ownerId": "123456",
+            "ownerId": "PA",
             "type": "Property",
             "isDerived": false,
             "value": [
@@ -88,7 +88,7 @@
             "documentation": "4something",
             "id": "4000",
             "name": "four hundred",
-            "ownerId": "123456",
+            "ownerId": "PA",
             "type": "Property",
             "isDerived": false,
             "value": [
@@ -215,7 +215,7 @@
             "documentation": "to make compatible with value specs (this is just a Element)",
             "id": "dlam",
             "name": "dlam",
-            "ownerId": "123456"
+            "ownerId": "PA"
         }
     ]
 }
