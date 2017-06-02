@@ -395,6 +395,13 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
+    <bean id="webscript.gov.nasa.jpl.mms.workspaces.search.put"
+          class="gov.nasa.jpl.view_repo.webscripts.ModelSearch" parent="webscript"
+          singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
+
     <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.artifacts.artifact.post"
         class="gov.nasa.jpl.view_repo.webscripts.ArtifactPost" parent="webscript"
         singleton="false">

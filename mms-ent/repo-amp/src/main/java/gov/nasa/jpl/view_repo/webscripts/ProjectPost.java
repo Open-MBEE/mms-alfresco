@@ -133,7 +133,7 @@ public class ProjectPost extends AbstractJavaWebScript {
                     statusCode = updateOrCreateProject(projJson, workspace, projectId);
                 }
 
-                CommitUtil.sendProjectDelta(projJson, projectId, siteName, user);
+                CommitUtil.sendProjectDelta(projJson, siteName, user);
             } else {
                 statusCode = responseStatus.getCode();
             }

@@ -14,7 +14,11 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.apache.commons.compress.archivers.dump.DumpArchiveEntry;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,6 +34,9 @@ import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbCommitTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.Service;
 
 /**
  * Utilities for saving commits and sending out deltas based on commits
@@ -184,12 +191,12 @@ public class CommitUtil {
     }
 
     private static boolean processDeltasForDb(JSONObject delta, String projectId,
-        String workspaceId, JSONObject jmsPayload, boolean withChildViews) {
+        String refId, JSONObject jmsPayload, boolean withChildViews, ServiceRegistry services) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
         PostgresHelper pgh = new PostgresHelper();
         pgh.setProject(projectId);
-        pgh.setWorkspace(workspaceId);
+        pgh.setWorkspace(refId);
 
         //Boolean initialCommit = pgh.isInitialCommit();
 
@@ -246,6 +253,10 @@ public class CommitUtil {
                             documentEdges);
                     }
 
+                    if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
+                        createOrUpdateSiteChar(e, projectId, refId, services);
+                    }
+
                     if (e.has("_contents")) {
                         JSONObject contents = e.optJSONObject("_contents");
                         if (contents != null) {
@@ -299,6 +310,10 @@ public class CommitUtil {
                     if (nodeType == DbNodeTypes.DOCUMENT.getValue()) {
                         String doc = e.getString("documentation");
                         NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc, documentEdges);
+                    }
+
+                    if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
+                        createOrUpdateSiteChar(e, projectId, refId, services);
                     }
 
                     if (e.has("_contents")) {
@@ -425,7 +440,7 @@ public class CommitUtil {
      * @throws JSONException
      */
     public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId,
-        String source, boolean withChildViews) throws JSONException {
+        String source, ServiceRegistry services, boolean withChildViews) throws JSONException {
 
         JSONObject jmsPayload = new JSONObject();
         try {
@@ -434,7 +449,7 @@ public class CommitUtil {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews)) {
+        if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
             return false;
         }
 
@@ -452,7 +467,7 @@ public class CommitUtil {
         pgh.createOrganization(orgId, orgName);
     }
 
-    public static void sendProjectDelta(JSONObject o, String projectId, String orgId, String user) {
+    public static void sendProjectDelta(JSONObject o, String orgId, String user) {
 
         PostgresHelper pgh = new PostgresHelper();
         String date = TimeUtils.toTimestamp(new Date().getTime());
@@ -693,6 +708,47 @@ public class CommitUtil {
         e.put(Sjm.MODIFIED, date);
 
         return e;
+    }
+
+    public static boolean createOrUpdateSiteChar(JSONObject siteChar, String projectId, String refId, ServiceRegistry services) {
+
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        String folderName = siteChar.optString(Sjm.NAME);
+        String folderId = siteChar.optString(Sjm.SYSMLID);
+
+        if (services != null && folderName != null && folderId != null) {
+            String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
+            SiteInfo orgInfo = services.getSiteService().getSite(orgId);
+            if (orgInfo != null) {
+
+                EmsScriptNode site = new EmsScriptNode(orgInfo.getNodeRef(), services);
+
+                if (!site.checkPermissions(PermissionService.WRITE)) {
+                    return false;
+                }
+
+                EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary", false, null, true);
+                if (documentLibrary == null) {
+                    documentLibrary = site.createFolder("documentLibrary");
+                    documentLibrary.createOrUpdateProperty(Acm.CM_TITLE, "Document Library");
+                }
+                EmsScriptNode projectDocumentLibrary = documentLibrary.childByNamePath(projectId, false, null, true);
+                if (projectDocumentLibrary == null) {
+                    projectDocumentLibrary = documentLibrary.createFolder(projectId);
+                }
+                EmsScriptNode siteCharFolder = projectDocumentLibrary.childByNamePath(folderId, false, null, true);
+                if (siteCharFolder == null) {
+                    siteCharFolder = projectDocumentLibrary.createFolder(folderId);
+                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
+                    return true;
+                } else {
+                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
 }

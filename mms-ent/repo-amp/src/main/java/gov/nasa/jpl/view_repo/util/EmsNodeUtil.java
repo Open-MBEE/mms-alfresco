@@ -900,16 +900,14 @@ public class EmsNodeUtil {
         if (newChildViews != null && newChildViews.length() > 0) {
             for (int i = 0; i < newChildViews.length(); i++) {
                 JSONObject child = newChildViews.getJSONObject(i);
-                if (createProps.containsKey(child.getString(Sjm.SYSMLID))) {
-                    if (!ownedAttributesIds.toString().contains(createProps.get(child.getString(Sjm.SYSMLID)))) {
-                        ownedAttributesIds.put(createProps.get(child.getString(Sjm.SYSMLID)));
-                    }
-                } else {
-                    if (child.has(Sjm.SYSMLID) && child.getString(Sjm.SYSMLID) != null) {
-                        JSONObject childNode = getNodeBySysmlid(child.getString(Sjm.SYSMLID));
-                        if (childNode.has(Sjm.SYSMLID) && childNode.optString(Sjm.SYSMLID) != null) {
-                            String cvSysmlId = child.getString("id");
-                            String aggregation = child.getString("aggregation");
+                if (child.has(Sjm.SYSMLID)) {
+                    if (createProps.containsKey(child.getString(Sjm.SYSMLID))) {
+                        if (!ownedAttributesIds.toString().contains(createProps.get(child.getString(Sjm.SYSMLID)))) {
+                            ownedAttributesIds.put(createProps.get(child.getString(Sjm.SYSMLID)));
+                        }
+                    } else {
+                            String cvSysmlId = child.getString(Sjm.SYSMLID);
+                            String aggregation = child.getString(Sjm.AGGREGATION);
 
                             String propertySysmlId = createId();
                             String associationSysmlId = createId();
@@ -1129,7 +1127,6 @@ public class EmsNodeUtil {
                             commitAdded.put(newAssociationProperty);
 
                             ownedAttributesIds.put(propertySysmlId);
-                        }
                     }
                 }
             }

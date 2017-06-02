@@ -691,9 +691,9 @@ public class PostgresHelper {
 
     public Node getNodeFromSysmlId(String sysmlId, boolean withDeleted) {
         try {
-            String query = "SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = '" + sysmlId;
+            String query = "SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = '" + sysmlId + "'";
             if (!withDeleted) {
-                query += "' AND deleted = " + false;
+                query += " AND deleted = " + false;
             }
             ResultSet rs = execQuery(query);
             if (rs.next()) {
@@ -1319,6 +1319,32 @@ public class PostgresHelper {
         } finally {
             close();
         }
+        return result;
+    }
+
+    public Set<Pair<String, Integer>> getParentsOfType(String sysmlId, DbEdgeTypes dbet) {
+        Set<Pair<String, Integer>> result = new HashSet<>();
+        try {
+            Node n = getNodeFromSysmlId(sysmlId);
+
+            if (n == null) {
+                return result;
+            }
+
+            String query = "SELECT N.sysmlid, N.nodetype FROM \"nodes%s\" N JOIN "
+                + "(SELECT * FROM get_parents(%s, %d, '%s')) P ON N.id = P.id ORDER BY P.height";
+            ResultSet rs = execQuery(
+                String.format(query, workspaceId, n.getId(), dbet.getValue(), workspaceId));
+
+            while (rs.next()) {
+                result.add(new Pair<>(rs.getString(1), rs.getInt(2)));
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
         return result;
     }
 
