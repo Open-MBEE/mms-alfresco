@@ -707,7 +707,7 @@ public class PostgresHelper {
 
     public Node getNodeFromSysmlId(String sysmlId, boolean withDeleted) {
         try {
-            String query = "SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = '" + sysmlId;
+            String query = "SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = '" + sysmlId + "'";
             if (!withDeleted) {
                 query += "' AND deleted = " + false;
             }
