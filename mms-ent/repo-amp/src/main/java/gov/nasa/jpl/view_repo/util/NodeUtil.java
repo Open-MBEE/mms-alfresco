@@ -4116,10 +4116,9 @@ public class NodeUtil {
         return node;
     }
 
+    private static Pattern pattern = Pattern.compile("<mms-cf.*mms-element-id=\"([^\"]*)\"");
     public static void processDocumentEdges(String sysmlid, String doc, List<Pair<String, String>> documentEdges) {
         if (doc != null) {
-            String MMS_TRANSCLUDE_PATTERN = "<mms-transclude.*eid=\"([^\"]*)\"";
-            Pattern pattern = Pattern.compile(MMS_TRANSCLUDE_PATTERN);
             Matcher matcher = pattern.matcher(doc);
 
             while (matcher.find()) {
@@ -4538,15 +4537,17 @@ public class NodeUtil {
         JSONArray moduleDetails = getServiceModulesJson(service);
         String mmsVersion = "NA";
         int moduleArrayLength = moduleDetails.length();
-        JSONObject jsonModule;
         if (moduleArrayLength > 0) {
-            jsonModule = moduleDetails.getJSONObject(moduleArrayLength - 1);
-            mmsVersion = jsonModule.get("mmsVersion").toString();
+            for (int i = 0; i < moduleArrayLength; i++) {
+                if (moduleDetails.getJSONObject(i).getString("mmsId").equalsIgnoreCase("mms-amp")) {
+                    mmsVersion = moduleDetails.getJSONObject(i).getString("mmsVersion");
+                }
+            }
         }
 
         int endIndex = mmsVersion.lastIndexOf(".");
 
-        return mmsVersion.substring(0, endIndex);
+        return endIndex > 0 ? mmsVersion.substring(0, endIndex) : mmsVersion;
     }
 
     public static void addEditable(Map<String, Object> model, boolean editable){

@@ -2,7 +2,7 @@
 **Alfresco version 5.0.d**
 
 Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
-# Initial Setup
+# Developer Setup
 ## 1a. Import Project from git repo to Eclipse
 *  **Eclipse** > **File** > **Import** > **General** > **Existing Projects into Workspace**
 *  Set 'Root Directory' as the path to mms-all-in-one e.g. **Browse** to `$HOME/workspace/mms-all-in-one`
@@ -42,12 +42,13 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
         *   Select **Java 8** for JRE.
         *   If it's not installed, download and install Java 8. Afterward, return to here and select Java 8.
 
-## 4. Install and Configure Elastic Search
+# Install Dependencies
+## 1. Install and Configure Elastic Search
 *   Download Elasticsearch 5.X
 *   Install Elasticsearch
 *   Start Elasticsearch then run `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms-mappings.sh`
 
-## 5. Install and Configure Postgresql
+## 2. Install and Configure Postgresql
 *   Download Postgresql 9.x
     * If using Postgresql as the database for Alfresco, Postgresl 9.3 is the latest supported version
 *   Install Postgresql
@@ -59,18 +60,21 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 *   Execute `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql`
     * windows CMD e.g.: `psql -h localhost -p 5432 -U mms -d mms -v schema=public < C:\path\to\mms\repo\mms.sql`
 
-## 6. Install and Configure ActiveMQ
+## 3. Install and Configure ActiveMQ
 *   Download ActiveMQ
 *   Install ActiveMQ
 *   Start ActiveMQ service
 
 # Running
-## 1. Running Alfresco
+## 1a. Running Alfresco
 1. Select file menu **Run** > **Run Configurations**
 2. Expand **Maven Build**
 3. Select **mms-all-in-one**
     1. Click **Run** button
     * If you get error:-Dmaven.multiModuleProjectDirectory system property is not set. Check $M2_HOME environment variable and mvn script match. Goto **Window -> Preference -> Java -> Installed JREs -> Edit -> Default VM arguments**  _set -Dmaven.multiModuleProjectDirectory=$M2_HOME_
+
+## 1b. Running Alfresco
+1. From mms-ent directory, either run `clean-run.sh`, `run.sh`, or `mvn install -Prun`
 
 ## 2. Testing Alfresco
 1. Enter http://localhost:8080/share/ at a browser's url address textbox.

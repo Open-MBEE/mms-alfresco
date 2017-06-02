@@ -97,7 +97,7 @@ public class OrgProjectPost extends AbstractJavaWebScript {
                 SiteInfo siteInfo = services.getSiteService().getSite(orgId);
                 if (siteInfo != null) {
 
-                    CommitUtil.sendProjectDelta(projJson, projectId, orgId, user);
+                    CommitUtil.sendProjectDelta(projJson, orgId, user);
 
                     if (projectId != null && !projectId.equals(NO_SITE_ID)) {
                         statusCode = updateOrCreateProject(projJson, projectId, orgId);
@@ -188,7 +188,19 @@ public class OrgProjectPost extends AbstractJavaWebScript {
             EmsScriptNode projectContainerNode = site.childByNamePath(projectId, false, null, true);
             if (projectContainerNode == null) {
                 projectContainerNode = site.createFolder(projectId);
+                projectContainerNode.createOrUpdateProperty(Acm.CM_TITLE, jsonObject.optString(Sjm.NAME));
                 log(Level.INFO, HttpServletResponse.SC_OK, "Project folder created.\n");
+            }
+
+            EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary", false, null, true);
+            if (documentLibrary == null) {
+                documentLibrary = site.createFolder("documentLibrary");
+            }
+
+            EmsScriptNode documentProjectContainer = documentLibrary.childByNamePath(projectId, false, null, true);
+            if (documentProjectContainer == null) {
+                documentProjectContainer = documentLibrary.createFolder(projectId);
+                documentProjectContainer.createOrUpdateProperty(Acm.CM_TITLE, jsonObject.optString(Sjm.NAME));
             }
 
             EmsScriptNode refContainerNode = projectContainerNode.childByNamePath(REF_PATH_SEARCH, false, null, true);

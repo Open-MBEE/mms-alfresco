@@ -4,7 +4,7 @@ from pprint import pprint
 import collections
 import commands
 
-CONTEXT_PATH = '../src/main/amp/config/alfresco/module/repo-amp/context/'
+CONTEXT_PATH = '../src/main/amp/config/alfresco/module/mms-amp/context/'
 
 CONTEXT_FILES = [CONTEXT_PATH + 'javawebscript-service-context.xml',
 				 CONTEXT_PATH + 'mms-service-context.xml']
@@ -94,7 +94,7 @@ def convertBeanId2DescFile(id):
         ii = None
 	for ii in range(len(tokens)-1):
 		filename += tokens[ii] + '/'
-        if ii == None: 
+        if ii == None:
 	        print "couldn't parse", id
         else:
 	        filename = filename[:-1] + '.' + tokens[ii+1] + '.desc.xml'
@@ -114,7 +114,7 @@ def parseAllJs():
 		# find the first occurrence of js (includes JSON format)
 		descFile = jsFile[:jsFile.index('js')] + 'desc.xml'
 		url = getUrlFromDesc(descFile)
-		
+
 		if url:
 			if not url2class.has_key(url):
 				url2class[url] = []

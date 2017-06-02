@@ -43,6 +43,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -155,6 +156,7 @@ public class SiteGet extends AbstractJavaWebScript {
         PostgresHelper pgh = new PostgresHelper();
         pgh.setProject(projectId);
         pgh.setWorkspace(workspace);
+        String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         ElasticHelper eh = new ElasticHelper();
         List<String> ids = new ArrayList<>();
         List<String> alfs = new ArrayList<>();
@@ -191,12 +193,15 @@ public class SiteGet extends AbstractJavaWebScript {
                 siteNodes.forEach((n)->{
                     if (n.getSysmlId().equals(o.getString(Sjm.SYSMLID))) {
                         if (n.getNodeType() == DbNodeTypes.SITEANDPACKAGE.getValue()) {
+                            String path = "path|/Sites/" + orgId + "/documentLibrary/" + projectId + "/" + n.getSysmlId();
+                            String siteUrl = "/share/page/repository#filter=" + StringEscapeUtils.escapeHtml(path);
                             Set<DbNodeTypes> sites = new HashSet<>();
                             sites.add(DbNodeTypes.SITE);
                             sites.add(DbNodeTypes.SITEANDPACKAGE);
                             String parent = emsNodeUtil.getImmediateParentOfTypes(n.getSysmlId(),
                                             DbEdgeTypes.CONTAINMENT, sites);
                             newo.put("_parentId", parent);
+                            newo.put("_link", siteUrl);
                         } else {
                             newo.put("_parentId", "null");
                         }
@@ -244,7 +249,7 @@ public class SiteGet extends AbstractJavaWebScript {
                         o.put(Sjm.NAME, name + "_no_project");
                         o.put(Sjm.SYSMLID, name + "_no_project");
                         o.put(Sjm.TYPE, "Project");
-                        CommitUtil.sendProjectDelta(o, name, orgId, user);
+                        CommitUtil.sendProjectDelta(o, orgId, user);
                     }
                 }
 
