@@ -1336,6 +1336,7 @@ public class PostgresHelper {
             ResultSet rs = execQuery(
                 String.format(query, workspaceId, n.getId(), dbet.getValue(), workspaceId));
 
+            result.add(new Pair<>(n.getSysmlId(), n.getNodeType()));
             while (rs.next()) {
                 result.add(new Pair<>(rs.getString(1), rs.getInt(2)));
             }
