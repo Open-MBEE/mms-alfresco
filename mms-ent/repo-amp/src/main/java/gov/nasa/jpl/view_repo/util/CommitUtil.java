@@ -268,7 +268,7 @@ public class CommitUtil {
 
                     String doc = e.optString("documentation");
                     if (doc != null && !doc.equals("")) {
-                        NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), e.getString("documentation"),
+                        NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc,
                             viewEdges);
                     }
 

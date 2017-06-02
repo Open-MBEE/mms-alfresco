@@ -461,17 +461,25 @@ public class EmsNodeUtil {
                     }
             }
             */
-            Set<Pair<String, String>> immediateParents =
-                pgh.getImmediateParents(elementSysmlId, PostgresHelper.DbEdgeTypes.VIEW);
+            Set<Pair<String, Integer>> parentViews = pgh.getParentsOfType(elementSysmlId, PostgresHelper.DbEdgeTypes.VIEW);
+           // Set<Pair<String, String>> immediateParents =
+            //    pgh.getImmediateParents(elementSysmlId, PostgresHelper.DbEdgeTypes.VIEW);
 
-            for (Pair<String, String> viewParent : immediateParents) {
-                for (String rootSysmlId : pgh.getRootParents(viewParent.first, PostgresHelper.DbEdgeTypes.VIEW)) {
-                    if (relatedDocumentsMap.containsKey(rootSysmlId)) {
-                        relatedDocumentsMap.get(rootSysmlId).add(new JSONObject().put(Sjm.SYSMLID, viewParent.first));
+            for (Pair<String, Integer> parentView : parentViews) {
+
+                if (parentView.second != DbNodeTypes.VIEW.getValue() && parentView.second != DbNodeTypes.DOCUMENT.getValue()) {
+                    continue;
+                }
+                for (Pair<String, Integer> doc : pgh.getParentsOfType(parentView.first, PostgresHelper.DbEdgeTypes.CHILDVIEW)) {
+                    if (doc.second != DbNodeTypes.DOCUMENT.getValue()) {
+                        continue;
+                    }
+                    if (relatedDocumentsMap.containsKey(doc.first)) {
+                        relatedDocumentsMap.get(doc.first).add(new JSONObject().put(Sjm.SYSMLID, parentView.first));
                     } else {
                         List<JSONObject> viewParents = new ArrayList<>();
-                        viewParents.add(new JSONObject().put(Sjm.SYSMLID, viewParent.first));
-                        relatedDocumentsMap.put(rootSysmlId, viewParents);
+                        viewParents.add(new JSONObject().put(Sjm.SYSMLID, parentView.first));
+                        relatedDocumentsMap.put(doc.first, viewParents);
                     }
                 }
             }
