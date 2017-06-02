@@ -441,7 +441,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             siteId = projectSite.get(projectId);
         } else {
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            siteId = emsNodeUtil.getSite(element.optString(Sjm.SYSMLID));
+            siteId = emsNodeUtil.getOrganizationFromProject(projectId);
             projectSite.put(projectId, siteId);
         }
 
@@ -456,7 +456,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             permCache.put(cacheKey, permMap);
         }
 
-        if (hasPerm) {
+        if (hasPerm != null && hasPerm) {
             editable = true;
             if (permission != Permission.WRITE) {
                 if (permCache.containsKey(cacheKey) && permCache.get(cacheKey).containsKey(Permission.WRITE)) {
