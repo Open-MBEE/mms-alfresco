@@ -1910,6 +1910,7 @@ public class PostgresHelper {
         if (refId == null || refId.isEmpty()) {
             refId = "master";
         }
+        refId = refId.replace("-", "_").replaceAll("\\s+", "");
         try {
             ResultSet rs = execQuery(
                 String.format("SELECT refId, elasticId FROM refs WHERE deleted = false AND refId = '%s'", refId));
