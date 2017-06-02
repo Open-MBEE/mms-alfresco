@@ -14,7 +14,11 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.apache.commons.compress.archivers.dump.DumpArchiveEntry;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,6 +34,9 @@ import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbCommitTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.Service;
 
 /**
  * Utilities for saving commits and sending out deltas based on commits
@@ -183,13 +190,29 @@ public class CommitUtil {
         return true;
     }
 
+    private static boolean isPartProperty(JSONObject e) {
+        if (!e.getString(Sjm.TYPE).equals("Property")) {
+            return false;
+        }
+        JSONArray appliedS = e.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
+        if (appliedS == null || appliedS.length() == 0) {
+            return false;
+        }
+        for (int i = 0; i < appliedS.length(); i++) {
+            if (appliedS.getString(i).equals("_15_0_be00301_1199377756297_348405_2678")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean processDeltasForDb(JSONObject delta, String projectId,
-        String workspaceId, JSONObject jmsPayload, boolean withChildViews) {
+        String refId, JSONObject jmsPayload, boolean withChildViews, ServiceRegistry services) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
         PostgresHelper pgh = new PostgresHelper();
         pgh.setProject(projectId);
-        pgh.setWorkspace(workspaceId);
+        pgh.setWorkspace(refId);
 
         //Boolean initialCommit = pgh.isInitialCommit();
 
@@ -206,11 +229,12 @@ public class CommitUtil {
         JSONArray jmsDeleted = new JSONArray();
 
         List<String> affectedSysmlIds = new ArrayList<>();
-
+        List<String> deletedSysmlIds = new ArrayList<>();
         Map<String, String> aggregationTypes = new HashMap<>();
         Map<String, String> propertyTypes = new HashMap<>();
         List<Pair<String, String>> addEdges = new ArrayList<>();
-        List<Pair<String, String>> documentEdges = new ArrayList<>();
+        List<Pair<String, String>> viewEdges = new ArrayList<>();
+        List<Pair<String, String>> childViewEdges = new ArrayList<>();
 
         if (bulkElasticEntry(added, "added", withChildViews) && bulkElasticEntry(updated, "updated", withChildViews)) {
 
@@ -219,6 +243,7 @@ public class CommitUtil {
 
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
                 List<Map<String, String>> edgeInserts = new ArrayList<>();
+                List<Map<String, String>> childEdgeInserts = new ArrayList<>();
                 List<Map<String, String>> nodeUpdates = new ArrayList<>();
                 Set<String> uniqueEdge = new HashSet<>();
 
@@ -241,36 +266,43 @@ public class CommitUtil {
                         addEdges.add(p);
                     }
 
-                    if (nodeType == DbNodeTypes.DOCUMENT.getValue()) {
-                        NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), e.getString("documentation"),
-                            documentEdges);
+                    String doc = e.optString("documentation");
+                    if (doc != null && !doc.equals("")) {
+                        NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc,
+                            viewEdges);
+                    }
+
+                    if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
+                        createOrUpdateSiteChar(e, projectId, refId, services);
                     }
 
                     if (e.has("_contents")) {
                         JSONObject contents = e.optJSONObject("_contents");
                         if (contents != null) {
-                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
+                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                         }
                     } else if (e.has("specification") && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
                         JSONObject iss = e.optJSONObject("specification");
                         if (iss != null) {
                             NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
-                                documentEdges);
-                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), iss, documentEdges);
+                                viewEdges);
+                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                         }
                     }
-
-                    if (e.has("aggregation")) {
-                        aggregationTypes.put(e.getString(Sjm.SYSMLID), e.getString("aggregation").toLowerCase());
+                    if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
+                        JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
+                        if (owned != null) {
+                            for (int j = 0; j < owned.length(); j++) {
+                                Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(i));
+                                childViewEdges.add(p);
+                            }
+                        }
                     }
-                    if (e.has(Sjm.TYPEID)) {
-                        propertyTypes.put(e.getString(Sjm.SYSMLID), e.getString(Sjm.TYPEID));
-                    }
-                    if (e.has(Sjm.OWNEDATTRIBUTEIDS)) {
-                        JSONArray ownedAttributes = e.getJSONArray(Sjm.OWNEDATTRIBUTEIDS);
-                        for (int ii = 0; ii < ownedAttributes.length(); ii++) {
-                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), ownedAttributes.getString(ii));
-                            plist.add(p);
+                    if (isPartProperty(e)) {
+                        String type = e.optString(Sjm.TYPEID);
+                        if (type != null) {
+                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), type);
+                            childViewEdges.add(p);
                         }
                     }
                 }
@@ -281,6 +313,7 @@ public class CommitUtil {
                     pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
                     pgh.deleteNode(e.getString(Sjm.SYSMLID));
                     affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
+                    deletedSysmlIds.add(e.getString(Sjm.SYSMLID));
                 }
 
                 List<Pair<String, String>> updatedPlist = new LinkedList<>();
@@ -289,44 +322,50 @@ public class CommitUtil {
                     jmsUpdated.put(e.getString(Sjm.SYSMLID));
                     affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
                     int nodeType = getNodeType(e).getValue();
-                    pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
+                    pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID), true, DbEdgeTypes.CONTAINMENT);
+                    pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID), false, DbEdgeTypes.VIEW);
+                    pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID), false, DbEdgeTypes.CHILDVIEW);
 
                     if (e.has(Sjm.OWNERID) && e.getString(Sjm.OWNERID) != null && e.getString(Sjm.SYSMLID) != null) {
                         Pair<String, String> p = new Pair<>(e.getString(Sjm.OWNERID), e.getString(Sjm.SYSMLID));
                         addEdges.add(p);
                     }
+                    String doc = e.optString("documentation");
+                    if (doc != null && !doc.equals("")) {
+                        NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
+                    }
 
-                    if (nodeType == DbNodeTypes.DOCUMENT.getValue()) {
-                        String doc = e.getString("documentation");
-                        NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc, documentEdges);
+                    if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
+                        createOrUpdateSiteChar(e, projectId, refId, services);
                     }
 
                     if (e.has("_contents")) {
                         JSONObject contents = e.optJSONObject("_contents");
                         if (contents != null) {
-                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, documentEdges);
+                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                         }
                     } else if (e.has("specification") && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
                         JSONObject iss = e.optJSONObject("specification");
                         if (iss != null) {
                             NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
-                                documentEdges);
-                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), iss, documentEdges); //for sections
+                                viewEdges);
+                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges); //for sections
                         }
                     }
-
-                    if (e.has("aggregation")) {
-                        aggregationTypes.put(e.getString(Sjm.SYSMLID), e.getString("aggregation").toLowerCase());
+                    if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
+                        JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
+                        if (owned != null) {
+                            for (int j = 0; j < owned.length(); j++) {
+                                Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(i));
+                                childViewEdges.add(p);
+                            }
+                        }
                     }
-
-                    if (e.has(Sjm.TYPEID)) {
-                        propertyTypes.put(e.getString(Sjm.SYSMLID), e.getString(Sjm.TYPEID));
-                    }
-                    if (e.has(Sjm.OWNEDATTRIBUTEIDS)) {
-                        JSONArray ownedAttributes = e.getJSONArray(Sjm.OWNEDATTRIBUTEIDS);
-                        for (int ii = 0; ii < ownedAttributes.length(); ii++) {
-                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), ownedAttributes.getString(ii));
-                            updatedPlist.add(p);
+                    if (isPartProperty(e)) {
+                        String type = e.optString(Sjm.TYPEID);
+                        if (type != null) {
+                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), type);
+                            childViewEdges.add(p);
                         }
                     }
                     if (e.has(Sjm.ELASTICID)) {
@@ -353,7 +392,7 @@ public class CommitUtil {
                     }
                 }
 
-                for (Pair<String, String> e : documentEdges) {
+                for (Pair<String, String> e : viewEdges) {
                     if (!pgh.edgeExists(e.first, e.second, DbEdgeTypes.VIEW)) {
                         String edgeTest = e.first + e.second + DbEdgeTypes.VIEW.getValue();
                         if (!uniqueEdge.contains(edgeTest)) {
@@ -361,14 +400,28 @@ public class CommitUtil {
                             edge.put("parent", e.first);
                             edge.put("child", e.second);
                             edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
-                            edgeInserts.add(edge);
+                            childEdgeInserts.add(edge);
+                            uniqueEdge.add(edgeTest);
+                        }
+                    }
+                }
+                for (Pair<String, String> e : childViewEdges) {
+                    if (!pgh.edgeExists(e.first, e.second, DbEdgeTypes.CHILDVIEW)) {
+                        String edgeTest = e.first + e.second + DbEdgeTypes.CHILDVIEW.getValue();
+                        if (!uniqueEdge.contains(edgeTest)) {
+                            Map<String, String> edge = new HashMap<>();
+                            edge.put("parent", e.first);
+                            edge.put("child", e.second);
+                            edge.put("edgetype", Integer.toString(DbEdgeTypes.CHILDVIEW.getValue()));
+                            childEdgeInserts.add(edge);
                             uniqueEdge.add(edgeTest);
                         }
                     }
                 }
 
                 Savepoint sp = null;
-                try {
+                try {//do node insert, updates, and containment edge updates
+                    //do bulk delete edges for affected sysmlids here - delete containment, view and childview
                     sp = pgh.startTransaction();
                     pgh.runBulkQueries(nodeInserts, "nodes");
                     pgh.commitTransaction();
@@ -387,6 +440,14 @@ public class CommitUtil {
                     }
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                     return false;
+                }
+                try {//view and childview edge updates
+                    pgh.startTransaction();
+                    pgh.runBulkQueries(childEdgeInserts, "edges");
+                    pgh.commitTransaction();
+                    pgh.cleanEdges();
+                } catch (Exception e) {
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e))); //childedges are not critical
                 }
                 try {
                     eh.indexElement(delta); //initial commit may fail to read back but does get indexed
@@ -425,7 +486,7 @@ public class CommitUtil {
      * @throws JSONException
      */
     public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId,
-        String source, boolean withChildViews) throws JSONException {
+        String source, ServiceRegistry services, boolean withChildViews) throws JSONException {
 
         JSONObject jmsPayload = new JSONObject();
         try {
@@ -434,7 +495,7 @@ public class CommitUtil {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews)) {
+        if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
             return false;
         }
 
@@ -452,7 +513,7 @@ public class CommitUtil {
         pgh.createOrganization(orgId, orgName);
     }
 
-    public static void sendProjectDelta(JSONObject o, String projectId, String orgId, String user) {
+    public static void sendProjectDelta(JSONObject o, String orgId, String user) {
 
         PostgresHelper pgh = new PostgresHelper();
         String date = TimeUtils.toTimestamp(new Date().getTime());
@@ -693,6 +754,47 @@ public class CommitUtil {
         e.put(Sjm.MODIFIED, date);
 
         return e;
+    }
+
+    public static boolean createOrUpdateSiteChar(JSONObject siteChar, String projectId, String refId, ServiceRegistry services) {
+
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        String folderName = siteChar.optString(Sjm.NAME);
+        String folderId = siteChar.optString(Sjm.SYSMLID);
+
+        if (services != null && folderName != null && folderId != null) {
+            String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
+            SiteInfo orgInfo = services.getSiteService().getSite(orgId);
+            if (orgInfo != null) {
+
+                EmsScriptNode site = new EmsScriptNode(orgInfo.getNodeRef(), services);
+
+                if (!site.checkPermissions(PermissionService.WRITE)) {
+                    return false;
+                }
+
+                EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary", false, null, true);
+                if (documentLibrary == null) {
+                    documentLibrary = site.createFolder("documentLibrary");
+                    documentLibrary.createOrUpdateProperty(Acm.CM_TITLE, "Document Library");
+                }
+                EmsScriptNode projectDocumentLibrary = documentLibrary.childByNamePath(projectId, false, null, true);
+                if (projectDocumentLibrary == null) {
+                    projectDocumentLibrary = documentLibrary.createFolder(projectId);
+                }
+                EmsScriptNode siteCharFolder = projectDocumentLibrary.childByNamePath(folderId, false, null, true);
+                if (siteCharFolder == null) {
+                    siteCharFolder = projectDocumentLibrary.createFolder(folderId);
+                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
+                    return true;
+                } else {
+                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
 }

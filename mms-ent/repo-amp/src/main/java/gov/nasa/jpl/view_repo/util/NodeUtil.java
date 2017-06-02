@@ -4116,10 +4116,9 @@ public class NodeUtil {
         return node;
     }
 
+    private static Pattern pattern = Pattern.compile("<mms-cf.*mms-element-id=\"([^\"]*)\"");
     public static void processDocumentEdges(String sysmlid, String doc, List<Pair<String, String>> documentEdges) {
         if (doc != null) {
-            String MMS_TRANSCLUDE_PATTERN = "<mms-transclude.*eid=\"([^\"]*)\"";
-            Pattern pattern = Pattern.compile(MMS_TRANSCLUDE_PATTERN);
             Matcher matcher = pattern.matcher(doc);
 
             while (matcher.find()) {

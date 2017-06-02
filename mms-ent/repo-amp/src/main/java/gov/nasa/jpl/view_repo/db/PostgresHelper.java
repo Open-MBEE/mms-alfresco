@@ -510,14 +510,6 @@ public class PostgresHelper {
                 project.put(Sjm.SYSMLID, rs.getString(2));
                 project.put(Sjm.NAME, rs.getString(3));
                 project.put("orgId", rs.getString(4));
-                ResultSet mounts = this.configConn.createStatement().executeQuery(String.format(
-                    "SELECT p.projectId FROM projectMounts JOIN projects AS p ON projectMounts.mountId = p.id WHERE projectMounts.projectId = %d",
-                    rs.getInt(1)));
-                List<String> mountPoints = new ArrayList<>();
-                while (mounts.next()) {
-                    mountPoints.add(mounts.getString(1));
-                }
-                project.put(Sjm.MOUNTS, mountPoints);
                 result.add(project);
             }
 
@@ -545,14 +537,6 @@ public class PostgresHelper {
                 result.put(Sjm.SYSMLID, rs.getString(2));
                 result.put(Sjm.NAME, rs.getString(3));
                 result.put("orgId", rs.getString(4));
-                ResultSet mounts = this.configConn.createStatement().executeQuery(String.format(
-                    "SELECT p.projectId FROM projectMounts JOIN projects AS p ON projectMounts.mountId = p.id WHERE projectMounts.projectId = %d",
-                    rs.getInt(1)));
-                List<String> mountPoints = new ArrayList<>();
-                while (mounts.next()) {
-                    mountPoints.add(mounts.getString(1));
-                }
-                result.put(Sjm.MOUNTS, mountPoints);
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -709,7 +693,7 @@ public class PostgresHelper {
         try {
             String query = "SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = '" + sysmlId + "'";
             if (!withDeleted) {
-                query += "' AND deleted = " + false;
+                query += " AND deleted = " + false;
             }
             ResultSet rs = execQuery(query);
             if (rs.next()) {
@@ -1338,6 +1322,33 @@ public class PostgresHelper {
         return result;
     }
 
+    public Set<Pair<String, Integer>> getParentsOfType(String sysmlId, DbEdgeTypes dbet) {
+        Set<Pair<String, Integer>> result = new HashSet<>();
+        try {
+            Node n = getNodeFromSysmlId(sysmlId);
+
+            if (n == null) {
+                return result;
+            }
+
+            String query = "SELECT N.sysmlid, N.nodetype FROM \"nodes%s\" N JOIN "
+                + "(SELECT * FROM get_parents(%s, %d, '%s')) P ON N.id = P.id ORDER BY P.height";
+            ResultSet rs = execQuery(
+                String.format(query, workspaceId, n.getId(), dbet.getValue(), workspaceId));
+
+            result.add(new Pair<>(n.getSysmlId(), n.getNodeType()));
+            while (rs.next()) {
+                result.add(new Pair<>(rs.getString(1), rs.getInt(2)));
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return result;
+    }
+
     /**
      * Returns the containment group for element
      *
@@ -1448,7 +1459,7 @@ public class PostgresHelper {
                 return;
 
             execUpdate(
-                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId());
+                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId() + " OR parent = " + n.getId());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1456,15 +1467,15 @@ public class PostgresHelper {
         }
     }
 
-    public void deleteEdgesForChildNode(String sysmlId, DbEdgeTypes edgeType) {
+    public void deleteEdgesForNode(String sysmlId, boolean child, DbEdgeTypes edgeType) {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
 
             if (n == null)
                 return;
-
+            String column = child ? "child" : "parent";
             execUpdate(
-                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId() + " AND edgeType = " + edgeType
+                "DELETE FROM \"edges" + workspaceId + "\" WHERE " + column + " = " + n.getId() + " AND edgeType = " + edgeType
                     .getValue());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));

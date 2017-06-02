@@ -107,90 +107,33 @@ public class SitePermission {
         return rtnJson;
     }
 
-    public static boolean hasPermission(String orgId, JSONArray elements, String projectId, String refId, String commitId,
-                    Permission permission, StringBuffer response, Map<String, Map<Permission, Boolean>> permCache) {
-
-        if (isAdmin()) {
-            return true;
-        }
-
-        int perms = 0;
-        if (elements != null && elements.length() > 0) {
-            // Adding in a temp fix to check only the first element
-            for (int i = 0; i < 1; i++) {
-                JSONObject elem = elements.getJSONObject(i);
-                if (!hasPermission(orgId, elem, projectId, refId, commitId, permission, response, permCache)) {
-                    perms++;
-                }
-            }
-        }
-        return perms < 1;
-    }
-
-    public static boolean hasPermission(String orgId, JSONObject element, String projectId, String refId, String commitId,
-                    Permission permission, StringBuffer response, Map<String, Map<Permission, Boolean>> permCache) {
+    public static Boolean hasPermission(String orgId, String projectId, String refId, Permission permission) {
         boolean hasPerm = false;
         boolean isTag = isTag(projectId, refId);
 
         if (isAdmin() && !isTag) {
             return true;
         }
-
-        if (orgId != null || (element != null && element.has(Sjm.SYSMLID))) {
-            if (Utils.isNullOrEmpty(orgId)) {
-                orgId = getElementSiteId(element.getString(Sjm.SYSMLID), projectId, refId);
-            }
-            if (!Utils.isNullOrEmpty(orgId)) {
-                if (permCache.containsKey(orgId) && permCache.get(orgId).containsKey(permission)) {
-                    return permCache.get(orgId).get(permission);
-                } else {
-                    if (orgId.equalsIgnoreCase("holding_bin")) {
-                        return true;
-                    } else {
-                        EmsScriptNode siteNode = getSiteNode(orgId);
-                        if (siteNode == null) {
-                            return false;
-                        } else {
-                            EmsScriptNode targetNode = null;
-                            if (projectId != null) {
-                                targetNode =
-                                    siteNode.childByNamePath("/" + projectId + (refId != null ? "/refs/" + refId : ""));
-                            }
-                            if (targetNode == null) {
-                                targetNode = siteNode;
-                            }
-
-                            String targetId = targetNode.getSysmlId();
-                            if (permission == Permission.READ) {
-                                if (permCache.containsKey(targetId) && permCache.get(targetId).containsKey(Permission.READ)) {
-                                    hasPerm = permCache.get(targetId).get(Permission.READ);
-                                } else {
-                                    hasPerm = siteNode.checkPermissions("Read");
-                                    Map<Permission, Boolean> permMap = new HashMap<>();
-                                    permMap.put(Permission.READ, hasPerm);
-                                    permCache.put(targetId, permMap);
-                                }
-                            } else {
-                                if (permCache.containsKey(targetId) && permCache.get(targetId).containsKey(Permission.WRITE)) {
-                                    hasPerm = permCache.get(targetId).get(Permission.WRITE);
-                                } else {
-                                    Map<Permission, Boolean> permMap = new HashMap<>();
-                                    if (isTag) {
-                                        return false;
-                                    } else {
-                                        hasPerm = siteNode.checkPermissions("Write");
-                                    }
-                                    permMap.put(Permission.WRITE, hasPerm);
-                                    permCache.put(targetId, permMap);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        if (Utils.isNullOrEmpty(orgId)) {
+            return null;
+        }
+        EmsScriptNode targetNode = getSiteNode(orgId);
+        if (targetNode == null) {
+            return null;
+        }
+        if (projectId != null) {
+            targetNode = targetNode.childByNamePath("/" + projectId + (refId != null ? "/refs/" + refId : ""));
+        }
+        if (targetNode == null) {
+            return null;
+        }
+        if (permission == Permission.READ) {
+            hasPerm = targetNode.checkPermissions("Read");
+        } else {
+            hasPerm = targetNode.checkPermissions("Write");
         }
         if (!hasPerm) {
-            hasPerm = NodeUtil.userHasWorkspaceLdapPermissions();
+            hasPerm = NodeUtil.userHasWorkspaceLdapPermissions(); //???
         }
         return hasPerm;
     }
