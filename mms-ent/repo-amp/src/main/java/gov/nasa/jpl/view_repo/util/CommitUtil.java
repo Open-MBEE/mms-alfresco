@@ -293,7 +293,7 @@ public class CommitUtil {
                         JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
                         if (owned != null) {
                             for (int j = 0; j < owned.length(); j++) {
-                                Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(i));
+                                Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(j));
                                 childViewEdges.add(p);
                             }
                         }
@@ -356,7 +356,7 @@ public class CommitUtil {
                         JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
                         if (owned != null) {
                             for (int j = 0; j < owned.length(); j++) {
-                                Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(i));
+                                Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(j));
                                 childViewEdges.add(p);
                             }
                         }
