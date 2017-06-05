@@ -844,10 +844,10 @@ public class PostgresHelper {
     }
 
     public String createInsertNodeQuery(List<Map<String, String>> nodes) {
-        String query = String.format("INSERT INTO \"nodes%s\" (elasticId, sysmlId, nodeType) VALUES ", workspaceId);
+        String query = String.format("INSERT INTO \"nodes%s\" (elasticId, sysmlId, lastcommit, nodeType) VALUES ", workspaceId);
         for (Map<String, String> node : nodes) {
             query += String
-                .format("('%s', '%s', '%s'),", node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("nodetype"));
+                .format("('%s', '%s', '%s', '%s'),", node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"), node.get("nodetype"));
         }
         query = query.substring(0, query.length() - 1) + ";";
         return query;
@@ -857,15 +857,11 @@ public class PostgresHelper {
         String query = "";
         for (Map<String, String> node : nodes) {
             query += String.format(
-                "UPDATE \"nodes%s\" SET elasticId = '%s', sysmlId = '%s', nodeType = '%s' WHERE sysmlId = '%s';",
-                workspaceId, node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("nodetype"),
+                "UPDATE \"nodes%s\" SET elasticId = '%s', sysmlId = '%s', lastcommit = '%s', nodeType = '%s' WHERE sysmlId = '%s';",
+                workspaceId, node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"), node.get("nodetype"),
                 node.get(Sjm.SYSMLID));
         }
         return query;
-    }
-
-    public String createDeleteNodeQuery(String sysmlId) {
-        return String.format("DELETE FROM nodes%s WHERE sysmlId = '%s';", workspaceId, sysmlId);
     }
 
     public String createInsertEdgeQuery(List<Map<String, String>> edges) {

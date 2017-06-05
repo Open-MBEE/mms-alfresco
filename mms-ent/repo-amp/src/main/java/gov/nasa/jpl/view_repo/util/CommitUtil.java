@@ -228,10 +228,7 @@ public class CommitUtil {
         JSONArray jmsUpdated = new JSONArray();
         JSONArray jmsDeleted = new JSONArray();
 
-        List<String> affectedSysmlIds = new ArrayList<>();
         List<String> deletedSysmlIds = new ArrayList<>();
-        Map<String, String> aggregationTypes = new HashMap<>();
-        Map<String, String> propertyTypes = new HashMap<>();
         List<Pair<String, String>> addEdges = new ArrayList<>();
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
@@ -251,7 +248,6 @@ public class CommitUtil {
                     JSONObject e = added.getJSONObject(i);
                     Map<String, String> node = new HashMap<>();
                     jmsAdded.put(e.getString(Sjm.SYSMLID));
-                    affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
                     int nodeType = getNodeType(e).getValue();
 
                     if (e.has(Sjm.ELASTICID)) {
@@ -259,6 +255,7 @@ public class CommitUtil {
                         node.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
                         node.put("nodetype", Integer.toString(nodeType));
                         node.put("initialcommit", e.getString(Sjm.ELASTICID));
+                        node.put("lastcommit", commitElasticId);
                         nodeInserts.add(node);
                     }
                     if (e.has(Sjm.OWNERID) && e.getString(Sjm.OWNERID) != null && e.getString(Sjm.SYSMLID) != null) {
@@ -312,7 +309,6 @@ public class CommitUtil {
                     jmsDeleted.put(e.getString(Sjm.SYSMLID));
                     pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
                     pgh.deleteNode(e.getString(Sjm.SYSMLID));
-                    affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
                     deletedSysmlIds.add(e.getString(Sjm.SYSMLID));
                 }
 
@@ -320,7 +316,6 @@ public class CommitUtil {
                 for (int i = 0; i < updated.length(); i++) {
                     JSONObject e = updated.getJSONObject(i);
                     jmsUpdated.put(e.getString(Sjm.SYSMLID));
-                    affectedSysmlIds.add(e.getString(Sjm.SYSMLID));
                     int nodeType = getNodeType(e).getValue();
                     pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID), true, DbEdgeTypes.CONTAINMENT);
                     pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID), false, DbEdgeTypes.VIEW);
@@ -374,6 +369,7 @@ public class CommitUtil {
                         updatedNode.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
                         updatedNode.put("nodetype", Integer.toString(getNodeType(e).getValue()));
                         updatedNode.put("deleted", "false");
+                        updatedNode.put("lastcommit", commitElasticId);
                         nodeUpdates.add(updatedNode);
                     }
                 }
@@ -425,7 +421,9 @@ public class CommitUtil {
                     sp = pgh.startTransaction();
                     pgh.runBulkQueries(nodeInserts, "nodes");
                     pgh.runBulkQueries(nodeUpdates, "updates");
-                    pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, affectedSysmlIds);
+                    pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, deletedSysmlIds);
+                    pgh.commitTransaction();
+                    sp = pgh.startTransaction();
                     pgh.runBulkQueries(edgeInserts, "edges");
                     pgh.commitTransaction();
                     pgh.cleanEdges();
