@@ -1395,7 +1395,7 @@ public class EmsNodeUtil {
     public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs, final Long maxDepth, Set<String> elementsToFind, JSONArray result)
         throws JSONException, IOException {
 
-        if (elementsToFind.isEmpty()) {
+        if (elementsToFind.isEmpty() || mountsJson == null) {
             return;
         }
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
