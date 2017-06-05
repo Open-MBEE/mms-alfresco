@@ -424,13 +424,12 @@ public class CommitUtil {
                     //do bulk delete edges for affected sysmlids here - delete containment, view and childview
                     sp = pgh.startTransaction();
                     pgh.runBulkQueries(nodeInserts, "nodes");
-                    pgh.commitTransaction();
-                    pgh.startTransaction();
-                    pgh.runBulkQueries(edgeInserts, "edges");
                     pgh.runBulkQueries(nodeUpdates, "updates");
                     pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, affectedSysmlIds);
+                    pgh.runBulkQueries(edgeInserts, "edges");
                     pgh.commitTransaction();
                     pgh.cleanEdges();
+                    //TODO this should be part of transaction but will close the conn
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                 } catch (Exception e) {
                     try {
@@ -440,6 +439,8 @@ public class CommitUtil {
                     }
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                     return false;
+                } finally {
+                    pgh.close();
                 }
                 try {//view and childview edge updates
                     pgh.startTransaction();
@@ -448,6 +449,8 @@ public class CommitUtil {
                     pgh.cleanEdges();
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e))); //childedges are not critical
+                } finally {
+                    pgh.close();
                 }
                 try {
                     eh.indexElement(delta); //initial commit may fail to read back but does get indexed

@@ -1150,22 +1150,6 @@ public class EmsNodeUtil {
         element.remove(Sjm.CHILDVIEWS);
     }
 
-    public String insertCommitIntoElastic(JSONObject elasticElements) {
-        // JSON Object or Array passes the result with Eids from element insert
-        String commitElasticId = null;
-        try {
-            commitElasticId = eh.indexElement(elasticElements).elasticId;
-        } catch (IOException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-        return commitElasticId;
-
-    }
-
-    public void insertCommitIntoPostgres(String commitElasticId) {
-        pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, null);
-    }
-
     public Map<String, String> getGuidAndTimestampFromElasticId(String elasticid) {
         return pgh.getCommitAndTimestamp("elasticId", elasticid);
     }

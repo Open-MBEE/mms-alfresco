@@ -334,10 +334,10 @@ public class PostgresHelper {
         runBulkQueries(queries, false);
     }
 
-    public void runBulkQueries(List<String> queries, boolean withResults) {
+    public void runBulkQueries(List<String> queries, boolean withResults) throws SQLException {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
         String queryCache = "";
-        try {
+        //try {
             for (int i = 0; i < queries.size(); i++) {
                 queryCache += queries.get(i);
                 if (((i + 1) % limit) == 0 || i == (queries.size() - 1)) {
@@ -351,15 +351,15 @@ public class PostgresHelper {
                     queryCache = "";
                 }
             }
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
+        //} catch (Exception e) {
+        //    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        //}
     }
 
-    public void runBulkQueries(List<Map<String, String>> queries, String type) {
+    public void runBulkQueries(List<Map<String, String>> queries, String type) throws SQLException {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
         List<Map<String, String>> queryCache = new ArrayList<>();
-        try {
+        //try {
             for (int i = 0; i < queries.size(); i++) {
                 queryCache.add(queries.get(i));
                 String storedInsert = "";
@@ -379,9 +379,9 @@ public class PostgresHelper {
                     queryCache = new ArrayList<>();
                 }
             }
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
+        //} catch (Exception e) {
+        //    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        //}
     }
 
     public List<EdgeTypes> getEdgeTypes() {
