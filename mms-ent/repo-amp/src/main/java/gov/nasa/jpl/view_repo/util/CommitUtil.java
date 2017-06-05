@@ -441,11 +441,16 @@ public class CommitUtil {
                     pgh.close();
                 }
                 try {//view and childview edge updates
-                    pgh.startTransaction();
+                    sp = pgh.startTransaction();
                     pgh.runBulkQueries(childEdgeInserts, "edges");
                     pgh.commitTransaction();
                     pgh.cleanEdges();
                 } catch (Exception e) {
+                    try {
+                        pgh.rollBackToSavepoint(sp);
+                    } catch (SQLException se) {
+                        logger.error(String.format("%s", LogUtil.getStackTrace(se)));
+                    }
                     logger.error(String.format("%s", LogUtil.getStackTrace(e))); //childedges are not critical
                 } finally {
                     pgh.close();
