@@ -422,8 +422,8 @@ public class CommitUtil {
                     pgh.runBulkQueries(nodeInserts, "nodes");
                     pgh.runBulkQueries(nodeUpdates, "updates");
                     pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, deletedSysmlIds);
-                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                     pgh.commitTransaction();
+                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                     sp = pgh.startTransaction();
                     pgh.runBulkQueries(edgeInserts, "edges");
                     pgh.commitTransaction();
