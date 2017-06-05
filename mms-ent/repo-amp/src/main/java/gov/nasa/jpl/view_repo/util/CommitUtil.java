@@ -422,13 +422,13 @@ public class CommitUtil {
                     pgh.runBulkQueries(nodeInserts, "nodes");
                     pgh.runBulkQueries(nodeUpdates, "updates");
                     pgh.updateBySysmlIds("nodes", "lastCommit", commitElasticId, deletedSysmlIds);
+                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                     pgh.commitTransaction();
                     sp = pgh.startTransaction();
                     pgh.runBulkQueries(edgeInserts, "edges");
                     pgh.commitTransaction();
                     pgh.cleanEdges();
                     //TODO this should be part of transaction but will close the conn
-                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                 } catch (Exception e) {
                     try {
                         pgh.rollBackToSavepoint(sp);
