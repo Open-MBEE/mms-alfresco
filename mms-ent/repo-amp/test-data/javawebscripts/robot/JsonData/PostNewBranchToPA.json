@@ -1,5 +1,5 @@
 {
-    "elements": [
+    "refs": [
         {
             "id": "newbranch",
             "type": "Branch",

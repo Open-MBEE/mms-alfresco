@@ -1,16 +1,12 @@
 {
-    "_creator": "admin",
-    "elements": [
+    "refs": [
         {
             "_creator": "admin",
-            "_editable": true,
             "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
             "id": "newbranch",
             "name": "newBranch",
-            "ownerId": "holding_bin_PA",
             "parentRefId": "master",
+            "status": "creating",
             "type": "Branch"
         }
     ]
