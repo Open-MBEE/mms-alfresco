@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation    Testing branches and history
+Documentation    Testing groups and docs
 Resource        ../resources.robot
 
 *** Test Cases ***
