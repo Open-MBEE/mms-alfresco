@@ -191,7 +191,7 @@ public class CommitUtil {
     }
 
     private static boolean isPartProperty(JSONObject e) {
-        if (e.has(Sjm.TYPE) && !e.getString(Sjm.TYPE).equals("Property")) {
+        if (!e.has(Sjm.TYPE) || !e.getString(Sjm.TYPE).equals("Property")) {
             return false;
         }
         JSONArray appliedS = e.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
