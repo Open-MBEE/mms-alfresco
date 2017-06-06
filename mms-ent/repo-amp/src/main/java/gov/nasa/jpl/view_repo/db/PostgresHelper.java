@@ -461,7 +461,7 @@ public class PostgresHelper {
             ResultSet rs = null;
 
             if (sites) {
-                rs = execQuery("SELECT * FROM nodes WHERE nodetype = (SELECT id FROM nodetypes WHERE name = \'site\')");
+                rs = execQuery("SELECT * FROM \"nodes" + workspaceId + "\" WHERE nodetype = (SELECT id FROM nodetypes WHERE name = \'site\')");
 
                 while (rs.next()) {
                     result.add(resultSetToNode(rs));
@@ -469,7 +469,7 @@ public class PostgresHelper {
             }
             if (sitepackages) {
                 rs = execQuery(
-                    "SELECT * FROM nodes WHERE nodetype = (SELECT id FROM nodetypes WHERE name = \'siteandpackage\')");
+                    "SELECT * FROM \"nodes" + workspaceId + "\" WHERE nodetype = (SELECT id FROM nodetypes WHERE name = \'siteandpackage\')");
 
                 while (rs.next()) {
                     result.add(resultSetToNode(rs));
