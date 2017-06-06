@@ -80,17 +80,6 @@ PostNewElements
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-TestPython
-	[Documentation]		"Get posted project."
-	[Tags]				6
-	${result} =			Get		url=${ROOT}/orgs/initorg/projects		headers=&{REQ_HEADER}
-	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
-	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-	${compare_result} =		id exists		${TEST_NAME}
-	Should Match Baseline		${compare_result}
-
-
 UpdateElements
     [Documentation]     "Update a existing element.  Creates versions of a element."
     [Tags]              8

@@ -23,29 +23,29 @@
         {
             "id": "doc0",
             "ownerId": "PA",
-            "name": "doc0"
+            "name": "doc0",
             "_appliedStereotypeIds": [
                 "_17_0_2_3_87b0275_1371477871400_792964_43374"
             ],
-            "type": "Class",
+            "type": "Class"
         },
         {
             "id": "doc1",
             "ownerId": "group1",
-            "name": "doc1"
+            "name": "doc1",
             "_appliedStereotypeIds": [
                 "_17_0_2_3_87b0275_1371477871400_792964_43374"
             ],
-            "type": "Class",
+            "type": "Class"
         },
         {
             "id": "doc2",
             "ownerId": "package2",
-            "name": "doc2"
+            "name": "doc2",
             "_appliedStereotypeIds": [
                 "_17_0_2_3_87b0275_1371477871400_792964_43374"
             ],
-            "type": "Class",
+            "type": "Class"
         }
     ]
 }
