@@ -551,7 +551,7 @@ public class PostgresHelper {
         List<Node> result = new ArrayList<>();
 
         try {
-            ResultSet rs = execQuery(String.format("SELECT * FROM nodes WHERE nodetype = %d", type.getValue()));
+            ResultSet rs = execQuery(String.format("SELECT * FROM \"nodes%s\" WHERE nodetype = %d", workspaceId, type.getValue()));
             while (rs.next()) {
                 result.add(resultSetToNode(rs));
             }
