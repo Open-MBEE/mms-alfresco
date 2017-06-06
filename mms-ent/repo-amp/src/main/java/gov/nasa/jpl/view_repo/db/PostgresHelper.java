@@ -3,6 +3,7 @@ package gov.nasa.jpl.view_repo.db;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -141,8 +142,9 @@ public class PostgresHelper {
         projectProperties.put("dbname", "_" + project);
         connectConfig();
         try {
-            ResultSet rs = this.configConn.createStatement()
-                .executeQuery(String.format("SELECT location FROM projects WHERE projectId = '%s'", project));
+            PreparedStatement query = this.configConn.prepareStatement("SELECT location FROM projects WHERE projectId = ?");
+            query.setString(1, project);
+            ResultSet rs = query.executeQuery();
             if (rs.next()) {
                 if (!rs.getString(1).isEmpty()) {
                     projectProperties.put("location", rs.getString(1));
@@ -168,7 +170,10 @@ public class PostgresHelper {
             workspaceId = workspaceId.replace("-", "_").replaceAll("\\s+", "");
             try {
                 // Try to check for either workspaceName or workspaceId
-                ResultSet rs = execQuery(String.format("SELECT refId FROM refs WHERE refId = '%s'", workspaceId));
+                connect();
+                PreparedStatement query = this.conn.prepareStatement("SELECT refId FROM refs WHERE refId = ?");
+                query.setString(1, workspaceId);
+                ResultSet rs = query.executeQuery();
                 if (rs.next()) {
                     this.workspaceId = rs.getString(1);
                 }
@@ -178,9 +183,12 @@ public class PostgresHelper {
                 close();
             }
 
-            if (this.workspaceId.equals("")) {
+            if (!this.workspaceId.equals("")) {
                 try {
-                    ResultSet nrs = execQuery(String.format("SELECT id FROM refs WHERE refName = '%s'", workspaceId));
+                    connect();
+                    PreparedStatement nquery = this.conn.prepareStatement("SELECT refId FROM refs WHERE refName = ?");
+                    nquery.setString(1, workspaceId);
+                    ResultSet nrs = nquery.executeQuery();
                     if (nrs.next()) {
                         this.workspaceId = workspaceId;
                     }
@@ -293,18 +301,22 @@ public class PostgresHelper {
 
                 if (values.get(col) != null) {
                     vals.append("'").append(values.get(col)).append("',");
-                } else
+                } else {
                     vals.append(values.get(col)).append(",");
+                }
             }
 
             columns.setLength(columns.length() - 1);
             vals.setLength(vals.length() - 1);
 
-            String query = String
-                .format("INSERT INTO \"%s\" (%s) VALUES (%s) RETURNING id", table, columns.toString(), vals.toString());
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("INSERT INTO ? (?) VALUES (?) RETURNING id");
+            query.setString(1, table);
+            query.setString(2, columns.toString());
+            query.setString(3, vals.toString());
 
-            logger.debug(String.format("Query: %s", query));
-            execQuery(query);
+            //logger.debug(String.format("Query: %s", query));
+            query.execute();
             return 1;
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
@@ -742,25 +754,6 @@ public class PostgresHelper {
 
         return null;
     }
-
-//    public Map<String, Object> getLastCommitForElement(String sysmlId) {
-//        Map<String, Object> result = new HashMap<>();
-//        try {
-//            ResultSet rs = execQuery(String.format(
-//                "SELECT lastCommit, timestamp FROM \"nodes%s\" JOIN commits ON lastCommit = commits.elasticId WHERE sysmlId = '%s'",
-//                workspaceId, sysmlId));
-//            if (rs.next()) {
-//                result.put("commitId", rs.getString(1));
-//                result.put("timestamp", rs.getDate(2));
-//            }
-//        } catch (SQLException e) {
-//            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-//        } finally {
-//            close();
-//        }
-//
-//        return result;
-//    }
 
     public String getElasticIdFromSysmlId(String sysmlId) {
         if (logger.isDebugEnabled())
