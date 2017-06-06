@@ -334,10 +334,10 @@ public class PostgresHelper {
         runBulkQueries(queries, false);
     }
 
-    public void runBulkQueries(List<String> queries, boolean withResults) {
+    public void runBulkQueries(List<String> queries, boolean withResults) throws SQLException {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
         String queryCache = "";
-        try {
+        //try {
             for (int i = 0; i < queries.size(); i++) {
                 queryCache += queries.get(i);
                 if (((i + 1) % limit) == 0 || i == (queries.size() - 1)) {
@@ -351,15 +351,15 @@ public class PostgresHelper {
                     queryCache = "";
                 }
             }
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
+        //} catch (Exception e) {
+        //    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        //}
     }
 
-    public void runBulkQueries(List<Map<String, String>> queries, String type) {
+    public void runBulkQueries(List<Map<String, String>> queries, String type) throws SQLException {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
         List<Map<String, String>> queryCache = new ArrayList<>();
-        try {
+        //try {
             for (int i = 0; i < queries.size(); i++) {
                 queryCache.add(queries.get(i));
                 String storedInsert = "";
@@ -379,9 +379,9 @@ public class PostgresHelper {
                     queryCache = new ArrayList<>();
                 }
             }
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
+        //} catch (Exception e) {
+        //    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        //}
     }
 
     public List<EdgeTypes> getEdgeTypes() {
@@ -461,7 +461,7 @@ public class PostgresHelper {
             ResultSet rs = null;
 
             if (sites) {
-                rs = execQuery("SELECT * FROM nodes WHERE nodetype = (SELECT id FROM nodetypes WHERE name = \'site\')");
+                rs = execQuery("SELECT * FROM \"nodes" + workspaceId + "\" WHERE nodetype = (SELECT id FROM nodetypes WHERE name = \'site\')");
 
                 while (rs.next()) {
                     result.add(resultSetToNode(rs));
@@ -469,7 +469,7 @@ public class PostgresHelper {
             }
             if (sitepackages) {
                 rs = execQuery(
-                    "SELECT * FROM nodes WHERE nodetype = (SELECT id FROM nodetypes WHERE name = \'siteandpackage\')");
+                    "SELECT * FROM \"nodes" + workspaceId + "\" WHERE nodetype = (SELECT id FROM nodetypes WHERE name = \'siteandpackage\')");
 
                 while (rs.next()) {
                     result.add(resultSetToNode(rs));
@@ -551,7 +551,7 @@ public class PostgresHelper {
         List<Node> result = new ArrayList<>();
 
         try {
-            ResultSet rs = execQuery(String.format("SELECT * FROM nodes WHERE nodetype = %d", type.getValue()));
+            ResultSet rs = execQuery(String.format("SELECT * FROM \"nodes%s\" WHERE nodetype = %d", workspaceId, type.getValue()));
             while (rs.next()) {
                 result.add(resultSetToNode(rs));
             }
@@ -844,10 +844,10 @@ public class PostgresHelper {
     }
 
     public String createInsertNodeQuery(List<Map<String, String>> nodes) {
-        String query = String.format("INSERT INTO \"nodes%s\" (elasticId, sysmlId, nodeType) VALUES ", workspaceId);
+        String query = String.format("INSERT INTO \"nodes%s\" (elasticId, sysmlId, lastcommit, initialcommit, nodeType) VALUES ", workspaceId);
         for (Map<String, String> node : nodes) {
             query += String
-                .format("('%s', '%s', '%s'),", node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("nodetype"));
+                .format("('%s', '%s', '%s', '%s', '%s'),", node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"), node.get(Sjm.ELASTICID), node.get("nodetype"));
         }
         query = query.substring(0, query.length() - 1) + ";";
         return query;
@@ -857,15 +857,11 @@ public class PostgresHelper {
         String query = "";
         for (Map<String, String> node : nodes) {
             query += String.format(
-                "UPDATE \"nodes%s\" SET elasticId = '%s', sysmlId = '%s', nodeType = '%s' WHERE sysmlId = '%s';",
-                workspaceId, node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("nodetype"),
+                "UPDATE \"nodes%s\" SET elasticId = '%s', sysmlId = '%s', lastcommit = '%s', nodeType = '%s' WHERE sysmlId = '%s';",
+                workspaceId, node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"), node.get("nodetype"),
                 node.get(Sjm.SYSMLID));
         }
         return query;
-    }
-
-    public String createDeleteNodeQuery(String sysmlId) {
-        return String.format("DELETE FROM nodes%s WHERE sysmlId = '%s';", workspaceId, sysmlId);
     }
 
     public String createInsertEdgeQuery(List<Map<String, String>> edges) {
@@ -1910,6 +1906,7 @@ public class PostgresHelper {
         if (refId == null || refId.isEmpty()) {
             refId = "master";
         }
+        refId = refId.replace("-", "_").replaceAll("\\s+", "");
         try {
             ResultSet rs = execQuery(
                 String.format("SELECT refId, elasticId FROM refs WHERE deleted = false AND refId = '%s'", refId));
