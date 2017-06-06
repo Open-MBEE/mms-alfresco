@@ -844,10 +844,10 @@ public class PostgresHelper {
     }
 
     public String createInsertNodeQuery(List<Map<String, String>> nodes) {
-        String query = String.format("INSERT INTO \"nodes%s\" (elasticId, sysmlId, lastcommit, nodeType) VALUES ", workspaceId);
+        String query = String.format("INSERT INTO \"nodes%s\" (elasticId, sysmlId, lastcommit, initialcommit, nodeType) VALUES ", workspaceId);
         for (Map<String, String> node : nodes) {
             query += String
-                .format("('%s', '%s', '%s', '%s'),", node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"), node.get("nodetype"));
+                .format("('%s', '%s', '%s', '%s', '%s'),", node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"), node.get(Sjm.ELASTICID), node.get("nodetype"));
         }
         query = query.substring(0, query.length() - 1) + ";";
         return query;
