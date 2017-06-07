@@ -140,4 +140,4 @@ fi
 
 sh ./repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms_mappings.sh
 rm -rf ./alf_data_dev
-mvn clean -Ppurge
+./mvnw clean -Ppurge
