@@ -9,22 +9,8 @@
             "_refId": "master",
             "id": "package1",
             "name": "package1",
-            "onwerId": "PA",
-            "ownerId": "holding_bin_PA",
+            "ownerId": "PA",
             "type": "Package"
-        },
-        {
-            "_creator": "admin",
-            "_editable": true,
-            "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
-            "aggregation": "composite",
-            "id": "v1p1",
-            "name": "v1p1",
-            "ownerId": "v1",
-            "type": "Property",
-            "typeId": "cv1"
         },
         {
             "_appliedStereotypeIds": [
@@ -51,6 +37,19 @@
             "_projectId": "PA",
             "_refId": "master",
             "aggregation": "composite",
+            "id": "v1p1",
+            "name": "v1p1",
+            "ownerId": "v1",
+            "type": "Property",
+            "typeId": "cv1"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "aggregation": "composite",
             "id": "v1p2",
             "name": "v1p2",
             "ownerId": "v1",
@@ -66,8 +65,8 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "id": "cv2",
-            "name": "cv2",
+            "id": "cv1",
+            "name": "cv1",
             "ownedAttributeIds": [],
             "ownerId": "v1",
             "type": "Class"
@@ -81,8 +80,8 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "id": "cv1",
-            "name": "cv1",
+            "id": "cv2",
+            "name": "cv2",
             "ownedAttributeIds": [],
             "ownerId": "v1",
             "type": "Class"

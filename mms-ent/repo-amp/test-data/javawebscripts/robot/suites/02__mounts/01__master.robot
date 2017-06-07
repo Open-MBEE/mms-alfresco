@@ -1,11 +1,6 @@
 *** Settings ***
 Documentation    Testing get element/elements/search across mounts
 Resource        ../resources.robot
-Suite Teardown  Teardown Actions
-
-*** Keywords ***
-Teardown Actions
-	Run Process     ../cleandb.sh
 
 *** Test Cases ***
 ProjectCreationForMountsPB

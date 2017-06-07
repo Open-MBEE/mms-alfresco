@@ -1536,11 +1536,13 @@ public class PostgresHelper {
         int recordId = 0;
         try {
             connectConfig();
-            if (this.configConn.createStatement()
-                .execute(String.format("SELECT count(id) FROM organizations WHERE orgId = '%s'", orgId))) {
-                ResultSet rs = this.configConn.createStatement().executeQuery(String
-                    .format("INSERT INTO organizations (orgId, orgName) VALUES ('%s','%s') RETURNING ID", orgId,
-                        orgName));
+            PreparedStatement query = this.configConn.prepareStatement("SELECT count(id) FROM organizations WHERE orgId = ?");
+            query.setString(1, orgId);
+            if (query.execute()) {
+                PreparedStatement insertOrg = this.configConn.prepareStatement("INSERT INTO organizations (orgId, orgName) VALUES (?,?) RETURNING ID");
+                insertOrg.setString(1, orgId);
+                insertOrg.setString(2, orgName);
+                ResultSet rs = insertOrg.executeQuery();
                 if (rs.next()) {
                     recordId = rs.getInt(1);
                 }
@@ -1560,8 +1562,9 @@ public class PostgresHelper {
         int organizationId = 0;
         try {
             connectConfig();
-            ResultSet rs = this.configConn.createStatement()
-                .executeQuery(String.format("SELECT id FROM organizations WHERE orgId = '%s'", orgId));
+            PreparedStatement query = this.configConn.prepareStatement("SELECT id FROM organizations WHERE orgId = ?");
+            query.setString(1, orgId);
+            ResultSet rs = query.executeQuery();
             if (rs.next()) {
                 organizationId = rs.getInt(1);
             }
@@ -1577,9 +1580,12 @@ public class PostgresHelper {
             }
             connectConfig();
             if (organizationId > 0) {
-                this.configConn.createStatement().execute(String
-                    .format("INSERT INTO projects (projectId, name, orgId, location) VALUES " + "('%s','%s',%d,'%s')",
-                        projectId, name, organizationId, location));
+                PreparedStatement insertProject = this.configConn.prepareStatement("INSERT INTO projects (projectId, name, orgId, location) VALUES (?,?,?,?)");
+                insertProject.setString(1, projectId);
+                insertProject.setString(2, name);
+                insertProject.setInt(3, organizationId);
+                insertProject.setString(4, location);
+                insertProject.execute();
             }
         } catch (PSQLException e) {
             // Do nothing
@@ -2105,10 +2111,11 @@ public class PostgresHelper {
     }
 
     public boolean orgExists(String orgId) {
-        String query = String.format("SELECT count(id) FROM organizations WHERE orgId = '%s'", orgId);
-        connectConfig();
         try {
-            ResultSet rs = this.configConn.createStatement().executeQuery(query);
+            connectConfig();
+            PreparedStatement query = this.configConn.prepareStatement("SELECT count(id) FROM organizations WHERE orgId = ?");
+            query.setString(1, orgId);
+            ResultSet rs = query.executeQuery();
             if (rs.next()) {
                 if (rs.getInt(1) > 0) {
                     return true;
@@ -2123,11 +2130,11 @@ public class PostgresHelper {
     }
 
     public boolean siteExists(String siteName) {
-        String query = "SELECT count(*) FROM \"nodes" + workspaceId
-            + "\" WHERE (nodetype = (SELECT id FROM nodetypes WHERE name = 'site') OR nodetype = (SELECT id FROM nodetypes WHERE name = 'siteandpackage')) AND sysmlid = '"
-            + siteName + "'";
         try {
-            ResultSet rs = execQuery(query);
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("SELECT count(*) FROM \"nodes" + workspaceId + "\" WHERE (nodetype = (SELECT id FROM nodetypes WHERE name = 'site') OR nodetype = (SELECT id FROM nodetypes WHERE name = 'siteandpackage')) AND sysmlid = ?");
+            query.setString(1, siteName);
+            ResultSet rs = query.executeQuery();
             if (rs.next()) {
                 if (rs.getInt(1) > 0) {
                     return true;
@@ -2142,11 +2149,14 @@ public class PostgresHelper {
     }
 
     public boolean refExists(String refId) {
+        String currentWorkspace = this.workspaceId;
         this.workspaceId = "";
         refId = refId.replace("-", "_").replaceAll("\\s+", "");
-        String query = String.format("SELECT count(id) FROM refs WHERE refId = '%s'", refId);
         try {
-            ResultSet rs = execQuery(query);
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("SELECT count(id) FROM refs WHERE refId = ?");
+            query.setString(1, refId);
+            ResultSet rs = query.executeQuery();
             if (rs.next()) {
                 if (rs.getInt(1) > 0) {
                     return true;
@@ -2157,6 +2167,7 @@ public class PostgresHelper {
         } finally {
             close();
         }
+        this.workspaceId = currentWorkspace;
         return false;
     }
 }
