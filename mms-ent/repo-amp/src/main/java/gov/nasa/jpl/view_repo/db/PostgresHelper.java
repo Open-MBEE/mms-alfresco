@@ -309,14 +309,11 @@ public class PostgresHelper {
             columns.setLength(columns.length() - 1);
             vals.setLength(vals.length() - 1);
 
-            connect();
-            PreparedStatement query = this.conn.prepareStatement("INSERT INTO ? (?) VALUES (?) RETURNING id");
-            query.setString(1, table);
-            query.setString(2, columns.toString());
-            query.setString(3, vals.toString());
+            String query = String
+                .format("INSERT INTO \"%s\" (%s) VALUES (%s) RETURNING id", table, columns.toString(), vals.toString());
 
-            //logger.debug(String.format("Query: %s", query));
-            query.execute();
+            logger.debug(String.format("Query: %s", query));
+            execQuery(query);
             return 1;
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
@@ -447,9 +444,9 @@ public class PostgresHelper {
     public String getOrganizationFromProject(String projectId) {
         try {
             connectConfig();
-            ResultSet rs = this.configConn.createStatement().executeQuery(String.format(
-                "SELECT organizations.orgId FROM projects JOIN organizations ON projects.orgId = organizations.id WHERE projects.projectId = '%s'",
-                projectId));
+            PreparedStatement query = this.configConn.prepareStatement("SELECT organizations.orgId FROM projects JOIN organizations ON projects.orgId = organizations.id WHERE projects.projectId = ?");
+            query.setString(1, projectId);
+            ResultSet rs = query.executeQuery();
             if (rs.next()) {
                 return rs.getString(1);
             }
@@ -505,17 +502,15 @@ public class PostgresHelper {
 
         connectConfig();
         try {
-            String query;
+            PreparedStatement query;
             if (orgId != null) {
-                query = String.format(
-                    "SELECT projects.id, projectId, name, organizations.orgId FROM projects JOIN organizations ON organizations.id = projects.orgId WHERE projects.orgId = (SELECT id FROM organizations where orgId = '%s')",
-                    orgId);
+                query = this.configConn.prepareStatement("SELECT projects.id, projectId, name, organizations.orgId FROM projects JOIN organizations ON organizations.id = projects.orgId WHERE projects.orgId = (SELECT id FROM organizations where orgId = ?)");
+                query.setString(1, orgId);
             } else {
-                query =
-                    "SELECT projects.id, projectId, name, organizations.orgId FROM projects JOIN organizations ON organizations.id = projects.orgId";
+                query = this.configConn.prepareStatement("SELECT projects.id, projectId, name, organizations.orgId FROM projects JOIN organizations ON organizations.id = projects.orgId");
             }
 
-            ResultSet rs = this.configConn.createStatement().executeQuery(query);
+            ResultSet rs = query.executeQuery();
 
             while (rs.next()) {
                 Map<String, Object> project = new HashMap<>();
@@ -540,11 +535,11 @@ public class PostgresHelper {
 
         connectConfig();
         try {
-            String query = String.format(
-                "SELECT projects.id, projectId, name, organizations.orgId FROM projects JOIN organizations ON organizations.id = projects.orgId WHERE projectId = '%s'",
-                projectId);
+            PreparedStatement query = this.configConn.prepareStatement(
+                "SELECT projects.id, projectId, name, organizations.orgId FROM projects JOIN organizations ON organizations.id = projects.orgId WHERE projectId = ?");
+            query.setString(1, projectId);
 
-            ResultSet rs = this.configConn.createStatement().executeQuery(query);
+            ResultSet rs = query.executeQuery();
             if (rs.next()) {
                 result.put(Sjm.SYSMLID, rs.getString(2));
                 result.put(Sjm.NAME, rs.getString(3));
@@ -563,7 +558,10 @@ public class PostgresHelper {
         List<Node> result = new ArrayList<>();
 
         try {
-            ResultSet rs = execQuery(String.format("SELECT * FROM \"nodes%s\" WHERE nodetype = %d", workspaceId, type.getValue()));
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE nodetype = ?");
+            query.setInt(1, type.getValue());
+            ResultSet rs = query.executeQuery();
             while (rs.next()) {
                 result.add(resultSetToNode(rs));
             }
@@ -594,7 +592,10 @@ public class PostgresHelper {
 
     public boolean isDeleted(String sysmlid) {
         try {
-            ResultSet rs = execQuery("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + sysmlid + "' AND deleted = true");
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ? AND deleted = true");
+            query.setString(1, sysmlid);
+            ResultSet rs = query.executeQuery();
             if (rs.next()) {
                 return true;
             }
@@ -609,7 +610,10 @@ public class PostgresHelper {
 
     public boolean sysmlIdExists(String sysmlid) {
         try {
-            ResultSet rs = execQuery("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + sysmlid + "'");
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ?");
+            query.setString(1, sysmlid);
+            ResultSet rs = query.executeQuery();
             return rs.next();
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -621,7 +625,12 @@ public class PostgresHelper {
 
     public boolean edgeExists(String parent, String child, DbEdgeTypes dbet) {
         try {
-            ResultSet rs = execQuery("SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + parent + "') AND child = (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + child + "') AND edgetype = " + dbet.getValue());
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ?) AND child = (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ?) AND edgetype = ?");
+            query.setString(1, parent);
+            query.setString(2, child);
+            query.setInt(3, dbet.getValue());
+            ResultSet rs = query.executeQuery();
             if (rs.next()) {
                 return true;
             }
@@ -703,11 +712,16 @@ public class PostgresHelper {
 
     public Node getNodeFromSysmlId(String sysmlId, boolean withDeleted) {
         try {
-            String query = "SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = '" + sysmlId + "'";
-            if (!withDeleted) {
-                query += " AND deleted = " + false;
+            connect();
+            PreparedStatement query;
+            if (withDeleted) {
+                query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ?");
+            } else {
+                query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ? AND deleted = " + false);
             }
-            ResultSet rs = execQuery(query);
+            query.setString(1, sysmlId);
+
+            ResultSet rs = query.executeQuery();
             if (rs.next()) {
                 return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5),
                     rs.getString(6));
@@ -991,8 +1005,10 @@ public class PostgresHelper {
 
     public void deleteNode(String sysmlId) {
         try {
-            execUpdate(
-                "UPDATE \"nodes" + workspaceId + "\" SET deleted = " + true + " WHERE sysmlid = '" + sysmlId + "'");
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = " + true + " WHERE sysmlid = ?");
+            query.setString(1, sysmlId);
+            query.execute();
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
