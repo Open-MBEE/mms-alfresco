@@ -183,7 +183,7 @@ public class PostgresHelper {
                 close();
             }
 
-            if (!this.workspaceId.equals("")) {
+            if (this.workspaceId.equals("")) {
                 try {
                     connect();
                     PreparedStatement nquery = this.conn.prepareStatement("SELECT refId FROM refs WHERE refName = ?");
