@@ -7,25 +7,6 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "4something",
-            "id": "4000",
-            "isDerived": false,
-            "name": "four hundred",
-            "ownerId": "PA",
-            "type": "Property",
-            "value": [
-                {
-                    "string": "dlam_string",
-                    "type": "LiteralString"
-                }
-            ]
-        },
-        {
-            "_creator": "admin",
-            "_editable": true,
-            "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
             "documentation": "something",
             "id": "300",
             "isDerived": false,
@@ -83,39 +64,6 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "4else",
-            "id": "401",
-            "isDerived": false,
-            "name": "four hundred and one",
-            "ownerId": "4000",
-            "type": "Property",
-            "value": [
-                {
-                    "string": "dlam_string",
-                    "type": "LiteralString"
-                }
-            ]
-        },
-        {
-            "_creator": "admin",
-            "_editable": true,
-            "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
-            "documentation": "directed_relationship",
-            "id": "500",
-            "name": "five hundred",
-            "ownerId": "300",
-            "source": "302",
-            "target": "303",
-            "type": "DirectedRelationship"
-        },
-        {
-            "_creator": "admin",
-            "_editable": true,
-            "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
             "documentation": "talk",
             "id": "303",
             "isDerived": false,
@@ -135,71 +83,11 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "4to",
-            "id": "402",
-            "isDerived": false,
-            "name": "four hundred and two",
-            "ownerId": "401",
-            "type": "Property",
-            "value": [
-                {
-                    "string": "dlam_string",
-                    "type": "LiteralString"
-                }
-            ]
-        },
-        {
-            "_creator": "admin",
-            "_editable": true,
-            "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
-            "documentation": "element values",
-            "id": "600",
-            "name": "600",
-            "ownerId": "holding_bin_PA",
-            "type": "Property",
-            "value": [
-                {
-                    "element": "300",
-                    "type": "ElementValue"
-                },
-                {
-                    "element": "302",
-                    "type": "ElementValue"
-                }
-            ]
-        },
-        {
-            "_creator": "admin",
-            "_editable": true,
-            "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
             "documentation": "about",
             "id": "304",
             "isDerived": false,
             "name": "three hundred and four",
             "ownerId": "303",
-            "type": "Property",
-            "value": [
-                {
-                    "string": "dlam_string",
-                    "type": "LiteralString"
-                }
-            ]
-        },
-        {
-            "_creator": "admin",
-            "_editable": true,
-            "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
-            "documentation": "4talk",
-            "id": "403",
-            "isDerived": false,
-            "name": "four hundred and three",
-            "ownerId": "402",
             "type": "Property",
             "value": [
                 {
@@ -233,6 +121,82 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
+            "documentation": "4something",
+            "id": "4000",
+            "isDerived": false,
+            "name": "four hundred",
+            "ownerId": "PA",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "4else",
+            "id": "401",
+            "isDerived": false,
+            "name": "four hundred and one",
+            "ownerId": "4000",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "4to",
+            "id": "402",
+            "isDerived": false,
+            "name": "four hundred and two",
+            "ownerId": "401",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "4talk",
+            "id": "403",
+            "isDerived": false,
+            "name": "four hundred and three",
+            "ownerId": "402",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
             "documentation": "4about",
             "id": "404",
             "isDerived": false,
@@ -252,16 +216,33 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "something",
-            "id": "x",
-            "isDerived": false,
-            "name": "xxx",
+            "documentation": "directed_relationship",
+            "id": "500",
+            "name": "five hundred",
+            "ownerId": "300",
+            "source": "302",
+            "target": "303",
+            "type": "DirectedRelationship"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "element values",
+            "id": "600",
+            "name": "600",
             "ownerId": "holding_bin_PA",
             "type": "Property",
             "value": [
                 {
-                    "string": "dlam_string",
-                    "type": "LiteralString"
+                    "element": "300",
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "302",
+                    "type": "ElementValue"
                 }
             ]
         },
@@ -293,10 +274,18 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "to make compatible with value specs (this is just a Element)",
-            "id": "dlam",
-            "name": "dlam",
-            "ownerId": "PA"
+            "documentation": "something",
+            "id": "x",
+            "isDerived": false,
+            "name": "xxx",
+            "ownerId": "holding_bin_PA",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
         }
     ]
 }

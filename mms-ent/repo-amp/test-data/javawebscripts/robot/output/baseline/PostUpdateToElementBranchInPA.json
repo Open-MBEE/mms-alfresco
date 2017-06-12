@@ -1,0 +1,16 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "newbranch",
+            "id": "test_history_element",
+            "name": "branch",
+            "ownerId": "PA",
+            "type": "Class"
+        }
+    ]
+}

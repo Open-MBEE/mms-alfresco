@@ -46,6 +46,7 @@ public class ElasticHelper {
     private static String elementIndex = EmsConfig.get("elastic.index.element");
     private static int resultLimit = Integer.parseInt(EmsConfig.get("elastic.limit.result"));
     private static int termLimit = Integer.parseInt(EmsConfig.get("elastic.limit.term"));
+    private static int readTimeout = 1000000000;
 
     public void init(String elasticHost) throws UnknownHostException {
 
@@ -53,9 +54,9 @@ public class ElasticHelper {
         if (elasticHost.contains("https")) {
             factory.setHttpClientConfig(
                 new HttpClientConfig.Builder(elasticHost).defaultSchemeForDiscoveredNodes("https").multiThreaded(true)
-                    .readTimeout(600000).build());
+                    .readTimeout(readTimeout).build());
         } else {
-            factory.setHttpClientConfig(new HttpClientConfig.Builder(elasticHost).multiThreaded(true).build());
+            factory.setHttpClientConfig(new HttpClientConfig.Builder(elasticHost).readTimeout(readTimeout).multiThreaded(true).build());
         }
         client = factory.getObject();
         logger.warn(String
