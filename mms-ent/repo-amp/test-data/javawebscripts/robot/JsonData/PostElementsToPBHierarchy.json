@@ -4,7 +4,7 @@
             "id": "package2",
             "type": "Package",
             "name": "package2",
-            "onwerId": "PB"
+            "ownerId": "PB"
         },
         {
             "id": "va",

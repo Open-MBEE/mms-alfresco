@@ -35,21 +35,6 @@ elastic.limit.insert=80
 elastic.limit.result=10000
 elastic.limit.term=10000
 
-#Teamwork Settings
-tw.url=TWSERVERURL
-tw.user=TWSERVERUSERNAME
-tw.pass=TWSERVERPASSWORD
-tw.port=18051
-
-#Jenkins Settings
-jenkins.url=JENKINSSERVERURL
-jenkins.user=JENKINSUSERNAME
-jenkins.pass=JENKINSPASSWORD
-
-#Analysis Setting
-analysis.server=ANALYSISSERVERURL
-analysis.agent=ANALYSISSERVERAGENT
-
 #JMS Setting
 jms.ctxfactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory
 jms.connfactory=ConnectionFactory

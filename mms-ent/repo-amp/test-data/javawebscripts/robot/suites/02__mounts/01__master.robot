@@ -1,11 +1,6 @@
 *** Settings ***
 Documentation    Testing get element/elements/search across mounts
 Resource        ../resources.robot
-Suite Teardown  Teardown Actions
-
-*** Keywords ***
-Teardown Actions
-	Run Process     ../cleandb.sh
 
 *** Test Cases ***
 ProjectCreationForMountsPB
@@ -50,7 +45,7 @@ PostNewElementsToPB
 	${post_json} =		Get File	    JsonData/PostElementsToPB.json
 	${result} =			Post		url=${ROOT}/projects/PB/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -62,7 +57,7 @@ PostNewElementsToPC
 	${post_json} =		Get File	    JsonData/PostElementsToPC.json
 	${result} =			Post		url=${ROOT}/projects/PC/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -74,7 +69,7 @@ PostNewElementsToPD
 	${post_json} =		Get File	    JsonData/PostElementsToPD.json
 	${result} =			Post		url=${ROOT}/projects/PD/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -86,7 +81,7 @@ MountCreationPA|PB
 	${post_json} =		Get File	 JsonData/CreateMountPA|PB.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -98,7 +93,7 @@ MountCreationPB|PC
 	${post_json} =		Get File	 JsonData/CreateMountPB|PC.json
 	${result} =			Post		url=${ROOT}/projects/PB/refs/master/elements		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -110,7 +105,7 @@ MountCreationPC|PD
 	${post_json} =		Get File	 JsonData/CreateMountPC|PD.json
 	${result} =			Post		url=${ROOT}/projects/PC/refs/master/elements		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -122,7 +117,7 @@ MountCreationPC|PA
 	${post_json} =		Get File	 JsonData/CreateMountPC|PA.json
 	${result} =			Post		url=${ROOT}/projects/PC/refs/master/elements	    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		_mounts		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -134,7 +129,7 @@ GetElementFromMountedProjectPB
 	[Tags]				M11
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e1		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -144,7 +139,7 @@ GetElementFromMountedProjectPC
 	[Tags]				M12
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e3		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -154,7 +149,7 @@ GetElementFromMountedProjectPD
 	[Tags]				M13
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e5		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -164,7 +159,7 @@ GetElementFromMountedProjectPA|PC
 	[Tags]				M14
 	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -174,7 +169,7 @@ GetExtendedElementFromMountedProjectPB
 	[Tags]				M15
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e1?depth=-1&extended=true		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -184,7 +179,7 @@ GetExtendedElementFromMountedProjectPC
 	[Tags]				M16
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e3?depth=-1&extended=true		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -194,7 +189,7 @@ GetExtendedElementFromMountedProjectPD
 	[Tags]				M17
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e5?depth=-1&extended=true		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -204,7 +199,7 @@ GetExtendedElementFromMountedProjectPA|PC
 	[Tags]				M18
 	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300?depth=-1&extended=true		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -215,7 +210,7 @@ GetElementsFromAllMountedProjectsViaPA
 	${post_json} =		Get File	    JsonData/GetAllElementsAcrossMounts.json
 	${result} =			Put		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}       headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -226,7 +221,7 @@ GetExtendedElementsFromAllMountedProjectsViaPA
 	${post_json} =		Get File	    JsonData/GetAllElementsAcrossMounts.json
 	${result} =			Put		url=${ROOT}/projects/PA/refs/master/elements?depth=-1&extended=true		data=${post_json}       headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -237,7 +232,7 @@ GetElementsFromAllMountedProjectsViaPADuplicates
 	${post_json} =		Get File	    JsonData/GellAllElementsAcrossMountsDuplicates.json
 	${result} =			Put		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}       headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -248,7 +243,7 @@ GetExtendedElementsFromAllMountedProjectsViaPADuplicates
 	${post_json} =		Get File	    JsonData/GellAllElementsAcrossMountsDuplicates.json
 	${result} =			Put		url=${ROOT}/projects/PA/refs/master/elements?depth=-1&extended=true		data=${post_json}       headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}

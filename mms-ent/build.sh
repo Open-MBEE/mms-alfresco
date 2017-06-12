@@ -4,8 +4,8 @@
 
 
 if [ "$1" == "" ]; then
-    MAVEN_OPTS="-Xms256m -Xmx8G -Xdebug" mvn clean package -f pom.xml -Dmaven.test.skip=true -U -Dmaven.repo.local=$HOME/.m2/repository;
+    MAVEN_OPTS="-Xms256m -Xmx8G -Xdebug" ./mvnw clean package -f pom.xml -Dmaven.test.skip=true -U -Dmaven.repo.local=$HOME/.m2/repository;
 else
-    mvn versions:set -DnewVersion=$1 -DgenerateBackupPoms=false
+    ./mvnw versions:set -DnewVersion=$1 -DgenerateBackupPoms=false
 fi
 

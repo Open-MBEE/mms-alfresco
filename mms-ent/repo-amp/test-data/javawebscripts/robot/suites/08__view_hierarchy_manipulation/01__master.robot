@@ -10,7 +10,7 @@ PostNewElementsToPAHierarchy
 	${post_json} =		Get File	    JsonData/PostElementsToPAHierarchy.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -22,7 +22,7 @@ PostNewElementsToPBHierarchy
 	${post_json} =		Get File	    JsonData/PostElementsToPBHierarchy.json
 	${result} =			Post		url=${ROOT}/projects/PB/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -33,7 +33,7 @@ GetElementV1FromPA
 	[Tags]				V3
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/v1		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -44,7 +44,7 @@ PostNewElementsToPAUpdateModel
 	${post_json} =		Get File	    JsonData/PostElementsToPAUpdateModel.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -55,7 +55,7 @@ GetElementV1FromPAAddChildView
 	[Tags]				V5
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/v1		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
@@ -66,7 +66,7 @@ PostNewElementsToPAChildView
 	${post_json} =		Get File	    JsonData/PostElementsToPAAddChildView.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements?childviews=true		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -78,7 +78,7 @@ PostNewElementsToPAChildViewAcrossMounts
 	${post_json} =		Get File	    JsonData/PostElementsToPAAddChildViewsAcrossMounts.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements?childviews=true		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -90,7 +90,7 @@ ReorderChildViewAcrossMountsFromPA
 	${post_json} =		Get File	    JsonData/ReorderChildViewAcrossMountsFromPA.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements?childviews=true		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}

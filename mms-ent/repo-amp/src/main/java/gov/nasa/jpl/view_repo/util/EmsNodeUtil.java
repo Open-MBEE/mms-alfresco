@@ -1150,22 +1150,6 @@ public class EmsNodeUtil {
         element.remove(Sjm.CHILDVIEWS);
     }
 
-    public String insertCommitIntoElastic(JSONObject elasticElements) {
-        // JSON Object or Array passes the result with Eids from element insert
-        String commitElasticId = null;
-        try {
-            commitElasticId = eh.indexElement(elasticElements).elasticId;
-        } catch (IOException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-        return commitElasticId;
-
-    }
-
-    public void insertCommitIntoPostgres(String commitElasticId) {
-        pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, null);
-    }
-
     public Map<String, String> getGuidAndTimestampFromElasticId(String elasticid) {
         return pgh.getCommitAndTimestamp("elasticId", elasticid);
     }
@@ -1411,7 +1395,7 @@ public class EmsNodeUtil {
     public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs, final Long maxDepth, Set<String> elementsToFind, JSONArray result)
         throws JSONException, IOException {
 
-        if (elementsToFind.isEmpty()) {
+        if (elementsToFind.isEmpty() || mountsJson == null) {
             return;
         }
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
