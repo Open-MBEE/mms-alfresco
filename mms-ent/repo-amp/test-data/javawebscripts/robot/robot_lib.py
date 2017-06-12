@@ -215,26 +215,52 @@ def compare_json(test_name):  # , json_object, filters):
         return False
     return ordered(baseline_json) == ordered(result_json)
 
-# def id_exists(test_name):  # , json_object, filters):
-#     """
-#     Takes a JSON object and looks for the baseline json that is specified by test_name.
-#     :param test_name:
-#     :param json_object:
-#     :param filters:
-#     :param create_baseline:
-#     :return:
-#     """
-#     result_json = None
-#     try:
-#         with open("output/results/{}.json".format(test_name.replace(' ', ''))) as result_file:
-#             result_json = json.load(result_file)
-#     except:
-#         print("Failed to open the result json")
-#         return False
-#     #look for values NEW_ASSOC, NEW_PROP1, NEW_PROP2
-#     if len(result_json) == 6
-#         return true
-#     return "Length is not 6" + len(result_json)
+def id_exists(test_name):
+    """
+    Takes a JSON object and looks for the baseline json that is specified by test_name.
+    :param test_name:
+    :param json_object:
+    :param filters:
+    :param create_baseline:
+    :return:
+    """
+    result_json = None
+    try:
+        with open("output/results/{}.json".format(test_name.replace(' ', ''))) as result_file:
+            result_json = json.load(result_file)
+    except:
+        print("Failed to open the result json")
+        return False
+    #look for values NEW_ASSOC, NEW_PROP1, NEW_PROP2
+    print(result_json)
+    if 6 == 6:
+        return True
+    return "Length is not 6"
+def get_last_commit_id(commits):
+    """
+    finds the list commit in a list
+    :param commits:
+    :return:
+    """
+    print(commits)
+    if bool(commits):
+        return commits[-1].get('id')
+    return "no commits"
+
+def commit_naught(commits):
+    """
+    finds the list commit in a list
+    :param commits:
+    :return:
+    """
+    print(type(commits.get('commits')[0].get('id')))
+    # print(commits.get('commits'))
+    # print(commits.get('commits').get('id'))
+    #print(commits[0].get('commits').get('id'))
+
+    if bool(commits):
+        return commits.get('commits')[0].get('id')
+    return "no commits"
 
 def clear_results_dir():
     try:

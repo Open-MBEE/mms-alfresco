@@ -210,12 +210,6 @@
                     "string": "dlam_string"
                 }
             ]
-        },
-        {
-            "documentation": "to make compatible with value specs (this is just a Element)",
-            "id": "dlam",
-            "name": "dlam",
-            "ownerId": "PA"
         }
     ]
 }

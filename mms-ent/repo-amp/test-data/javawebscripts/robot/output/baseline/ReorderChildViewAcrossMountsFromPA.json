@@ -7,8 +7,8 @@
             ],
             "_childViews": [
                 {
-                    "aggregation": "composite",
-                    "id": "cv3"
+                    "aggregation": "shared",
+                    "id": "va"
                 },
                 {
                     "aggregation": "composite",
@@ -17,6 +17,10 @@
                 {
                     "aggregation": "composite",
                     "id": "cv1"
+                },
+                {
+                    "aggregation": "composite",
+                    "id": "cv3"
                 }
             ],
             "_creator": "admin",
@@ -27,9 +31,10 @@
             "id": "v1",
             "name": "v1",
             "ownedAttributeIds": [
-                "v1p3",
+                "MMS_1496859112859_f51105d1-21b2-4cce-8ece-6197a5b73695",
                 "v1p2",
-                "v1p1"
+                "v1p1",
+                "v1p3"
             ],
             "ownerId": "package1",
             "type": "Class"
