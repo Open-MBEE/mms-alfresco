@@ -611,6 +611,14 @@ public class EmsNodeUtil {
             o.put(Sjm.INREFIDS, new JSONArray().put(this.workspaceName));
             o.put(Sjm.MODIFIER, user);
             o.put(Sjm.MODIFIED, date);
+
+            if (o.has(Sjm.QUALIFIEDID)) {
+                o.remove(Sjm.QUALIFIEDID);
+            }
+            if (o.has(Sjm.QUALIFIEDNAME)) {
+                o.remove(Sjm.QUALIFIEDNAME);
+            }
+
             if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null || o.getString(Sjm.OWNERID).equalsIgnoreCase("null")) {
                 o.put(Sjm.OWNERID, holdingBinSysmlid);
             }
