@@ -3903,19 +3903,23 @@ public class NodeUtil {
         // );
         if (NodeUtil.isInsideTransactionNow()) {
             if (NodeUtil.hasBeenOutsideTransaction()) {
+                /*
                 Exception e = new Exception();
                 logger.error("In transaction when have been outside! " + node, e);
                 logger.error("Stack trace when last outside transaction:\n"
                                 + Utils.toString(getOutsideTransactionStackTrace()));
+                */
             }
             NodeUtil.setBeenInsideTransaction(true);
             setInsideTransactionStackTrace();
         } else {
             if (NodeUtil.hasBeenInsideTransaction()) {
+                /*
                 Exception e = new Exception();
                 logger.error("Outside transaction when have been inside! " + node, e);
                 logger.error("Stack trace when last inside transaction:\n"
                                 + Utils.toString(getInsideTransactionStackTrace()));
+                */
             }
             NodeUtil.setBeenOutsideTransaction(true);
             setOutsideTransactionStackTrace();
