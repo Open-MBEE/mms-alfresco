@@ -69,7 +69,7 @@
                                 </goals>
                                 <phase>post-integration-test</phase>
                                 <configuration>
-                                    <skipErrorOnShutdown>true</skipErrorOnShutdown>
+                                    <skipErrorOnShutdown>false</skipErrorOnShutdown>
                                 </configuration>
                             </execution>
                         </executions>
