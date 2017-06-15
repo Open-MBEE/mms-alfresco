@@ -1,0 +1,34 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PB",
+            "_qualifiedId": "/initorg/PB/e1",
+            "_qualifiedName": "//mount test project PB/test mount object",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "e1",
+            "isDerived": false,
+            "name": "test mount object",
+            "ownerId": "PB",
+            "type": "Class"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PB",
+            "_qualifiedId": "/initorg/PB/e1/e2",
+            "_qualifiedName": "//mount test project PB/test mount object/test mount object",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "e2",
+            "isDerived": false,
+            "name": "test mount object",
+            "ownerId": "e1",
+            "type": "Class"
+        }
+    ]
+}

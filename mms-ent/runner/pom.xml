@@ -62,6 +62,16 @@
                                 </goals>
                                 <phase>pre-integration-test</phase>
                             </execution>
+                            <execution>
+                                <id>stop-wars</id>
+                                <goals>
+                                    <goal>shutdown</goal>
+                                </goals>
+                                <phase>post-integration-test</phase>
+                                <configuration>
+                                    <skipErrorOnShutdown>false</skipErrorOnShutdown>
+                                </configuration>
+                            </execution>
                         </executions>
                         <configuration>
                             <ignorePackaging>true</ignorePackaging>
@@ -111,6 +121,37 @@
                                 </webapp>
                             </webapps>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>robot-tests</id>
+            <properties>
+                <maven.tomcat.fork>true</maven.tomcat.fork>
+                <skipTests>false</skipTests>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.robotframework</groupId>
+                        <artifactId>robotframework-maven-plugin</artifactId>
+                        <version>1.4.7</version>
+                        <configuration>
+                            <extraPathDirectories>${project.basedir}/src/test/robotframework/libraries</extraPathDirectories>
+                            <testCasesDirectory>${project.basedir}/src/test/robotframework/suites</testCasesDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>regression-tests</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>acceptance-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

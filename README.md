@@ -74,7 +74,7 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
     * If you get error:-Dmaven.multiModuleProjectDirectory system property is not set. Check $M2_HOME environment variable and mvn script match. Goto **Window -> Preference -> Java -> Installed JREs -> Edit -> Default VM arguments**  _set -Dmaven.multiModuleProjectDirectory=$M2_HOME_
 
 ## 1b. Running Alfresco
-1. From mms-ent directory, either run `clean-run.sh`, `run.sh`, or `mvn install -Prun`
+1. From mms-ent directory, either run `clean-run.sh`, `run.sh`, or `./mvnw install -Prun`
 
 ## 2. Testing Alfresco
 1. Enter http://localhost:8080/share/ at a browser's url address textbox.
@@ -220,7 +220,21 @@ Make sure the elements went in:
 curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin -X GET "http://localhost:8080/alfresco/service/projects/123456/refs/master/elements/123456?depth=-1"
 ```
 
-For more testing, see repo-amp/test-data/javawebscripts/robot
+## Robotframework test suite
+Robot tests can be run with the following maven profiles in the mms-ent directory:
+```
+./mvnw install -Prun,robot-tests
+```
+Please note that tests should be run on a clean instance, therefore, it may be helpful to run clean.sh before running the tests
+
+The Robotframework tests require the 'requests' python module. Install it as follows:
+```
+pip install --target=runner/src/test/robotframework/libraries requests
+```
+OR:
+```
+pip install --target=$HOME/.m2/repository/org/robotframework/robotframework/{ROBOTPLUGINVERSION}/Lib requests
+```
 
 ## Changing debug levels on the fly
 
