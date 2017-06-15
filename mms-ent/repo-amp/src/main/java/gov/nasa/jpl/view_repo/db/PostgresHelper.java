@@ -864,8 +864,8 @@ public class PostgresHelper {
         String query = "";
         for (Map<String, String> node : nodes) {
             query += String.format(
-                "UPDATE \"nodes%s\" SET elasticId = '%s', sysmlId = '%s', lastcommit = '%s', nodeType = '%s' WHERE sysmlId = '%s';",
-                workspaceId, node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"), node.get("nodetype"),
+                "UPDATE \"nodes%s\" SET elasticId = '%s', sysmlId = '%s', lastcommit = '%s', nodeType = '%s', deleted = %b WHERE sysmlId = '%s';",
+                workspaceId, node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"), node.get("nodetype"), Boolean.parseBoolean(node.get("deleted")),
                 node.get(Sjm.SYSMLID));
         }
         return query;
@@ -1523,7 +1523,7 @@ public class PostgresHelper {
 
     public void cleanEdges() {
         try {
-            String query = "DELETE FROM \"edges" + workspaceId + "\" WHERE parent = null OR child = null";
+            String query = "DELETE FROM \"edges" + workspaceId + "\" WHERE parent IS NULL OR child IS NULL";
             execUpdate(query);
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
