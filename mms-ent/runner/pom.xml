@@ -139,7 +139,9 @@
                         <artifactId>robotframework-maven-plugin</artifactId>
                         <version>1.4.7</version>
                         <configuration>
-                            <extraPathDirectories>${project.basedir}/src/test/robotframework/libraries</extraPathDirectories>
+                            <extraPathDirectories>
+                                <extraPathDirectory>${project.basedir}/src/test/robotframework/libraries</extraPathDirectory>
+                            </extraPathDirectories>
                             <testCasesDirectory>${project.basedir}/src/test/robotframework/suites</testCasesDirectory>
                         </configuration>
                         <executions>
