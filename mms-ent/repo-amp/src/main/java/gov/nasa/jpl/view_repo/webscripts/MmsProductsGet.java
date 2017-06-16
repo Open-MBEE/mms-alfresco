@@ -87,8 +87,9 @@ public class MmsProductsGet extends AbstractJavaWebScript {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         String extended = req.getParameter("extended");
+        String groupId = req.getServiceMatch().getTemplateVars().get("groupId");
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        return emsNodeUtil.getDocJson(projectId, commitId, extended != null && extended.equals("true"));
+        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : projectId, commitId, extended != null && extended.equals("true"));
     }
 }
