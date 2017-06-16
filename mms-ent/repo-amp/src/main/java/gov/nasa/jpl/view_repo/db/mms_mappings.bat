@@ -2,7 +2,7 @@
 rem This script expects PATH variable to contain the curl bin directory
 
 SETLOCAL enabledelayedexpansion
-TITLE mms-mappings
+TITLE mms_mappings
 
 SET HOSTNAME=%COMPUTERNAME%
 
@@ -11,10 +11,10 @@ SET MY_DIR=%~dp0
 
 CALL curl > NUL 2>&1
 
-if %ERRORLEVEL% neq 2 (
+if %ERRORLEVEL% geq 2 (
    echo curl binary not found. Please install it and update your PATH variable.
    echo MMS Update failed.
-   EXIT 2
+   EXIT /B 2
 )
 
 
