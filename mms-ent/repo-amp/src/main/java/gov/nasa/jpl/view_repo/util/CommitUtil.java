@@ -557,19 +557,73 @@ public class CommitUtil {
 
         project = createNode(projectSysmlid, user, date, o);
         site = createNode(orgId, user, date, siteElement);
+
         siteHoldingBin = createNode("holding_bin_" + orgId, user, date, null);
         siteHoldingBin.put(Sjm.NAME, "Holding Bin");
         siteHoldingBin.put(Sjm.OWNERID, orgId);
         siteHoldingBin.put(Sjm.TYPE, "Package");
         siteHoldingBin.put("project", "");
+        siteHoldingBin.put(Sjm.URI, JSONObject.NULL);
+        siteHoldingBin.put(Sjm.APPLIEDSTEREOTYPEIDS, );
+        siteHoldingBin.put(Sjm.ISSITE, false);
+        siteHoldingBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL));
+        siteHoldingBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
+        siteHoldingBin.put(Sjm.DOCUMENTATION, JSONObject.NULL));
+        siteHoldingBin.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
+        siteHoldingBin.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+        siteHoldingBin.put(Sjm.NAMEEXPRESSION, JSONObject.NULL));
+        siteHoldingBin.put(Sjm.PACKAGEIMPORTIDS, new JSONArray());
+        siteHoldingBin.put(Sjm.PACKAGEMERGEIDS, new JSONArray());
+        siteHoldingBin.put(Sjm.PROFILEAPPLICATIONIDS, new JSONArray());
+        siteHoldingBin.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+        siteHoldingBin.put(Sjm.SYNCELEMENTID, JSONObject.NULL));
+        siteHoldingBin.put(Sjm.TEMPLATEBINDINGIDS, new JSONArray());
+        siteHoldingBin.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL));
+        siteHoldingBin.put(Sjm.VISIBILITY, "public");
+
         projectHoldingBin = createNode("holding_bin_" + projectSysmlid, user, date, null);
         projectHoldingBin.put(Sjm.NAME, "Holding Bin");
         projectHoldingBin.put(Sjm.OWNERID, projectSysmlid);
         projectHoldingBin.put(Sjm.TYPE, "Package");
+        projectHoldingBin.put(Sjm.URI, JSONObject.NULL);
+        projectHoldingBin.put(Sjm.APPLIEDSTEREOTYPEIDS, );
+        projectHoldingBin.put(Sjm.ISSITE, false);
+        projectHoldingBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL));
+        projectHoldingBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.DOCUMENTATION, JSONObject.NULL));
+        projectHoldingBin.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.NAMEEXPRESSION, JSONObject.NULL));
+        projectHoldingBin.put(Sjm.PACKAGEIMPORTIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.PACKAGEMERGEIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.PROFILEAPPLICATIONIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.SYNCELEMENTID, JSONObject.NULL));
+        projectHoldingBin.put(Sjm.TEMPLATEBINDINGIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL));
+        projectHoldingBin.put(Sjm.VISIBILITY, "public");
+
         viewInstanceBin = createNode("view_instances_bin_" + projectSysmlid, user, date, null);
         viewInstanceBin.put(Sjm.NAME, "View Instances Bin");
         viewInstanceBin.put(Sjm.OWNERID, projectSysmlid);
         viewInstanceBin.put(Sjm.TYPE, "Package");
+        viewInstanceBin.put(Sjm.URI, JSONObject.NULL);
+        viewInstanceBin.put(Sjm.APPLIEDSTEREOTYPEIDS, );
+        viewInstanceBin.put(Sjm.ISSITE, false);
+        viewInstanceBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL));
+        viewInstanceBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.DOCUMENTATION, JSONObject.NULL));
+        viewInstanceBin.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.NAMEEXPRESSION, JSONObject.NULL));
+        viewInstanceBin.put(Sjm.PACKAGEIMPORTIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.PACKAGEMERGEIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.PROFILEAPPLICATIONIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.SYNCELEMENTID, JSONObject.NULL));
+        viewInstanceBin.put(Sjm.TEMPLATEBINDINGIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL));
+        viewInstanceBin.put(Sjm.VISIBILITY, "public");
 
         try {
             ElasticHelper eh = new ElasticHelper();
