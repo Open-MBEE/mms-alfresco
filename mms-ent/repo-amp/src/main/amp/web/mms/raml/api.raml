@@ -7,7 +7,7 @@ version: v1.0
 mediaType: application/json
 baseUri: https://{server}/alfresco/service
 protocols: [HTTPS]
-documentation: 
+documentation:
   - title: Home
     content: |
       Welcome to the _Model Management System (MMS) API_ Documentation. The _MMS API_
@@ -27,15 +27,15 @@ schemas:
   - configurations: !include configurations.json-schema
   - projects:       !include projects.json-schema
   - snapshots:      !include snapshots.json-schema
-    
+
   - sites:       !include sites.json-schema
   - workspaces:  !include workspaces.json-schema
-    
+
   - diff:        !include diff.json-schema
   - client:      !include client.json-schema
-    
+
   - connections: !include connections.json-schema
-  
+
   # include post/ put and delete responses
   #- elementsResponse: !include postResponse.json-schema
   #- viewsResponse: !include postResponse.json-schema
@@ -72,7 +72,7 @@ traits:
       queryParameters:
         recurse:
           description: If true, finds all elements recursively based on containment hierarchy.
-                       This overrides depth so it is -1 regardless if depth is specified. 
+                       This overrides depth so it is -1 regardless if depth is specified.
           type: boolean
           required: false
         depth:
@@ -115,7 +115,7 @@ traits:
   - workspaceable:
         queryParameters:
             sourceWorkspace:
-              description: The source workspace to branch from 
+              description: The source workspace to branch from
               type: string
               required: false
             copyTime:
@@ -157,8 +157,8 @@ traits:
           description: If true, returns a simple json
           type: boolean
           required: false
-        
-          
+
+
 resourceTypes:
   - readCollection:
       securedBy: [basic]
@@ -208,7 +208,7 @@ resourceTypes:
                          occurred between when user accessed resource and when user saved
                          resource)
           500:
-            description: Could not append to <<resourcePathName>> due to internal server error   
+            description: Could not append to <<resourcePathName>> due to internal server error
 #      put:
 #        description: Create/update operation for <<resourcePathName>>
 #        body:
@@ -227,7 +227,7 @@ resourceTypes:
 #          404:
 #            description: <<resourcePathName>> not found
 #          409:
-#            description: <<resourcePathName>> conflict detected (e.g., intervening update 
+#            description: <<resourcePathName>> conflict detected (e.g., intervening update
 #                         occurred between when user accessed resource and when user updated
 #                         resource)
 #          500:
@@ -263,7 +263,38 @@ resourceTypes:
             schema: connections
         responses:
           200:
-  
+/orgs:
+  description: All projects are contained in a org
+  get:
+      description: Get all the orgs
+  post:
+      description: Post a org using the query parameters and supplied json
+      body:
+        application/json:
+          schema: workspaces
+      is: [workspaceable]
+  /{orgId}:
+    uriParameters:
+      orgId:
+        description: Org ID under consideration.
+    get:
+      description: Get the specified org
+  /projects:
+    description: All projects
+    get:
+      description: Get all the projects in the specified org
+    post:
+      description: Post a proeject using the query parameters and supplied json
+      body:
+        application/json:
+          schema: workspaces
+      is: [workspaceable]
+    /{projectId}:
+      uriParameters:
+        projectId:
+          description: Project ID under consideration.
+      get:
+        description: Get the specified proejct
 /workspaces:
   description: All resources are "namespaced" by the workspace (aka branch).
   #type: readCollection  # doesnt support any of the query parameters
@@ -415,7 +446,7 @@ resourceTypes:
                   snapshotId:
                     description: ID for the snapshot under consideration
         /elements:
-            post: 
+            post:
              description: Post elements to specified site
              is: [postable]
         /artifacts:
@@ -577,19 +608,19 @@ resourceTypes:
       ldapGroup:
         description: The LDAP group (string)
         type: string
-        required: true        
+        required: true
 /connection/jms:
   type: connection
 /connection/jmswl:
   type: connection
 /connection/rest:
   type: connection
-        
+
 #/client:
 #  post:
 #    queryParameters:
 #      unregister:
-#        description: if specified, indicates deregistration, otherwise if not specified, always registration or update 
+#        description: if specified, indicates deregistration, otherwise if not specified, always registration or update
 #        type: boolean
 #    body:
 #      application/json:
