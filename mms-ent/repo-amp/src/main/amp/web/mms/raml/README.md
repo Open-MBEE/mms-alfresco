@@ -4,7 +4,7 @@ APIs.
 
 File Structure
 --------------
-* api.raml - the raml file to add/edd endpoints
+* api.raml - the raml file to add/edit endpoints
 * *.json-schema - the JSON schema files for the resrouce types
 * index.html - along with the fonts/scripts/styles/directories so everything can be viewed interactively in the browser i.e {some server}/alfresco/mms/raml/index.html
 * local.html - used for interactive browsing locally of api.raml
