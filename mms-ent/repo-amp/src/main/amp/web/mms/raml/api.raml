@@ -350,7 +350,52 @@ resourceTypes:
                 description: Get documents by group.  If groupId isn't specified returns only root level docs.
                 required: false
           /elements:
+            description: Get elements
+            post:
+              description: Post elements using the supplied json
+              body:
+                application/json:
+                  schema: workspaces
+              is: [workspaceable]
+            delete:
+              description: Delete elements using the supplied json
+              body:
+                application/json:
+                  schema: workspaces
+              is: [workspaceable]
             /{elementId}:
+              uriParameters:
+                eleementId:
+                  description: element ID under consideration.
+              get:
+                description: Get specified element.
+                queryParameters:
+                  commitId:
+                    description: Get commit for speificed element by id.
+                    required: false
+              post:
+                description: Update specified element
+                body:
+                  application/json:
+                    schema: workspaces
+                is: [workspaceable]
+              delete:
+                description: Delete speified element
+                body:
+                  application/json:
+                    schema: workspaces
+                is: [workspaceable]
+              /{id}:
+                  uriParameters:
+                    id:
+                      description: ID under consideration. For images.
+                  post:
+                    description: set image content type to image/svg
+                    body:
+                      application/json:
+                        schema: workspaces
+                    is: [workspaceable]
+
 
 
 
