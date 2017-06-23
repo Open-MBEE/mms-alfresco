@@ -294,7 +294,71 @@ resourceTypes:
         projectId:
           description: Project ID under consideration.
       get:
-        description: Get the specified proejct
+        description: Get the specified project
+/projects:
+  description: All projects
+  get:
+    description: Get all the projects in the specified org
+  post:
+    description: Post a proeject using the query parameters and supplied json
+    body:
+      application/json:
+        schema: workspaces
+    is: [workspaceable]
+  /{projectId}:
+    uriParameters:
+      projectId:
+        description: Project ID under consideration.
+    get:
+      description: Get the specified project
+    /ref:
+      description: All resources are "namespaced" by the ref (aka branch).  The ref is also used for tagging.
+      get:
+        description: Get the specified project
+      post:
+        description: Post a org using the query parameters and supplied json
+        body:
+          application/json:
+            schema: workspaces
+        is: [workspaceable]
+      /{refId}:
+        uriParameters:
+          refId:
+            description: Ref ID under consideration.
+        get:
+          description: Get the specified ref.
+        delete:
+          description: Delete the specified ref.
+        /history:
+          description: get the commit history of the specififed ref.
+          get:
+            description: Get the hisotry of the specified ref.
+        /groups:
+          description: a grouping of elements
+          get:
+            description: Get all groups of elements in a ref.
+        /mounts:
+          description: All mounts associated with a project.
+          get:
+            description: Get all mounts in a project.
+        /documents:
+          description: get documents
+          get:
+            description: Get the documents of the specified ref.
+            queryParameters:
+              groupId:
+                description: Get documents by group.  If groupId isn't specified returns only root level docs.
+                required: false
+          /elements:
+            /{elementId}:
+
+
+
+
+
+
+
+
 /workspaces:
   description: All resources are "namespaced" by the workspace (aka branch).
   #type: readCollection  # doesnt support any of the query parameters
