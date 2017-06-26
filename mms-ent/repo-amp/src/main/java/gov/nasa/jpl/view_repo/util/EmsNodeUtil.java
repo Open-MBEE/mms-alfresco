@@ -1432,6 +1432,12 @@ public class EmsNodeUtil {
             result.put(curFound.get(i));
         }
         elementsToFind.removeAll(foundElements);
+        if (elementsToFind.isEmpty()) {
+            return;
+        }
+        if (!mountsJson.has(Sjm.MOUNTS)) {
+            mountsJson = emsNodeUtil.getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
+        }
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 
         for (int i = 0; i < mountsArray.length(); i++) {
