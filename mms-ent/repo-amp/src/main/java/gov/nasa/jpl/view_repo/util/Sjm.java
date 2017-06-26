@@ -77,8 +77,10 @@ public class Sjm {
     public static final String OWNEDENDIDS = "ownedEndIds";
     public static final String OWNERID = "ownerId";
     public static final String PACKAGEIMPORTIDS = "packageImportIds";
+    public static final String PACKAGEMERGEIDS = "packageMergeIds";
     public static final String POWERTYPEEXTENTIDS = "powertypeExtentIds";
     public static final String PROPERTYTYPE = "propertyType";
+    public static final String PROFILEAPPLICATIONIDS = "profileApplicationIds";
     public static final String QUALIFIERIDS = "qualifierIds";
     public static final String REDEFINEDCLASSIFIERIDS = "redefinedClassifierIds";
     public static final String REDEFINEDPROPERTYIDS = "redefinedPropertyIds";
@@ -98,6 +100,7 @@ public class Sjm {
     public static final String TYPE = "type";
     public static final String TYPEID = "typeId";
     public static final String UPPERVALUE = "upperValue";
+    public static final String URI = "URI";
     public static final String USECASEIDS = "useCaseIds";
     public static final String VALUEID = "valueId";
     public static final String VISIBILITY = "visibility";
