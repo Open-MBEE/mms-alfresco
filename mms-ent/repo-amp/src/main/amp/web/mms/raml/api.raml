@@ -329,6 +329,19 @@ resourceTypes:
           description: Get the specified ref.
         delete:
           description: Delete the specified ref.
+        /artifacts:
+          description: path to images
+          /{elementId}:
+            uriParameters:
+              elementId:
+                description: Element ID under consideration.
+            get:
+              description: Get the documents of the specified ref.
+              queryParameters:
+                accept:
+                  description: image/svg
+                  required: false
+
         /history:
           description: get the commit history of the specififed ref.
           get:

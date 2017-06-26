@@ -1,19 +1,20 @@
+#ref is the endpoint which returns branches and tags
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "description": "Specification for branching from one workspace to another.",
+    "description": "Specification for merging one workspace into another.",
     "properties": {
         "sourceWorkspace": {
             "type": "object",
-            "description": "Workspace that we are branching from.",
+            "description": "Workspace that we are merging from",
             "$ref": "#/definitions/Branch"
         },
-        "createdWorkspace": {
+        "mergedWorkspace": {
             "type": "object",
-            "description": "The created branch.",
+            "description": "The merged branch.",
             "$ref": "#/definitions/Branch"
         },
-        
+
         "definitions":
         {
             "Branch":
