@@ -188,7 +188,7 @@ public class EmsNodeUtil {
                     continue;
                 }
                 JSONObject childProject = getProjectWithFullMounts(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID),
-                    mountJson.getString("refId"), found);
+                    mountJson.getString(Sjm.MOUNTEDREFID), found);
                 if (childProject != null) {
                     mounts.put(childProject);
                 }
