@@ -183,7 +183,7 @@ public class EmsNodeUtil {
         JSONArray nodeList = getNodesBySysmlids(mountIds);
         for (int i = 0; i < nodeList.length(); i++) {
             JSONObject mountJson = nodeList.getJSONObject(i);
-            if (mountJson.has(Sjm.MOUNTEDELEMENTPROJECTID) && mountJson.has("refId")) {
+            if (mountJson.has(Sjm.MOUNTEDELEMENTPROJECTID) && mountJson.has(Sjm.MOUNTEDREFID)) {
                 if (found.contains(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID))) {
                     continue;
                 }

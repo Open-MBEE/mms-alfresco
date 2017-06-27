@@ -70,6 +70,7 @@ public class Sjm {
     public static final String MDEXTENSIONSIDS = "mdExtensionsIds";
     public static final String MEMBERENDIDS = "memberEndIds";
     public static final String MOUNTEDELEMENTPROJECTID = "mountedElementProjectId";
+    public static final String MOUNTEDREFID = "mountedRefId";
     public static final String NAME = "name";
     public static final String NAMEEXPRESSION = "nameExpression";
     public static final String NAVIGABLEOWNEDENDIDS = "navigableOwnedEndIds";
