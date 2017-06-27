@@ -24,15 +24,15 @@ schemas:
   - views:    !include elements.json-schema
   - products: !include elements.json-schema
 
-  - configurations: !include configurations.json-schema
-  - projects:       !include projects.json-schema
-  - snapshots:      !include snapshots.json-schema
+  #- configurations: !include configurations.json-schema
+  #- projects:       !include projects.json-schema
+  #- snapshots:      !include snapshots.json-schema
 
-  - sites:       !include sites.json-schema
-  - workspaces:  !include workspaces.json-schema
+ # - sites:       !include sites.json-schema
+  #- workspaces:  !include workspaces.json-schema
 
-  - diff:        !include diff.json-schema
-  - client:      !include client.json-schema
+  #- diff:        !include diff.json-schema
+  #- client:      !include client.json-schema
 
   - connections: !include connections.json-schema
 
@@ -287,7 +287,7 @@ resourceTypes:
       description: Post a proeject using the query parameters and supplied json
       body:
         application/json:
-          schema: workspaces
+          schema: projects
       is: [workspaceable]
     /{projectId}:
       uriParameters:
@@ -303,7 +303,7 @@ resourceTypes:
     description: Post a proeject using the query parameters and supplied json
     body:
       application/json:
-        schema: workspaces
+        schema: projects
     is: [workspaceable]
   /{projectId}:
     uriParameters:
@@ -319,7 +319,7 @@ resourceTypes:
         description: Post a org using the query parameters and supplied json
         body:
           application/json:
-            schema: workspaces
+            schema: ref
         is: [workspaceable]
       /{refId}:
         uriParameters:
@@ -329,6 +329,8 @@ resourceTypes:
           description: Get the specified ref.
         delete:
           description: Delete the specified ref.
+        /search:
+          description: searches for elements in any project mounted to the current project.
         /artifacts:
           description: path to images
           /{elementId}:
@@ -368,13 +370,13 @@ resourceTypes:
               description: Post elements using the supplied json
               body:
                 application/json:
-                  schema: workspaces
+                  schema: elements
               is: [workspaceable]
             delete:
               description: Delete elements using the supplied json
               body:
                 application/json:
-                  schema: workspaces
+                  schema: elements
               is: [workspaceable]
             /{elementId}:
               uriParameters:
@@ -390,13 +392,13 @@ resourceTypes:
                 description: Update specified element
                 body:
                   application/json:
-                    schema: workspaces
+                    schema: elements
                 is: [workspaceable]
               delete:
                 description: Delete speified element
                 body:
                   application/json:
-                    schema: workspaces
+                    schema: elements
                 is: [workspaceable]
               /{id}:
                   uriParameters:
