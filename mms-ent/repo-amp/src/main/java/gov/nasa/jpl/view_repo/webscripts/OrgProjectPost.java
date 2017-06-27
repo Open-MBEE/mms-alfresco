@@ -110,6 +110,7 @@ public class OrgProjectPost extends AbstractJavaWebScript {
                     if (emsNodeUtil.orgExists(orgId)) {
                         statusCode = HttpServletResponse.SC_FORBIDDEN;
                     } else {
+                        log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Organization does not exist\n");
                         statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
                     }
                 }
