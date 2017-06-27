@@ -117,7 +117,7 @@
                         ]
                 },
                 "classifierIds": {
-                    "description": "Only appears if the type is instanceSpecification."
+                    "description": "Only appears if the type is instanceSpecification.",
                     "type": "array",
                     "items": {
                         "type": "string",
@@ -125,13 +125,13 @@
                     }
                 },
                 "slotIds": {
-                    "description": "Only appears if the type is instanceSpecification."
+                    "description": "Only appears if the type is instanceSpecification.",
                     "type": "array",
                     "items": {
                         "type": "string",
                         "description": "IDs of the slots"
                     }
-                }
+                },
                 "value": {
                     "type": "array",
                     "items": {
