@@ -24,6 +24,7 @@ import io.searchbox.client.config.HttpClientConfig;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
 import io.searchbox.params.Parameters;
+import io.searchbox.core.DeleteByQuery;
 
 /**
  * @author Jason Han jason.han@jpl.nasa.gov, Laura Mann laura.mann@jpl.nasa.gov
@@ -489,12 +490,12 @@ public class ElasticHelper {
     public JSONObject deleteElasticElements(String field, String id){
         JestResult result = null;
         JSONObject query = new JSONObject();
-        query.put("query", new JSONObject().put("match", new JSONObject().put("term", new JSONObject().put(field, id))));
-//
-        System.out.println("JSON Query " + query.toString());
-        DeleteByQuery deleteByQuery = new DeleteByQuery.Builder(query.toString()).addType(field).addIndex(elementIndex).build();
-//        Delete deleteByQuery = new Delete.Builder(query.toString()).index(elementIndex).build();
+        query.put("query", new JSONObject().put("term", new JSONObject().put(field, id)));
 
+        // Verbose statement to make sure it uses the correct delete by query class from searchbox.
+        DeleteByQuery deleteByQuery = new io.searchbox.core.DeleteByQuery.Builder(query.toString()).addIndex(elementIndex).build();
+
+        System.out.println("JSON Query " + query.toString());
         System.out.println("Delete query URI " + deleteByQuery.getURI());
         System.out.println("Rest Method Name " + deleteByQuery.getRestMethodName());
         System.out.println("Query to String "+ deleteByQuery.toString());
