@@ -496,7 +496,9 @@ public class ElasticHelper {
 //        Delete deleteByQuery = new Delete.Builder(query.toString()).index(elementIndex).build();
 
         System.out.println("Delete query URI " + deleteByQuery.getURI());
-        
+        System.out.println("Rest Method Name " + deleteByQuery.getRestMethodName());
+        System.out.println("Query to String "+ deleteByQuery.toString());
+
         try {
             result = client.execute(deleteByQuery);
 //            result = client.execute(new Delete.Builder());
