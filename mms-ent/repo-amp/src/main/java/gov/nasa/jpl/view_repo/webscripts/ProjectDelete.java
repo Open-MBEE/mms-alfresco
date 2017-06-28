@@ -1,9 +1,15 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
+
+import gov.nasa.jpl.view_repo.db.ElasticHelper;
+import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -23,6 +29,7 @@ import gov.nasa.jpl.view_repo.util.LogUtil;
  */
 public class ProjectDelete extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(ProjectGet.class);
+    private PostgresHelper pgh;
 
     public ProjectDelete() {
         super();
@@ -52,8 +59,14 @@ public class ProjectDelete extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
 
                 String projectId = getProjectId(req);
-                logger.info("PROJECT ID \n" + projectId);
 
+                // Postgres helper to commit elasticids before dropping db
+                ArrayList<String> commitList = getCommitElasticIDs(projectId);
+
+                // Search and delete for all elements in elasticsearch with project id
+                deleteCommitsInElastic(commitList);
+                deleteElasticElements(projectId);
+                // DROP DB
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
@@ -78,8 +91,61 @@ public class ProjectDelete extends AbstractJavaWebScript {
     /**
      * Validate the request and check some permissions
      */
-    @Override
-    protected boolean validateRequest(WebScriptRequest req, Status status) {
+    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         return checkRequestContent(req);
+    }
+
+    /**
+     * Finds and returns the elasticsearch IDS for the commit elements in the PostgreSQL Database
+     *
+     * @param projectId
+     * @return CommitElasticIDs
+     */
+    protected ArrayList<String> getCommitElasticIDs(String projectId) {
+        ArrayList<String> commitIds = new ArrayList<>();
+        logger.info("PROJECT ID \n" + projectId);
+
+        // Instantiate and configure pgh.
+        pgh = new PostgresHelper();
+        pgh.setProject(projectId);
+
+        // Get all the commit ids from postgres
+        List<Map<String, String>> commits = pgh.getAllCommits();
+        for (Map<String, String> commit : commits) {
+            commitIds.add(commit.get("commitId"));
+        }
+        return commitIds;
+    }
+
+    /**
+     * Takes a list of Elastic IDs then performs a bulk delete.
+     *
+     * @param commitIds
+     * @return
+     */
+    protected void deleteCommitsInElastic(ArrayList<String> commitIds) {
+        logger.info("Deleting commits!");
+
+        try {
+            ElasticHelper elasticHelper = new ElasticHelper();
+            elasticHelper.bulkDeleteByType("commit", commitIds);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+    }
+
+    protected void deleteElasticElements(String projectId) {
+        logger.info("Deleting commits!");
+
+        try {
+            ElasticHelper elasticHelper = new ElasticHelper();
+            elasticHelper.deleteElasticElements("_projectId", projectId);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
     }
 }

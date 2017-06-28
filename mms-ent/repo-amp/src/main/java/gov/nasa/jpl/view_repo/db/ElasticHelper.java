@@ -2,13 +2,10 @@ package gov.nasa.jpl.view_repo.db;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.google.gson.JsonElement;
+import io.searchbox.core.*;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,13 +21,6 @@ import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
 import io.searchbox.client.config.HttpClientConfig;
-import io.searchbox.core.Bulk;
-import io.searchbox.core.BulkResult;
-import io.searchbox.core.Get;
-import io.searchbox.core.Index;
-import io.searchbox.core.Update;
-import io.searchbox.core.Search;
-import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
 import io.searchbox.params.Parameters;
@@ -463,5 +453,62 @@ public class ElasticHelper {
             jsonObject = jsonObject.getJSONObject(eType);
         }
         return jsonObject;
+    }
+
+    /**
+     * Takes a type and array list of string ids. Creates a Bulk object and adds a list of actions. Then performs a bulk
+     * delete. Returns the JSONObject of the result.
+     *
+     * @param type
+     * @param ids
+     * @return JSONObject Result
+     */
+    public JSONObject bulkDeleteByType(String type, ArrayList<String> ids){
+        JestResult result = null;
+        try {
+            ArrayList<Delete> deleteList = new ArrayList<>();
+
+            for(String commitId : ids){
+                deleteList.add(new Delete.Builder(commitId).type(type).index(elementIndex).build());
+            }
+            Bulk bulk = new Bulk.Builder().defaultIndex(elementIndex).defaultIndex(type).addAction(deleteList).build();
+
+            result = client.execute(bulk);
+
+            if (!result.isSucceeded()) {
+                logger.error("Delete Failed!");
+                logger.error(result.getErrorMessage());
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+
+        return new JSONObject(result.getJsonString());
+    }
+
+    public JSONObject deleteElasticElements(String field, String id){
+        JestResult result = null;
+        JSONObject query = new JSONObject();
+        query.put("query", new JSONObject().put("match", new JSONObject().put("term", new JSONObject().put(field, id))));
+//
+        System.out.println("JSON Query " + query.toString());
+        DeleteByQuery deleteByQuery = new DeleteByQuery.Builder(query.toString()).addType(field).addIndex(elementIndex).build();
+//        Delete deleteByQuery = new Delete.Builder(query.toString()).index(elementIndex).build();
+
+        System.out.println("Delete query URI " + deleteByQuery.getURI());
+        
+        try {
+            result = client.execute(deleteByQuery);
+//            result = client.execute(new Delete.Builder());
+
+            if (!result.isSucceeded()) {
+                logger.error("Delete Failed!");
+                logger.error(result.getErrorMessage());
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+
+        }
+        return new JSONObject(result.getJsonString());
     }
 }
