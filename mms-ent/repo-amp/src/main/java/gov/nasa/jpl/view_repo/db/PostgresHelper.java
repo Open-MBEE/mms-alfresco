@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2099,5 +2100,24 @@ public class PostgresHelper {
         }
         this.workspaceId = currentWorkspace;
         return false;
+    }
+
+    public void dropDatabase(String databaseName) {
+
+        try {
+            connect();
+            String query = "UPDATE pg_database SET datallowconn = 'false' WHERE datname = " +
+                databaseName  +";SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'mydb';DROP DATABASE mydb;"
+            String query2 = "DROP DATABASE \"_" + databaseName + "\"";
+
+            System.out.println("Query " + query);
+
+            this.conn.createStatement().executeUpdate(query);
+
+        } catch (SQLException e){
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
     }
 }

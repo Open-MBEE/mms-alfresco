@@ -495,15 +495,8 @@ public class ElasticHelper {
         // Verbose statement to make sure it uses the correct delete by query class from searchbox.
         DeleteByQuery deleteByQuery = new io.searchbox.core.DeleteByQuery.Builder(query.toString()).addIndex(elementIndex).build();
 
-        System.out.println("JSON Query " + query.toString());
-        System.out.println("Delete query URI " + deleteByQuery.getURI());
-        System.out.println("Rest Method Name " + deleteByQuery.getRestMethodName());
-        System.out.println("Query to String "+ deleteByQuery.toString());
-
         try {
             result = client.execute(deleteByQuery);
-//            result = client.execute(new Delete.Builder());
-
             if (!result.isSucceeded()) {
                 logger.error("Delete Failed!");
                 logger.error(result.getErrorMessage());

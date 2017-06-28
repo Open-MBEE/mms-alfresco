@@ -66,7 +66,9 @@ public class ProjectDelete extends AbstractJavaWebScript {
                 // Search and delete for all elements in elasticsearch with project id
                 deleteCommitsInElastic(commitList);
                 deleteElasticElements(projectId);
+
                 // DROP DB
+                dropDatabase(projectId);
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
@@ -147,5 +149,11 @@ public class ProjectDelete extends AbstractJavaWebScript {
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
+    }
+
+    protected void dropDatabase(String databaseName) {
+        pgh = new PostgresHelper();
+        pgh.setProject(databaseName);
+        pgh.dropDatabase(databaseName);
     }
 }
