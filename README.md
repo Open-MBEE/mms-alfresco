@@ -90,10 +90,10 @@ General Design
 
     +----------------+   \
     | REST API Layer |    \
-    |----------------|      \
-    |   WebScripts   |       MMS
-    |----------------|       /
-    |Storage | Layer |     /
+    |----------------|     \
+    |   WebScripts   |      MMS
+    |----------------|     /
+    |Storage | Layer |    /
     +----------------+   /
       /\         /\
       ||         ||
