@@ -28,7 +28,7 @@ import gov.nasa.jpl.view_repo.util.LogUtil;
  * Created by dank on 6/26/17.
  */
 public class ProjectDelete extends AbstractJavaWebScript {
-    static Logger logger = Logger.getLogger(ProjectGet.class);
+    static Logger logger = Logger.getLogger(ProjectDelete.class);
     private PostgresHelper pgh;
 
     public ProjectDelete() {
@@ -106,7 +106,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
      */
     protected ArrayList<String> getCommitElasticIDs(String projectId) {
         ArrayList<String> commitIds = new ArrayList<>();
-        logger.info("PROJECT ID \n" + projectId);
+        logger.debug("Getting Commit Elastic IDs for \n" + projectId);
 
         // Instantiate and configure pgh.
         pgh = new PostgresHelper();
@@ -128,7 +128,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
      * @return
      */
     protected void deleteCommitsInElastic(ArrayList<String> commitIds) {
-        logger.info("Deleting commits!");
+        logger.debug("Deleting commits in Elastic");
 
         try {
             ElasticHelper elasticHelper = new ElasticHelper();
@@ -146,7 +146,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
      * @param projectId
      */
     protected void deleteElasticElements(String projectId) {
-        logger.info("Deleting commits!");
+        logger.debug("Deleting elastic elements for " + projectId);
 
         try {
             ElasticHelper elasticHelper = new ElasticHelper();
@@ -164,7 +164,6 @@ public class ProjectDelete extends AbstractJavaWebScript {
      */
     protected void dropDatabase(String databaseName) {
         pgh = new PostgresHelper();
-//        pgh.setProject(databaseName);
         pgh.dropDatabase(databaseName);
         pgh.close();
     }

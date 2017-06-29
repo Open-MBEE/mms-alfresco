@@ -2,7 +2,11 @@ package gov.nasa.jpl.view_repo.db;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2128,11 +2132,13 @@ public class PostgresHelper {
      * @param projectId
      */
     public void deleteProjectFromProjectsTable(String projectId){
-        String query = "DELETE FROM projects WHERE projectid = \'" + projectId +"\'";
-        System.out.println("Delete ProjectId Query "  + query);
         connectConfig();
         try {
+            String query = "DELETE FROM projects WHERE projectid = \'" + projectId +"\'";
             this.configConn.createStatement().executeUpdate(query);
+//            PreparedStatement query = this.conn.prepareStatement("DELETE FROM projects WHERE projectid = ?");
+//            query.setString(1, projectId);
+//            query.executeUpdate();
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }

@@ -2,10 +2,13 @@ package gov.nasa.jpl.view_repo.db;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.JsonElement;
-import io.searchbox.core.*;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,10 +24,18 @@ import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
 import io.searchbox.client.config.HttpClientConfig;
+import io.searchbox.core.Bulk;
+import io.searchbox.core.BulkResult;
+import io.searchbox.core.Get;
+import io.searchbox.core.Index;
+import io.searchbox.core.Update;
+import io.searchbox.core.Search;
+import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
 import io.searchbox.params.Parameters;
 import io.searchbox.core.DeleteByQuery;
+import io.searchbox.core.Delete;
 
 /**
  * @author Jason Han jason.han@jpl.nasa.gov, Laura Mann laura.mann@jpl.nasa.gov
@@ -499,7 +510,7 @@ public class ElasticHelper {
         query.put("query", new JSONObject().put("term", new JSONObject().put(field, id)));
 
         // Verbose statement to make sure it uses the correct delete by query class from searchbox.
-        DeleteByQuery deleteByQuery = new io.searchbox.core.DeleteByQuery.Builder(query.toString()).addIndex(elementIndex).build();
+        DeleteByQuery deleteByQuery = new DeleteByQuery.Builder(query.toString()).addIndex(elementIndex).build();
 
         try {
             result = client.execute(deleteByQuery);

@@ -77,8 +77,6 @@ public class PostgresPool {
      */
     public static void removeConnection(String host, String name) {
         String connectString = host + name;
-
-        System.out.println("Removing connection " + connectString);
         if (dataSource.containsKey(connectString)) {
             dataSource.remove(connectString);
         }
