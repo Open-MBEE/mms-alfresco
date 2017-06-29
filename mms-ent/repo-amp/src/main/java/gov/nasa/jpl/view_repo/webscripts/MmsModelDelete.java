@@ -98,7 +98,7 @@ public class MmsModelDelete extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
         Set<String> elasticIds = new HashSet<>();
         String elementId = req.getServiceMatch().getTemplateVars().get("elementId");
-        if (elementId != null && (!elementId.contains("holding_bin") && !elementId.contains("view_instances_bin"))) {
+        if (elementId != null && !elementId.contains("holding_bin") && !elementId.contains("view_instances_bin")) {
             ids.add(elementId);
         } else {
             try {
