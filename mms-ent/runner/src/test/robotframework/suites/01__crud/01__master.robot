@@ -81,7 +81,7 @@ PostNewElements
 	Should Match Baseline		${compare_result}
 
 UpdateElements
-    [Documentation]     "Update a existing element.  Creates versions of a element."
+    [Documentation]     "Update an existing element.  Creates versions of a element."
     [Tags]              8
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/UpdateElements.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}

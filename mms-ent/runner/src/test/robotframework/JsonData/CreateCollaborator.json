@@ -3,5 +3,7 @@
     "firstName": "Collaborator",
     "lastName": "user",
     "email": "Collaborator@jpl.nasa.gov",
-    "groups": ["GROUP_site_PA_SiteCollaborator"]
+    "groups": [
+        "GROUP_site_initorg_SiteCollaborator"
+    ]
 }
