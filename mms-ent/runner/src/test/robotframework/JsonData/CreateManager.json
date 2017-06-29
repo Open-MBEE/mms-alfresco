@@ -1,0 +1,7 @@
+{
+    "userName": "Manager",
+    "firstName": "Manager",
+    "lastName": "user",
+    "email": "Manager@jpl.nasa.gov",
+    "groups": ["GROUP_site_PA_SiteManager"]
+}
