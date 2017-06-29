@@ -487,6 +487,12 @@ public class ElasticHelper {
         return new JSONObject(result.getJsonString());
     }
 
+    /**
+     * Performs a delete by query on ElasticSearch using the given field and id.
+     * @param field
+     * @param id
+     * @return JSON Response
+     */
     public JSONObject deleteElasticElements(String field, String id){
         JestResult result = null;
         JSONObject query = new JSONObject();

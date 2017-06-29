@@ -2,12 +2,7 @@ package gov.nasa.jpl.view_repo.db;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Savepoint;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2102,22 +2097,45 @@ public class PostgresHelper {
         return false;
     }
 
+    /**
+     * Will alter the connection limit to the database to be 0 then kill any processes connected to it. Finally it will
+     * drop the database. If any connections persist or it fails to change the connection limit then the database
+     * will not be dropped.
+     * @param databaseName
+     */
     public void dropDatabase(String databaseName) {
 
+        PostgresPool.removeConnection(EmsConfig.get("pg.host"), databaseName);
+
+        String query = "ALTER DATABASE  \"_" + databaseName  +"\" CONNECTION LIMIT 0";
+        String query2 = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = \'_" + databaseName +"\'";
+        String query3 = "DROP DATABASE \"_" + databaseName +"\";";
+
+        connectConfig();
+
         try {
-            connect();
-            String query = "UPDATE pg_database SET datallowconn = 'false' WHERE datname = " +
-                databaseName  +";SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'mydb';DROP DATABASE mydb;"
-            String query2 = "DROP DATABASE \"_" + databaseName + "\"";
-
-            System.out.println("Query " + query);
-
-            this.conn.createStatement().executeUpdate(query);
-
-        } catch (SQLException e){
+            this.configConn.createStatement().executeUpdate(query);
+            this.configConn.prepareCall(query2).execute();
+            this.configConn.createStatement().executeUpdate(query3);
+        } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
         }
+        closeConfig();
+    }
+
+    /**
+     * Deletes the project from the project table based on the projectId provided.
+     * @param projectId
+     */
+    public void deleteProjectFromProjectsTable(String projectId){
+        String query = "DELETE FROM projects WHERE projectid = \'" + projectId +"\'";
+        System.out.println("Delete ProjectId Query "  + query);
+        connectConfig();
+        try {
+            this.configConn.createStatement().executeUpdate(query);
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        closeConfig();
     }
 }

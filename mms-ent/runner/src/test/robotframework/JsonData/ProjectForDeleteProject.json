@@ -1,0 +1,9 @@
+{
+    "projects": [
+        {
+            "id": "DeleteProject",
+            "name": "Project meant to be deleted",
+            "type": "Project"
+        }
+    ]
+}

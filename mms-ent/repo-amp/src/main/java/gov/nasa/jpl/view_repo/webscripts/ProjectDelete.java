@@ -69,6 +69,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
 
                 // DROP DB
                 dropDatabase(projectId);
+                deleteProjectFromProjectsTable(projectId);
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
@@ -116,6 +117,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
         for (Map<String, String> commit : commits) {
             commitIds.add(commit.get("commitId"));
         }
+        pgh.close();
         return commitIds;
     }
 
@@ -138,6 +140,11 @@ public class ProjectDelete extends AbstractJavaWebScript {
         }
     }
 
+    /**
+     * Uses ElasticHelper to delete all elements on ElasticSearch based on the given projectId. Performs a delete
+     * by query.
+     * @param projectId
+     */
     protected void deleteElasticElements(String projectId) {
         logger.info("Deleting commits!");
 
@@ -151,9 +158,24 @@ public class ProjectDelete extends AbstractJavaWebScript {
         }
     }
 
+    /**
+     * Drops the Postgres Database based on the given database name;
+     * @param databaseName
+     */
     protected void dropDatabase(String databaseName) {
         pgh = new PostgresHelper();
-        pgh.setProject(databaseName);
+//        pgh.setProject(databaseName);
         pgh.dropDatabase(databaseName);
+        pgh.close();
+    }
+
+    /**
+     * Deletes the project entry from the projects table.
+     * @param projectId
+     */
+    protected void deleteProjectFromProjectsTable(String projectId) {
+        pgh = new PostgresHelper();
+        pgh.deleteProjectFromProjectsTable(projectId);
+        pgh.close();
     }
 }

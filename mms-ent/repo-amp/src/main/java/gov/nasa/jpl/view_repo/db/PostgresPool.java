@@ -70,5 +70,17 @@ public class PostgresPool {
         return bds.getConnection();
     }
 
-    // TODO : Add Remove Method
+    /**
+     * Given a host and name this will remove the connection source from the PostgresPool
+     * @param host
+     * @param name
+     */
+    public static void removeConnection(String host, String name) {
+        String connectString = host + name;
+
+        System.out.println("Removing connection " + connectString);
+        if (dataSource.containsKey(connectString)) {
+            dataSource.remove(connectString);
+        }
+    }
 }
