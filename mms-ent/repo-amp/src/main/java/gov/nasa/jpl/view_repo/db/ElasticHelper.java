@@ -34,6 +34,8 @@ import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
 import io.searchbox.params.Parameters;
+import io.searchbox.core.DeleteByQuery;
+import io.searchbox.core.Delete;
 
 /**
  * @author Jason Han jason.han@jpl.nasa.gov, Laura Mann laura.mann@jpl.nasa.gov
@@ -463,5 +465,63 @@ public class ElasticHelper {
             jsonObject = jsonObject.getJSONObject(eType);
         }
         return jsonObject;
+    }
+
+    /**
+     * Takes a type and array list of string ids. Creates a Bulk object and adds a list of actions. Then performs a bulk
+     * delete. Returns the JSONObject of the result.
+     *
+     * @param type
+     * @param ids
+     * @return JSONObject Result
+     */
+    public JSONObject bulkDeleteByType(String type, ArrayList<String> ids){
+        JestResult result = null;
+        try {
+            ArrayList<Delete> deleteList = new ArrayList<>();
+
+            for(String commitId : ids){
+                deleteList.add(new Delete.Builder(commitId).type(type).index(elementIndex).build());
+            }
+            Bulk bulk = new Bulk.Builder().defaultIndex(elementIndex).defaultIndex(type).addAction(deleteList).build();
+
+            result = client.execute(bulk);
+
+            if (!result.isSucceeded()) {
+                logger.error("Delete Failed!");
+                logger.error(result.getErrorMessage());
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+
+        return new JSONObject(result.getJsonString());
+    }
+
+    /**
+     * Performs a delete by query on ElasticSearch using the given field and id.
+     * @param field
+     * @param id
+     * @return JSON Response
+     */
+    public JSONObject deleteElasticElements(String field, String id){
+        JestResult result = null;
+        JSONObject query = new JSONObject();
+        query.put("query", new JSONObject().put("term", new JSONObject().put(field, id)));
+
+        // Verbose statement to make sure it uses the correct delete by query class from searchbox.
+        DeleteByQuery deleteByQuery = new DeleteByQuery.Builder(query.toString()).addIndex(elementIndex).build();
+
+        try {
+            result = client.execute(deleteByQuery);
+            if (!result.isSucceeded()) {
+                logger.error("Delete Failed!");
+                logger.error(result.getErrorMessage());
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+
+        }
+        return new JSONObject(result.getJsonString());
     }
 }
