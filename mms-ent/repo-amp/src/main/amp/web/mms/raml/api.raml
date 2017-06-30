@@ -7,7 +7,7 @@ version: v1.0
 mediaType: application/json
 baseUri: https://{server}/alfresco/service
 protocols: [HTTPS]
-documentation: 
+documentation:
   - title: Home
     content: |
       Welcome to the _Model Management System (MMS) API_ Documentation. The _MMS API_
@@ -24,46 +24,26 @@ schemas:
   - views:    !include elements.json-schema
   - products: !include elements.json-schema
 
-  - configurations: !include configurations.json-schema
-  - projects:       !include projects.json-schema
-  - snapshots:      !include snapshots.json-schema
-    
-  - sites:       !include sites.json-schema
-  - workspaces:  !include workspaces.json-schema
-    
-  - diff:        !include diff.json-schema
-  - client:      !include client.json-schema
-    
+  #- configurations: !include configurations.json-schema
+  #- projects:       !include projects.json-schema
+  #- snapshots:      !include snapshots.json-schema
+
+ # - sites:       !include sites.json-schema
+  #- workspaces:  !include workspaces.json-schema
+
+  #- diff:        !include diff.json-schema
+  #- client:      !include client.json-schema
+
   - connections: !include connections.json-schema
-  
+
   # include post/ put and delete responses
   #- elementsResponse: !include postResponse.json-schema
   #- viewsResponse: !include postResponse.json-schema
 traits:
-  - backgroundable:
-      description: Aspect for resources that can be created/updated in the asynchronously in
-                   the background. Mostly for large, long running creations.
-      queryParameters:
-        background:
-          description: Runs create/update in the asynchronously in the background
-                       if true, or synchronously if false or not specified
-          type: boolean
-          required: false
-  - constrainable:
-      description: Aspect for resources that are or can be constrained
-      queryParameters:
-        fix:
-          description: If true, fixes the constraint as scoped by the element (defaults false)
-          type: boolean
-          required: false
-        validate:
-          description: If true, validates the constraint as scoped by the element (defaults false). If specified with fix, overrides fix
-          type: boolean
-          required: false
   - qualifiable:
       description: Aspect for resources that can be that can exclude the qualified names/ids
       queryParameters:
-        qualified:
+        extended:
           description: If false, doesn't display qualified names
           type: boolean
           required: false
@@ -72,7 +52,7 @@ traits:
       queryParameters:
         recurse:
           description: If true, finds all elements recursively based on containment hierarchy.
-                       This overrides depth so it is -1 regardless if depth is specified. 
+                       This overrides depth so it is -1 regardless if depth is specified.
           type: boolean
           required: false
         depth:
@@ -81,84 +61,14 @@ traits:
                        everything 1 level deep, so on and so forth.
           type: integer
           required: false
-  - searchable:
-      description: Aspect for resources that can be searched for any resource type
+  - commitable:
+      description: Aspect for resources that can be queried via a commit
       queryParameters:
-        search:
-          description: Regular expression of the search to be executed at the specified scope.
-                       Currently search is against id, name, documentation, body.
+        commitId:
+          description: Commit to find most recent version of <<resourcePathName>>.
           type: string
           required: false
-        type:
-          description: Filter results based on specified type
-          type: string
-          required: false
-  - sliceable:
-      description: Aspect for resources that can be queried via a timestamp
-      queryParameters:
-        timestamp:
-          description: Timestamp to find most recent version of <<resourcePathName>>,
-                       specified in ISO8601 time format.
-          type: date
-          required: false
-  - diffable:
-      description: Aspect for resources that can be diffed or merged
-      queryParameters:
-        timestamp1:
-          description: The source workspace timestamp to use in comparison (if not specified, gets latest)
-          type: date
-          required: false
-        timestamp2:
-          description: The target workspace timestamp to use in comparison (if not specified, gets latest)
-          type: date
-          required: false
-  - workspaceable:
-        queryParameters:
-            sourceWorkspace:
-              description: The source workspace to branch from 
-              type: string
-              required: false
-            copyTime:
-              description: The time to branch this workspace off the source workspace
-              type: date
-              required: false
-            follow:
-              description: Flag to indicate using a following branch.  Will ignore copyTime in this case.
-              required: false
-  - postable:
-        queryParameters:
-          evaluate:
-            description: Flag to indicate to evaluate the posted expression
-            type: boolean
-            required: false
-          background:
-            description: Flag to run the post in the background
-            type: boolean
-            required: false
-          fix:
-            description: Flag to indicate to solve the posted constraint
-            type: boolean
-            required: false
-          expression:
-            description: A expression to post
-            type: string
-            required: false
-          suppressElementJson:
-            description: Flag to suppress json being returned by the call
-            type: boolean
-            required: false
-  - productable:
-      queryParameters:
-        recurse:
-          description: If true, finds all elements recursively based on containment hierarchy.
-          type: boolean
-          required: false
-        simple:
-          description: If true, returns a simple json
-          type: boolean
-          required: false
-        
-          
+
 resourceTypes:
   - readCollection:
       securedBy: [basic]
@@ -166,7 +76,7 @@ resourceTypes:
       description: Read operations for <<resourcePathName>>
       get:
           #is: [recursable, searchable, sliceable]
-          is: [recursable, sliceable] # Not searchable yet
+          is: [] # Not searchable yet
           description: Read operation for <<resourcePathName>>
           responses:
               200:
@@ -208,7 +118,7 @@ resourceTypes:
                          occurred between when user accessed resource and when user saved
                          resource)
           500:
-            description: Could not append to <<resourcePathName>> due to internal server error   
+            description: Could not append to <<resourcePathName>> due to internal server error
 #      put:
 #        description: Create/update operation for <<resourcePathName>>
 #        body:
@@ -227,7 +137,7 @@ resourceTypes:
 #          404:
 #            description: <<resourcePathName>> not found
 #          409:
-#            description: <<resourcePathName>> conflict detected (e.g., intervening update 
+#            description: <<resourcePathName>> conflict detected (e.g., intervening update
 #                         occurred between when user accessed resource and when user updated
 #                         resource)
 #          500:
@@ -263,335 +173,155 @@ resourceTypes:
             schema: connections
         responses:
           200:
-  
-/workspaces:
-  description: All resources are "namespaced" by the workspace (aka branch).
-  #type: readCollection  # doesnt support any of the query parameters
+/orgs:
+  description: All projects are contained in a org
   get:
-      description: Get all the workspaces
+      description: Get all the orgs
   post:
-      description: Post a workspace using the query parameters and supplied json
+      description: Post a org using the query parameters and supplied json
       body:
         application/json:
-          schema: workspaces
-      is: [workspaceable]
-  /{workspaceId}:
-    #type: collection  # Doesnt support all the query parameters yet
+          schema: orgs
+  /{orgId}:
     uriParameters:
-      workspaceId:
-        description: Workspace ID under consideration. "master" is always defined and is the
-                     "trunk" workspace to which all other workspaces should be merged.
-                     "master" is what is contained at the Alfresco sites level.
-    post:
-      description: Post a workspace using the query parameters
-      is: [workspaceable]
+      orgId:
+        description: Org ID under consideration.
     get:
-      description: Get the specified workspace
-      queryParameters:
-          deleted:
-            description: If true, finds deleted workspaces also
-            type: boolean
-            required: false
-    delete:
-      description: Delete the specified workspace
-    /elements:
-      type: collection
-      post:
-          is: [postable]
-      /{elementId}:
-        #type: collection
-        delete:
-          description: Delete the element specified by the Sysml ID
-        get:
-          description: Sysml ID for the element under consideration
-    /configurations:
-      #type: collection
+      description: Get the specified org
+  /projects:
+    description: All projects
+    get:
+      description: Get all the projects in the specified org
+    post:
+      description: Post a proeject using the query parameters and supplied json
+      body:
+        application/json:
+          schema: projects
+      is: []
+    /{projectId}:
+      uriParameters:
+        projectId:
+          description: Project ID under consideration.
       get:
-          description: Get all configuration sets for a specified workspace
-      post:
-          description: Post a configuration set for a specified workspace
-      /{configurationId}:
-        #type: collection
-        delete:
-            description: Delete the configuration set specified by the configuration ID
-        get:
-            description: Get the configuration set using the configuration ID
-        uriParameters:
-          configurationId:
-            description: ID for the configuration under consideration
-        /products:
-          description: Get products for the specified configuration
-          #type: collection
-          post:
-              description: Post a product for the specified configuration set
-          get:
-              description: Get products for specified configuration set
-        /snapshots:
-          description: Get snapshots for the specified configuration
-          #type: collection
-          post:
-          get:
-    /sites:
-      #type: readCollection  # Doesnt have all these params yet
-      is: [sliceable]
+        description: Get the specified project
+/projects:
+  description: All projects
+  get:
+    description: Get all the projects in the specified org
+  post:
+    description: Post a proeject using the query parameters and supplied json
+    body:
+      application/json:
+        schema: projects
+    is: []
+  /{projectId}:
+    uriParameters:
+      projectId:
+        description: Project ID under consideration.
+    get:
+      description: Get the specified project
+    /ref:
+      description: All resources are "namespaced" by the ref (aka branch).  The ref is also used for tagging.
       get:
-        description: Retrieve all sites for which user has read permissions
-        responses:
-          200:
-      /{siteId}:
-#        get:
-#        uriParameters:
-#          siteId:
-#            description: Alfresco site identifier for the project under consideration
-#        /configurations:
-#          #type: collection
-#          get:
-#          post:
-#          /{configurationId}:
-#            #type: collection
-#            delete:
-#            get:
-#            uriParameters:
-#              configurationId:
-#                description: ID for the configuration under consideration
-#            /products:
-#              description: Get products for the specified configuration
-#              #type: collection
-#              post:
-#              get:
-#            /snapshots:
-#              description: Get snapshots for the specified configuration
-#              #type: collection
-#              post:
-#              get:
-        /projects:
-          post:
-            description: Post a project using the supplied json
-            body:
-              application/json:
-                schema: projects
-          #type: readCollection
-          #get:
-          #  description: Retrieve all projects for which user has read permissions
-          #  responses:
-          #    200:
-          /{projectId}:
-            #type: readCollection
-            get:
-              description: Retrieve specified project for which user has read permissions
-              is: [sliceable]
-            uriParameters:
-              projectId:
-                description: MD project ID for the project under consideration
-        /products:
-          #type: collection
-          post:
-          get:
-            description: Retrieve all products for which user has read permissions
-            responses:
-              200:
-          /{productId}:
-            #type: collection
-            post:
-                description: Post products to specified site
-            get:
-              description: Retrieve all products for which user has read permissions
-              is: [productable, sliceable]
-            uriParameters:
-              productId:
-                description: Sysml ID for the product (document) under consideration
-            #/views:
-            #  type: readCollection
-            /snapshots:
-              description: Scoped under /configurations and /products
-              #type: collection
-              get:
-                description: Get a snapshot of a specified product
-              post:
-                description: Post a snapshot of a specified product
-              /{snapshotId}:
-                type: collection
-                uriParameters:
-                  snapshotId:
-                    description: ID for the snapshot under consideration
-        /elements:
-            post: 
-             description: Post elements to specified site
-             is: [postable]
-        /artifacts:
-          /{artifactId}:
-            post:
-                description: Post artifact to specified site
-                queryParameters:
-                  extension:
-                    description: The extension of the artifact.  Uses ".svg" if this is not supplied.
-                    required: false
-    /views:
-      #type: collection
+        description: Get the specified project
       post:
-          description: Post views to a specified workspace
-      /{viewId}:
-        #type: collection
-        get:
-          description: Get a specified view from a workspace
-          is: [sliceable]
-        uriParameters:
-          viewId:
-            description: Sysml ID for the view under consideration
-        /elements:
-          #type: collection
-          get:
-            is: [sliceable]
-          /{elementId}:
-            post:
-              is: [constrainable]
-            get:
-              queryParameters:
-                  connected:
-                    description: Get all of the connected nodes also.  Must also supply recurse=true or depth.
-                    required: false
-                  relationship:
-                    description: Filter the connected nodes for only nodes in the specified relationship, ie DirectedRelationship.  Must supply recurse=true or depth, and connected=true also.
-                    required: false
-#            put:
-#              is: [constrainable]
-            type: collection
-            uriParameters:
-              elementId:
-                description: Sysml ID for the element under consideration
-    /changesets:
-      type: readCollection
-      description: Track groups of changes together so they can be rolled back together if
-                   necessary as well
-      /{changesetId}:
-        get:
-        #post:
-        #  description: Revert Alfresco to the specified change set
-        #  responses:
-        #    200:
-        #      description: Successfully reverted the changeset
-    /artifacts:
-      /{artifactId}:
-        get:
-          is: [sliceable]
-          queryParameters:
-              cs:
-                description: The checksum of the artifact to get
-                required: true
-              extension:
-                description: The extension of the artifact.  Uses ".svg" if this is not supplied.
-                required: false
-    /products:
-        /{productId}:
-            /views:
-              get:
-                is: [productable, sliceable]
-                description: Retrieve all views for the specified product for which user has read permissions
-                responses:
-                  200:
-    /projects:
-      get:
-        description: Get all projects for a workspace
-      post:
-        description: Post a project using the supplied json
+        description: Post a org using the query parameters and supplied json
         body:
           application/json:
-            schema: projects
-      /{projectId}:
-        type: readCollection
+            schema: ref
+        is: []
+      /{refId}:
         uriParameters:
-          projectId:
-            description: MD project ID for the project under consideration
-    /search:
-      description: Service for searching for elements in a particular workspace
-      get:
-        is: [sliceable]
-        queryParameters:
-          propertyName:
-            description: The property name to search for
-            required: false
-          keyword:
-            description: Mandatory field for specifying what to look for.
-            required: true
-          filters:
-            description: Comma separated list of id, documentation, name, value, aspect, appliedMetatypes, metatypes to search against. If not specified, defaults to documentation. appliedMetatypes and metatypes search using the ID of the metatypes.
-            required: true
-#/operations:
-#  description: Service for executing operations, e.g., like the OCL Execution capabilities in MDK. Details still TBD.
-/diff:
-  post:
-    is: [diffable]
-    description: workspace diff post, ie merge
-  /{workspace1}:
-    uriParameters:
-      workspace1:
-        description: The source workspaces to compare against
-        type: string
-    /{workspace2}:
-      uriParameters:
-        workspace2:
-          description: The target workspaces to compare
-          type: string
-      /{timestamp1}:
-        uriParameters:
-          timestamp1:
-            description: The source workspace timestamp to use in comparison, supply "latest" to use the current time
-            type: string
-        /{timestamp2}:
-          uriParameters:
-            timestamp2:
-              description: The target workspace timestamp to use in comparison, supply "latest" to use the current time
-              type: string
-          description: Service for diffing between two model versions between projects
+          refId:
+            description: Ref ID under consideration.
+        get:
+          description: Get the specified ref.
+        delete:
+          description: Delete the specified ref.
+        /search:
+          description: searches for elements in any project mounted to the current project.
+        /artifacts:
+          description: path to images
+          /{elementId}:
+            uriParameters:
+              elementId:
+                description: Element ID under consideration.
+            get:
+              description: Get the documents of the specified ref.
+              queryParameters:
+                accept:
+                  description: image/svg
+                  required: false
+
+        /history:
+          description: get the commit history of the specififed ref.
           get:
-            description: workspace diff get
+            description: Get the hisotry of the specified ref.
+        /groups:
+          description: a grouping of elements
+          get:
+            description: Get all groups of elements in a ref.
+        /mounts:
+          description: All mounts associated with a project.
+          get:
+            description: Get all mounts in a project.
+        /documents:
+          description: get documents
+          get:
+            description: Get the documents of the specified ref.
             queryParameters:
-              recalculate:
-                description: Perform a new diff calculation if the current found one is outdated.  Must supply diffTime also.
-                type: boolean
+              groupId:
+                description: Get documents by group.  If groupId isn't specified returns only root level docs.
                 required: false
-              changesForMerge:
-                description: Perform a diff for merging workspace2 into workspace1.  This is the default behavior.
-                type: boolean
-                required: false
-              fullCompare:
-                description: Perform a full diff of workspace1 and workspace2.
-                type: boolean
-                required: false
-              bothDirections:
-                description: Perform a for merging workspace2 into workspace1 and workspace1 into workspace2.
-                type: boolean
-                required: false
-#/merge:
-#  description: Service for merging two workspaces.  timestamp args are not implemented yet.
-#  post:
-#    is: [diffable]
-#    description: workspace merge post
-/sites/permissions:
-  post:
-    description: Service for syncing permissions from Alfresco Share sites to corresponding model packages
-/workspaceldapgroup:
-  post:
-    description: Service updating the LDAP group that has permissions to do workspace operations.
-    queryParameters:
-      ldapGroup:
-        description: The LDAP group (string)
-        type: string
-        required: true        
+        /elements:
+          description: Get elements
+          post:
+            description: Post elements using the supplied json
+            body:
+              application/json:
+                schema: elements
+
+          delete:
+            description: Delete elements using the supplied json
+            body:
+              application/json:
+                schema: elements
+          put:
+            description: Bulk get elements, give id of elements to get
+            body:
+              application/json:
+                schema: elements
+          /{elementId}:
+            uriParameters:
+              elementId:
+                description: element ID under consideration.
+            get:
+              description: Get specified element.
+              queryParameters:
+                commitId:
+                  description: Get commit for speificed element by id.
+                  required: false
+            delete:
+              description: Delete speified element
+              body:
+                application/json:
+                  schema: elements
+            /history:
+              get:
+                description: get the element in question's history.
+            /{id}:
+                uriParameters:
+                  id:
+                    description: ID under consideration. For images.
+                post:
+                  description: set image content type to image/svg
+                  body:
+                    application/json:
+                      schema: elements
+
 /connection/jms:
   type: connection
 /connection/jmswl:
   type: connection
 /connection/rest:
   type: connection
-        
-#/client:
-#  post:
-#    queryParameters:
-#      unregister:
-#        description: if specified, indicates deregistration, otherwise if not specified, always registration or update 
-#        type: boolean
-#    body:
-#      application/json:
-#        schema:
-#          client

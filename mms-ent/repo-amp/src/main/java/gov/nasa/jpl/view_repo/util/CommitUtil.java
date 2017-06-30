@@ -414,7 +414,7 @@ public class CommitUtil {
                         }
                     }
                 }
-
+                List<String> nullParents;
                 Savepoint sp = null;
                 try {//do node insert, updates, and containment edge updates
                     //do bulk delete edges for affected sysmlids here - delete containment, view and childview
@@ -427,8 +427,11 @@ public class CommitUtil {
                     sp = pgh.startTransaction();
                     pgh.runBulkQueries(edgeInserts, "edges");
                     pgh.commitTransaction();
+                    nullParents = pgh.findNullParents();
+                    if(nullParents != null){
+                        updateNullEdges(nullParents, projectId);
+                    }
                     pgh.cleanEdges();
-                    //TODO this should be part of transaction but will close the conn
                 } catch (Exception e) {
                     try {
                         pgh.rollBackToSavepoint(sp);
@@ -478,6 +481,26 @@ public class CommitUtil {
 
         jmsPayload.put("refs", jmsWorkspace);
 
+        return true;
+    }
+    /**
+     * Update edges where the parent is null to the holding bin + _projectId
+     *
+     * @param updateParents Parent edges that have null values
+     * @return true if updated
+     */
+    public static boolean updateNullEdges(List<String> updateParents, String projectId) {
+        try {
+            eh = new ElasticHelper();
+            Set<String> updateSet = new HashSet<String>(updateParents);
+            String owner = "holding_bin_"+projectId;
+            JSONObject query = new JSONObject();
+            query.put("doc", new JSONObject().put("ownerId", owner ));
+            eh.bulkUpdateElements(updateSet, query.toString());
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            return false;
+        }
         return true;
     }
 

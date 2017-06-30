@@ -1451,6 +1451,26 @@ public class PostgresHelper {
         }
     }
 
+    public List<String> findNullParents(){
+        List<String> nullParents = new ArrayList<>();
+        try {
+            ResultSet rs =
+                execQuery("SELECT n.elasticId FROM nodes n INNER JOIN (SELECT * FROM edges WHERE edgeType = 1 and parent IS NULL) as e ON (n.id = e.child);");
+            if (rs == null) {
+                return nullParents;
+            }
+            while (rs.next()) {
+                nullParents.add(rs.getString(1));
+            }
+        } catch (NullPointerException npe) {
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return nullParents;
+    }
+
     public void cleanEdges() {
         try {
             String query = "DELETE FROM \"edges" + workspaceId + "\" WHERE parent IS NULL OR child IS NULL";
