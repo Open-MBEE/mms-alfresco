@@ -21,18 +21,9 @@ securitySchemes:
 schemas:
   # these all return elements - search may need to be paged
   - elements: !include elements.json-schema
-  - views:    !include elements.json-schema
-  - products: !include elements.json-schema
-
-  #- configurations: !include configurations.json-schema
-  #- projects:       !include projects.json-schema
-  #- snapshots:      !include snapshots.json-schema
-
- # - sites:       !include sites.json-schema
-  #- workspaces:  !include workspaces.json-schema
-
-  #- diff:        !include diff.json-schema
-  #- client:      !include client.json-schema
+  - orgs:    !include orgs.json-schema
+  - projects: !include projects.json-schema
+  - refs:  !include refs.json-schema
 
   - connections: !include connections.json-schema
 
@@ -75,8 +66,7 @@ resourceTypes:
       usage: Resources with read capabilities and standard responses
       description: Read operations for <<resourcePathName>>
       get:
-          #is: [recursable, searchable, sliceable]
-          is: [] # Not searchable yet
+          is: [recursable, qualifiable, commitable]
           description: Read operation for <<resourcePathName>>
           responses:
               200:
@@ -197,7 +187,6 @@ resourceTypes:
       body:
         application/json:
           schema: projects
-      is: []
     /{projectId}:
       uriParameters:
         projectId:
@@ -213,7 +202,6 @@ resourceTypes:
     body:
       application/json:
         schema: projects
-    is: []
   /{projectId}:
     uriParameters:
       projectId:
@@ -229,7 +217,6 @@ resourceTypes:
         body:
           application/json:
             schema: ref
-        is: []
       /{refId}:
         uriParameters:
           refId:
@@ -280,6 +267,7 @@ resourceTypes:
             body:
               application/json:
                 schema: elements
+              #is[recursable, qualifiable]
 
           delete:
             description: Delete elements using the supplied json
@@ -302,10 +290,11 @@ resourceTypes:
                   description: Get commit for speificed element by id.
                   required: false
             delete:
-              description: Delete speified element
+              description: Delete specified element
               body:
                 application/json:
                   schema: elements
+
             /history:
               get:
                 description: get the element in question's history.
