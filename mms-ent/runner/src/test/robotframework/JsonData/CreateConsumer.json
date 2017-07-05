@@ -1,0 +1,9 @@
+{
+    "userName": "Consumer",
+    "firstName": "Consumer",
+    "lastName": "user",
+    "email": "Consumer@jpl.nasa.gov",
+    "groups": [
+        "GROUP_site_initorg_SiteConsumer"
+    ]
+}

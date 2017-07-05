@@ -88,7 +88,7 @@ PostNewElements
 	Should Match Baseline		${compare_result}
 
 UpdateElements
-    [Documentation]     "Update a existing element.  Creates versions of a element."
+    [Documentation]     "Update an existing element.  Creates versions of a element."
     [Tags]              8
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/UpdateElements.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
@@ -97,4 +97,20 @@ UpdateElements
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+
+DeleteProject
+    [Documentation]  "Delete an existing project"
+    [Tags]            8
+	${post_json} =		Get File	    ${CURDIR}/../../JsonData/ProjectForDeleteProject.json
+	${result} =			Post		    url=${ROOT}/orgs/initorg/projects		    data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+    ${result} =         Delete      url=${ROOT}/projects/${TEST_NAME}
+    Should Be Equal     ${result.status_code}       ${200}
+	${result} =			Get		url=${ROOT}/orgs/initorg/projects/${TEST_NAME}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
 

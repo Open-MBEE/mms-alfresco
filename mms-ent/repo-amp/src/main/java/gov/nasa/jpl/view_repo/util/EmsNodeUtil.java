@@ -183,12 +183,12 @@ public class EmsNodeUtil {
         JSONArray nodeList = getNodesBySysmlids(mountIds);
         for (int i = 0; i < nodeList.length(); i++) {
             JSONObject mountJson = nodeList.getJSONObject(i);
-            if (mountJson.has(Sjm.MOUNTEDELEMENTPROJECTID) && mountJson.has("refId")) {
+            if (mountJson.has(Sjm.MOUNTEDELEMENTPROJECTID) && mountJson.has(Sjm.MOUNTEDREFID)) {
                 if (found.contains(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID))) {
                     continue;
                 }
                 JSONObject childProject = getProjectWithFullMounts(mountJson.getString(Sjm.MOUNTEDELEMENTPROJECTID),
-                    mountJson.getString("refId"), found);
+                    mountJson.getString(Sjm.MOUNTEDREFID), found);
                 if (childProject != null) {
                     mounts.put(childProject);
                 }
@@ -1432,6 +1432,12 @@ public class EmsNodeUtil {
             result.put(curFound.get(i));
         }
         elementsToFind.removeAll(foundElements);
+        if (elementsToFind.isEmpty()) {
+            return;
+        }
+        if (!mountsJson.has(Sjm.MOUNTS)) {
+            mountsJson = emsNodeUtil.getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
+        }
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 
         for (int i = 0; i < mountsArray.length(); i++) {

@@ -70,3 +70,17 @@ Create Subworkspace With CopyTime
     Should Be Equal     ${result.status_code}       ${200}
     Generate JSON       Subworkspace_${workspace_id}.json       ${result.json()}        ${filter_list}
     Return From Keyword     ${result.json()}
+
+Delete Project
+    [Documentation]     Deletes project with given projectId
+    [Arguments]         ${projectId}
+    ${result} =         Delete      url=${ROOT}/projects/${projectId}
+    Should Be Equal     ${result.status_code}       ${200}
+    Return From Keyword     ${result.json()}
+
+Clean Database
+    [Documentation]  Deletes the PA, PB, PC, and PD projects from the MMS and ElasticSearch
+    Delete Project  PA
+    Delete Project  PB
+    Delete Project  PC
+    Delete Project  PD

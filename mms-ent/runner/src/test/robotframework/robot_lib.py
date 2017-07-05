@@ -3,7 +3,6 @@ import json
 import argparse
 import collections
 import platform
-import commands
 import os
 import shutil
 import subprocess
