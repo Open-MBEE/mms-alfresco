@@ -48,6 +48,13 @@ ProjectCreation
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
+BadIdProjectCreation
+	[Documentation]		"Try to Create a project with an invalid ID under the organization with ID: initorg"
+	[Tags]				4
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/BadIdProjectCreation.json
+	${result} =			Post		url=${ROOT}/orgs/initorg/projects		    data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${400}
+
 GetProjects
 	[Documentation]		"Get all projects in org."
 	[Tags]				5
