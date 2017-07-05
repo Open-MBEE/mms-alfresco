@@ -4,9 +4,9 @@
     "type": "object",
     "description": "Specification for creating a org.",
     "properties": {
-        "projects": {
+        "orgs": {
             "type": "array",
-            "description": "An array of elements",
+            "description": "An array of orgs",
             "items": {
                 "type": "object",
                 "$ref": "#/definitions/Element"
@@ -18,23 +18,15 @@
         }
     },
     "definitions": {
-        "Project": {
+        "Org": {
             "properties": {
                 "id": {
                      "type": "string",
-                     "description": "[xmi:id] Unique identifier of the project. "
+                     "description": "[xmi:id] Unique identifier of the org. "
                 },
                 "name": {
                     "type": "string",
-                    "description": "[UML:name for named element] Unique identifier of the project. "
-                }
-                "orgId": {
-                    "type": "string",
-                    "description": "[xmi:id] Unique identifier of the org the project belongs to."
-                },
-                "type": {
-                     "type": "string",
-                     "description": "[uml:id]"
+                    "description": "[UML:name for named element] Unique identifier of the org. "
                 }
             }
         }
