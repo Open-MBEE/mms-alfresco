@@ -46,6 +46,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author han
@@ -89,29 +91,35 @@ public class OrgProjectPost extends AbstractJavaWebScript {
 
                 String orgId = getOrgId(req);
 
-                // We are now getting the project id form the json object, but
+                // We are now getting the project id from the json object, but
                 // leaving the check from the request
                 // for backwards compatibility:
                 String projectId = projJson.has(Sjm.SYSMLID) ? projJson.getString(Sjm.SYSMLID) : getProjectId(req);
+                if (validateProjectId(projectId)) {
 
-                SiteInfo siteInfo = services.getSiteService().getSite(orgId);
-                if (siteInfo != null) {
+                    SiteInfo siteInfo = services.getSiteService().getSite(orgId);
+                    if (siteInfo != null) {
 
-                    CommitUtil.sendProjectDelta(projJson, orgId, user);
+                        CommitUtil.sendProjectDelta(projJson, orgId, user);
 
-                    if (projectId != null && !projectId.equals(NO_SITE_ID)) {
-                        statusCode = updateOrCreateProject(projJson, projectId, orgId);
+                        if (projectId != null && !projectId.equals(NO_SITE_ID)) {
+                            statusCode = updateOrCreateProject(projJson, projectId, orgId);
+                        } else {
+                            statusCode = updateOrCreateProject(projJson, projectId);
+                        }
                     } else {
-                        statusCode = updateOrCreateProject(projJson, projectId);
+                        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+                        // This should not happen, since the Organization should be created before a Project is posted
+                        if (emsNodeUtil.orgExists(orgId)) {
+                            statusCode = HttpServletResponse.SC_FORBIDDEN;
+                        } else {
+                            statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+                        }
                     }
                 } else {
-                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
-                    // This should not happen, since the Organization should be created before a Project is posted
-                    if (emsNodeUtil.orgExists(orgId)) {
-                        statusCode = HttpServletResponse.SC_FORBIDDEN;
-                    } else {
-                        statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-                    }
+                    statusCode = HttpServletResponse.SC_BAD_REQUEST;
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, String.format("Invalid Project Id '%s' from client",
+                        projectId));
                 }
 
             } else {
@@ -235,4 +243,12 @@ public class OrgProjectPost extends AbstractJavaWebScript {
         return checkRequestContent(req);
     }
 
+    /**
+     * Check project id for validity
+     */
+    protected boolean validateProjectId(String projectId) {
+        Pattern p = Pattern.compile("^\\w+$");
+        Matcher m = p.matcher(projectId);
+        return m.matches();
+    }
 }
