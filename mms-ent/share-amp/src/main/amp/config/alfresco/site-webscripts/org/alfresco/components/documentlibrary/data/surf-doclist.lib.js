@@ -137,42 +137,20 @@ var DocList =
           */
 
          item.nodeRef = node.nodeRef;
-
-         item.fileName = node.properties[DocList.PROP_NAME];
-            // [CYL] added
-            if (DocList.PROP_TITLE in node.properties) {
-                sysmlName = node.properties[DocList.PROP_TITLE];
-                if (sysmlName != null && sysmlName.length > 0) {
-                  item.fileName = node.properties[DocList.PROP_TITLE];
-                } else {
-                  item.fileName = node.properties[DocList.PROP_NAME];
-                }
-            } else {
-                item.fileName = node.properties[DocList.PROP_NAME];
-            }
+         item.nodeRef = node.nodeRef;
          if (node.isLink)
          {
-            item.displayName = node.properties[DocList.PROP_TITLE];
+           item.displayName = node.properties[DocList.PROP_TITLE];
          }
          else
          {
-            // [CYL] added
-            if (DocList.PROP_TITLE in node.properties) {
-                sysmlName = node.properties[DocList.PROP_TITLE];
-                if (sysmlName != null && sysmlName.length > 0) {
-                  item.displayName = node.properties[DocList.PROP_TITLE] + '  (' + node.properties[DocList.PROP_NAME] + ')';
-                } else {
-                  item.displayName = node.properties[DocList.PROP_NAME];
-                }
-            } else {
-                item.displayName = node.properties[DocList.PROP_NAME];
-            }
-            if (item.workingCopy)
-            {
-               item.displayName = item.displayName.replace(workingCopyLabel, "");
-            }
+           item.displayName = node.properties[DocList.PROP_TITLE];// + ' (' + node.properties[DocList.PROP_NAME] + ')';
+           item.fileName = node.properties[DocList.PROP_NAME];
+           if (item.workingCopy)
+           {
+              item.displayName = item.displayName.replace(workingCopyLabel, "");
+           }
          }
-
          var itemJSON = jsonUtils.toJSONObject(item);
 
          /**
@@ -785,7 +763,7 @@ var DocList =
       var templateTitle = null,
          titleConfig = templateConfig.childrenMap["title"],
          title;
-      
+
       if (!titleConfig)
       {
          return null;
@@ -898,7 +876,7 @@ var DocList =
 
           return r;
       };
-      
+
       var o={}, l=arguments.length, i;
       for (i=0; i<l; i=i+1)
       {
