@@ -69,4 +69,16 @@ public class PostgresPool {
         bds.setRemoveAbandonedTimeout(1);
         return bds.getConnection();
     }
+
+    /**
+     * Given a host and name this will remove the connection source from the PostgresPool
+     * @param host
+     * @param name
+     */
+    public static void removeConnection(String host, String name) {
+        String connectString = host + name;
+        if (dataSource.containsKey(connectString)) {
+            dataSource.remove(connectString);
+        }
+    }
 }

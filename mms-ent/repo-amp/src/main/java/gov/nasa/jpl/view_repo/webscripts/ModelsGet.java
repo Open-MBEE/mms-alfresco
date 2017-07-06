@@ -165,8 +165,7 @@ public class ModelsGet extends ModelGet {
             String projectId = getProjectId(req);
             boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
+            JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
 
             JSONArray result = new JSONArray();
             Set<String> uniqueElements = new HashSet<>();

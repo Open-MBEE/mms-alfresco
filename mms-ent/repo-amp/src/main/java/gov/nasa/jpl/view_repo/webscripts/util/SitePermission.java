@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import gov.nasa.jpl.view_repo.util.*;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Logger;
@@ -20,6 +21,7 @@ public class SitePermission {
 
     private static Logger logger = Logger.getLogger(SitePermission.class);
 
+    public static final String ADMIN_USER_NAME = "admin";
 
     public enum Permission {
         READ, WRITE
@@ -198,12 +200,25 @@ public class SitePermission {
     }
 
     public static EmsScriptNode getSiteNode(String sysmlid) {
-        if (sysmlid == null)
+        if (sysmlid == null) {
             return null;
+        }
+        String runAsUser = AuthenticationUtil.getRunAsUser();
+        boolean changeUser = !ADMIN_USER_NAME.equals(runAsUser);
+        if (changeUser) {
+            AuthenticationUtil.setRunAsUser(ADMIN_USER_NAME);
+        }
         ServiceRegistry services = NodeUtil.getServiceRegistry();
         SiteInfo si = services.getSiteService().getSite(sysmlid);
         if (si != null) {
-            return new EmsScriptNode(si.getNodeRef(), services, null);
+            EmsScriptNode site = new EmsScriptNode(si.getNodeRef(), services, null);
+            if (changeUser) {
+                AuthenticationUtil.setRunAsUser(runAsUser);
+            }
+            return site;
+        }
+        if (changeUser) {
+            AuthenticationUtil.setRunAsUser(runAsUser);
         }
         return null;
     }

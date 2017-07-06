@@ -1,0 +1,28 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_childViews": [
+                {
+                    "aggregation": "shared"
+                },
+                {
+                    "aggregation": "composite"
+                },
+                {
+                    "aggregation": "composite"
+                },
+                {
+                    "aggregation": "composite"
+                }
+            ],
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "name": "v1",
+            "type": "Class"
+        }
+    ]
+}

@@ -1,0 +1,100 @@
+        "Paragraph": {
+            "properties": {
+                "type": { "enum": ["Paragraph"] },
+                "sourceType": {
+                    "enum": ["reference", "text"],
+                    "description": "If reference, provides the source and sourceProperty, otherwise just the text"
+                },
+                "source": {
+                    "type": "string",
+                    "description": "Element ID"
+                },
+                "sourceProperty": {
+                    "enum": ["documentation", "name", "value"]
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "Table": {
+            "properties": {
+                "type": { "enum": ["Table"] },
+                "title": { "type": "string" },
+                "body": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "content": {
+                                    "type": "array",
+                                    "items": {
+			                            "type": "object",
+			                            "oneOf": [
+			                                { "$ref": "#/definitions/Paragraph" },
+			                                { "$ref": "#/definitions/List" },
+			                                { "$ref": "#/definitions/Table" },
+			                                { "$ref": "#/definitions/Image" }
+			                            ]
+		                            }
+	                            }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "List": {
+            "properties": {
+                "type": { "enum": ["List"] },
+                "ordered": {
+                    "type": "boolean"
+                 },
+                 "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "oneOf": [
+                                { "$ref": "#/definitions/Paragraph" },
+                                { "$ref": "#/definitions/List" },
+                                { "$ref": "#/definitions/Table" },
+                                { "$ref": "#/definitions/Image" }
+                            ]
+                        }
+                    }
+                }
+             }
+        },
+        "Image": {
+            "properties": {
+                "type": { "enum": ["Image"] },
+                "sysmlid": {
+                    "type": "string"
+                }
+            }
+        },
+        "Section": {
+            "properties": {
+                "type": { "enum": ["Section"] },
+                "name": {
+                    "type": "string"
+                },
+                "contains": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "oneOf": [
+                            {"$ref": "#/definitions/Paragraph"},
+                            {"$ref": "#/definitions/Table"},
+                            {"$ref": "#/definitions/List"},
+                            {"$ref": "#/definitions/Image"},
+                            {"$ref": "#/definitions/Section"}
+                        ]
+                    }
+                }
+            }
+        },

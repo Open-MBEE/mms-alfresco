@@ -1,42 +1,40 @@
+#ref is the endpoint which returns branches and tags
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "description": "Projects listing specification",
+    "description": "Specification for creating a org.",
     "properties": {
-        "elements": {
+        "projects": {
             "type": "array",
+            "description": "An array of elements",
             "items": {
                 "type": "object",
-                "oneOf": [
-                    {"$ref": "#/definitions/Project"}
-                ]
+                "$ref": "#/definitions/Element"
             }
         },
         "message": {
-                    "type": "string",
-                    "description": "The response message for this transaction if it is non-empty."
+            "type": "string",
+            "description": "The response message for this transaction if it is non-empty."
         }
     },
-
     "definitions": {
         "Project": {
             "properties": {
-                "sysmlid": {
-                    "type": "string",
-                    "description": "Unique sysml identifier of the project"
+                "id": {
+                     "type": "string",
+                     "description": "[xmi:id] Unique identifier of the project. "
                 },
                 "name": {
                     "type": "string",
-                    "description": "Human readable name of the project"
+                    "description": "[UML:name for named element] Unique identifier of the project. "
+                }
+                "orgId": {
+                    "type": "string",
+                    "description": "[xmi:id] Unique identifier of the org the project belongs to."
                 },
-                "specialization": {
-                    "properties": {
-                        "type": { "enum": ["Project"] },
-                        "projectVersion": {
-                            "type": "string",
-                            "description": "MD project version last exported. TODO: may go away"
-                        }
-                    }
+                "type": {
+                     "type": "string",
+                     "description": "[uml:id]"
                 }
             }
         }
