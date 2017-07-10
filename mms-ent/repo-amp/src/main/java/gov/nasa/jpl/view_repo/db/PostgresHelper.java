@@ -864,8 +864,8 @@ public class PostgresHelper {
         String query = "";
         for (Map<String, String> node : nodes) {
             query += String.format(
-                "UPDATE \"nodes%s\" SET elasticId = '%s', sysmlId = '%s', lastcommit = '%s', nodeType = '%s' WHERE sysmlId = '%s';",
-                workspaceId, node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"), node.get("nodetype"),
+                "UPDATE \"nodes%s\" SET elasticId = '%s', sysmlId = '%s', lastcommit = '%s', nodeType = '%s', deleted = %b WHERE sysmlId = '%s';",
+                workspaceId, node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"), node.get("nodetype"), Boolean.parseBoolean(node.get("deleted")),
                 node.get(Sjm.SYSMLID));
         }
         return query;
@@ -881,76 +881,6 @@ public class PostgresHelper {
                 + ")");
         });
         query += StringUtils.join(values, ",") + ";";
-        /*
-        Map<String, Integer> sysmlIds = new HashMap<>();
-        List<String> parentList = new ArrayList<>();
-        List<String> childList = new ArrayList<>();
-        edges.forEach((edge) -> {
-            parentList.add(edge.get("parent"));
-            childList.add(edge.get("child"));
-        });
-
-        List<String> parentCache = new ArrayList<>();
-        List<String> childCache = new ArrayList<>();
-
-        Connection nestedConn = null;
-
-        try {
-            nestedConn = PostgresPool
-                .getStandaloneConnection(this.projectProperties.get("location"), this.projectProperties.get("dbname"));
-
-            for (int i = 0; i < parentList.size(); i++) {
-                parentCache.add(parentList.get(i));
-                if ((i / limit) == 1 || i == (parentList.size() - 1)) {
-                    String parents = StringUtils.join(parentCache, "','");
-                    ResultSet parentRs = nestedConn.createStatement().executeQuery(String
-                        .format("SELECT sysmlId, id FROM \"nodes%s\" WHERE sysmlId in ('%s') AND deleted = %b",
-                            workspaceId, parents, false));
-
-                    while (parentRs.next()) {
-                        if (!sysmlIds.containsKey(parentRs.getString(1))) {
-                            sysmlIds.put(parentRs.getString(1), parentRs.getInt(2));
-                        }
-                    }
-                    parentCache = new ArrayList<>();
-                }
-            }
-            for (int i = 0; i < childList.size(); i++) {
-                childCache.add(childList.get(i));
-                if ((i / limit) == 1 || i == (childList.size() - 1)) {
-                    String childs = StringUtils.join(childCache, "','");
-                    ResultSet childRs = nestedConn.createStatement().executeQuery(String
-                        .format("SELECT sysmlId, id FROM \"nodes%s\" WHERE sysmlId in ('%s') AND deleted = %b",
-                            workspaceId, childs, false));
-                    while (childRs.next()) {
-                        if (!sysmlIds.containsKey(childRs.getString(1))) {
-                            sysmlIds.put(childRs.getString(1), childRs.getInt(2));
-                        }
-                    }
-                    childCache = new ArrayList<>();
-                }
-            }
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            if (nestedConn != null) {
-                try {
-                    nestedConn.close();
-                } catch (SQLException e) {
-                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                }
-            }
-        }
-
-        for (Map<String, String> edge : edges) {
-            if (sysmlIds.containsKey(edge.get("parent")) && sysmlIds.containsKey(edge.get("child"))) {
-                query += String.format("(%d,%d,%s),", sysmlIds.get(edge.get("parent")), sysmlIds.get(edge.get("child")),
-                    edge.get("edgetype"));
-            }
-        }
-        query = query.substring(0, query.length() - 1) + ");";
-        */
-        //System.out.println("EdgeQuery: " + query);
         return query;
     }
 
@@ -1521,9 +1451,31 @@ public class PostgresHelper {
         }
     }
 
+    public List<String> findNullParents(){
+        List<String> nullParents = new ArrayList<>();
+        try {
+            ResultSet rs =
+                execQuery("SELECT n.elasticId FROM nodes n INNER JOIN (SELECT * FROM edges WHERE edgeType = 1 and parent IS NULL) as e ON (n.id = e.child);");
+            if (rs == null) {
+                return nullParents;
+            }
+            while (rs.next()) {
+                nullParents.add(rs.getString(1));
+            }
+        } catch (NullPointerException npe) {
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return nullParents;
+    }
+
     public void cleanEdges() {
         try {
-            String query = "DELETE FROM \"edges" + workspaceId + "\" WHERE parent = null OR child = null";
+            String nullParents = "UPDATE \"edges" + workspaceId + "\" SET parent = nodes.id FROM \"nodes" + workspaceId + "\" nodes WHERE parent IS NULL AND nodes.sysmlid = 'holding_bin_" + project + "'";
+            execUpdate(nullParents);
+            String query = "DELETE FROM \"edges" + workspaceId + "\" WHERE child IS NULL";
             execUpdate(query);
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -2169,5 +2121,49 @@ public class PostgresHelper {
         }
         this.workspaceId = currentWorkspace;
         return false;
+    }
+
+    /**
+     * Will alter the connection limit to the database to be 0 then kill any processes connected to it. Finally it will
+     * drop the database. If any connections persist or it fails to change the connection limit then the database
+     * will not be dropped.
+     * @param databaseName
+     */
+    public void dropDatabase(String databaseName) {
+
+        PostgresPool.removeConnection(EmsConfig.get("pg.host"), databaseName);
+
+        String query = "ALTER DATABASE  \"_" + databaseName  +"\" CONNECTION LIMIT 0";
+        String query2 = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = \'_" + databaseName +"\'";
+        String query3 = "DROP DATABASE \"_" + databaseName +"\";";
+
+        connectConfig();
+
+        try {
+            this.configConn.createStatement().executeUpdate(query);
+            this.configConn.prepareCall(query2).execute();
+            this.configConn.createStatement().executeUpdate(query3);
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        closeConfig();
+    }
+
+    /**
+     * Deletes the project from the project table based on the projectId provided.
+     * @param projectId
+     */
+    public void deleteProjectFromProjectsTable(String projectId){
+        connectConfig();
+        try {
+            String query = "DELETE FROM projects WHERE projectid = \'" + projectId +"\'";
+            this.configConn.createStatement().executeUpdate(query);
+//            PreparedStatement query = this.conn.prepareStatement("DELETE FROM projects WHERE projectid = ?");
+//            query.setString(1, projectId);
+//            query.executeUpdate();
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        closeConfig();
     }
 }

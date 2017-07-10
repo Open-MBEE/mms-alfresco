@@ -102,20 +102,16 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             if (projectId == null || (perm != null && perm)) {
                 model = executeImpl(req, status, cache);
             } else {
-                // Always return 404 for now.
-                // TODO: Uncomment this when MDK supports
-                //if (perm == null) {
+                if (perm == null) {
                     status.setMessage("Not Found!");
                     res.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     res.getWriter().write("{}");
                     return;
-                //}
-                /*
+                }
                 status.setMessage("Access denied!");
                 res.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 res.getWriter().write("{}");
                 return;
-                */
             }
 
             if (model == null) {

@@ -422,8 +422,7 @@ public class ModelGet extends AbstractJavaWebScript {
 
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
+        JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
 
         JSONArray elasticElements = handleMountSearch(mountsJson, extended, rootSysmlid, depth);
         JSONArray elasticElementsCleaned = new JSONArray();
@@ -442,6 +441,9 @@ public class ModelGet extends AbstractJavaWebScript {
         JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
         if (tmpElements.length() > 0) {
             return extended ? emsNodeUtil.addExtendedInformation(tmpElements) : tmpElements;
+        }
+        if (!mountsJson.has(Sjm.MOUNTS)) {
+            mountsJson = emsNodeUtil.getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
         }
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 

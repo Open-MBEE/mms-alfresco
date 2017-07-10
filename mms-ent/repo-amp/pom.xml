@@ -10,7 +10,7 @@
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
         <artifactId>mms-ent</artifactId>
-        <version>3.0.0</version>
+        <version>3.0.1-SNAPSHOT</version>
     </parent>
     <repositories>
         <!-- jest elasticsearch client repository -->
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>io.searchbox</groupId>
             <artifactId>jest</artifactId>
-            <version>2.4.0</version>
+            <version>5.3.2</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>

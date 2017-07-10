@@ -1,0 +1,59 @@
+{
+    "elements": [
+        {
+            "id": "package1",
+            "type": "Package",
+            "name": "package1",
+            "ownerId": "PA"
+        },
+        {
+            "id": "v1",
+            "ownedAttributeIds": [
+                "v1p1",
+                "v1p2"
+            ],
+            "name": "v1",
+            "_appliedStereotypeIds": [
+                "_17_0_1_232f03dc_1325612611695_581988_21583"
+            ],
+            "type": "Class",
+            "ownerId": "package1"
+        },
+        {
+            "id": "v1p1",
+            "name": "v1p1",
+            "type": "Property",
+            "aggregation": "composite",
+            "typeId": "cv1",
+            "ownerId": "v1"
+        },
+        {
+            "id": "v1p2",
+            "name": "v1p2",
+            "type": "Property",
+            "aggregation": "composite",
+            "typeId": "cv2",
+            "ownerId": "v1"
+        },
+        {
+            "id": "cv1",
+            "ownedAttributeIds": [],
+            "name": "cv1",
+            "_appliedStereotypeIds": [
+                "_17_0_1_232f03dc_1325612611695_581988_21583"
+            ],
+            "type": "Class",
+            "ownerId": "v1"
+        },
+        {
+            "id": "cv2",
+            "ownedAttributeIds": [],
+            "name": "cv2",
+            "_appliedStereotypeIds": [
+                "_17_0_1_232f03dc_1325612611695_581988_21583"
+            ],
+            "type": "Class",
+            "ownerId": "v1"
+        }
+    ]
+}
