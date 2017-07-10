@@ -144,7 +144,14 @@ var DocList =
          }
          else
          {
-           item.displayName = node.properties[DocList.PROP_TITLE];// + ' (' + node.properties[DocList.PROP_NAME] + ')';
+           if(node.properties[DocList.PROP_TITLE])
+           {
+             item.displayName = node.properties[DocList.PROP_TITLE];// + ' (' + node.properties[DocList.PROP_NAME] + ')';
+           }
+           else
+           {
+             item.displayName = node.properties[DocList.PROP_NAME];// + ' (' + node.properties[DocList.PROP_NAME] + ')';
+           }
            item.fileName = node.properties[DocList.PROP_NAME];
            if (item.workingCopy)
            {

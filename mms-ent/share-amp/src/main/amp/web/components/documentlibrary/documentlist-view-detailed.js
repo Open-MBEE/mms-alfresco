@@ -30,13 +30,13 @@
     */
    var Dom = YAHOO.util.Dom,
        Event = YAHOO.util.Event;
-       
+
    /**
     * Alfresco Slingshot aliases
     */
    var $html = Alfresco.util.encodeHTML,
       $isValueSet = Alfresco.util.isValueSet;
-   
+
    /**
     * ViewRenderer constructor.
     *
@@ -61,10 +61,10 @@
       this.buttonCssClass = this.name + "-view";
       this.metadataBannerViewName = this.name;
       this.metadataLineViewName = this.name;
-      
+
       return this;
    };
-   
+
    Alfresco.DocumentListViewRenderer.prototype =
    {
 
@@ -78,7 +78,7 @@
       {
          Dom.addClass(scope.id + this.buttonElementIdSuffix, this.buttonCssClass);
       },
-   
+
       /**
        * Render the view using the given scope (documentList), request and response.
        *
@@ -93,7 +93,7 @@
          YAHOO.util.Dom.setStyle(scope.id + this.parentElementIdSuffix, 'display', '');
          scope.widgets.dataTable.onDataReturnInitializeTable.call(scope.widgets.dataTable, sRequest, oResponse, oPayload);
       },
-   
+
       /**
        * Performs any teardown or visual changes to deselect this view in the interface
        *
@@ -122,7 +122,7 @@
       {
          Dom.setStyle(elCell, "width", oColumn.width + "px");
          Dom.setStyle(elCell.parentNode, "width", oColumn.width + "px");
-         
+
          var jsNode = oRecord.getData("jsNode"),
              nodeRef = jsNode.nodeRef,
              name = oRecord.getData("displayName"),
@@ -133,7 +133,7 @@
          checkbox.name = "fileChecked";
          checkbox.value = nodeRef;
          checkbox.checked = scope.selectedFiles[nodeRef] ? true : false;
-         
+
          label.id = "label_for_" + checkbox.id;
          label.style.fontSize="0em";
          label.innerHTML = (checkbox.checked ? scope.msg("checkbox.uncheck") : scope.msg("checkbox.check")) + " " + name;
@@ -182,7 +182,7 @@
             }
          }
       },
-      
+
       /**
        * Status custom datacell formatter
        *
@@ -213,12 +213,12 @@
                label = Alfresco.util.substituteDotNotation(label, record);
 
                desc += '<div class="status">';
-               
+
                if (indicator.action)
                {
                   desc += '<a class="indicator-action" data-action="' + indicator.action + '">';
                }
-               
+
                desc += '<img src="' + Alfresco.constants.URL_RESCONTEXT + 'components/documentlibrary/indicators/' + indicator.icon + '" title="' + $html(label) + '" alt="' + indicator.id + '" />';
                if (indicator.action)
                {
@@ -230,7 +230,7 @@
 
          elCell.innerHTML = desc;
       },
-      
+
       /**
        * Render the thumbnail cell
        *
@@ -251,18 +251,18 @@
             isLink = node.isLink,
             extn = name.substring(name.lastIndexOf(".")),
             imgId = node.nodeRef.nodeRef; // DD added
-         
+
          var containerTarget; // This will only get set if thumbnail represents a container
-         
+
          if (window.location.href.search(/\/sharedfiles/) != -1 && record.location.path.search("/Shared") == 0)
          {
             record.location.path = record.location.path.substring(7);
          }
-         
+
          oColumn.width = this.thumbnailColumnWidth;
          Dom.setStyle(elCell, "width", oColumn.width + "px");
          Dom.setStyle(elCell.parentNode, "width", oColumn.width + "px");
-      
+
          if (isContainer || (isLink && node.linkedNode.isContainer))
          {
             elCell.innerHTML = '<span class="folder">' + (isLink ? '<span class="link"></span>' : '') + (scope.dragAndDropEnabled ? '<span class="droppable"></span>' : '') + Alfresco.DocumentList.generateFileFolderLinkMarkup(scope, record) + '<img id="' + imgId + '" src="' + Alfresco.constants.URL_RESCONTEXT + 'components/documentlibrary/images/folder-64.png" /></a>';
@@ -308,7 +308,7 @@
          //else if (properties.title && properties.title !== record.displayName && scope.options.useTitle)
          {
             // Use title property if it's available. Supressed for links.
-            titleHTML = '<span class="title">(' + $html(record.displayName) + ')</span>';
+            titleHTML = '<span class="title">(' + $html(record.fileName) + ')</span>';
          }
 
          // Version display
@@ -332,7 +332,7 @@
                {
                   var label = (p_meta !== null ? scope.msg(p_meta) + ': ': ''),
                      value = "";
-                      
+
                   // render value from properties or custom renderer
                   if (scope.renderers.hasOwnProperty(p_key) && typeof scope.renderers[p_key] === "function")
                   {
@@ -371,7 +371,7 @@
                {
                   var label = (p_meta !== null ? '<em>' + scope.msg(p_meta) + '</em>: ': ''),
                      value = "";
-                      
+
                   // render value from properties or custom renderer
                   if (scope.renderers.hasOwnProperty(p_key) && typeof scope.renderers[p_key] === "function")
                   {
@@ -452,7 +452,7 @@
                {
                   var label = (p_meta !== null ? '<em>' + scope.msg(p_meta) + '</em>: ': ''),
                      value = "";
-                      
+
                   // render value from properties or custom renderer
                   if (scope.renderers.hasOwnProperty(p_key) && typeof scope.renderers[p_key] === "function")
                   {
@@ -492,7 +492,7 @@
             scope.onCloudSyncIndicatorAction(record, Event.getTarget(event))
          }, {}, scope);
       },
-      
+
       /**
        * Actions custom datacell formatter
        *
@@ -512,7 +512,7 @@
 
          elCell.innerHTML = '<div id="' + scope.id + '-actions-' + oRecord.getId() + '" class="hidden"></div>';
       },
-      
+
       /**
        * Returns actions custom datacell formatter
        *
@@ -536,7 +536,7 @@
             scope.renderCellProperty(scope, elCell, oRecord, oColumn, oData);
          };
       },
-      
+
       /**
        * Actions custom datacell formatter
        *
@@ -551,12 +551,12 @@
       {
          // this.renderers[propertyName] = renderer
          // this.parentDocumentList.renderers
-         
+
          if (typeof this.parentDocumentList.renderers[oColumn.field] === "function")
          {
             elCell.innerHTML = this.parentDocumentList.renderers[oColumn.field].call(this.parentDocumentList, oRecord.getData(), "");
          }
-         else 
+         else
          {
             // IMPLEMENTATION NOTES:
             // It is possible to check for renderers mapped to a property without the namespace (e.g. "description" instead of
@@ -579,7 +579,7 @@
             }
          }
       },
-      
+
       /**
        * Returns actions custom datacell formatter
        *
@@ -603,7 +603,7 @@
             scope.renderCellLinkProperty(scope, elCell, oRecord, oColumn, oData);
          };
       },
-      
+
       /**
        * Actions custom datacell formatter
        *
@@ -625,7 +625,7 @@
             elCell.innerHTML = '<span class="link">' + Alfresco.DocumentList.generateFileFolderLinkMarkup(scope.parentDocumentList, record) + this.parentDocumentList.renderProperty(propertyValue) + '</a></span>'
          }
       },
-      
+
       /**
        * Get the dataTable record identifier, i.e. yui-recXX, from the given row element.
        *
@@ -646,7 +646,7 @@
             return element !== null ? element.id : null;
          }
       },
-      
+
       /**
        * Get the row element from the given dataTable record.
        *
@@ -662,7 +662,7 @@
             return scope.widgets.dataTable.getTrEl(oRecord);
          }
       },
-      
+
       /**
        * Get the row's selection element, i.e. checkbox, from the given dataTable record.
        *
@@ -678,7 +678,7 @@
             return Dom.get("checkbox-" + oRecord.getId());
          }
       },
-      
+
       /**
        * Custom event handler to highlight row.
        *
@@ -692,7 +692,7 @@
       {
          // Call through to get the row highlighted by YUI
          scope.widgets.dataTable.onEventHighlightRow.call(scope.widgets.dataTable, oArgs);
-         
+
          var targetElement;
          if (rowElement)
          {
@@ -719,31 +719,31 @@
                   actionsEl = document.createElement("div"),
                   actionHTML = "",
                   actionsSel;
-   
+
                record.actionParams = {};
                for (var i = 0, ii = actions.length; i < ii; i++)
                {
                   actionHTML += scope.renderAction(actions[i], record);
                }
-   
+
                // Token replacement - action Urls
                actionsEl.innerHTML = YAHOO.lang.substitute(actionHTML, scope.getActionUrls(record));
-   
+
                // Simple or detailed view
                Dom.addClass(actionsEl, "action-set");
                Dom.addClass(actionsEl, this.actionsCssClassName);
-   
+
                // Need the "More >" container?
                actionsSel = YAHOO.util.Selector.query("div", actionsEl);
                if (actionsSel.length > scope.options.actionsSplitAt + this.actionsSplitAtModifier)
                {
                   var moreContainer = Dom.get(scope.id + "-moreActions").cloneNode(true),
                      containerDivs = YAHOO.util.Selector.query("div", moreContainer);
-   
+
                   // Insert the two necessary DIVs before the third action item
                   Dom.insertBefore(containerDivs[0], actionsSel[scope.options.actionsSplitAt]);
                   Dom.insertBefore(containerDivs[1], actionsSel[scope.options.actionsSplitAt]);
-   
+
                   // Now make action items three onwards children of the 2nd DIV
                   var index, moreActions = actionsSel.slice(scope.options.actionsSplitAt);
                   for (index in moreActions)
@@ -754,7 +754,7 @@
                      }
                   }
                }
-   
+
                elActions.appendChild(actionsEl);
             }
          }
@@ -780,7 +780,7 @@
       {
          // Call through to get the row unhighlighted by YUI
          scope.widgets.dataTable.onEventUnhighlightRow.call(scope.widgets.dataTable, oArgs);
-         
+
          var targetElement;
          if (rowElement)
          {
@@ -820,39 +820,39 @@
 
          // Get the pop-up div, sibling of the "More Actions" link
          var elMoreActions = Dom.getNextSibling(elMore);
-         
+
          // MNT-11703, MNT-12137 Menus disappearing off bottom of screen when clicking on more in list view
          var scrollY = window.scrollY;
          if (scrollY === undefined)
          {
             scrollY = document.documentElement.scrollTop;
          }
-         
+
          var visibleHeight = Dom.getViewportHeight() - (Dom.getY(elMore) - scrollY + elMore.offsetHeight);
-         
+
          Dom.removeClass(elMoreActions, "hidden");
-         
+
          if (elMoreActions.offsetHeight > visibleHeight)
          {
             Dom.setY(elMoreActions, Dom.getY(elMore) - (elMoreActions.offsetHeight + 1));
          }
-         
+
          var rBorderMoreX = Dom.getX(elMore) + elMore.offsetWidth;
          var rBorderMoreActionsX = Dom.getX(elMoreActions) + elMoreActions.offsetWidth;
          if (rBorderMoreX != rBorderMoreActionsX)
          {
             Dom.setX(elMoreActions, (Dom.getX(elMore) + elMore.offsetWidth - elMoreActions.offsetWidth));
          };
-         
+
          scope.hideMoreActionsFn = function DL_oASM_fnHidePopup()
          {
             scope.hideMoreActionsFn = null;
-            
+
             Dom.removeClass(elMore.firstChild, "highlighted");
             Dom.addClass(elMoreActions, "hidden");
          };
       },
-      
+
       /**
        * File or folder renamed event handler
        *
@@ -875,7 +875,7 @@
             }
          }
       },
-      
+
       /**
        * Highlight file event handler
        * Used when a component (including the DocList itself on loading) wants to scroll to and highlight a file
@@ -918,7 +918,7 @@
             }
          }
       },
-      
+
       /**
        * Sets the given message HTML as the text string of the YUI datatable
        *
@@ -930,7 +930,7 @@
       {
          scope.widgets.dataTable.set("MSG_EMPTY", messageHtml);
       },
-      
+
       /**
        * Constructs the display of upload indicators and instructions for empty spaces.
        *
@@ -941,7 +941,7 @@
       renderEmptyDataSourceHtml: function DL_VR_renderEmptyDataSourceHtml(scope, permissions)
       {
          var me = scope;
-         
+
          // Work out the current status of the document list (this will be used to determine what user assistance
          // is provided if the doc list is empty, or appears as empty)...
          var itemCounts = me.doclistMetadata.itemCounts,
@@ -977,7 +977,7 @@
          if (permissions)
          {
             me._userCanUpload = me.doclistMetadata.parent.permissions.user.CreateChildren && YAHOO.env.ua.mobile === null;
-            
+
             // Only allow drag and drop behaviour if the filter is changed to an actual
             // path (if the filter is anything else such as tags then there won't be a specific
             // location to upload to!)...
@@ -986,7 +986,7 @@
             {
                me._addDragAndDrop();
             }
-            
+
             if (me._userCanUpload && me.dragAndDropEnabled)
             {
                Dom.addClass(container, "docListInstructionsWithDND");
@@ -1058,7 +1058,7 @@
                      updateIDs(templateInstance);
                      container.appendChild(templateInstance);
                   }
-                  
+
                   // Show the New Folder other options node...
                   template = Dom.get(me.id + "-new-folder-template");
                   templateInstance = template.cloneNode(true);
@@ -1105,7 +1105,7 @@
 
          this._setEmptyDataSourceMessage(me, main.innerHTML);
       }
-      
+
    };
-   
+
 })();
