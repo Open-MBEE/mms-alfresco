@@ -248,7 +248,7 @@ public class OrgProjectPost extends AbstractJavaWebScript {
      * Check project id for validity
      */
     protected boolean validateProjectId(String projectId) {
-        Pattern p = Pattern.compile("^\\w+$");
+        Pattern p = Pattern.compile("^[\\w-]+$");
         Matcher m = p.matcher(projectId);
         return m.matches();
     }
