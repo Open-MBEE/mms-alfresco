@@ -1473,9 +1473,9 @@ public class PostgresHelper {
 
     public void cleanEdges() {
         try {
-            String nullParents = "UPDATE \"edges" + workspaceId + "\" SET parent = nodes.id FROM \"nodes" + workspaceId + "\" nodes WHERE parent IS NULL AND nodes.sysmlid = 'holding_bin_" + project + "'";
+            String nullParents = "UPDATE \"edges" + workspaceId + "\" SET parent = nodes.id FROM \"nodes" + workspaceId + "\" nodes WHERE parent IS NULL AND edgeType = 1 AND nodes.sysmlid = 'holding_bin_" + project + "'";
             execUpdate(nullParents);
-            String query = "DELETE FROM \"edges" + workspaceId + "\" WHERE child IS NULL";
+            String query = "DELETE FROM \"edges" + workspaceId + "\" WHERE parent IS NULL OR child IS NULL";
             execUpdate(query);
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
