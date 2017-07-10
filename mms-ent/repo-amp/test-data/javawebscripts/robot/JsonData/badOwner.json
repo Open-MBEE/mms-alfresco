@@ -1,0 +1,18 @@
+{
+    "elements":[
+        {
+            "documentation":"else",
+            "ownerId":"666",
+            "id":"badOwner",
+            "name":"the number",
+            "type":"Property",
+            "isDerived":false,
+            "value":[
+                {
+                    "type":"LiteralString",
+                    "string":"dlam_string"
+                }
+            ]
+        }
+    ]
+}

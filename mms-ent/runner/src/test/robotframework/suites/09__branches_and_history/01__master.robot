@@ -16,7 +16,6 @@ PostNewElementsToPAHistory
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-
 GetElementHistoryFromPA
 	[Documentation]		"get /projects/PA/refs/master/elements/test_history_element/history"
 	[Tags]				B2

@@ -1,7 +1,6 @@
 *** Settings ***
 Documentation    Testing CRUD Operations on Master
 Resource        ../resources.robot
-Suite Setup     Purge Results Directory
 
 *** Test Cases ***
 CreateManager

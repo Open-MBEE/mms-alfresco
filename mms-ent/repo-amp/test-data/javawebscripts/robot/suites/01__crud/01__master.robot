@@ -91,3 +91,20 @@ UpdateElements
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
+PostBadOwner
+	[Documentation]		"Post an element with a owner that doesn't exist."
+	[Tags]				9
+	${post_json} =		Get File	    JsonData/badOwner.json
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+
+GetBadOwner
+	[Documentation]		"The ownerId of the element should be holding_bin_PA"
+	[Tags]				10
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/badOwner		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+

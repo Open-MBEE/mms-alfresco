@@ -6,10 +6,10 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "something",
-            "id": "300",
+            "documentation": "else",
+            "id": "badOwner",
             "isDerived": false,
-            "name": "this name is updated",
+            "name": "the number",
             "ownerId": "holding_bin_PA",
             "type": "Property",
             "value": [
