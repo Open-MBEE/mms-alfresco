@@ -254,3 +254,9 @@ It takes as input JSON that specifies the classes and the log levels. For exampl
   }
 ]
 ```
+
+# API Documentation
+API Documentation is located at the following endpoint:
+```
+alfresco/mms/raml/index.html
+```
