@@ -24,7 +24,7 @@
         <!-- This control the root logging level for all apps uncomment and change,
             defaults to WARN <app.log.root.level>WARN</app.log.root.level> -->
 
-        <!-- Set the enviroment to use, this controls which properties will be
+        <!-- Set the environment to use, this controls which properties will be
             picked in src/test/properties for embedded run, defaults to the 'local' environment.
             See SDK Parent POM for more info. -->
         <env>local</env>
@@ -46,7 +46,7 @@
     <dependencyManagement>
         <dependencies>
             <!-- This will import the dependencyManagement for all artifacts in the
-                selected Alfresco plaftorm (see http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Importing_Dependencies)
+                selected Alfresco platform (see http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Importing_Dependencies)
                 NOTE: You still need to define dependencies in your POM, but you can omit
                 version as it's enforced by this dependencyManagement. NOTE: It defaults
                 to the latest version this SDK pom has been tested with, but alfresco version

@@ -591,7 +591,7 @@ public class CommitUtil {
         siteHoldingBin.put(Sjm.ISSITE, false);
         siteHoldingBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
         siteHoldingBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
-        siteHoldingBin.put(Sjm.DOCUMENTATION, JSONObject.NULL);
+        siteHoldingBin.put(Sjm.DOCUMENTATION, "");
         siteHoldingBin.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
         siteHoldingBin.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
         siteHoldingBin.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
@@ -613,7 +613,7 @@ public class CommitUtil {
         projectHoldingBin.put(Sjm.ISSITE, false);
         projectHoldingBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
         projectHoldingBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
-        projectHoldingBin.put(Sjm.DOCUMENTATION, JSONObject.NULL);
+        projectHoldingBin.put(Sjm.DOCUMENTATION, "");
         projectHoldingBin.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
         projectHoldingBin.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
         projectHoldingBin.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
@@ -635,7 +635,7 @@ public class CommitUtil {
         viewInstanceBin.put(Sjm.ISSITE, false);
         viewInstanceBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
         viewInstanceBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
-        viewInstanceBin.put(Sjm.DOCUMENTATION, JSONObject.NULL);
+        viewInstanceBin.put(Sjm.DOCUMENTATION, "");
         viewInstanceBin.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
         viewInstanceBin.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
         viewInstanceBin.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
