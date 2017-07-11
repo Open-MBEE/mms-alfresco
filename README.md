@@ -1,23 +1,23 @@
-# mms-all-in-one
+# Model Management System
 **Alfresco version 5.0.d**
 
 Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
-# Developer Setup
-## 1a. Import Project from git repo to Eclipse
+## Developer Setup
+### 1a. Import Project from git repo to Eclipse
 *  **Eclipse** > **File** > **Import** > **General** > **Existing Projects into Workspace**
 *  Set 'Root Directory' as the path to mms-all-in-one e.g. **Browse** to `$HOME/workspace/mms-all-in-one`
 *  In the 'Projects' list, you should see all poms. Click **Finish**
 
-## 1b. Import Maven Project into Eclipse
+### 1b. Import Maven Project into Eclipse
 * **Eclipse** > **File** > **Import** > **Maven** > **Existing Maven Projects**
 * Set 'Root Directory' as the path to mms-all-in-one e.g. **Browse** to `$HOME/workspace/mms-all-in-one/mms-ent`
 * In the 'Projects' list, you should see all poms. Click **Finish**
 
-## 1c. Using Intellij
+### 1c. Using Intellij
 * Open Project with root of 'mms-ent'
 * Import Maven Project
 
-## 2. Configure Eclipse to use Maven 3.X.X
+### 2. Configure Eclipse to use Maven 3.X.X
 *   **Eclipse** > **Window** > **Preferences** > **Maven** > **Installation**
  *  Toggle Maven 3.X.X
     *   If Maven 3.X.X is not listed, download and install it.
@@ -28,7 +28,7 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
     *   Browse and select Maven 3.X.X installed location.
     *  Location is the maven home that you can get by running the newly installed maven, with mvn -V
 
-## 3. Configure Run Configuration**
+### 3. Configure Run Configuration**
 *   Select **mms-ent** project
 *   From menu bar, choose **Run** > **Run Configurations**
 *   Right-click **Maven Build** > **New**
@@ -42,13 +42,13 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
         *   Select **Java 8** for JRE.
         *   If it's not installed, download and install Java 8. Afterward, return to here and select Java 8.
 
-# Install Dependencies
-## 1. Install and Configure Elastic Search
+## Install Dependencies
+### 1. Install and Configure Elastic Search
 *   Download Elasticsearch 5.X
 *   Install Elasticsearch
 *   Start Elasticsearch then run `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms-mappings.sh`
 
-## 2. Install and Configure Postgresql
+### 2. Install and Configure Postgresql
 *   Download Postgresql 9.x
     * If using Postgresql as the database for Alfresco, Postgresl 9.3 is the latest supported version
 *   Install Postgresql
@@ -60,29 +60,29 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 *   Execute `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql`
     * windows CMD e.g.: `psql -h localhost -p 5432 -U mms -d mms -v schema=public < C:\path\to\mms\repo\mms.sql`
 
-## 3. Install and Configure ActiveMQ
+### 3. Install and Configure ActiveMQ
 *   Download ActiveMQ
 *   Install ActiveMQ
 *   Start ActiveMQ service
 
-# Running
-## 1a. Running Alfresco
+## Running
+### 1a. Running Alfresco
 1. Select file menu **Run** > **Run Configurations**
 2. Expand **Maven Build**
 3. Select **mms-all-in-one**
     1. Click **Run** button
     * If you get error:-Dmaven.multiModuleProjectDirectory system property is not set. Check $M2_HOME environment variable and mvn script match. Goto **Window -> Preference -> Java -> Installed JREs -> Edit -> Default VM arguments**  _set -Dmaven.multiModuleProjectDirectory=$M2_HOME_
 
-## 1b. Running Alfresco
+### 1b. Running Alfresco
 1. From mms-ent directory, either run `clean-run.sh`, `run.sh`, or `./mvnw install -Prun`
 
-## 2. Testing Alfresco
+### 2. Testing Alfresco
 1. Enter http://localhost:8080/share/ at a browser's url address textbox.
 2. Enter **admin** for user name
 3. Enter **admin** for password
 
-# Design Documentation
-## 1. MMS using ElaticSearch and PostgreSQL
+## Design Documentation
+### 1. MMS using ElaticSearch and PostgreSQL
 
 -----
 
@@ -103,11 +103,11 @@ General Design
     +-----+    +----+
     (Graph)    (Data)
 
-## 2. Configuration Schema
+### 2. Configuration Schema
 * Global PG database called 'mms' holds configuration information per project
 * Contains Org, Project, and DB Location information
 
-## 3. Graph Database
+### 3. Graph Database
 * Each project has it's own database configured in the `mms` database
 * All graph related information stored in relational database
 * Schema defined in mms.sql
@@ -132,7 +132,7 @@ Each of these pointers is the “latest one”
 
 The history of each node can be retrieved via a query to ElasticSearch (see ElasticHelper.java)
 
-## 4. Graph Schema
+### 4. Graph Schema
 Nodes and edges both have a type associated with them
 The type must exist in the NodeTypes and EdgeTypes tables
 
@@ -149,7 +149,7 @@ Some assertions about the graph:
     * Always have either children or parents
 * All elastic references in the graph must exist in ES
 
-## 5. Graph
+### 5. Graph
 Structure of the graph for each “workspace”
 
                +---------+
@@ -168,7 +168,7 @@ Structure of the graph for each “workspace”
     +===+   +--| Configurations |
                +----------------+
 
-## 6. Example webscript in new world: modelpost
+### 6. Example webscript in new world: modelpost
 
 Create instance of EmsNodeUtil
 Get all other relevant information, validation, etc. form request
@@ -180,7 +180,7 @@ Update graph
 Create JSON response and return
 
 
-## 7. Example webscript in new world: modelget
+### 7. Example webscript in new world: modelget
 
 Create instance of EmsNodeUtil
 Get all other relevant information, validation, etc. form request
@@ -189,7 +189,7 @@ Access ES via ElasticHelper and get those IDs
 Create JSON response and return
 
 
-## 8. General Pattern for WebScripts
+### 8. General Pattern for WebScripts
 Create instance of EmsNodeUtil
 Get all other relevant information, validation, etc. form request
 Understand how to:
@@ -201,8 +201,8 @@ Understand how to:
 
 Create JSON response and return
 
-# Testing
-## Initializing Organizations, Projects, and test elements
+## Testing
+### Initializing Organizations, Projects, and test elements
 
 Use the following curl commands to post an initial organization + project:
 ```
@@ -220,7 +220,7 @@ Make sure the elements went in:
 curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin -X GET "http://localhost:8080/alfresco/service/projects/123456/refs/master/elements/123456?depth=-1"
 ```
 
-## Robotframework test suite
+### Robotframework test suite
 Robot tests can be run with the following maven profiles in the mms-ent directory:
 ```
 ./mvnw install -Prun,robot-tests
@@ -236,7 +236,7 @@ OR:
 pip install --target=$HOME/.m2/repository/org/robotframework/robotframework/{ROBOTPLUGINVERSION}/Lib requests
 ```
 
-## Changing debug levels on the fly
+### Changing debug levels on the fly
 
 If you need to change debug levels on the fly, use the following endpoint.
 
@@ -255,7 +255,7 @@ It takes as input JSON that specifies the classes and the log levels. For exampl
 ]
 ```
 
-# API Documentation
+## API Documentation
 API Documentation is located at the following endpoint:
 ```
 alfresco/mms/raml/index.html
