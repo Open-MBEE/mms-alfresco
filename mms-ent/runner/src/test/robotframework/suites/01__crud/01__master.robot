@@ -55,6 +55,14 @@ BadIdProjectCreation
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${400}
 
+BadOrgProjectCreation
+	[Documentation]		"Try to Create a project with an invalid ID under the organization with ID: initorg"
+	[Tags]				4
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/BadOrgProjectCreation.json
+	${result} =			Post		url=${ROOT}/orgs/invalid/projects		    data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${500}
+	Should Be Equal
+
 GetProjects
 	[Documentation]		"Get all projects in org."
 	[Tags]				5

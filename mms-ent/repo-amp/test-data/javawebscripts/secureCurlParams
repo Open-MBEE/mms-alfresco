@@ -18,5 +18,5 @@ if [ -z "$ALF_SERVER" ]; then
 fi
 
 export SERVICE_URL="https://${ALF_SERVER}/alfresco/service/"
-export BASE_URL="https://${ALF_SERVER}/alfresco/service/workspaces/master/"
+export BASE_URL="https://${ALF_SERVER}/alfresco/service/refs/master/"
 

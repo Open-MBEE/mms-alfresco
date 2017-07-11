@@ -18,11 +18,11 @@ export CURL_GET_FLAGS="-X GET"
        export CURL_USER=" -u admin:admin"
        export CURL_FLAGS=$CURL_STATUS$CURL_USER
        export SERVICE_URL="http://localhost:8080/alfresco/service/"
-       export BASE_URL="http://localhost:8080/alfresco/service/workspaces/master/"
+       export BASE_URL="http://localhost:8080/alfresco/service/refs/master/"
 #else
 #        export CURL_USER=" -u shatkhin"
 #        export CURL_FLAGS=$CURL_STATUS$CURL_USER$CURL_SECURITY
-#        export SERVICE_URL="https://europaems-dev-staging-a/alfresco/service/" 
+#        export SERVICE_URL="https://europaems-dev-staging-a/alfresco/service/"
 #       export BASE_URL="http://europaems-dev-staging-a:8443/alfresco/service/javawebscripts/"
 #        export BASE_URL="https://europaems-dev-staging-a/alfresco/service/javawebscripts/"
 #fi
@@ -32,7 +32,7 @@ export CURL_GET_FLAGS="-X GET"
 
 echo 'testPost1'
 # create project and site
-echo curl $CURL_FLAGS $CURL_POST_FLAGS '{"name":"CY Test"}' $BASE_URL"sites/europa/projects/123456?createSite=true" 
+echo curl $CURL_FLAGS $CURL_POST_FLAGS '{"name":"CY Test"}' $BASE_URL"sites/europa/projects/123456?createSite=true"
 curl $CURL_FLAGS $CURL_POST_FLAGS '{"name":"CY Test"}' $BASE_URL"sites/europa/projects/123456?createSite=true" > outputWorkspaces/post1.json
 DIFF=$(diff baselineWorkspaces/post1.json outputWorkspaces/post1.json)
 #if [ "$DIFF" != "" ];then

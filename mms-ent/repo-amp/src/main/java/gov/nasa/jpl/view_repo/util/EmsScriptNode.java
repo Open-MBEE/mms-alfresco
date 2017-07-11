@@ -1207,7 +1207,7 @@ public class EmsScriptNode extends ScriptNode
 
     /**
      * Return the version of the parent at a specific time. This uses the ownerType property instead
-     * of getParent() when it returns non-null; else, it call getParent(). For workspaces, the
+     * of getParent() when it returns non-null; else, it call getParent(). For refs, the
      * parent should always be in the same workspace, so there is no need to specify (or use) the
      * workspace.
      *
@@ -1320,7 +1320,7 @@ public class EmsScriptNode extends ScriptNode
     /**
      * Return the version of the parent at a specific time. This uses the ems:valueSpecOwner
      * property instead of getParent() when it returns non-null; else, it call getParent(). For
-     * workspaces, the parent should always be in the same workspace, so there is no need to specify
+     * refs, the parent should always be in the same workspace, so there is no need to specify
      * (or use) the workspace.
      *
      * @param dateTime
@@ -2497,7 +2497,7 @@ public class EmsScriptNode extends ScriptNode
 
         // Add version information - can't be used for reverting since things
         // may be in
-        // different workspaces, but informative nonetheless
+        // different refs, but informative nonetheless
         if (version != null) {
             EmsScriptNode vNode = new EmsScriptNode(version.getVersionedNodeRef(), getServices(), getResponse());
 

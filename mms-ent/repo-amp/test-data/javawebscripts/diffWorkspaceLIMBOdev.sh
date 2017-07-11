@@ -18,11 +18,11 @@ export CURL_GET_FLAGS="-X GET"
        export CURL_USER=" -u admin:admin"
        export CURL_FLAGS=$CURL_STATUS$CURL_USER
        export SERVICE_URL="http://localhost:8080/alfresco/service/"
-       export BASE_URL="http://localhost:8080/alfresco/service/workspaces/master/"
+       export BASE_URL="http://localhost:8080/alfresco/service/refs/master/"
 #else
 #        export CURL_USER=" -u shatkhin"
 #        export CURL_FLAGS=$CURL_STATUS$CURL_USER$CURL_SECURITY
-#        export SERVICE_URL="https://europaems-dev-staging-a/alfresco/service/" 
+#        export SERVICE_URL="https://europaems-dev-staging-a/alfresco/service/"
 #       export BASE_URL="http://europaems-dev-staging-a:8443/alfresco/service/javawebscripts/"
 #        export BASE_URL="https://europaems-dev-staging-a/alfresco/service/javawebscripts/"
 #fi
@@ -31,7 +31,7 @@ export CURL_GET_FLAGS="-X GET"
 
 echo 'testPost 3'
 # post views
-echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/viewsNew.json $BASE_URL"views" 
+echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/viewsNew.json $BASE_URL"views"
 echo
 curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/viewsNew.json $BASE_URL"views" | grep -v '"read":'| grep -v '"lastModified"' | grep -v '"sysmlid"' > outputWorkspaces/post3.json
 DIFF=$(diff baselineWorkspaces/post3.json outputWorkspaces/post3.json)
@@ -43,7 +43,7 @@ echo
 echo
 
 echo 'testPost 5'
-echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/productsNew.json $BASE_URL"sites/europa/products" 
+echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/productsNew.json $BASE_URL"sites/europa/products"
 echo
 curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/productsNew.json $BASE_URL"sites/europa/products" | grep -v '"read":'| grep -v '"lastModified"'| grep -v '"sysmlid"' > outputWorkspaces/post5.json
 DIFF=$(diff baselineWorkspaces/post5.json outputWorkspaces/post5.json)
@@ -59,7 +59,7 @@ echo
 echo 'testGET2'
 # get elements
 echo curl $CURL_FLAGS $CURL_GET_FLAGS $BASE_URL"elements/300?recurse=true\""
-curl $CURL_FLAGS $CURL_GET_FLAGS $BASE_URL"elements/300?recurse=true" | grep -v '"read":'| grep -v '"lastModified"' > outputWorkspaces/get2.json 
+curl $CURL_FLAGS $CURL_GET_FLAGS $BASE_URL"elements/300?recurse=true" | grep -v '"read":'| grep -v '"lastModified"' > outputWorkspaces/get2.json
 java -cp .:../../src/main/amp/web/WEB-INF/lib/mbee_util.jar:../../target/mms-repo-war/WEB-INF/lib/json-20090211.jar:../../target/classes gov.nasa.jpl.view_repo.util.JsonDiff baselineWorkspaces/get2.json outputWorkspaces/get2.json  | egrep -v "[0-9]+[c|a|d][0-9]+" | grep -ve '---' | grep -v '"author"' | grep -v '"sysmlid":' | grep -v '"modified":' | grep -v '"qualifiedId"'
 echo
 echo
@@ -70,8 +70,8 @@ DIFF=$(diff baselineWorkspaces/get3.json outputWorkspaces/get3.json | grep -v '"
 if [ "$DIFF" != "" ];then
         failedTest=1
         echo "$DIFF"
-fi 
-echo 
+fi
+echo
 echo
 
 echo 'testGET4'
@@ -82,7 +82,7 @@ DIFF=$(diff baselineWorkspaces/get4.json outputWorkspaces/get4.json | grep -v '"
 if [ "$DIFF" != "" ];then
         failedTest=1
         echo "$DIFF"
-fi 
+fi
 echo
 echo
 
@@ -95,7 +95,7 @@ echo 'testGET5'
 #        failedTest=1
 #        echo "$DIFF"
 #fi
-echo "COMMENTS TEST OMITTED FOR NOW" 
+echo "COMMENTS TEST OMITTED FOR NOW"
 echo
 
 echo 'testGET6'
@@ -106,7 +106,7 @@ DIFF=$(diff baselineWorkspaces/get6.json outputWorkspaces/get6.json | grep -v '"
 if [ "$DIFF" != "" ];then
         failedTest=1
         echo "$DIFF"
-fi 
+fi
 echo
 echo
 

@@ -127,7 +127,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
 
                         EmsScriptNode matchingNode = null;
 
-                        // Search for artifact file by checksum (this may return nodes in parent workspaces):
+                        // Search for artifact file by checksum (this may return nodes in parent refs):
                         if (!Utils.isNullOrEmpty(cs)) {
                             ArrayList<NodeRef> refs = NodeUtil
                                 .findNodeRefsByType("" + cs, SearchType.CHECKSUM.prefix, false, workspace,
@@ -145,7 +145,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
                                 }
                             }
                         } else {
-                            // Otherwise, search by the id (this may return nodes in parent workspaces):
+                            // Otherwise, search by the id (this may return nodes in parent refs):
                             matchingNode = NodeUtil
                                 .findScriptNodeById(filename, workspace, TimeUtils.dateFromTimestamp(timestamp), false,
                                     services, response);

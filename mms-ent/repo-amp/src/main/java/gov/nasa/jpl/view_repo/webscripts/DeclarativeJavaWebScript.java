@@ -482,11 +482,11 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
      */
     private boolean isAllowablePath(String descriptionPath) {
         switch (descriptionPath) {
-            case "gov/nasa/jpl/mms/workspaces/configurations.get.desc.xml":
-            case "gov/nasa/jpl/mms/workspaces/sites/products.get.desc.xml":
-            case "gov/nasa/jpl/mms/workspaces/projects.get.desc.xml":
-            case "gov/nasa/jpl/mms/workspaces/sites.get.desc.xml":
-            case "gov/nasa/jpl/mms/workspaces.get.desc.xml":
+            case "gov/nasa/jpl/mms/refs/configurations.get.desc.xml":
+            case "gov/nasa/jpl/mms/refs/sites/products.get.desc.xml":
+            case "gov/nasa/jpl/mms/refs/projects.get.desc.xml":
+            case "gov/nasa/jpl/mms/refs/sites.get.desc.xml":
+            case "gov/nasa/jpl/mms/refs.get.desc.xml":
                 return true;
             default:
                 return false;

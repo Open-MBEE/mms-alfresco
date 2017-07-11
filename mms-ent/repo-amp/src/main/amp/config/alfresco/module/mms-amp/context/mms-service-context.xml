@@ -18,7 +18,7 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.elements.element.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.elements.element.get"
         class="gov.nasa.jpl.view_repo.webscripts.ModelGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -26,56 +26,56 @@
     </bean>
 
     <!-- adding new bean -->
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.elements.element.delete"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.elements.element.delete"
         class="gov.nasa.jpl.view_repo.webscripts.MmsModelDelete" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.elements.delete"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.elements.delete"
         class="gov.nasa.jpl.view_repo.webscripts.MmsModelDelete" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.projects.project.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.projects.project.get"
         class="gov.nasa.jpl.view_repo.webscripts.ProjectGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.elements.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.elements.post"
         class="gov.nasa.jpl.view_repo.webscripts.ModelPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.products.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.products.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsProductsGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.projectonly.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.projectonly.get"
         class="gov.nasa.jpl.view_repo.webscripts.ProjectGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.projects.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.projects.get"
         class="gov.nasa.jpl.view_repo.webscripts.ProjectsGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.projectonly.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.projectonly.post"
         class="gov.nasa.jpl.view_repo.webscripts.ProjectPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -83,7 +83,7 @@
     </bean>
 
     <!-- adding new bean -->
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.projects.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.projects.post"
         class="gov.nasa.jpl.view_repo.webscripts.ProjectPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -107,7 +107,7 @@
     </bean>
 
     <!-- adding new bean -->
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.views.view.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.views.view.get"
         class="gov.nasa.jpl.view_repo.webscripts.ViewGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -115,7 +115,7 @@
     </bean>
 
       <!-- adding new bean -->
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.views.elements.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.views.elements.get"
         class="gov.nasa.jpl.view_repo.webscripts.ViewGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -123,23 +123,8 @@
     </bean>
 
     <!-- adding new bean -->
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.products.product.get"
-        class="gov.nasa.jpl.view_repo.webscripts.ProductGet" parent="webscript"
-        singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
-    <!-- adding new bean -->
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.get" class="gov.nasa.jpl.view_repo.webscripts.SiteGet"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.get" class="gov.nasa.jpl.view_repo.webscripts.SiteGet"
         parent="webscript" singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
-    <!-- adding new bean -->
-    <bean id="webscript.gov.nasa.jpl.mms.orgs.get" class="gov.nasa.jpl.view_repo.webscripts.OrgGet"
-          parent="webscript" singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
@@ -152,7 +137,7 @@
     </bean>
 
     <!-- adding new bean -->
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.post"
         class="gov.nasa.jpl.view_repo.webscripts.ModelPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -161,7 +146,7 @@
 
     <!-- configurations without sites -->
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.configurations.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.configurations.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsConfigurationsGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -169,14 +154,14 @@
         <property name="type" value="MULTIPLE" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.configurations.configuration.delete"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.configurations.configuration.delete"
         class="gov.nasa.jpl.view_repo.webscripts.MmsConfigurationsDelete" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.configurations.configuration.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.configurations.configuration.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsConfigurationsGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -184,21 +169,21 @@
         <property name="type" value="SINGLE" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.configurations.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.configurations.post"
         class="gov.nasa.jpl.view_repo.webscripts.ConfigurationPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.configurations.snapshots.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.configurations.snapshots.post"
         class="gov.nasa.jpl.view_repo.webscripts.MmsConfigurationsPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.configurations.snapshots.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.configurations.snapshots.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsSnapshotsGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -206,35 +191,35 @@
     </bean>
 
     <bean
-        id="webscript.gov.nasa.jpl.mms.workspaces.sites.products.fulldocs.htmlToPdf.post"
+        id="webscript.gov.nasa.jpl.mms.refs.sites.products.fulldocs.htmlToPdf.post"
         class="gov.nasa.jpl.view_repo.webscripts.HtmlToPdfPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.configurations.products.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.configurations.products.post"
         class="gov.nasa.jpl.view_repo.webscripts.MmsConfigurationsPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.documents.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.documents.get"
           class="gov.nasa.jpl.view_repo.webscripts.MmsProductsGet" parent="webscript"
           singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.mounts.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.mounts.get"
           class="gov.nasa.jpl.view_repo.webscripts.MountsGet" parent="webscript"
           singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.configurations.products.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.configurations.products.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsProductsGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -244,7 +229,7 @@
 
     <!-- configurations with sites  for backwards compatibility -->
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.configurations.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.configurations.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsConfigurationsGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -252,14 +237,14 @@
         <property name="type" value="MULTIPLE" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.configurations.configuration.delete"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.configurations.configuration.delete"
         class="gov.nasa.jpl.view_repo.webscripts.MmsConfigurationsDelete" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.configurations.configuration.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.configurations.configuration.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsConfigurationsGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -267,62 +252,54 @@
         <property name="type" value="SINGLE" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.configurations.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.configurations.post"
         class="gov.nasa.jpl.view_repo.webscripts.ConfigurationPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.configurations.snapshots.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.configurations.snapshots.post"
         class="gov.nasa.jpl.view_repo.webscripts.MmsConfigurationsPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.configurations.snapshots.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.configurations.snapshots.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsSnapshotsGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.configurations.products.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.configurations.products.post"
         class="gov.nasa.jpl.view_repo.webscripts.MmsConfigurationsPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.configurations.products.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.configurations.products.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsProductsGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.products.snapshots.snapshot.delete "
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.products.snapshots.snapshot.delete "
         class="gov.nasa.jpl.view_repo.webscripts.MmsSnapshotsDelete" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.products.snapshots.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.products.snapshots.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsSnapshotsGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
-
-<!--     <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.products.fulldocs.fulldoc.post"
-        class="gov.nasa.jpl.view_repo.webscripts.FullDocPost" parent="webscript"
-        singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
- -->
 
     <bean id="webscript.gov.nasa.jpl.mms.diff.post"
         class="gov.nasa.jpl.view_repo.webscripts.MmsWorkspaceDiffPost" parent="webscript"
@@ -331,28 +308,28 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.get"
         class="gov.nasa.jpl.view_repo.webscripts.WorkspacesGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.post"
         class="gov.nasa.jpl.view_repo.webscripts.WorkspacesPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-     <bean id="webscript.gov.nasa.jpl.mms.workspaces.workspace.post"
+     <bean id="webscript.gov.nasa.jpl.mms.refs.ref.post"
         class="gov.nasa.jpl.view_repo.webscripts.WorkspacesPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.workspace.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.ref.get"
         class="gov.nasa.jpl.view_repo.webscripts.WorkspaceGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -360,7 +337,7 @@
     </bean>
 
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.history.workspace.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.history.ref.get"
           class="gov.nasa.jpl.view_repo.webscripts.WorkspaceHistoryGet" parent="webscript"
           singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -374,70 +351,70 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
  -->
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.products.views.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.products.views.get"
         class="gov.nasa.jpl.view_repo.webscripts.ProductGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.elements.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.elements.post"
         class="gov.nasa.jpl.view_repo.webscripts.ModelPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.search.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.search.post"
         class="gov.nasa.jpl.view_repo.webscripts.ModelSearch" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.search.put"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.search.put"
           class="gov.nasa.jpl.view_repo.webscripts.ModelSearch" parent="webscript"
           singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.sites.artifacts.artifact.post"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.sites.artifacts.artifact.post"
         class="gov.nasa.jpl.view_repo.webscripts.ArtifactPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.artifacts.artifact.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.artifacts.artifact.get"
         class="gov.nasa.jpl.view_repo.webscripts.ArtifactGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.elements.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.elements.get"
         class="gov.nasa.jpl.view_repo.webscripts.ModelsGet" parent="webscript"
         singleton="false">
        <property name="repositoryHelper" ref="repositoryHelper" />
        <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.elements.put"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.elements.put"
         class="gov.nasa.jpl.view_repo.webscripts.ModelsGet" parent="webscript"
         singleton="false">
        <property name="repositoryHelper" ref="repositoryHelper" />
        <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.workspace.delete"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.ref.delete"
         class="gov.nasa.jpl.view_repo.webscripts.WorkspaceDelete" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-   <bean id="webscript.gov.nasa.jpl.mms.workspaces.snapshot.get"
+   <bean id="webscript.gov.nasa.jpl.mms.refs.snapshot.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsSnapshotGet" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -446,7 +423,7 @@
 
 
     <!-- utilities for synchronizing sites including creating a admin user -->
-    <bean id="webscript.gov.nasa.jpl.mms.utils.site_perm_sync.post"
+    <bean id="webscript.gov.nasa.jpl.utils.site_perm_sync.post"
         class="gov.nasa.jpl.view_repo.webscripts.util.SitePermSync" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
@@ -471,7 +448,7 @@
         <property name="arguments" ref="repositoryHelper"/>
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.history.element.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.history.element.get"
         class="gov.nasa.jpl.view_repo.webscripts.HistoryGet" parent="webscript" singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper"/>
         <property name="services" ref="ServiceRegistry"/>
@@ -483,13 +460,13 @@
         <property name="services" ref="ServiceRegistry"/>
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.utils.svgtopng.post"
+    <bean id="webscript.gov.nasa.jpl.mms.svgtopng.post"
         class="gov.nasa.jpl.view_repo.webscripts.SvgToPngPost" parent="webscript" singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper"/>
         <property name="services" ref="ServiceRegistry"/>
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.workspaces.projectonly.delete"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.projectonly.delete"
           class="gov.nasa.jpl.view_repo.webscripts.ProjectDelete" parent="webscript" singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper"/>
         <property name="services" ref="ServiceRegistry"/>

@@ -262,7 +262,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
                 // Update the name/description:
                 // Note: allowing duplicate workspace names, so no need to check for other
-                //       workspaces with the same name
+                //       refs with the same name
                 if (workspaceName != null) {
                     existingRef.createOrUpdateProperty("ems:workspace_name", workspaceName);
                 }

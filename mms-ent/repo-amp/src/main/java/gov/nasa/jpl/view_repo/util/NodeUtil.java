@@ -1739,7 +1739,7 @@ public class NodeUtil {
                 String dId = dnode.getSysmlId(); // assumes cm_name as backup to
                                                  // sysmlid for non-model
                                                  // elements
-                // Remove all nodes with the same ID in parent workspaces.
+                // Remove all nodes with the same ID in parent refs.
                 ArrayList<NodeRef> correctedRefsCopy = new ArrayList<>(correctedRefs);
                 for (NodeRef corrected : correctedRefsCopy) {
                     EmsScriptNode cnode = new EmsScriptNode(corrected, services);
@@ -1748,7 +1748,7 @@ public class NodeUtil {
                     // and
                     // the cm:name is used, then the ids may not be the same
                     // across
-                    // workspaces, in which case this fails.
+                    // refs, in which case this fails.
                     if (dId.equals(cId)) {
                         // Remove the upstream deleted node. Pass true since it
                         // doesn't hurt to remove nodes that should have already
@@ -2129,7 +2129,7 @@ public class NodeUtil {
      *
      * @param source
      * @param changed
-     * @param includeDeleted whether to consider deleted workspaces
+     * @param includeDeleted whether to consider deleted refs
      * @return
      */
     public static boolean isWorkspaceAncestor(NodeRef source, NodeRef changed, boolean includeDeleted) {
@@ -3496,7 +3496,7 @@ public class NodeUtil {
     }
 
     /**
-     * Returns true if the passed workspaces are equal, checks for master (null) workspaces also
+     * Returns true if the passed refs are equal, checks for master (null) refs also
      *
      * @param ws1
      * @param ws2

@@ -24,7 +24,7 @@ CURL_USER = " -u admin:admin"
 CURL_FLAGS = CURL_STATUS + CURL_USER
 HOST = "localhost:8080"
 SERVICE_URL = "http://%s/alfresco/service/" % HOST
-BASE_URL_WS_NOBS = SERVICE_URL + "workspaces"
+BASE_URL_WS_NOBS = SERVICE_URL + "refs"
 BASE_URL_WS = BASE_URL_WS_NOBS + "/"
 
 failed_tests = 0
@@ -162,9 +162,9 @@ def do176():
     json_output = get_json_output_no_status()
     j = json.loads(json_output)
 
-    if j and j['workspaces'] and j['workspaces'][0]:
-        j["workspaces"][0]["description"] = "modified the workspace name and desc"
-        j["workspaces"][0]["name"] = "modifiedWorkspaceName"
+    if j and j['refs'] and j['refs'][0]:
+        j["refs"][0]["description"] = "modified the workspace name and desc"
+        j["refs"][0]["name"] = "modifiedWorkspaceName"
 
     set_gv3(json.dumps(j))
 
@@ -173,21 +173,21 @@ def set_wsid_to_gv(gv):
     json_output = get_json_output_no_status()
     j = json.loads(json_output)
 
-    if j and 'workspaces' in j and len(j['workspaces']) > 0: # and j['workspaces'][0]['id']:
+    if j and 'refs' in j and len(j['refs']) > 0: # and j['refs'][0]['id']:
         if gv == 1:
-            set_gv1(j["workspaces"][0]["id"])
+            set_gv1(j["refs"][0]["id"])
         elif gv == 2:
-            set_gv2(j["workspaces"][0]["id"])
+            set_gv2(j["refs"][0]["id"])
         elif gv == 3:
-            set_gv3(j["workspaces"][0]["id"])
+            set_gv3(j["refs"][0]["id"])
         elif gv == 4:
-            set_gv4(j["workspaces"][0]["id"])
+            set_gv4(j["refs"][0]["id"])
         elif gv == 5:
-            set_gv5(j["workspaces"][0]["id"])
+            set_gv5(j["refs"][0]["id"])
         elif gv == 6:
-            set_gv6(j["workspaces"][0]["id"])
+            set_gv6(j["refs"][0]["id"])
         elif gv == 7:
-            set_gv7(j["workspaces"][0]["id"])
+            set_gv7(j["refs"][0]["id"])
 
 def set_wsid_to_gv1():
     '''Get the json output, and sets gv1 to the that workspace id'''
@@ -715,7 +715,7 @@ def create_curl_cmd(type, data="", base_url=BASE_URL_WS, post_type="elements", b
 
     type: POST, GET, DELETE
     data: Data to post in JsonData ie elementsNew.json, or the key/value pair when making a project ie "'{"name":"JW_TEST"}'",
-          or the data to get ie views/301 or data to delete ie workspaces/master/elements/771
+          or the data to get ie views/301 or data to delete ie refs/master/elements/771
     base_url:  What base url to use, ie %s
     post_type: "elements", "views", "products"
     branch: The workspace branch, ie "master/", or the project/site to use to ie "sites/europa/projects/123456/"

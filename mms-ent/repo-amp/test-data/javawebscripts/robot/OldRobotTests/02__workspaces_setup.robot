@@ -6,7 +6,7 @@ Resource        ../resources.robot
 CreateWorkspace1
 	[Documentation]		"Regression Test: 160. Create workspace test 1"
 	[Tags]				160
-#	${result} =			Post		${ROOT}/workspaces/wsA?sourceWorkspace=master&copyTime=${gv6}
+#	${result} =			Post		${ROOT}/refs/wsA?sourceWorkspace=master&copyTime=${gv6}
     ${post_json} =		Get File	 newJsonData/${TEST_NAME}.json
 	${result} =			Post		url=${ROOT}/workspaces/wsA?sourceWorkspace=master       data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}

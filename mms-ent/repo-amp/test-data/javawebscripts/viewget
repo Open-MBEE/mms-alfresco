@@ -4,5 +4,5 @@
 #echo curl -w "\"\n%{http_code}\n\"" -X GET -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/elements/$1"
 #curl -w "\n%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/elements/$1"
 
-echo curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/views/$1"
-curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/views/$1"
+echo curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/refs/master/views/$1"
+curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/refs/master/views/$1"
