@@ -1,39 +1,37 @@
-#ref is the endpoint which returns branches and tags
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "description": "Specification for merging one workspace into another.",
+    "description": "list of refs for a project",
     "properties": {
-        "sourceWorkspace": {
-            "type": "object",
-            "description": "Workspace that we are merging from",
-            "$ref": "#/definitions/Branch"
-        },
-        "mergedWorkspace": {
-            "type": "object",
-            "description": "The merged branch.",
-            "$ref": "#/definitions/Branch"
-        },
-
-        "definitions":
-        {
-            "Branch":
-            {
-                "properties": {
+         "refs": {
+              "type": "array",
+              "description": "An array of refs",
+              "items": {
+                   "type": "object",
+                   "$ref": "#/definitions/Ref"
+              }
+         }
+    },
+    "definitions": {
+         "Ref": {
+               "properties": {
                     "name": {
                         "type": "string",
-                        "description": "name of the workspace"
+                        "description": "name of the ref"
                     },
                     "id": {
                         "type": "string",
-                        "description": "unique identifier of the workspace"
+                        "description": "unique identifier of the ref"
                     },
-                    "time": {
-                        "type": "date",
-                        "description": "time of the workspace in question (e.g., from whence we branched)"
+                    "type": {
+                        "type": "string",
+                        "description": "Branch or Tag"
+                    },
+                    "parentRefId": {
+                        "type": "string",
+                        "description": "on creation, used to indicate which ref to branch from"
                     }
-                }
-            }
-        }
+               }
+         }
     }
 }

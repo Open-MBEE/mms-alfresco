@@ -19,17 +19,14 @@ securitySchemes:
       type: Basic Authentication
 
 schemas:
-  # these all return elements - search may need to be paged
   - elements: !include elements.json-schema
   - orgs:    !include orgs.json-schema
   - projects: !include projects.json-schema
   - refs:  !include refs.json-schema
-
+  - groups: !include groups.json-schema
+  - history: !include history.json-schema
   - connections: !include connections.json-schema
 
-  # include post/ put and delete responses
-  #- elementsResponse: !include postResponse.json-schema
-  #- viewsResponse: !include postResponse.json-schema
 traits:
   - qualifiable:
       description: Aspect for resources that can be that can exclude the qualified names/ids
@@ -59,6 +56,48 @@ traits:
           description: Commit to find most recent version of <<resourcePathName>>.
           type: string
           required: false
+  - returnElements:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: elements
+  - returnOrgs:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: orgs
+  - returnProjects:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: projects
+  - returnRefs:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: refs
+  - returnHistory:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: history
+  - returnable:
+      responses:
+        400:
+          description: Malformed request by client
+        401:
+          description: User is not authenticated
+        403:
+          description: User does not have read permissions to <<resourcePathName>>
+        404:
+          description: not found
+        500:
+          description: Could not read <<resourcePathName>> due to internal server error
 
 resourceTypes:
   - readCollection:
@@ -77,6 +116,8 @@ resourceTypes:
               400:
                 description: Malformed request by client
               401:
+                description: User is not authenticated
+              403:
                 description: User does not have read permissions to <<resourcePathName>>
               404:
                 description: <<resourcePathName>> not found
@@ -100,6 +141,8 @@ resourceTypes:
           202:
             description: <<resourcePathName>> append started, but not yet completed
           401:
+            description: User is not authenticated
+          403:
             description: User does not have write permissions to <<resourcePathName>>
           404:
             description: <<resourcePathName>> not found
@@ -110,14 +153,14 @@ resourceTypes:
           500:
             description: Could not append to <<resourcePathName>> due to internal server error
 #      put:
-#        description: Create/update operation for <<resourcePathName>>
+#        description: bulk get operation for <<resourcePathName>>
 #        body:
 #          schema: <<resourcePathName>>
 #        responses:
 #          200:
 #            description: <<resourcePathName>> update successful
 #            body:
-#              schema: <<resourcePathName>>PutResponse
+#              schema: <<resourcePathName>> PutResponse
 #          201:
 #            description: <<resourcePathName>> create successful
 #          202:
@@ -143,6 +186,8 @@ resourceTypes:
           202:
             description: <<resourcePathName>> delete started, but not yet completed
           401:
+            description: User is not authenticated
+          403:
             description: User does not have delete permissions to <<resourcePathName>>
           404:
             description: <<resourcePathName>> not found
@@ -167,8 +212,10 @@ resourceTypes:
   description: All projects are contained in a org
   get:
       description: Get all the orgs
+      is: [returnOrgs, returnable]
   post:
       description: Post a org using the query parameters and supplied json
+      is: [returnOrgs, returnable]
       body:
         application/json:
           schema: orgs
@@ -178,27 +225,26 @@ resourceTypes:
         description: Org ID under consideration.
     get:
       description: Get the specified org
-  /projects:
-    description: All projects
-    get:
-      description: Get all the projects in the specified org
-    post:
-      description: Post a proeject using the query parameters and supplied json
-      body:
-        application/json:
-          schema: projects
-    /{projectId}:
-      uriParameters:
-        projectId:
-          description: Project ID under consideration.
+      is: [returnOrgs, returnable]
+    /projects:
+      description: All projects
       get:
-        description: Get the specified project
+        description: Get all the projects in the specified org
+        is: [returnProjects, returnable]
+      post:
+        description: Post a proeject using the query parameters and supplied json
+        is: [returnProjects, returnable]
+        body:
+          application/json:
+            schema: projects
 /projects:
   description: All projects
   get:
-    description: Get all the projects in the specified org
+    description: Get all the projects in all orgs
+    is: [returnProjects, returnable]
   post:
-    description: Post a proeject using the query parameters and supplied json
+    description: Post a project using the query parameters and supplied json
+    is: [returnProjects, returnable]
     body:
       application/json:
         schema: projects
@@ -208,12 +254,15 @@ resourceTypes:
         description: Project ID under consideration.
     get:
       description: Get the specified project
-    /ref:
+      is: [returnProjects, returnable]
+    /refs:
       description: All resources are "namespaced" by the ref (aka branch).  The ref is also used for tagging.
       get:
         description: Get the specified project
+        is: [returnRefs, returnable]
       post:
         description: Post a org using the query parameters and supplied json
+        is: [returnRefs, returnable]
         body:
           application/json:
             schema: ref
@@ -223,12 +272,16 @@ resourceTypes:
             description: Ref ID under consideration.
         get:
           description: Get the specified ref.
+          is: [returnRefs, returnable]
         delete:
           description: Delete the specified ref.
         /search:
           description: searches for elements in any project mounted to the current project.
+          put:
+            is: [returnElements, returnable]
+            description: put body is the elastic search query json to execute
         /artifacts:
-          description: path to images
+          description: path to images, to be removed in favor of elements endpoint
           /{elementId}:
             uriParameters:
               elementId:
@@ -244,10 +297,17 @@ resourceTypes:
           description: get the commit history of the specififed ref.
           get:
             description: Get the hisotry of the specified ref.
+            is: [returnHistory, returnable]
         /groups:
           description: a grouping of elements
           get:
             description: Get all groups of elements in a ref.
+            is: [returnable]
+            responses:
+              200:
+                body:
+                  application/json:
+                    schema: groups
         /mounts:
           description: All mounts associated with a project.
           get:
@@ -255,6 +315,7 @@ resourceTypes:
         /documents:
           description: get documents
           get:
+            is: [qualifiable, returnElements, returnable]
             description: Get the documents of the specified ref.
             queryParameters:
               groupId:
@@ -263,19 +324,20 @@ resourceTypes:
         /elements:
           description: Get elements
           post:
+            is: [qualifiable, returnElements, returnable]
             description: Post elements using the supplied json
             body:
               application/json:
                 schema: elements
-              #is[recursable, qualifiable]
-
           delete:
             description: Delete elements using the supplied json
+            is: [returnable, returnElements]
             body:
               application/json:
                 schema: elements
           put:
             description: Bulk get elements, give id of elements to get
+            is: [qualifiable, recursable, returnElements, returnable]
             body:
               application/json:
                 schema: elements
@@ -284,29 +346,18 @@ resourceTypes:
               elementId:
                 description: element ID under consideration.
             get:
+              is: [qualifiable, recursable, commitable, returnElements, returnable]
               description: Get specified element.
-              queryParameters:
-                commitId:
-                  description: Get commit for speificed element by id.
-                  required: false
             delete:
               description: Delete specified element
+              is: [returnable, returnElements]
               body:
                 application/json:
                   schema: elements
-
             /history:
               get:
                 description: get the element in question's history.
-            /{id}:
-                uriParameters:
-                  id:
-                    description: ID under consideration. For images.
-                post:
-                  description: set image content type to image/svg
-                  body:
-                    application/json:
-                      schema: elements
+                is: [returnable, returnHistory]
 
 /connection/jms:
   type: connection

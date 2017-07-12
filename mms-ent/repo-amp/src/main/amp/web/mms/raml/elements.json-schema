@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "description": "Element specification",
+    "description": "Element specification, these are the major highlights for main element types encountered,\nthe full json spec for elements follows the following rules based on the uml spec (specifically md emf): \n- derived attributes are ignored\n- reference attributes have the key suffixed with Id and value is the referenced element id\n- multiple (array) of reference have attribute key suffixed with Ids and value is array of referenced element ids\n- attributes whose value are ValueSpecifications or subtypes are embedded json objects (ex. Property's defaultValue, Constraint's specification)\n- user or server derived attributes are prefixed with _ (ex. _created, _modified, etc) \n- nested*, owned*, owning* attributes from uml are ignored in favor of owner (ownerId), with the following exception: \n- Property's ownedAttributeIds, in order to maintain order ",
     "properties": {
         "source": {
             "type": "string",
@@ -81,6 +81,10 @@
                 "_qualifiedId": {
                     "type": "string",
                     "description": "[Derived property] Containment hierarchy of element based off of SysML ids, provided for systems that can't find by unique id if extended query param is true (Read-Only)"
+                },
+                "_groupId": {
+                    "type": "string",
+                    "description": "[Derived property] Only added when using the documents endpoint, the containing group of the document element"
                 },
                 "type": {
                     "type": "string",
@@ -357,20 +361,19 @@
             "description": "[UML::Association]",
             "properties": {
                 "type": { "enum": ["Association"] },
-                "ownedEnd": {
+                "ownedEndIds": {
                     "type": "array",
                     "items": {
                         "type": "string",
                         "description": "IDs of the Nodes"
                     }
                 },
-                "sourceAggregation": {
-                    "type": "string",
-                    "description": "can be COMPOSITE, SHARED, NONE"
-                },
-                "targetAggregation": {
-                    "type": "string",
-                    "description": "can be COMPOSITE, SHARED, NONE"
+                "memberEndIds": {
+                     "type": "array",
+                     "items": {
+                          "type": "string",
+                          "description": "IDs of the Nodes"
+                     }
                 }
             }
         },

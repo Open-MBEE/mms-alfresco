@@ -1,20 +1,15 @@
-#ref is the endpoint which returns branches and tags
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "description": "Specification for creating a org.",
+    "description": "Specification for orgs.",
     "properties": {
         "orgs": {
             "type": "array",
             "description": "An array of orgs",
             "items": {
                 "type": "object",
-                "$ref": "#/definitions/Element"
+                "$ref": "#/definitions/Org"
             }
-        },
-        "message": {
-            "type": "string",
-            "description": "The response message for this transaction if it is non-empty."
         }
     },
     "definitions": {
