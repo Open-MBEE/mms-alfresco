@@ -341,26 +341,33 @@ public class ModelGet extends AbstractJavaWebScript {
     private JSONObject handleCommitRequest(WebScriptRequest req, JSONObject top) {
         String projectId = getProjectId(req);
         String refId = getRefId(req);
+        JSONObject element;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         String elementId = req.getServiceMatch().getTemplateVars().get("elementId");
         String currentElement = emsNodeUtil.getById(elementId).getElasticId();
+
         // This is the commit of the version of the element we want
         String commitId = (req.getParameter("commitId").isEmpty()) ?
             emsNodeUtil.getById(elementId).getLastCommit() :
             req.getParameter("commitId");
+
         // This is the lastest commit for the element
         String lastestCommitId = emsNodeUtil.getById(elementId).getLastCommit();
 
         Boolean checkInProjectAndRef = emsNodeUtil.commitContainsElement(elementId, commitId);
 
-        if ((req.getParameter("commitId").isEmpty() && checkInProjectAndRef) || (commitId.equals(lastestCommitId))) {
+        if (checkInProjectAndRef || (commitId.equals(lastestCommitId))) {
             return emsNodeUtil.getElementByElasticID(currentElement);
-        } else if (checkInProjectAndRef) {
-            return emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
         } else {
-            return new JSONObject();
+
+            element = emsNodeUtil.getElementAtCommit(elementId, commitId);
+            if (element == null) {
+                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s", elementId,
+                    commitId);
+            }
         }
+        return element;
     }
 
     /**
