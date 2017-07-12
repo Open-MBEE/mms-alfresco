@@ -2,7 +2,6 @@ package gov.nasa.jpl.view_repo.webscripts.util;
 
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -10,7 +9,6 @@ import java.net.URL;
 
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.site.SiteServiceException;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
@@ -18,12 +16,9 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import javax.net.ssl.SSLContext;
 
 public class ShareUtils {
     static Logger logger = Logger.getLogger(ShareUtils.class);

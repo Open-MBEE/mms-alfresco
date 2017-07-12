@@ -14,7 +14,7 @@ url2class = {}
 urlBacked = set([])
 
 def main():
-	parseAllJs()
+	#parseAllJs()
 	for filename in CONTEXT_FILES:
 		parseContext(filename)
 	parseAllDescFiles()
@@ -60,12 +60,13 @@ def parseContext(filename):
 	for bean in beans:
 		beanClass = bean.getAttribute('class')
 		beanId = bean.getAttribute('id')
-		descFile = convertBeanId2DescFile(beanId)
-		url = getUrlFromDesc(descFile)
-		if not url2class.has_key(url):
-			url2class[url] = []
-			urlBacked.add(url)
-		url2class[url].append([descFile, beanClass])
+        if beanId:
+			descFile = convertBeanId2DescFile(beanId)
+			url = getUrlFromDesc(descFile)
+			if not url2class.has_key(url):
+				url2class[url] = []
+				urlBacked.add(url)
+			url2class[url].append([descFile, beanClass])
 
 
 def getUrlFromDesc(descFile):
