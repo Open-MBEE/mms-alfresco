@@ -431,7 +431,7 @@ public class ConfigurationsWebscript extends AbstractJavaWebScript {
 //                                        workspace, null );
 //        for (EmsScriptNode config: configs) {
 //            JSONObject jsonObject = new JSONObject();
-//            // since configuations are created in workspaces, may not have read permissions
+//            // since configuations are created in refs, may not have read permissions
 //            // need to filter
 //            // TODO: add into regression tests
 //            if (config.hasPermission("Read")) {

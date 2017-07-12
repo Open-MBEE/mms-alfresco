@@ -5,12 +5,12 @@ if [ "$#" -eq 0 ]; then
   echo    wspost [workspaceName]: automatically generate [workspaceName] off master
   echo    wspost [workspaceName] [sourceWorkspace]: generate [workspaceName] off [sourceWorkspace]
 elif [ "$#" -eq 1 ]; then
-  echo curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1?sourceWorkspace=master"
-  curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1?sourceWorkspace=master"
+  echo curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/refs/$1?sourceWorkspace=master"
+  curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/refs/$1?sourceWorkspace=master"
 elif [ "$#" -eq 2 ]; then
-  echo curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1?sourceWorkspace=$2"
-  curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1?sourceWorkspace=$2"
+  echo curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/refs/$1?sourceWorkspace=$2"
+  curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/refs/$1?sourceWorkspace=$2"
 else
-  echo curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1?sourceWorkspace=$2"
-  curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1?sourceWorkspace=$2&copyTime=$3"
+  echo curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/refs/$1?sourceWorkspace=$2"
+  curl -w "%{http_code}\n" -X POST -u admin:admin "http://localhost:8080/alfresco/service/refs/$1?sourceWorkspace=$2&copyTime=$3"
 fi;

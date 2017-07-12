@@ -55,6 +55,17 @@ BadIdProjectCreation
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${400}
 
+BadOrgProjectCreation
+	[Documentation]		"Try to Create a project under the organization with ID: invalid"
+	[Tags]				4
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/BadOrgProjectCreation.json
+	${result} =			Post		url=${ROOT}/orgs/invalid/projects		    data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${500}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
 GetProjects
 	[Documentation]		"Get all projects in org."
 	[Tags]				5

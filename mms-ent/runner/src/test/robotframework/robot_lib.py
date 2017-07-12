@@ -13,7 +13,7 @@ Example of GetSites JSON converted to Robot Framework
 Get Sites
     [Documentation]     Get Sites
     [Tags]              Get   Sites
-    ${result} =         Get  ${ROOT}/workspaces/master/sites
+    ${result} =         Get  ${ROOT}/refs/master/sites
     Should Be Equal     ${result.status_code}  ${200}
     ${json} =           Set Variable  ${result.json()}
     ${some_stuff} =     Create List    ${COMMON_FILTERS}
@@ -24,7 +24,7 @@ Get Sites
 # Global Variables
 develop_baseline_dir = '../developBaselineDir/'
 debug_test = False
-ROOT_RETURN_ELEMENTS = ['elements', 'workspaces', 'configurations', 'products', 'sites', 'views', 'ownersNotFound',
+ROOT_RETURN_ELEMENTS = ['elements', 'refs', 'configurations', 'products', 'sites', 'views', 'ownersNotFound',
                         'message', 'workspace1', 'workspace2']
 
 robot_dir = os.getcwd() + '/runner/src/test/robotframework'
@@ -314,15 +314,15 @@ def get_sysmlid_from_dict(json_object):
 
 def get_id_from_workspace(workspace_json):
     """
-    Method will grab the ID out of the json object. Typically used for the the workspaces tests when branching or
-    creating workspaces based off of tags.
+    Method will grab the ID out of the json object. Typically used for the the refs tests when branching or
+    creating refs based off of tags.
     :param workspace_json: Name of the JSON object that contains the id needed for the test
     :return: ID found in the JSON object
     """
     # workspace_object = open('output/original/{}_orig.json'.format(workspace_json))
     # workspace_object = json.load(workspace_object)
-    # return workspace_object['workspaces'][0]['id']
-    return get_id_from_json(workspace_json, 'workspaces')
+    # return workspace_object['refs'][0]['id']
+    return get_id_from_json(workspace_json, 'refs')
 
 
 def get_id_from_json(test_name, root_key):
@@ -391,7 +391,7 @@ def is_empty_json(json_object):
 
 def create_workspace_json(ws_name, ws_description="Some workspace", ws_parent="master"):
     workspace_json = {
-        "workspaces": [{
+        "refs": [{
             "name": str(ws_name),
             "description": "<p>{}</p>\n".format(ws_description),
             "permission": "read",

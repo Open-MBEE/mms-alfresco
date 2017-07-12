@@ -18,11 +18,11 @@ export CURL_GET_FLAGS="-X GET"
        export CURL_USER=" -u admin:admin"
        export CURL_FLAGS=$CURL_STATUS$CURL_USER
        export SERVICE_URL="http://localhost:8080/alfresco/service/"
-       export BASE_URL="http://localhost:8080/alfresco/service/workspaces/master/"
+       export BASE_URL="http://localhost:8080/alfresco/service/refs/master/"
 #else
 #        export CURL_USER=" -u shatkhin"
 #        export CURL_FLAGS=$CURL_STATUS$CURL_USER$CURL_SECURITY
-#        export SERVICE_URL="https://europaems-dev-staging-a/alfresco/service/" 
+#        export SERVICE_URL="https://europaems-dev-staging-a/alfresco/service/"
 #       export BASE_URL="http://europaems-dev-staging-a:8443/alfresco/service/javawebscripts/"
 #        export BASE_URL="https://europaems-dev-staging-a/alfresco/service/javawebscripts/"
 #fi
@@ -32,7 +32,7 @@ export CURL_GET_FLAGS="-X GET"
 echo 'testPost 4'
 # post comments (can only add these to a particular view - though view isn't really checked at the moment)
 echo
-echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/comments.json $BASE_URL"elements"  
+echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/comments.json $BASE_URL"elements"
 echo
 curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/comments.json $BASE_URL"elements"  | grep -v '"read":'| grep -v '"lastModified"' | grep -v '"sysmlid"'| grep -v '"author"' > outputWorkspaces/post4.json
 DIFF=$(diff -I 'author' baselineWorkspaces/post4.json outputWorkspaces/post4.json | grep -v '"author"')

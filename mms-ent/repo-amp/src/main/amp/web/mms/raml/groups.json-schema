@@ -1,37 +1,33 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "description": "Sites listing specification",
+    "description": "Groups listing specification",
     "properties": {
-        "sites": {
+        "groups": {
             "type": "array",
             "items": {
                 "type": "object",
                 "oneOf": [
-                    {"$ref": "#/definitions/Sites"}
+                    {"$ref": "#/definitions/Group"}
                 ]
             }
         }
     },
 
     "definitions": {
-        "Sites": {
+        "Group": {
             "properties": {
-              "name": {
+              "_name": {
                 "type": "string",
-                "description": "Human readable name for the site"
+                "description": "Human readable name for the group"
               },
-              "sysmlid": {
+              "_id": {
                 "type": "string",
-                "description": "If applicable, the symlid of the site element"
+                "description": "the id of the group element (as derived from the model element)"
               },
-              "parent": {
+              "_parentId": {
                 "type": "string",
-                "description": "SysML ID of the parent site (Read-Only)"
-              },
-              "isCharacterization": {
-                "type": "boolean",
-                "description": "Set to true if it is a site characterization (Read-Only)"
+                "description": "id of the parent group element, if there's a parent by model containment"
               }
             }
         }

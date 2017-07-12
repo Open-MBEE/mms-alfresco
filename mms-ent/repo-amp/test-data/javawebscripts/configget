@@ -1,12 +1,12 @@
 #!/bin/bash
 
 if [ "$#" -eq 0 ]; then
-  echo curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/configurations"
-  curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/workspaces/master/configurations"
+  echo curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/refs/master/configurations"
+  curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/refs/master/configurations"
 elif [ "$#" -eq 1 ]; then
-  echo curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1/configurations"
-  curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1/configurations"
+  echo curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/refs/$1/configurations"
+  curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/refs/$1/configurations"
 elif [ "$#" -eq 2 ]; then
-  echo curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1/sites/$2/configurations"
-  curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/workspaces/$1/sites/$2/configurations"
+  echo curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/refs/$1/sites/$2/configurations"
+  curl -w "%{http_code}\n" -X GET -u admin:admin "http://localhost:8080/alfresco/service/refs/$1/sites/$2/configurations"
 fi;

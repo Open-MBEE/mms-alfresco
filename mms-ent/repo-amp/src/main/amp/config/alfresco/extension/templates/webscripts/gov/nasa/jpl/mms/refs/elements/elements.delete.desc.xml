@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>delete elements</shortname>
+    <description>
+        delete elements
+    </description>
+    <url>/projects/{projectId}/refs/{refId}/elements</url>
+    <url>/projects/{projectId}/refs/{refId}/elements/{elementId}</url>
+    <format default="json">argument</format>
+    <authentication>user</authentication>
+    <transaction>required</transaction>
+    <family>MMS REST API</family>
+</webscript>

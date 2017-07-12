@@ -279,10 +279,10 @@ public class WorkspaceNode extends EmsScriptNode {
         }
 
         // Make sure the workspace does not already exist otherwise
-        // So workspaces can be named the same, we store the name as the title, then update the
+        // So refs can be named the same, we store the name as the title, then update the
         // name to be unique with the nodeID as the name
     NodeRef ref = NodeUtil.findNodeRefById( cmName, true, null, null, services, false );
-    // FIXME -- This does not find workspaces that are not visible to the user!
+    // FIXME -- This does not find refs that are not visible to the user!
     if ( ref != null ) {
         String msg = "ERROR! Trying to create an existing workspace, " + cmName + "!\n";
         response.append( msg );
@@ -486,7 +486,7 @@ public class WorkspaceNode extends EmsScriptNode {
     /**
      * Return the earliest ancestor of each workspace that is the immediate
      * child of the common parent workspace. If one is the parent of the other,
-     * the child returned for the parent is null. If the workspaces are equal,
+     * the child returned for the parent is null. If the refs are equal,
      * return null;
      *
      * @param ws1
@@ -678,7 +678,7 @@ public class WorkspaceNode extends EmsScriptNode {
 
         // Get nodes in the workspace that have changed with respect to the
         // common parent. To avoid computation, these do not take time into
-        // account except to rule out workspaces with changes only after
+        // account except to rule out refs with changes only after
         // dateTime.
         while ( parent != null && !parent.equals( targetParent ) ) {
             // These changes are already filtered for read permissions.
@@ -966,7 +966,7 @@ public class WorkspaceNode extends EmsScriptNode {
     }
 
     /**
-     * Get the workspace by name, but since two workspaces can have the same
+     * Get the workspace by name, but since two refs can have the same
      * name as long as their parents are different, we need to check the results
      * and at least try to match to the user.
      *
@@ -985,7 +985,7 @@ public class WorkspaceNode extends EmsScriptNode {
                                                     String userName ) {
         WorkspaceNode workspace = null;
 
-        // Get the workspace by name, but since two workspaces can have
+        // Get the workspace by name, but since two refs can have
         // the same name as long as their parents are different, we need
         // to check the results and at least try to match to the user.
         ArrayList< NodeRef > refs =
@@ -1009,7 +1009,7 @@ public class WorkspaceNode extends EmsScriptNode {
             boolean matches = p != null && p.getName().equals( userName );
             if ( !matchedUser ) matchedUser = matches;
             else if ( matches ) {
-                String msg = "Warning! Matched multiple workspaces with name "
+                String msg = "Warning! Matched multiple refs with name "
                              + workspaceName + " for user " + userName;
                 response.append( msg );
                 break;
@@ -1028,7 +1028,7 @@ public class WorkspaceNode extends EmsScriptNode {
             }
         }
         if ( !matchedUser && multipleNonMatches ) {
-            String msg = "Warning! Matched multiple workspaces with name "
+            String msg = "Warning! Matched multiple refs with name "
                         + workspaceName + " but not in user home, " + userName;
             response.append( msg );
         }
@@ -1109,7 +1109,7 @@ public class WorkspaceNode extends EmsScriptNode {
      */
     public Date getCopyTime( WorkspaceNode relativeWorkspace ) {
 
-        // WARNING!  This doesn't work for workspaces that do not have a copyTime!
+        // WARNING!  This doesn't work for refs that do not have a copyTime!
 
         Pair< WorkspaceNode, WorkspaceNode > childrenOfCommonParent =
                 getChildrenOfCommonParent( relativeWorkspace );

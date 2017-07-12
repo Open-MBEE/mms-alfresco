@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>post refs</shortname>
+    <description>
+    post refs
+    </description>
+    <url>/projects/{projectId}/refs</url>
+    <url>/projects/{projectId}/refs/{refId}?sourceWorkspace={sourceWorkspace}</url>
+    <format default="json">argument</format>
+    <authentication>user</authentication>
+    <transaction>required</transaction>
+    <family>MMS REST API</family>
+</webscript>

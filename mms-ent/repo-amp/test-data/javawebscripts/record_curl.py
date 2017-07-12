@@ -12,7 +12,7 @@ from __builtin__ import True, False
 #test_dir_path = "git/mms-all-in-one/mms-ent/repo-war/test-data/javawebscripts"
 HOST = "localhost:8080"
 SERVICE_URL = "http://%s/alfresco/service/"%HOST
-BASE_URL_WS_NOBS = SERVICE_URL + "workspaces"
+BASE_URL_WS_NOBS = SERVICE_URL + "refs"
 BASE_URL_WS = BASE_URL_WS_NOBS + "/"
 common_filters = ['created','read','lastModified','modified','siteCharacterizationId','time_total']
 
@@ -43,7 +43,7 @@ usageText = '''
     
     ./record_curl.py -n GetAInMaster --description "Get element a in master" -g develop -t GET -d elements/a --runBranches "test,develop" -j 
     
-    To compare workspaces:
+    To compare refs:
     
     ./record_curl.py -n CompareMasterAToLatest --description "Compare master to itself between post time of a and latest" -g develop -t GET -u SERVICE_URL -w "diff/master/master/2015-08-24T08:46:58.156-0700/latest" --runBranches "develop" -f "id,qualifiedId" -j
     Substitute URL with SERVICE_URL rather than BASE_URL_WS
@@ -53,7 +53,7 @@ usageText = '''
     Supplying -n <TESTNAME> and -t <TYPE> are mandatory because a baseline/regression table cannot be created without the name and curl command requires some type of HTTP call
     Adding setup, post process, teardown, and time delay functions to the regression table is possible but will not be executed when record_curl is run
     '''
-    
+
 parser = optparse.OptionParser(usage = usageText)
 
 parser.add_option("-n", "--testName", help="Mandatory option: test name to create the baseline json")
@@ -84,7 +84,7 @@ if options.host != "":
     HOST = options.host
 
 SERVICE_URL = "http://%s/alfresco/service/"%HOST
-BASE_URL_WS_NOBS = SERVICE_URL + "workspaces"
+BASE_URL_WS_NOBS = SERVICE_URL + "refs"
 BASE_URL_WS = BASE_URL_WS_NOBS + "/"
 
 #######################################
@@ -193,7 +193,7 @@ def isTestNumber(testNum):
         return True
     except ValueError:
         return False
-    
+
 print "Adding test case into regression test harness"
 file = open("regression_test_harness.py", "r")
 lines = file.readlines()
@@ -253,12 +253,12 @@ if options.setup != " " or options.postProcess != " " or options.teardown != " "
         optionalArguments.reverse()
         listOfOptionalFunctions += ',\n'
         compiledStringOfArguments = ',\n'.join(optionalArguments)
-        listOfOptionalFunctions += compiledStringOfArguments          
- 
+        listOfOptionalFunctions += compiledStringOfArguments
+
 if options.data and curl_data[0] == "'" and curl_data[-1] == "'":
     curl_data = "'\\\'" + options.data + "\\\''"
 else:
-    curl_data = "\"" + curl_data + "\""      
+    curl_data = "\"" + curl_data + "\""
 value = "[\n" + str(latestTest + 1) + ',\n"' + options.testName + '",\n"' + options.description + \
         '",\n' + 'create_curl_cmd(type="' + options.type + '", data=' + curl_data + ', base_url="' + \
         curl_base_url + '", post_type="' + options.post + '", branch="' + options.workspace + '", project_post=' + \

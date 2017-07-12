@@ -6,7 +6,7 @@ export CURL_POST_FLAGS="-X POST -H \"Content-Type:application/json\" --data"
 export CURL_PUT_FLAGS="-X PUT"
 export CURL_GET_FLAGS="-X GET"
 
-export CURL_SECURITY=" -k -3" 
+export CURL_SECURITY=" -k -3"
 
 #if [true]; then
     export CURL_USER=" -u admin:admin"
@@ -27,10 +27,10 @@ export CURL_SECURITY=" -k -3"
 # TODO: CURL commands aren't executed from bash using environment variables
 echo POSTS
 # create project and site
-echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/project.json $SERVICE_URL"workspaces/master/sites/europa/projects?createSite=true\""
+echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/project.json $SERVICE_URL"refs/master/sites/europa/projects?createSite=true\""
 
 # post elements to project
-echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/elementsNew.json $SERVICE_URL"workspaces/master/sites/europa/elements\""
+echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/elementsNew.json $SERVICE_URL"refs/master/sites/europa/elements\""
 
 # post views
 echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/views.json $BASE_URL"views\""
@@ -67,18 +67,18 @@ echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"ve/documents/europa?format=js
 echo curl $CURL_FLAGS $CURL_GET_FLAGS $BASE_URL"element/search?keyword=some*\""
 
 # get multiple elements
-echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"workspaces/master/elements\"" -d @JsonData/elementsGet.json -H "\"Content-Type:application/json\""
+echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"refs/master/elements\"" -d @JsonData/elementsGet.json -H "\"Content-Type:application/json\""
 
 echo ""
 echo DELETE
 # post new element
-echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/elementsNewTest.json $SERVICE_URL"workspaces/master/elements\""
+echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/elementsNewTest.json $SERVICE_URL"refs/master/elements\""
 # get elements
-echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"workspaces/master/elements/771\""
+echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"refs/master/elements/771\""
 # delete elements
-echo curl $CURL_FLAGS -X DELETE $SERVICE_URL"workspaces/master/elements/771\""
+echo curl $CURL_FLAGS -X DELETE $SERVICE_URL"refs/master/elements/771\""
 # get elements (should get 404)
-echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"workspaces/master/elements/771\""
+echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"refs/master/elements/771\""
 
 
 echo ""
@@ -94,14 +94,14 @@ echo ""
 echo SNAPSHOTS
 
 # post snapshot
-echo curl $CURL_FLAGS $CURL_POST_FLAGS_NO_DATA $SERVICE_URL"workspaces/master/sites/europa/products/_17_0_5_1_407019f_1402422683509_36078_16169/snapshots\""
+echo curl $CURL_FLAGS $CURL_POST_FLAGS_NO_DATA $SERVICE_URL"refs/master/sites/europa/products/_17_0_5_1_407019f_1402422683509_36078_16169/snapshots\""
 #echo  curl -w "%{http_code}" -u admin:admin -X POST -H "Content-Type:text/html" --data @JsonData/snapshot.html http://localhost:8080/alfresco/service/ui/views/_17_0_5_1_407019f_1402422683509_36078_16169/snapshot
-echo curl $CURL_FLAGS $CURL_POST_FLAGS_NO_DATA $SERVICE_URL"workspaces/master/sites/undefined/products/_17_0_5_1_407019f_1402422683509_36078_16169/snapshots\""
+echo curl $CURL_FLAGS $CURL_POST_FLAGS_NO_DATA $SERVICE_URL"refs/master/sites/undefined/products/_17_0_5_1_407019f_1402422683509_36078_16169/snapshots\""
 #echo  curl -w "%{http_code}" -u admin:admin -X POST -H "Content-Type:application/json" --data @JsonData/snapshots.json http://localhost:8080/alfresco/service/workspaces/master/sites/europa/configurations/_17_0_5_1_407019f_1402422683509_36078_16169/snapshots
-echo curl $CURL_FLAGS $CURL_POST_FLAGS_NO_DATA $SERVICE_URL"workspaces/master/sites/europa/products/_17_0_5_1_407019f_1402422683509_36078_16169\""
-echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/configuration.json $SERVICE_URL"workspaces/master/sites/europa/configurations\""
-echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/configuration.products.json $SERVICE_URL"workspaces/master/sites/europa/configurations/[CONFIGURATION_ID]/products\""
-echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"workspaces/master/sites/europa/configurations/[CONFIGURATION_ID]/snapshots\""
+echo curl $CURL_FLAGS $CURL_POST_FLAGS_NO_DATA $SERVICE_URL"refs/master/sites/europa/products/_17_0_5_1_407019f_1402422683509_36078_16169\""
+echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/configuration.json $SERVICE_URL"refs/master/sites/europa/configurations\""
+echo curl $CURL_FLAGS $CURL_POST_FLAGS @JsonData/configuration.products.json $SERVICE_URL"refs/master/sites/europa/configurations/[CONFIGURATION_ID]/products\""
+echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"refs/master/sites/europa/configurations/[CONFIGURATION_ID]/snapshots\""
 
 # get snapshots - this currently doesn't work
 #echo  curl -w "%{http_code}" -u admin:admin -X GET http://localhost:8080/alfresco/service/snapshots/301
@@ -117,9 +117,9 @@ echo curl $CURL_FLAGS $CURL_GET_FLAGS $BASE_URL"configurations/europa\""
 
 echo ""
 echo WORKSPACES
-echo curl $CURL_FLAGS -X POST $SERVICE_URL"workspaces/wsA?sourceWorkspace=master\""
+echo curl $CURL_FLAGS -X POST $SERVICE_URL"refs/wsA?sourceWorkspace=master\""
 
-echo curl $CURL_FLAGS -X POST $SERVICE_URL"workspaces/wsB?sourceWorkspace=wsA\""
+echo curl $CURL_FLAGS -X POST $SERVICE_URL"refs/wsB?sourceWorkspace=wsA\""
 
-echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"workspaces\""
+echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"refs\""
 

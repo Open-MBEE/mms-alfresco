@@ -4,20 +4,20 @@
     <description>EMS Unique Models</description>
     <author>JPL</author>
     <version>1.0</version>
-    
+
     <imports>
         <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
         <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
         <import uri="http://jpl.nasa.gov/model/view/2.0" prefix="view2"/>
     </imports>
-    
+
     <namespaces>
         <namespace uri="http://jpl.nasa.gov/model/ems/1.0" prefix="ems"/>
     </namespaces>
-    
+
     <data-types/>
-    
-    <types>      
+
+    <types>
         <type name="ems:Job">
             <parent>cm:content</parent>
             <properties>
@@ -53,7 +53,7 @@
                     <aspect>cm:titled</aspect>
             </mandatory-aspects>
         </type>
-        
+
         <type name="ems:ConfigurationSet">
             <parent>ems:Job</parent>
             <properties/>
@@ -86,7 +86,7 @@
                 <aspect>view2:timestamped</aspect>
             </mandatory-aspects>
         </type>
-        
+
         <type name="ems:DiffJob">
             <parent>ems:Job</parent>
             <properties>
@@ -104,9 +104,9 @@
                 </property>
             </properties>
         </type>
-        
+
      </types>
-     
+
      <aspects>
         <aspect name="ems:HasChildren">
             <properties>
@@ -122,7 +122,7 @@
                 </property>
             </properties>
         </aspect>
-        
+
          <aspect name="ems:TreeNode">
             <parent>ems:HasChildren</parent>
             <properties>
@@ -138,13 +138,13 @@
                 </property>
             </properties>
         </aspect>
-        
+
         <aspect name="ems:Workspace">
             <parent>ems:TreeNode</parent>
             <properties>
-            <!-- workspace_name is used instead of cm_name because we put all workspaces 
-                in the users' home folders, which require unique cm:names, and there can 
-                be two workspaces with the same name but different parent workspaces -->
+            <!-- workspace_name is used instead of cm_name because we put refsaces
+                in the users' home folders, which require unique cm:names, and there can
+                be refsaces with the same name but different parrefsaces -->
                 <property name="ems:workspace_name">
                     <type>d:text</type>
                     <mandatory>true</mandatory>
@@ -154,7 +154,7 @@
                         <tokenised>false</tokenised>
                     </index>
                 </property>
-                <!-- This is the last time the changes from the parent workspace were applied 
+                <!-- This is the last time the changes from the parent workspace were applied
                     to this one. -->
                 <property name="ems:lastTimeSyncParent">
                     <type>d:datetime</type>
@@ -162,7 +162,7 @@
                     <multiple>false</multiple>
                     <index enabled="false"/>
                 </property>
-                <!-- The time point at which the workspace is a copy. If a workspace does 
+                <!-- The time point at which the workspace is a copy. If a workspace does
                     not have this property, the workspace "walks" with its parent; in other words,
                     changes in the parent workspace pass through to the child (unless they conflict). -->
                 <property name="ems:copyTime">
@@ -185,7 +185,7 @@
                 </property>
             </properties>
         </aspect>
-        
+
         <aspect name="ems:HasWorkspace">
             <properties>
                 <property name="ems:workspace">
@@ -211,16 +211,16 @@
             </properties>
         </aspect>
 
-        <!-- Trashed is to implement a trash can in case we need something that 
+        <!-- Trashed is to implement a trash can in case we need something that
              we would lose if deleting from Alfresco -->
         <aspect name="ems:Trashed"/>
-        
+
         <aspect name="ems:Added"/>
         <aspect name="ems:Deleted">
             <properties>
-                <!-- This property exists only to ensure that the addition and deletion 
-                    of the Deleted aspect is tracked in the version history. Be sure to change 
-                    this property when adding the aspect, and be sure to remove the property 
+                <!-- This property exists only to ensure that the addition and deletion
+                    of the Deleted aspect is tracked in the version history. Be sure to change
+                    this property when adding the aspect, and be sure to remove the property
                     when removing the aspect. -->
                 <property name="ems:deleted">
                     <type>d:int</type>
@@ -233,7 +233,7 @@
         <aspect name="ems:Moved"/>
         <aspect name="ems:Updated"/>
 
-        <!-- The merge source is a node that overwrote this one when merged from 
+        <!-- The merge source is a node that overwrote this one when merged from
         a child workspace. -->
         <aspect name="ems:MergeSource">
             <properties>
@@ -245,7 +245,7 @@
                 </property>
             </properties>
         </aspect>
-        
+
         <aspect name="ems:Owned">
           <properties>
               <property name="ems:owner">
@@ -270,7 +270,7 @@
               </property>
           </properties>
         </aspect>
-        
+
         <aspect name="ems:ValueSpecOwned">
           <properties>
               <property name="ems:valueSpecOwner">
@@ -295,7 +295,7 @@
               </property>
           </properties>
         </aspect>
-        
+
         <aspect name="ems:Reified">
           <properties>
               <property name="ems:reifiedNode">
@@ -320,7 +320,7 @@
               </property>
           </properties>
         </aspect>
-        
+
         <aspect name="ems:Committable">
             <properties>
                 <property name="ems:commitParents">
@@ -362,7 +362,7 @@
                     <index enabled="false"/>
                 </property>
             </properties>
-        </aspect>        
+        </aspect>
         <aspect name="ems:MagicDrawData">
           <properties>
               <property name="ems:mdData">

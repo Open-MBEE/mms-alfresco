@@ -96,7 +96,7 @@ public class ActionUtil {
 
         String msg = "Log URL: " + contextUrl + logNode.getUrl();
         if (!Utils.isNullOrEmpty( contextUrl ) && !Utils.isNullOrEmpty( ws1id ) && !Utils.isNullOrEmpty( ws2id ) && !Utils.isNullOrEmpty( ts1 ) && !Utils.isNullOrEmpty( ts2 )) {
-            String diffPath = "Diff Results: " + contextUrl + "/mmsapp/mms.html#/workspaces/"+ws2id+"/diff/"+ws2id+"/"+ts2+"/"+ws1id+"/"+ts1;
+            String diffPath = "Diff Results: " + contextUrl + "/mmsapp/mms.html#/refs/"+ws2id+"/diff/"+ws2id+"/"+ts2+"/"+ws1id+"/"+ts1;
             msg = msg + "\n\n" + diffPath;
         }
 
