@@ -16,7 +16,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
 
 public class HostnameGet extends AbstractJavaWebScript {
 	static Logger logger = Logger.getLogger(HostnameGet.class);

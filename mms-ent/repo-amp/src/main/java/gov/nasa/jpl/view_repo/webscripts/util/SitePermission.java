@@ -2,9 +2,7 @@ package gov.nasa.jpl.view_repo.webscripts.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -15,7 +13,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.db.PostgresHelper;
 
 public class SitePermission {
 

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webscript>
 <webscript>
-    <shortname>post refs</shortname>
+    <shortname>delete elements</shortname>
     <description>
-    post refs
+        delete elements
     </description>
-    <url>/projects/{projectId}/refs</url>
-    <url>/projects/{projectId}/refs/{refId}?sourceWorkspace={sourceWorkspace}</url>
+    <url>/projects/{projectId}/refs/{refId}/elements</url>
+    <url>/projects/{projectId}/refs/{refId}/elements/{elementId}</url>
     <format default="json">argument</format>
     <authentication>user</authentication>
     <transaction>required</transaction>

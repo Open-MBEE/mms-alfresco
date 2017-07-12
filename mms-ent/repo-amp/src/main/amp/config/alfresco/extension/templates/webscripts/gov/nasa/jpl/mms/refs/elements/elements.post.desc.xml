@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webscript>
 <webscript>
-    <shortname>post refs</shortname>
+    <shortname>post elements</shortname>
     <description>
-    post refs
+        post elements
     </description>
-    <url>/projects/{projectId}/refs</url>
-    <url>/projects/{projectId}/refs/{refId}?sourceWorkspace={sourceWorkspace}</url>
+    <url>/projects/{projectId}/refs/{refId}/elements</url>
+    <url>/projects/{projectId}/refs/{refId}/elements/{artifactId}</url>
     <format default="json">argument</format>
     <authentication>user</authentication>
     <transaction>required</transaction>
