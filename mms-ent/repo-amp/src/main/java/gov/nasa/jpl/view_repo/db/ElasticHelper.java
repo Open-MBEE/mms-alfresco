@@ -33,9 +33,11 @@ import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
+import io.searchbox.indices.Refresh;
 import io.searchbox.params.Parameters;
 import io.searchbox.core.DeleteByQuery;
 import io.searchbox.core.Delete;
+
 
 /**
  * @author Jason Han jason.han@jpl.nasa.gov, Laura Mann laura.mann@jpl.nasa.gov
@@ -320,40 +322,19 @@ public class ElasticHelper {
         return result;
     }
     /**
-     * Index single JSON document that is a project by type                         (1)
+     * refresh the index                         (1)
      *
-     * @param j JSON document to index          (2)
-     * @return ElasticResult result
+     * @return Boolean isRefreshed
      */
-    public ElasticResult indexProject(JSONObject j) throws IOException {
-        // :TODO error handling
-        ElasticResult result = new ElasticResult();
-        String eType = j.has("commit") ? "commit" : "element";
-
-        logger.debug(String.format("indexProject: %s", j));
-
-        JSONObject k = new JSONObject();
-        if (j.has(eType)) {
-            k = removeWrapper(j);
-        } else {
-            k = j;
+    public Boolean refreshIndex() throws IOException {
+        Refresh refresh = new Refresh.Builder().addIndex(elementIndex).build();
+        JestResult result = client.execute(refresh);
+        if(result.isSucceeded()){
+            return true;
+        }else{
+            return false;
         }
 
-        if (k.has(Sjm.SYSMLID)) {
-            result.sysmlid = k.getString(Sjm.SYSMLID);
-        }
-        if (k.has(Sjm.ELASTICID)) {
-            result.elasticId = client.execute(
-                new Index.Builder(k.toString()).id(k.getString(Sjm.ELASTICID)).index(elementIndex).type(eType).setParameter(Parameters.REFRESH, "wait_for").build())
-                .getId();
-        } else {
-            result.elasticId =
-                client.execute(new Index.Builder(k.toString()).index(elementIndex).type(eType).setParameter(Parameters.REFRESH, "wait_for").build()).getId();
-        }
-        k.put(Sjm.ELASTICID, result.elasticId);
-        result.current = k;
-
-        return result;
     }
 
     public boolean updateElement(String id, JSONObject payload) throws JSONException, IOException {

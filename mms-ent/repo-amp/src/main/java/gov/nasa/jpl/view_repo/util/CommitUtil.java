@@ -665,9 +665,10 @@ public class CommitUtil {
             // only insert if the project does not exist already
             if (pgh.getNodeFromSysmlId(projectSysmlid) == null) {
 
-                eProject = eh.indexProject(project);
-                eProjectHoldingBin = eh.indexProject(projectHoldingBin);
+                eProject = eh.indexElement(project);
+                eProjectHoldingBin = eh.indexElement(projectHoldingBin);
                 eViewInstanceBin = eh.indexElement(viewInstanceBin);
+                eh.refreshIndex();
 
                 pgh.insertNode(eProject.elasticId, eProject.sysmlid, DbNodeTypes.PROJECT);
                 pgh.insertNode(eProjectHoldingBin.elasticId, "holding_bin_" + projectSysmlid, DbNodeTypes.HOLDINGBIN);
