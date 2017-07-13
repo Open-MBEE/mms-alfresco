@@ -588,7 +588,7 @@ public class EmsNodeUtil {
 
         for (int i = 0; i < elements.length(); i++) {
             JSONObject o = elements.getJSONObject(i);
-            String sysmlid = o.optString(Sjm.SYSMLID);
+            String sysmlid = o.optString(Sjm.SYSMLID, null);
             if (sysmlid == null || sysmlid.equals("")) {
                 sysmlid = createId();
                 o.put(Sjm.SYSMLID, sysmlid);
@@ -780,7 +780,7 @@ public class EmsNodeUtil {
                     if (ownedAttributesMap.containsKey(ownedAttributes.getString(j))) {
                         JSONObject ownedAttribute = ownedAttributesMap.get(ownedAttributes.getString(j));
                         if (ownedAttribute != null && ownedAttribute.getString(Sjm.TYPE).equals("Property")) {
-                            if (ownedAttribute.optString(Sjm.TYPEID) != null) {
+                            if (ownedAttribute.optString(Sjm.TYPEID, null) != null) {
                                 JSONObject childView = new JSONObject();
                                 childView.put(Sjm.SYSMLID, ownedAttribute.getString(Sjm.TYPEID));
                                 childView.put(Sjm.AGGREGATION, ownedAttribute.getString(Sjm.AGGREGATION));
@@ -825,7 +825,7 @@ public class EmsNodeUtil {
         Set<String> newChildViewsSet = new HashSet<>();
         if (newChildViews != null && newChildViews.length() > 0) {
             for (int i = 0; i < newChildViews.length(); i++) {
-                if (newChildViews.optJSONObject(i) != null && newChildViews.optJSONObject(i).optString(Sjm.SYSMLID) != null) {
+                if (newChildViews.optJSONObject(i) != null && newChildViews.optJSONObject(i).optString(Sjm.SYSMLID, null) != null) {
                     newChildViewsSet.add(newChildViews.optJSONObject(i).optString(Sjm.SYSMLID));
                 }
             }
@@ -839,7 +839,7 @@ public class EmsNodeUtil {
         for (int i = 0; i < ownedAttributes.length(); i++) {
             JSONObject ownedAttribute = ownedAttributes.optJSONObject(i);
             if (ownedAttribute != null && ownedAttribute.getString(Sjm.TYPE).equals("Property")) {
-                if (ownedAttribute.optString(Sjm.TYPEID) != null) {
+                if (ownedAttribute.optString(Sjm.TYPEID, null) != null) {
                     if (!newChildViewsSet.contains(ownedAttribute.getString(Sjm.TYPEID))) {
                         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(ownedAttribute.optString(Sjm.PROJECTID),
                             ownedAttribute.optString(Sjm.REFID));
@@ -863,7 +863,7 @@ public class EmsNodeUtil {
                                 JSONArray appliedStereotypeIds = childView.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
                                 if (appliedStereotypeIds.toString().contains("_17_0_1_232f03dc_1325612611695_581988_21583")
                                     || appliedStereotypeIds.toString().contains("_17_0_2_3_87b0275_1371477871400_792964_43374")) {
-                                    if (childView.optString(Sjm.SYSMLID) != null) {
+                                    if (childView.optString(Sjm.SYSMLID, null) != null) {
                                         deletedElements.put(ownedAttribute);
                                         oldElasticIds.add(ownedAttribute.getString(Sjm.ELASTICID));
                                         JSONObject newObj = new JSONObject();
@@ -872,7 +872,7 @@ public class EmsNodeUtil {
                                         commitDeleted.put(newObj);
                                     }
                                     JSONObject asi = emsNodeUtil.getNodeBySysmlid(ownedAttribute.optString(Sjm.APPLIEDSTEREOTYPEINSTANCEID));
-                                    if (asi.optString(Sjm.SYSMLID) != null) {
+                                    if (asi.optString(Sjm.SYSMLID, null) != null) {
                                         deletedElements.put(asi);
                                         oldElasticIds.add(asi.getString(Sjm.ELASTICID));
                                         JSONObject newObj = new JSONObject();
@@ -881,7 +881,7 @@ public class EmsNodeUtil {
                                         commitDeleted.put(newObj);
                                     }
                                     JSONObject association = emsNodeUtil.getNodeBySysmlid(ownedAttribute.optString(Sjm.ASSOCIATIONID));
-                                    if (association.optString(Sjm.SYSMLID) != null) {
+                                    if (association.optString(Sjm.SYSMLID, null) != null) {
                                         deletedElements.put(association);
                                         oldElasticIds.add(association.getString(Sjm.ELASTICID));
                                         JSONObject newObj = new JSONObject();
@@ -891,9 +891,9 @@ public class EmsNodeUtil {
                                     }
                                     JSONArray associationProps = association.optJSONArray(Sjm.OWNEDENDIDS);
                                     for (int k = 0; k < associationProps.length(); k++) {
-                                        if (associationProps.optString(k) != null) {
+                                        if (associationProps.optString(k, null) != null) {
                                             JSONObject assocProp = emsNodeUtil.getNodeBySysmlid(associationProps.optString(k));
-                                            if (assocProp.optString(Sjm.SYSMLID) != null) {
+                                            if (assocProp.optString(Sjm.SYSMLID, null) != null) {
                                                 deletedElements.put(assocProp);
                                                 oldElasticIds.add(assocProp.getString(Sjm.ELASTICID));
                                                 JSONObject newObj = new JSONObject();
@@ -1174,7 +1174,7 @@ public class EmsNodeUtil {
     private Map<String, JSONObject> convertToMap(JSONArray elements) {
         Map<String, JSONObject> result = new HashMap<>();
         for (int i = 0; i < elements.length(); i++) {
-            if (elements.getJSONObject(i).optString(Sjm.SYSMLID) != null) {
+            if (elements.getJSONObject(i).optString(Sjm.SYSMLID, null) != null) {
                 result.put(elements.getJSONObject(i).getString(Sjm.SYSMLID), elements.getJSONObject(i));
             }
         }
@@ -1228,7 +1228,7 @@ public class EmsNodeUtil {
         qn.add(o.optString("name"));
         qid.add(o.optString(Sjm.SYSMLID));
 
-        while (o.has(Sjm.OWNERID) && o.optString(Sjm.OWNERID) != null && !o.optString(Sjm.OWNERID).equals("null")) {
+        while (o.has(Sjm.OWNERID) && o.optString(Sjm.OWNERID, null) != null && !o.getString(Sjm.OWNERID).equals("null")) {
             String sysmlid = o.optString(Sjm.OWNERID);
             JSONObject owner = elementMap.get(sysmlid);
             if (owner == null) {
@@ -1240,13 +1240,13 @@ public class EmsNodeUtil {
                 }
             }
 
-            String ownerId = owner.optString(Sjm.SYSMLID);
+            String ownerId = owner.optString(Sjm.SYSMLID, null);
             if (ownerId == null || ownerId.equals("")) {
                 ownerId = "null";
             }
             qid.add(ownerId);
 
-            String ownerName = owner.optString(Sjm.NAME);
+            String ownerName = owner.optString(Sjm.NAME, null);
             if (ownerName == null || ownerName.equals("")) {
                 ownerName = "null";
             }
