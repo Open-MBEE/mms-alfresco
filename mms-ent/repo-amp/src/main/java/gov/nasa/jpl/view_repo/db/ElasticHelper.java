@@ -319,6 +319,42 @@ public class ElasticHelper {
 
         return result;
     }
+    /**
+     * Index single JSON document that is a project by type                         (1)
+     *
+     * @param j JSON document to index          (2)
+     * @return ElasticResult result
+     */
+    public ElasticResult indexProject(JSONObject j) throws IOException {
+        // :TODO error handling
+        ElasticResult result = new ElasticResult();
+        String eType = j.has("commit") ? "commit" : "element";
+
+        logger.debug(String.format("indexProject: %s", j));
+
+        JSONObject k = new JSONObject();
+        if (j.has(eType)) {
+            k = removeWrapper(j);
+        } else {
+            k = j;
+        }
+
+        if (k.has(Sjm.SYSMLID)) {
+            result.sysmlid = k.getString(Sjm.SYSMLID);
+        }
+        if (k.has(Sjm.ELASTICID)) {
+            result.elasticId = client.execute(
+                new Index.Builder(k.toString()).id(k.getString(Sjm.ELASTICID)).index(elementIndex).type(eType).setParameter(Parameters.REFRESH, "wait_for").build())
+                .getId();
+        } else {
+            result.elasticId =
+                client.execute(new Index.Builder(k.toString()).index(elementIndex).type(eType).setParameter(Parameters.REFRESH, "wait_for").build()).getId();
+        }
+        k.put(Sjm.ELASTICID, result.elasticId);
+        result.current = k;
+
+        return result;
+    }
 
     public boolean updateElement(String id, JSONObject payload) throws JSONException, IOException {
 
