@@ -148,7 +148,7 @@ GetElementAtCommit
     Should Be Equal     ${result.json()["elements"][0]["_modified"]}       ${element.json()["elements"][0]["_modified"]}
 
 GetElementBeforeCommit
-    [Documentation]     "Gets an element that exists before the commit. Grabs a commit that does not contain the element and requests for the element at that time. It should return the element at a previous commit."
+    [Documentation]     "Gets an element that exists before the commit. Grabs a commit that does not contain the element and requests for the element at that time. It should return the element at a previous commit than the one requested."
     [Tags]              B15
     ${element} =        Get    url=${ROOT}/projects/PA/refs/master/elements/300         headers=&{REQ_HEADER}
     ${commitId} =       Get Commit In Between Latest and Element        ${300}      ${element.json()["elements"][0]["_commitId"]}
@@ -161,5 +161,21 @@ GetElementBeforeCommit
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+
+GetElementAfterCommit
+    [Documentation]     "Get an element that doesn't exist at the current commit. Should return a 404"
+    [Tags]              B16
+	${post_json} =		Get File	    ${CURDIR}/../../JsonData/CreateElementAfterCommit.json
+	${result} =			Post		    url=${ROOT}/projects/PA/refs/master/elements     data=${post_json}		headers=&{REQ_HEADER}
+	# Grab an element with an older commitId
+    ${element} =        Get    url=${ROOT}/projects/PA/refs/master/elements/300         headers=&{REQ_HEADER}
+    ${result} =         Get     url=${ROOT}/projects/PA/refs/master/elements/ElementAfterCommit?commitId=${element.json()["elements"][0]["_commitId"]}       headers=&{REQ_HEADER}
+    Should be Equal     ${result.status_code}       ${404}
+
+GetElementAtInvalidCommit
+    [Documentation]     "Try to get an element at an invalid commit."
+    [Tags]              B17
+    ${result} =         Get    url=${ROOT}/projects/PA/refs/master/elements/300?commitId=ThisIdShouldNotExistAtAll         headers=&{REQ_HEADER}
+    Should be Equal     ${result.status_code}       ${404}
 
 
