@@ -170,13 +170,20 @@
                     <url>https://jcenter.bintray.com/</url>
                 </repository>
             </repositories>
+            <dependencies>
+                <!-- https://jcenter.bintray.com/org/openmbee/testrail/ -->
+                <dependency>
+                    <groupId>org.openmbee.testrail</groupId>
+                    <artifactId>testrail-cli</artifactId>
+                    <version>1.0.0</version>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>
-                        <!-- https://jcenter.bintray.com/org/openmbee/testrail/ -->
-                        <groupId>org.openmbee.testrail</groupId>
-                        <artifactId>testrail-cli</artifactId>
-                        <version>1.0.0</version>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
                         <executions>
                             <execution>
                                 <id>post-results-testrail</id>
@@ -189,12 +196,13 @@
                         <configuration>
                             <mainClass>org.openmbee.testrail.cli.JUnitPublisher</mainClass>
                             <arguments>
-                                <argument>runner/src/test/robotframework/output</argument>
-                                <argument>${env.TESTRAIL_HOST}</argument>
-                                <argument>${env.TESTRAIL_USER}</argument>
-                                <argument>${env.TESTRAIL_PASS}</argument>
-                                <argument>${env.TESTRAIL_SUITE_ID}</argument>
-                                <argument>${env.TESTRAIL_PLAN_ID}</argument>
+                                <!-- Equivalent to => -d dir -h host -u user -p pass -sid suite-id -pid plan-id -->
+                                <argument>--directory</argument><argument>runner/src/test/robotframework/output</argument>
+                                <argument>--host</argument><argument>${env.TESTRAIL_HOST}</argument>
+                                <argument>--user</argument><argument>${env.TESTRAIL_USER}</argument>
+                                <argument>--password</argument><argument>${env.TESTRAIL_PASS}</argument>
+                                <argument>--suite-id</argument><argument>${env.TESTRAIL_SUITE_ID}</argument>
+                                <argument>--plan-id</argument><argument>${env.TESTRAIL_PLAN_ID}</argument>
                                 <!--<argument>${env.TESTRAIL_RUN_NAME}</argument>-->
                             </arguments>
                         </configuration>
