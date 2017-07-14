@@ -463,7 +463,14 @@ def get_commit_timestamp(commitId, index="mms", elasticHost="localhost"):
 def get_commit_from_json(jsonObject):
     return jsonObject["elements"][0]["_commitId"]
 
-def get_commits(index="mms", elasticHost="localhost"):
+def get_all_commits(index="mms", elasticHost="localhost"):
+    """
+    Returns all commits in elasticsearch. This is only useful when there is a small number of elements and commits in
+    elasticsearch. If this is used a model that is large then the method may return more commits than desired.
+    :param index:
+    :param elasticHost:
+    :return:
+    """
     query = {
         "query":{
             "match_all":{}
@@ -476,18 +483,22 @@ def get_commits(index="mms", elasticHost="localhost"):
         commitObjectList[hit['_source']['_created']] = hit['_source']['_elasticId']
     return commitObjectList
 
-def get_commit_in_between_latest_and_element(elementId, commitId):
-    commits = get_commits()
+def get_commit_in_between_latest_and_element(sysmlId, commitId):
+    commits = get_all_commits()
     sorted_list = sorted(commits)
+    element_commits = get_element_commit_ids(sysmlId)
+    print("Element Commits")
+    print(element_commits)
+    print("Commits")
     print(json.dumps(commits, indent=4, separators=(',',':')))
+    print("Sorted List")
+    print(sorted_list)
     last = -1
     for c in commits:
         print(sorted_list[last])
-        last-=1
-        if commits[sorted_list[last]] != commitId:
+        if commits[sorted_list[last]] not in element_commits:
             return commits[sorted_list[last]]
-
-
+        last-=1
 
 # Main Application when running from the commandline
 if __name__ == "__main__":
