@@ -354,19 +354,23 @@ public class ModelGet extends AbstractJavaWebScript {
 
         // This is the lastest commit for the element
         String lastestCommitId = emsNodeUtil.getById(elementId).getLastCommit();
+        Boolean checkInProjectAndRef = false;
+        try {
+            checkInProjectAndRef = emsNodeUtil.commitContainsElement(elementId, commitId);
+        } catch (Exception e){
+            logger.warn(e.getMessage());
+        }
 
-        Boolean checkInProjectAndRef = emsNodeUtil.commitContainsElement(elementId, commitId);
-
-//        if (checkInProjectAndRef || (commitId.equals(lastestCommitId))) {
-//            return emsNodeUtil.getElementByElasticID(currentElement);
-//        } else {
+        if (checkInProjectAndRef || (commitId.equals(lastestCommitId))) {
+            return emsNodeUtil.getElementByElasticID(currentElement);
+        } else {
 
             element = emsNodeUtil.getElementAtCommit(elementId, commitId);
             if (element == null) {
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s", elementId,
                     commitId);
             }
-//        }
+        }
         return element;
     }
 

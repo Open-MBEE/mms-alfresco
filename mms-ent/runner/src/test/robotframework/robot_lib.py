@@ -6,6 +6,7 @@ import platform
 import os
 import shutil
 import subprocess
+import requests
 
 '''
 Example of GetSites JSON converted to Robot Framework
@@ -401,6 +402,91 @@ def create_workspace_json(ws_name, ws_description="Some workspace", ws_parent="m
     json_file = open('NewJsonData/CreateWorkspace_{}.json'.format(str(ws_name).replace(' ', '')), 'w')
     json_file.writelines(json.dumps(workspace_json))
     return workspace_json
+
+def get_elements_from_elasticsearch(sysmlId, index="mms", elasticHost="localhost"):
+    """
+    Method will return an array of elements based on the sysmlid provided. It will be the entire history of the element.
+    :param sysmlid: string
+    :param index: ElasticSearch Index
+    :param elastichost: Hostname of ElasticSearch
+    :return:
+    """
+    query = {
+        "query":{
+            "term":{
+                "id":sysmlId
+            }
+        }
+    }
+    res = requests.post("http://{}:9200/{}/_search".format(elasticHost,index), data=json.dumps(query))
+    return res.json()["hits"]["hits"]
+
+
+def find_element_by_commit(sysmlId, commitId):
+        """
+        Returns an element at a specific commit.
+        :param sysmlid:
+        :param commitId:
+        :return:
+        """
+        elementList = get_elements_from_elasticsearch(sysmlId)
+        for element in elementList:
+            if element["_source"]["_commitId"] == commitId:
+                return element["_source"]
+
+def get_element_commit_ids(sysmlId):
+    """
+    Returns a list of commit ids based on the element sysmlid provided.
+    :param sysmlid:
+    :return:
+    """
+    elements = get_elements_from_elasticsearch(sysmlId=sysmlId)
+    commits = []
+    for element in elements:
+        commits.append(element["_source"]["_commitId"])
+    return commits
+
+def element_exists_in_commit(sysmlId, commitId):
+    return find_element_by_commit(sysmlId=sysmlId,commitId=commitId) > 0
+
+def get_commit_timestamp(commitId, index="mms", elasticHost="localhost"):
+    query = {
+        "query":{
+            "term":{
+                "_commitId":commitId
+            }
+        }
+    }
+    res = requests.post("http://{}:9200/{}/_search".format(elasticHost,index), data=json.dumps(query))
+    return res.json()["hits"]["hits"][0]["_source"]["_created"]
+
+def get_commit_from_json(jsonObject):
+    return jsonObject["elements"][0]["_commitId"]
+
+def get_commits(index="mms", elasticHost="localhost"):
+    query = {
+        "query":{
+            "match_all":{}
+        },
+        "size":"30"
+    }
+    res = requests.post("http://{}:9200/{}/commit/_search".format(elasticHost,index), data=json.dumps(query))
+    commitObjectList = {}
+    for hit in res.json()["hits"]["hits"]:
+        commitObjectList[hit['_source']['_created']] = hit['_source']['_elasticId']
+    return commitObjectList
+
+def get_commit_in_between_latest_and_element(elementId, commitId):
+    commits = get_commits()
+    sorted_list = sorted(commits)
+    print(json.dumps(commits, indent=4, separators=(',',':')))
+    last = -1
+    for c in commits:
+        print(sorted_list[last])
+        last-=1
+        if commits[sorted_list[last]] != commitId:
+            return commits[sorted_list[last]]
+
 
 
 # Main Application when running from the commandline

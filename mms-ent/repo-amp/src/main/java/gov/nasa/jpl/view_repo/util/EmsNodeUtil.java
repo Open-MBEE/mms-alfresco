@@ -1625,6 +1625,10 @@ public class EmsNodeUtil {
             // Construct a query for elasticsearch that will get the reference id of the commitId.
             JSONObject query = new JSONObject().put("query", new JSONObject().put("term", new JSONObject().put("_commitId", commitId)));
             JSONArray queryResult = eh.search(query);
+            if (queryResult.length() == 0) {
+                logger.error(String.format("Commit %s was not found", commitId));
+                return element;
+            }
             String refId = (new JSONObject(queryResult.get(0).toString())).getString("_refId");
 
             // Get a list of commits based on references <commitId, JSONObject>

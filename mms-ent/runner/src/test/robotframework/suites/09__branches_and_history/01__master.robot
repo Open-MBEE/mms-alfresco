@@ -111,7 +111,7 @@ GetElementHistoryFromPAOnNewBranch
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
-# TODO write a method to compare commitN to itself on response or its name
+# TODO write a method to compare commitN to itself on response or its name -- Are these tests irrelevant now?
 GetCommitHistoryFromPAOnMasterC0
 	[Documentation]		"check get element using commit 0 on master"
 	[Tags]				B10
@@ -135,4 +135,26 @@ GetCommitHistoryFromPAOnNewBranchC3
 	[Tags]				B13
 	${result} =			Get		url=${ROOT}/projects/PA/refs/newbranch/elements/test_history_element?commitId=${commit3}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
+
+GetElementAtCommit
+    [Documentation]     "Gets an element at a commit -- Should return element"
+    [Tags]              B14
+    ${element} =        Get    url=${ROOT}/projects/PA/refs/master/elements/300         headers=&{REQ_HEADER}
+    ${commitId} =       Get Commit From Json       ${element.json()}
+    ${result} =         Get     url=${ROOT}/projects/PA/refs/master/elements/300?commitId=${commitId}       headers=&{REQ_HEADER}
+    Should Be Equal     ${result.status_code}       ${200}
+    Should Be Equal     ${result.json()["elements"][0]["id"]}       ${element.json()["elements"][0]["id"]}
+    Should Be Equal     ${result.json()["elements"][0]["_commitId"]}       ${element.json()["elements"][0]["_commitId"]}
+    Should Be Equal     ${result.json()["elements"][0]["_modified"]}       ${element.json()["elements"][0]["_modified"]}
+
+GetElementBeforeCommit
+    [Documentation]     "Gets an element that exists before the commit"
+    [Tags]              B15
+    ${element} =        Get    url=${ROOT}/projects/PA/refs/master/elements/300         headers=&{REQ_HEADER}
+    ${commitId} =       Get Commit In Between Latest and Element        ${300}      ${element.json()["elements"][0]["_commitId"]}
+    Log To Console      ${commitId}
+    ${result} =         Get     url=${ROOT}/projects/PA/refs/master/elements/300?commitId=${commitId}       headers=&{REQ_HEADER}
+    Should Be Equal     ${result.status_code}       ${200}
+    Should Not Be Equal     ${result.json()["elements"][0]["_commitId"]}        ${element.json()["elements"][0]["_commitId"]}
+
 
