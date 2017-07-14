@@ -34,6 +34,16 @@
                 "type": {
                      "type": "string",
                      "description": "Project"
+                },
+                "_mounts": {
+                    "type": "array",
+                    "description": "array of project objects mounted by this project (in no particular order, recursively), only available via mounts endpoint (given refId)",
+                    "items": {
+                        "type": "object",
+                        "oneOf": [
+                            { "$ref": "#/definitions/Project"}
+                        ]
+                    }
                 }
             }
         }
