@@ -111,6 +111,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
                 json = createWorkSpace(projectId, sourceWorkspaceParam, newName, copyDateTime, reqJson, user, status);
                 statusCode = status.getCode();
+                // Copy parent image folder to new ref
+                copyImagesToTagOrBranch(projectId, sourceWorkspaceParam, json.getString(Sjm.SYSMLID));
             } else {
                 statusCode = HttpServletResponse.SC_FORBIDDEN;
             }
@@ -294,6 +296,26 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         }
 
         return wsJson;
+    }
+    public JSONObject copyImagesToTagOrBranch(String projectId, String parentRefId, String refId){
+        // sites/siteId
+        String path = projectId + "/refs/" + parentRefId;
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, parentRefId);
+        String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
+        SiteInfo orgInfo = services.getSiteService().getSite(orgId);
+        if (orgInfo != null) {
+            EmsScriptNode site = new EmsScriptNode(orgInfo.getNodeRef(), services);
+            EmsScriptNode refNode = site.childByNamePath(path, false, null, true);
+        }
+        //EmsScriptNode branch = refContainerNode.childByNamePath(parentRefId, false, null, true);
+        // :TODO copy(org.alfresco.service.cmr.repository.NodeRef sourceNodeRef, org.alfresco.service.cmr.repository.NodeRef destinationNodeRef)
+
+        //SiteInfo orgInfo = services.getSiteService().getSite(orgId);
+        // EmsScriptNode projectContainerNode = site.childByNamePath(projectId, false, null, true);
+        // EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary", false, null, true);
+        // EmsScriptNode documentProjectContainer = documentLibrary.childByNamePath(projectId, false, null, true);
+        //EmsScriptNode refContainerNode = projectContainerNode.childByNamePath(REF_PATH_SEARCH, false, null, true);
+        return null;
     }
 
 }
