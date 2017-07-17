@@ -100,99 +100,6 @@ traits:
           description: Could not read <<resourcePathName>> due to internal server error
 
 resourceTypes:
-  - readCollection:
-      securedBy: [basic]
-      usage: Resources with read capabilities and standard responses
-      description: Read operations for <<resourcePathName>>
-      get:
-          is: [recursable, qualifiable, commitable]
-          description: Read operation for <<resourcePathName>>
-          responses:
-              200:
-                description: <<resourcePathName>> read successful
-                body:
-                  application/json:
-                    schema: <<resourcePathName>>
-              400:
-                description: Malformed request by client
-              401:
-                description: User is not authenticated
-              403:
-                description: User does not have read permissions to <<resourcePathName>>
-              404:
-                description: <<resourcePathName>> not found
-              500:
-                description: Could not read <<resourcePathName>> due to internal server error
-  - collection:
-      type: readCollection
-      usage: Resources with CRUD capabilities
-      description: Create, Read, Update, and Delete operations for <<resourcePathName>>
-      post:
-        description: Append operation for <<resourcePathName>>
-        body:
-          application/json:
-            schema: <<resourcePathName>>
-        responses:
-          200:
-            body:
-              application/json:
-                schema: <<resourcePathName>>
-            description: <<resourcePathName>> append successful
-          202:
-            description: <<resourcePathName>> append started, but not yet completed
-          401:
-            description: User is not authenticated
-          403:
-            description: User does not have write permissions to <<resourcePathName>>
-          404:
-            description: <<resourcePathName>> not found
-          409:
-            description: <<resourcePathName>> conflict detected (e.g., intervening update
-                         occurred between when user accessed resource and when user saved
-                         resource)
-          500:
-            description: Could not append to <<resourcePathName>> due to internal server error
-#      put:
-#        description: bulk get operation for <<resourcePathName>>
-#        body:
-#          schema: <<resourcePathName>>
-#        responses:
-#          200:
-#            description: <<resourcePathName>> update successful
-#            body:
-#              schema: <<resourcePathName>> PutResponse
-#          201:
-#            description: <<resourcePathName>> create successful
-#          202:
-#            description: <<resourcePathName>> create/update started, but not yet completed
-#          401:
-#            description: User does not have create/update permissions to <<resourcePathName>>
-#          404:
-#            description: <<resourcePathName>> not found
-#          409:
-#            description: <<resourcePathName>> conflict detected (e.g., intervening update
-#                         occurred between when user accessed resource and when user updated
-#                         resource)
-#          500:
-#            description: Could not append to <<resourcePathName>> due to internal server error
-      delete:
-        description: Delete operation for <<resourcePathName>>
-        responses:
-          200:
-            description: <<resourcePathName>> delete successful
-            body:
-              application/json:
-                schema:  <<resourcePathName>>
-          202:
-            description: <<resourcePathName>> delete started, but not yet completed
-          401:
-            description: User is not authenticated
-          403:
-            description: User does not have delete permissions to <<resourcePathName>>
-          404:
-            description: <<resourcePathName>> not found
-          500:
-            description: Could not delete <<resourcePathName>> due to internal server error
   - connection:
       get:
         description: Get configuration for <<resourcePathName>>
@@ -208,6 +115,7 @@ resourceTypes:
             schema: connections
         responses:
           200:
+
 /orgs:
   description: All projects are contained in a org
   get:
@@ -280,19 +188,6 @@ resourceTypes:
           put:
             is: [returnElements, returnable]
             description: put body is the elastic search query json to execute
-        /artifacts:
-          description: path to images, to be removed in favor of elements endpoint
-          /{elementId}:
-            uriParameters:
-              elementId:
-                description: Element ID under consideration.
-            get:
-              description: Get the documents of the specified ref.
-              queryParameters:
-                accept:
-                  description: image/svg
-                  required: false
-
         /history:
           description: get the commit history of the specififed ref.
           get:
@@ -319,7 +214,7 @@ resourceTypes:
             description: Get the documents of the specified ref.
             queryParameters:
               groupId:
-                description: Get documents by group.  If groupId isn't specified returns only root level docs.
+                description: Get documents by group.  If groupId isn't specified returns everything.
                 required: false
         /elements:
           description: Get elements

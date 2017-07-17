@@ -860,8 +860,12 @@ public class EmsNodeUtil {
                                 JSONObject childView = childViews.optJSONObject(j);
 
                                 JSONArray appliedStereotypeIds = childView.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
-                                if (appliedStereotypeIds.toString().contains("_17_0_1_232f03dc_1325612611695_581988_21583")
-                                    || appliedStereotypeIds.toString().contains("_17_0_2_3_87b0275_1371477871400_792964_43374")) {
+                                String asids = (appliedStereotypeIds == null) ? "" : appliedStereotypeIds.toString();
+                                if (asids.contains("_17_0_1_232f03dc_1325612611695_581988_21583")
+                                    || asids.contains("_17_0_2_3_87b0275_1371477871400_792964_43374")
+                                    || asids.contains("_17_0_1_407019f_1332453225141_893756_11936")
+                                    || asids.contains("_11_5EAPbeta_be00301_1147420760998_43940_227")
+                                    || asids.contains("_18_0beta_9150291_1392290067481_33752_4359")) {
                                     if (childView.optString(Sjm.SYSMLID, null) != null) {
                                         deletedElements.put(ownedAttribute);
                                         oldElasticIds.add(ownedAttribute.getString(Sjm.ELASTICID));

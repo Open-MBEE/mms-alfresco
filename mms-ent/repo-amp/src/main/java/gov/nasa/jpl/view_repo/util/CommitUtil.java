@@ -139,6 +139,7 @@ public class CommitUtil {
                 return DbNodeTypes.SITE;
             case "project":
                 return DbNodeTypes.PROJECT;
+            case "model":
             case "package":
                 if (isSite(e)) {
                     return DbNodeTypes.SITEANDPACKAGE;
@@ -668,6 +669,7 @@ public class CommitUtil {
                 eProject = eh.indexElement(project);
                 eProjectHoldingBin = eh.indexElement(projectHoldingBin);
                 eViewInstanceBin = eh.indexElement(viewInstanceBin);
+                eh.refreshIndex();
 
                 pgh.insertNode(eProject.elasticId, eProject.sysmlid, DbNodeTypes.PROJECT);
                 pgh.insertNode(eProjectHoldingBin.elasticId, "holding_bin_" + projectSysmlid, DbNodeTypes.HOLDINGBIN);
@@ -701,8 +703,9 @@ public class CommitUtil {
         executor.submit(() -> {
             String srcId = src.optString(Sjm.SYSMLID);
 
-            PostgresHelper pgh = new PostgresHelper(srcId);
+            PostgresHelper pgh = new PostgresHelper();
             pgh.setProject(projectId);
+            pgh.setWorkspace(srcId);
 
             try {
                 pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId,
