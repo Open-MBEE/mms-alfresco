@@ -1627,7 +1627,7 @@ public class EmsNodeUtil {
                 logger.error(String.format("Commit %s was not found", commitId));
                 return element;
             }
-            String refId = ((JSONObject)queryResult.get(0)).getString("_refId");
+            String refId = queryResult.getJSONObject(0).getString("_refId");
 
             // Get a list of commits based on references <commitId, JSONObject>
             List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
