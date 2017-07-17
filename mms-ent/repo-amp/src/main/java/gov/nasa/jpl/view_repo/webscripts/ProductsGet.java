@@ -20,7 +20,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
 
 public class ProductsGet extends AbstractJavaWebScript {
 	static Logger logger = Logger.getLogger(ProductsGet.class);
@@ -59,7 +58,7 @@ public class ProductsGet extends AbstractJavaWebScript {
             }
         }
 
-        JSONObject jsonObject = NodeUtil.newJsonObject();
+        JSONObject jsonObject = new JSONObject();
 
         try {
             jsonObject.put("documents", filterByPermission(handleProducts(req), req));
