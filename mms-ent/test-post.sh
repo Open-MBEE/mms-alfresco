@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [[ "$#" -ne 5 ]]; then
+if [[ "$#" -le 4 ]]; then
         echo "Not enough arguments"
-        echo "Usage: ./test-post.sh [hostname] [user] [pass] [suiteId] [planId]"
+        echo "Usage: ./test-post.sh [hostname] [user] [pass] [suiteId] (option) [planId]"
 fi
 
 export TESTRAIL_HOST=$1
