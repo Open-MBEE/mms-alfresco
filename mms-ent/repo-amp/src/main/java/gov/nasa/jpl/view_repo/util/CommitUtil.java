@@ -139,6 +139,7 @@ public class CommitUtil {
                 return DbNodeTypes.SITE;
             case "project":
                 return DbNodeTypes.PROJECT;
+            case "model":
             case "package":
                 if (isSite(e)) {
                     return DbNodeTypes.SITEANDPACKAGE;
