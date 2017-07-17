@@ -1936,7 +1936,7 @@ public class PostgresHelper {
                 Map<String, Object> commit = new HashMap<>();
                 commit.put(Sjm.SYSMLID, rs.getString(1));
                 commit.put(Sjm.CREATOR, rs.getString(2));
-                commit.put(Sjm.TIMESTAMP, rs.getTime(3));
+                commit.put(Sjm.TIMESTAMP, rs.getTimestamp(3));
                 commit.put("refId", rs.getString(4));
                 commit.put("commitType", rs.getString(5));
                 result.add(commit);
