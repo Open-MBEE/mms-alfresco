@@ -44,7 +44,7 @@ ProjectCreation
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     commitId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-	Sleep				${POST_DELAY_INDEXING}
+	#Sleep				${POST_DELAY_INDEXING} removed to test wait for index to update change MMS-611
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 

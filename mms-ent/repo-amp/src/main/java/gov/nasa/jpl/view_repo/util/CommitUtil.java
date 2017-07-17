@@ -668,6 +668,7 @@ public class CommitUtil {
                 eProject = eh.indexElement(project);
                 eProjectHoldingBin = eh.indexElement(projectHoldingBin);
                 eViewInstanceBin = eh.indexElement(viewInstanceBin);
+                eh.refreshIndex();
 
                 pgh.insertNode(eProject.elasticId, eProject.sysmlid, DbNodeTypes.PROJECT);
                 pgh.insertNode(eProjectHoldingBin.elasticId, "holding_bin_" + projectSysmlid, DbNodeTypes.HOLDINGBIN);
