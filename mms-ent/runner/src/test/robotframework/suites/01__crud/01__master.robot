@@ -130,7 +130,8 @@ RecreateDeletedProject
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/ProjectForDeleteProject.json
 	${result} =			Post		    url=${ROOT}/orgs/initorg/projects		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${result} =			Get		url=${ROOT}/orgs/initorg/projects/${TEST_NAME}		headers=&{REQ_HEADER}
+	${result} =			Get		url=${ROOT}/projects/DeleteProject		headers=&{REQ_HEADER}
+	Log To Console      ${result.json()}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
