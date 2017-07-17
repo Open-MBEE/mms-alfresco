@@ -1,0 +1,22 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "something",
+            "isDerived": false,
+            "name": "this name is updated",
+            "ownerId": "holding_bin_PA",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}
