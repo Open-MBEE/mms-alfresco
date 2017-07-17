@@ -701,8 +701,9 @@ public class CommitUtil {
         executor.submit(() -> {
             String srcId = src.optString(Sjm.SYSMLID);
 
-            PostgresHelper pgh = new PostgresHelper(srcId);
+            PostgresHelper pgh = new PostgresHelper();
             pgh.setProject(projectId);
+            pgh.setWorkspace(srcId);
 
             try {
                 pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId,
