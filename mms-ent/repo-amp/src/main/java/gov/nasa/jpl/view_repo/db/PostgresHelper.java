@@ -2135,14 +2135,16 @@ public class PostgresHelper {
 
         String query = "ALTER DATABASE  \"_" + databaseName  +"\" CONNECTION LIMIT 0";
         String query2 = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = \'_" + databaseName +"\'";
-        String query3 = "DROP DATABASE \"_" + databaseName +"\";";
+        String query3 = "ALTER DATABASE  \"_" + databaseName  +"\" CONNECTION LIMIT -1";
+        String query4 = "DROP DATABASE \"_" + databaseName +"\";";
 
         connectConfig();
 
         try {
             this.configConn.createStatement().executeUpdate(query);
             this.configConn.prepareCall(query2).execute();
-            this.configConn.createStatement().executeUpdate(query3);
+            this.configConn.prepareCall(query3).execute();
+            this.configConn.createStatement().executeUpdate(query4);
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
