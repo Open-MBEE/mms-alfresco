@@ -111,7 +111,7 @@ UpdateElements
 
 DeleteProject
     [Documentation]  "Delete an existing project"
-    [Tags]            8
+    [Tags]            9
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/ProjectForDeleteProject.json
 	${result} =			Post		    url=${ROOT}/orgs/initorg/projects		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -124,4 +124,15 @@ DeleteProject
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-
+RecreateDeletedProject
+    [Documentation]     "Test recreating the DeleteProject again to make sure that it can be recreated without issues."
+    [Tags]              10
+	${post_json} =		Get File	    ${CURDIR}/../../JsonData/ProjectForDeleteProject.json
+	${result} =			Post		    url=${ROOT}/orgs/initorg/projects		    data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${result} =			Get		url=${ROOT}/orgs/initorg/projects/${TEST_NAME}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
