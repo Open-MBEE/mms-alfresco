@@ -34,8 +34,6 @@ import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbCommitTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
-import ucar.nc2.util.HashMapLRU;
-import ucar.nc2.util.xml.Parse;
 
 public class EmsNodeUtil {
 
@@ -1603,19 +1601,19 @@ public class EmsNodeUtil {
         Set<String> elementIdSet = new HashSet<>();
         Set<String> commitIdSet = new HashSet<>();
         String latestId = null;
-        JSONObject element = new JSONObject(),
-                   jsonObject;
-        Date commitTimestamp = null,
-             elementDate = null;
-        long latest = 0,
-             timestamp;
+        JSONObject element = new JSONObject();
+        JSONObject jsonObject;
+        Date commitTimestamp = null;
+        Date elementDate = null;
+        long latest = 0;
+        long timestamp;
 
         try {
             // Get history of the element based on SysML ID
             JSONArray elementCommitHistory = eh.getCommitHistory(sysmlId);
 
-            for(int i = 0; i < elementCommitHistory.length(); ++i){
-                jsonObject  = new JSONObject(elementCommitHistory.get(i).toString());
+            for (int i = 0; i < elementCommitHistory.length(); ++i) {
+                jsonObject = elementCommitHistory.getJSONObject(i);
                 if (logger.isDebugEnabled()) {
                     logger.debug(jsonObject.toString());
                 }
@@ -1629,7 +1627,7 @@ public class EmsNodeUtil {
                 logger.error(String.format("Commit %s was not found", commitId));
                 return element;
             }
-            String refId = (new JSONObject(queryResult.get(0).toString())).getString("_refId");
+            String refId = ((JSONObject)queryResult.get(0)).getString("_refId");
 
             // Get a list of commits based on references <commitId, JSONObject>
             List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
