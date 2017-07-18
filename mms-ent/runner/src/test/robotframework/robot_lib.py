@@ -463,7 +463,7 @@ def get_commit_timestamp(commitId, index="mms", elasticHost="localhost"):
 def get_commit_from_json(jsonObject):
     return jsonObject["elements"][0]["_commitId"]
 
-def get_all_commits(index="mms", elasticHost="localhost"):
+def get_all_commits(index="mms", elasticHost="localhost", excludeCommits=[]):
     """
     Returns all commits in elasticsearch. This is only useful when there is a small number of elements and commits in
     elasticsearch. If this is used a model that is large then the method may return more commits than desired.
@@ -480,19 +480,39 @@ def get_all_commits(index="mms", elasticHost="localhost"):
     res = requests.post("http://{}:9200/{}/commit/_search".format(elasticHost,index), data=json.dumps(query))
     commitObjectList = {}
     for hit in res.json()["hits"]["hits"]:
-        commitObjectList[hit['_source']['_created']] = hit['_source']['_elasticId']
+        if(hit['_source']['_elasticId']) not in excludeCommits:
+            commitObjectList[hit['_source']['_created']] = hit['_source']['_elasticId']
     return commitObjectList
 
-def get_commit_in_between_latest_and_element(sysmlId, commitId):
+def get_all_project_commits(projectId, index="mms", elasticHost="localhost"):
+    query = {
+        "query": {
+            "term":{
+                "_projectId": projectId
+            }
+        }
+    }
+    res = requests.post("http://{}:9200/{}/_search".format(elasticHost, index), data=json.dumps(query))
+    commitObjectList = []
+    for hit in res.json()["hits"]["hits"]:
+        if hit["_source"]["_commitId"] not in commitObjectList:
+            commitObjectList.append(hit["_source"]["_commitId"])
+    return commitObjectList
+
+
+def get_last_commit():
     commits = get_all_commits()
     sorted_list = sorted(commits)
+    return commits[sorted_list[-1]]
+
+def get_commit_in_between_latest_and_element(sysmlId, projectId):
     element_commits = get_element_commit_ids(sysmlId)
-    last = -1
-    for c in commits:
-        print(sorted_list[last])
-        if commits[sorted_list[last]] not in element_commits:
-            return commits[sorted_list[last]]
-        last-=1
+    commits = get_all_commits(excludeCommits=element_commits)
+    sorted_list = sorted(commits)
+    project_commits = get_all_project_commits(projectId)
+    for c in sorted_list:
+        if commits[c] not in element_commits and commits[c] in project_commits:
+            return commits[c]
 
 # Main Application when running from the commandline
 if __name__ == "__main__":
