@@ -92,6 +92,7 @@ public class SitePermSync extends AbstractJavaWebScript{
     @Override
     protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         Map<String, Object> model = new HashMap<>();
+        /*
         WorkspaceNode ws = this.getWorkspace( req );
         List<SiteInfo> sites = services.getSiteService().listSites(null);
 
@@ -117,32 +118,10 @@ public class SitePermSync extends AbstractJavaWebScript{
             model.put("res", "Error creating JSON output");
             status.setCode( HttpServletResponse.SC_INTERNAL_SERVER_ERROR );
         }
-
+*/
         return model;
     }
 
-
-    /**
-     * Update permissions based on the provided site and site package
-     * @param siteInfo  Site who's permissions should be copied onto the site package
-     * @param sitePkg   Site packge to update permissions for
-     */
-    private void updatePermissions(SiteInfo siteInfo, EmsScriptNode sitePkg, WorkspaceNode ws) {
-        NodeRef nr = sitePkg.getNodeRef();
-
-        // remove any previous permissions then override
-        services.getPermissionService().setInheritParentPermissions( nr, false );
-        services.getPermissionService().deletePermissions( nr );
-
-        List<SiteMemberInfo> members = services.getSiteService().listMembersInfo( siteInfo.getShortName(), null, null, 0, true );
-        for ( SiteMemberInfo authorityObj : members ) {
-            sitePkg.setPermission( authorityObj.getMemberRole(), authorityObj.getMemberName() );
-            EmsScriptNode reifiedSitePkg = sitePkg.getReifiedPkg(null, ws);
-            if (reifiedSitePkg != null) {
-                reifiedSitePkg.setPermission( authorityObj.getMemberRole(), authorityObj.getMemberName() );
-            }
-        }
-    }
 }
 
 

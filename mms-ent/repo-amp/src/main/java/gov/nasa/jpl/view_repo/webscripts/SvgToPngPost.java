@@ -66,7 +66,7 @@ public class SvgToPngPost extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
 
 		SvgToPngPost instance = new SvgToPngPost(repository, services);
-		JSONObject result = instance.saveAndStartAction(req, status);
+		JSONObject result = null;//instance.saveAndStartAction(req, status);
 		appendResponseStatusInfo(instance);
 
 		status.setCode(responseStatus.getCode());
@@ -121,6 +121,7 @@ public class SvgToPngPost extends AbstractJavaWebScript {
 	}
 
 	public void process(){
+	    /*
 		log("Converting SVGs to PNGs...");
 		String origUser = null;
 		try {
@@ -157,7 +158,7 @@ public class SvgToPngPost extends AbstractJavaWebScript {
 		finally{
 			log("\nEnding impersonation...");
 			AuthenticationUtil.setRunAsUser(origUser);
-		}
+		}*/
 	}
 
 	protected List<EmsScriptNode> findEmsScriptNodeByType(String type,
@@ -166,8 +167,7 @@ public class SvgToPngPost extends AbstractJavaWebScript {
 			throw new NullArgumentException("Search Type");
 		if (Utils.isNullOrEmpty(pattern))
 			throw new NullArgumentException("Search Pattern");
-		ArrayList<NodeRef> results = NodeUtil.findNodeRefsByType(pattern, type,
-				services);
+		ArrayList<NodeRef> results = new ArrayList<NodeRef>();// NodeUtil.findNodeRefsByType(pattern, type,services);
 		List<EmsScriptNode> list = EmsScriptNode.toEmsScriptNodeList(results,
 				services, null, null);
 		return list;
@@ -201,7 +201,7 @@ public class SvgToPngPost extends AbstractJavaWebScript {
 	}
 
 	protected void addPng(EmsScriptNode node) throws Throwable {
-		if (node == null) throw new NullArgumentException("EmsScriptNode");
+		/*if (node == null) throw new NullArgumentException("EmsScriptNode");
 		log(String.format("\tAdding PNG for %s...", node.getName()));
 		Path svgPath = saveSvgToFileSystem(node);
 		Path pngPath = ModelPost.svgToPng(svgPath);
@@ -214,7 +214,7 @@ public class SvgToPngPost extends AbstractJavaWebScript {
 			pngArtifact.getOrSetCachedVersion();
 		}
 		Files.deleteIfExists(svgPath);
-		Files.deleteIfExists(pngPath);
+		Files.deleteIfExists(pngPath);*/
 	}
 
 	protected Path saveSvgToFileSystem(EmsScriptNode node) throws Throwable {

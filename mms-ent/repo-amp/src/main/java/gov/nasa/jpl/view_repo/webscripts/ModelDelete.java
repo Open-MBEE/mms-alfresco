@@ -90,12 +90,11 @@ public class ModelDelete extends AbstractJavaWebScript {
         JSONArray commitDeleted = new JSONArray();
         JSONArray deletedElements = new JSONArray();
 
-        WorkspaceNode workspace = getWorkspace(req, user);
         String projectId = getProjectId(req);
         String refId = getRefId(req);
 
         Set<String> ids = new HashSet<>();
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         Set<String> elasticIds = new HashSet<>();
         String elementId = req.getServiceMatch().getTemplateVars().get("elementId");
         if (elementId != null && !elementId.contains("holding_bin") && !elementId.contains("view_instances_bin")) {

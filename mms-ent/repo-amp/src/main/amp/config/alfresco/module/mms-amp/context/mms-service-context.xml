@@ -79,14 +79,6 @@
     </bean>
 
     <!-- adding new bean -->
-    <bean id="webscript.gov.nasa.jpl.mms.refs.views.get"
-        class="gov.nasa.jpl.view_repo.webscripts.ViewGet" parent="webscript"
-        singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
-    <!-- adding new bean -->
     <bean id="webscript.gov.nasa.jpl.mms.refs.sites.get"
           class="gov.nasa.jpl.view_repo.webscripts.SiteGet" parent="webscript"
           singleton="false">
@@ -112,13 +104,6 @@
     <bean id="webscript.gov.nasa.jpl.mms.refs.mounts.get"
           class="gov.nasa.jpl.view_repo.webscripts.MountsGet" parent="webscript"
           singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
-    <bean id="webscript.gov.nasa.jpl.mms.diff.post"
-        class="gov.nasa.jpl.view_repo.webscripts.WorkspaceDiffPost" parent="webscript"
-        singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
@@ -174,14 +159,6 @@
 
     <bean id="webscript.gov.nasa.jpl.mms.refs.delete"
         class="gov.nasa.jpl.view_repo.webscripts.WorkspaceDelete" parent="webscript"
-        singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
-    <!-- utilities for synchronizing sites including creating a admin user -->
-    <bean id="webscript.gov.nasa.jpl.utils.site_perm_sync.post"
-        class="gov.nasa.jpl.view_repo.webscripts.util.SitePermSync" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />

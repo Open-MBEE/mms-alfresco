@@ -85,7 +85,7 @@ public class ConfigurationGenerationActionExecuter extends ActionExecuterAbstrac
     @Override
     protected void executeImpl(Action action, NodeRef nodeRef) {
         clearCache();
-
+/*
 //        new EmsTransaction(services, response, responseStatus) {
 //            @Override
 //            public void run() throws Exception {
@@ -212,7 +212,7 @@ public class ConfigurationGenerationActionExecuter extends ActionExecuterAbstrac
 
         if (logger.isDebugEnabled()) {
         	logger.debug("Completed configuration set");
-        }
+        }*/
     }
 
     protected void clearCache() {

@@ -194,30 +194,30 @@ public class ProjectPost extends AbstractJavaWebScript {
                 return HttpServletResponse.SC_FORBIDDEN;
             }
 
-            EmsScriptNode projectContainerNode = site.childByNamePath(projectId, false, null, true);
+            EmsScriptNode projectContainerNode = site.childByNamePath(projectId);
             if (projectContainerNode == null) {
                 projectContainerNode = site.createFolder(projectId);
                 projectContainerNode.createOrUpdateProperty(Acm.CM_TITLE, jsonObject.optString(Sjm.NAME));
                 log(Level.INFO, HttpServletResponse.SC_OK, "Project folder created.\n");
             }
 
-            EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary", false, null, true);
+            EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary");
             if (documentLibrary == null) {
                 documentLibrary = site.createFolder("documentLibrary");
             }
 
-            EmsScriptNode documentProjectContainer = documentLibrary.childByNamePath(projectId, false, null, true);
+            EmsScriptNode documentProjectContainer = documentLibrary.childByNamePath(projectId);
             if (documentProjectContainer == null) {
                 documentProjectContainer = documentLibrary.createFolder(projectId);
                 documentProjectContainer.createOrUpdateProperty(Acm.CM_TITLE, jsonObject.optString(Sjm.NAME));
             }
 
-            EmsScriptNode refContainerNode = projectContainerNode.childByNamePath(REF_PATH_SEARCH, false, null, true);
+            EmsScriptNode refContainerNode = projectContainerNode.childByNamePath(REF_PATH_SEARCH);
             if (refContainerNode == null) {
                 refContainerNode = projectContainerNode.createFolder("refs");
             }
 
-            EmsScriptNode branch = refContainerNode.childByNamePath("master", false, null, true);
+            EmsScriptNode branch = refContainerNode.childByNamePath("master");
             if (branch == null) {
                 branch = refContainerNode.createFolder("master");
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");

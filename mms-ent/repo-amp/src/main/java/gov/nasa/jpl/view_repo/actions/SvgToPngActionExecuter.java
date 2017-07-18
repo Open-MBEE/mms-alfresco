@@ -73,7 +73,7 @@ public class SvgToPngActionExecuter extends ActionExecuterAbstractBase{
 	}
 
 	protected void sendEmail(EmsScriptNode jobNode, SvgToPngPost svgToPng, StringBuffer response){
-		String subject = "SVGs To PNGs Completed";
+		/*String subject = "SVGs To PNGs Completed";
 		EmsScriptNode logNode = ActionUtil.saveLogToFile(jobNode,
 				MimetypeMap.MIMETYPE_TEXT_PLAIN, services,
 				subject + System.lineSeparator() + System.lineSeparator()
@@ -82,7 +82,7 @@ public class SvgToPngActionExecuter extends ActionExecuterAbstractBase{
 		ActionUtil.sendEmailToModifier(jobNode, msg, subject, services);
 		if (logger.isInfoEnabled()) {
 			logger.info("Completed SVGs to PNGs conversion.");
-		}
+		}*/
 	}
 
 	protected String buildEmailMessage(StringBuffer response, EmsScriptNode logNode){

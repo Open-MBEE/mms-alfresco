@@ -76,22 +76,19 @@ public class ModelGet extends AbstractJavaWebScript {
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        WorkspaceNode workspace = getWorkspace(req);
-        boolean wsFound = workspace != null && workspace.exists();
-        if (!wsFound) {
             String refId = getRefId(req);
             String projectId = getProjectId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+
             if (refId != null && refId.equalsIgnoreCase("master")) {
                 return true;
-            } else if (refId != null && !emsNodeUtil.refExists(refId)) {
+            }
+            else if (refId != null && !emsNodeUtil.refExists(refId)) {
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
                     refId);
                 return false;
             }
-        }
-
-        return true;
+            return true;
     }
 
     /**
@@ -174,10 +171,11 @@ public class ModelGet extends AbstractJavaWebScript {
         JSONObject resultJson = null;
         Map<String, Object> model = new HashMap<>();
 
-        String user = AuthenticationUtil.getFullyAuthenticatedUser();
         String projectId = getProjectId(req);
         String refId = getRefId(req);
+
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
 
         String cs = req.getParameter("cs");
         String extensionArg = accept.replaceFirst(".*/(\\w+).*", "$1");
@@ -200,7 +198,7 @@ public class ModelGet extends AbstractJavaWebScript {
             extension = "." + extension;
         }
 
-        WorkspaceNode workspace = getWorkspace(req, AuthenticationUtil.getRunAsUser());
+        //WorkspaceNode workspace = getWorkspace(req, AuthenticationUtil.getRunAsUser());
 
         if (validateRequest(req, status)) {
 
@@ -224,9 +222,10 @@ public class ModelGet extends AbstractJavaWebScript {
                         String filename = artifactId + extension;
 
                         EmsScriptNode matchingNode = null;
-
+                        EmsScriptNode siteNode = EmsScriptNode.getSiteNode(orgId);
+                        matchingNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
                         // Search for artifact file by checksum (this may return nodes in parent refs):
-                        if (!Utils.isNullOrEmpty(cs)) {
+                       /* if (!Utils.isNullOrEmpty(cs)) {
                             ArrayList<NodeRef> refs = NodeUtil
                                 .findNodeRefsByType("" + cs, SearchType.CHECKSUM.prefix, false, workspace,
                                     TimeUtils.dateFromTimestamp(timestamp), false, false, services, false);
@@ -247,7 +246,7 @@ public class ModelGet extends AbstractJavaWebScript {
                             matchingNode = NodeUtil
                                 .findScriptNodeById(filename, workspace, TimeUtils.dateFromTimestamp(timestamp), false,
                                     services, response);
-                        }
+                        }*/
 
                         // Create return json if matching node found:
                         if (matchingNode != null) {
@@ -466,51 +465,6 @@ public class ModelGet extends AbstractJavaWebScript {
         }
         return new JSONArray();
 
-    }
-
-    /*
-     * This method searched through the specified results and compare
-     * the sysmlIds with the specified input parameter. If a match is
-     * found, that JSONObject is returned; otherwise, a null JSONObject
-     * is returned.
-     *
-     * NOTE: only the "updated" and "added" elements need to be searched
-     * since all "deleted" and "moved" elements are listed as "updated".
-     */
-    private JSONObject findInResults(EmsNodeUtil emsNodeUtil, JSONObject results, String sysmlId) {
-        JSONObject resObj = null;
-        JSONObject jObj = null;
-        boolean fResFound = false;
-
-        JSONArray jArray = results.getJSONArray("updated");
-        for (int i = 0; i < jArray.length(); i++) {
-            jObj = jArray.getJSONObject(i);
-            if (jObj != null) {
-                String sID = jObj.getString(Sjm.SYSMLID);
-                if (sID.equalsIgnoreCase(sysmlId)) {
-                    String elasticID = jObj.getString(Sjm.ELASTICID);
-                    System.err.println("Found SysmlID=" + sID + ", elasticID=" + elasticID);
-                    resObj = emsNodeUtil.getElasticElement(elasticID);
-                    break;
-                }
-            }
-        }
-
-        jArray = results.getJSONArray("added");
-        for (int j = 0; j < jArray.length(); j++) {
-            jObj = jArray.getJSONObject(j);
-            if (jObj != null) {
-                String sID = jObj.getString(Sjm.SYSMLID);
-                if (sID.equalsIgnoreCase(sysmlId)) {
-                    String elasticID = jObj.getString(Sjm.ELASTICID);
-                    System.err.println("Found SysmlID=" + sID + ", elasticID=" + elasticID);
-                    resObj = emsNodeUtil.getElasticElement(elasticID);
-                    break;
-                }
-            }
-        }
-
-        return resObj;
     }
 
 }

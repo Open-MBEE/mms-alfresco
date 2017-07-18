@@ -105,28 +105,6 @@ public class WorkspaceGet extends AbstractJavaWebScript{
         return json;
     }
 
-    protected JSONObject getWorkspace(WorkspaceNode ws, String wsID) throws JSONException {
-        JSONObject json = new JSONObject();
-        JSONArray jsonArray = new JSONArray();
-        JSONObject interiorJson = new JSONObject();
-        if(ws == null){
-            if (wsID.equals("master")) {
-                WorkspaceNode.addWorkspaceNamesAndIds(interiorJson, ws, true );
-                jsonArray.put(interiorJson);
-            } else {
-                log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Workspace not found: %s", (ws == null ? null : ws.getSysmlId()));
-            }
-        } else {
-            if(checkPermissions(ws, PermissionService.READ))  {
-                jsonArray.put(ws.toJSONObject(ws, null));
-            } else {
-                log(Level.WARN, HttpServletResponse.SC_FORBIDDEN, "No read permissions for workspace: %s", (ws == null ? null : ws.getSysmlId()));
-            }
-        }
-        json.put("refs" , jsonArray);
-        return json;
-    }
-
     @Override
     protected boolean validateRequest(WebScriptRequest req, Status status) {
         String wsId = req.getServiceMatch().getTemplateVars().get(REF_ID);

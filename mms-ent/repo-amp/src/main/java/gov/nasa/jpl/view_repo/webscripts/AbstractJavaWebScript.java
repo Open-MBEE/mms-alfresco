@@ -67,6 +67,7 @@ import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil.SearchType;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 
 
@@ -186,33 +187,8 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      */
     abstract protected boolean validateRequest(WebScriptRequest req, Status status);
 
-    protected EmsScriptNode getSiteNode(String siteName, WorkspaceNode workspace, String commitId) {
-        return getSiteNode(siteName, workspace != null ? workspace.getSysmlId() : "master", commitId, false);
-    }
-
     protected EmsScriptNode getSiteNode(String siteName) {
         return getSiteNodeImpl(siteName, null, null, false, true);
-    }
-
-    /**
-     * Get site by name, workspace, and time
-     *
-     * @param siteName
-     *            short name of site
-     * @param refId
-     *            the workspace of the version of the site to return
-     * @param commitId
-     *            the point in time for the version of the site to return
-     * @return
-     */
-    protected EmsScriptNode getSiteNode(String siteName, String refId,
-                                        String commitId ) {
-        return getSiteNode(siteName, refId, commitId, true);
-    }
-
-    protected EmsScriptNode getSiteNode(String siteName, String refId,
-                                        String commitId, boolean errorOnNull) {
-        return getSiteNodeImpl(siteName, refId, commitId, false, errorOnNull);
     }
 
     /**
@@ -233,113 +209,10 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
             //log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "No sitename provided" );
         	// FIXME: do nothing for now as updates on elements are running afoul here
         } else {
-            siteNode = SitePermission.getSiteNode(siteName);
+            siteNode = EmsScriptNode.getSiteNode(siteName);
         }
         return siteNode;
     }
-
-    /**
-     * Get site by name, workspace, and time.  This also checks that the returned node is
-     * in the specified workspace, not just whether its in the workspace or any of its parents.
-     *
-     * @param siteName
-     *            short name of site
-     * @param workspace
-     *            the workspace of the version of the site to return
-     * @param commitId
-     *            the point in time for the version of the site to return
-     * @return
-     */
-    protected EmsScriptNode getSiteNodeForWorkspace(String siteName, String refId,
-                                                    String commitId) {
-        return getSiteNode( siteName, refId, commitId, true );
-    }
-
-    protected EmsScriptNode getSiteNodeForWorkspace(String siteName, String refId,
-                                                    String commitId, boolean errorOnNull) {
-
-        return getSiteNodeImpl(siteName, refId, commitId, true, errorOnNull);
-    }
-
-    protected EmsScriptNode getSiteNodeFromRequest(WebScriptRequest req, boolean errorOnNull) {
-        String siteName = null;
-        // get timestamp if specified
-        String commitId = req.getParameter("commitId");
-
-        String refId = getRefId( req );
-
-        String[] siteKeys = {"id", "siteId", "siteName"};
-
-        for (String siteKey: siteKeys) {
-            siteName = req.getServiceMatch().getTemplateVars().get( siteKey );
-            if (siteName != null) break;
-        }
-
-        return getSiteNode( siteName, refId, commitId, errorOnNull );
-    }
-
-    /**
-     * Find node of specified name (returns first found) - so assume uniquely named ids - this checks sysml:id rather than cm:name
-     * This does caching of found elements so they don't need to be looked up with a different API each time.
-     * This also checks that the returned node is in the specified workspace, not just whether its in the workspace
-     * or any of its parents.
-     *
-     * @param id    Node id to search for
-     * @param workspace
-     * @param dateTime
-     * @return        ScriptNode with name if found, null otherwise
-     */
-    protected EmsScriptNode findScriptNodeByIdForWorkspace(String id,
-                                                               WorkspaceNode workspace,
-                                                               Date dateTime, boolean findDeleted) {
-        return NodeUtil.findScriptNodeByIdForWorkspace( id, workspace, dateTime, findDeleted,
-                                                        services, response );
-    }
-
-    /**
-     * Find node of specified name (returns first found) - so assume uniquely named ids - this checks sysml:id rather than cm:name
-     * This does caching of found elements so they don't need to be looked up with a different API each time.
-     *
-     * TODO extend so search context can be specified
-     * @param id    Node id to search for
-     * @param workspace
-     * @param dateTime
-     * @return        ScriptNode with name if found, null otherwise
-     */
-    protected EmsScriptNode findScriptNodeById(String id,
-                                               WorkspaceNode workspace,
-                                               Date dateTime, boolean findDeleted) {
-        return findScriptNodeById( id, workspace, dateTime, findDeleted, null );
-    }
-
-    /**
-     * Find node of specified name (returns first found) - so assume uniquely named ids - this checks sysml:id rather than cm:name
-     * This does caching of found elements so they don't need to be looked up with a different API each time.
-     *
-     * TODO extend so search context can be specified
-     * @param id    Node id to search for
-     * @param workspace
-     * @param dateTime
-     * @return      ScriptNode with name if found, null otherwise
-     */
-    protected EmsScriptNode findScriptNodeById(String id,
-                                               WorkspaceNode workspace,
-                                               Date dateTime, boolean findDeleted,
-                                               String siteName) {
-        return NodeUtil.findScriptNodeById( id, workspace, dateTime, findDeleted,
-                                            services, response, siteName );
-    }
-
-    /**
-     * Find nodes of specified sysml:name
-     *
-     */
-    protected ArrayList<EmsScriptNode> findScriptNodesBySysmlName(String name,
-                                                       WorkspaceNode workspace,
-                                                       Date dateTime, boolean findDeleted) {
-        return NodeUtil.findScriptNodesBySysmlName( name, false, workspace, dateTime, services, findDeleted, false );
-    }
-
 
     // Updated log methods with log4j methods (still works with old log calls)
     // String concatenation replaced with C formatting; only for calls with parameters
@@ -474,123 +347,11 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     protected static final String REF_ID = "refId";
     protected static final String PROJECT_ID = "projectId";
     protected static final String ORG_ID = "orgId";
-    protected static final String ARTIFACT_ID = "artifactId";
-    protected static final String SITE_NAME = "siteName";
-    protected static final String SITE_NAME2 = "siteId";
-    protected static final String WORKSPACE1 = "workspace1";
-    protected static final String WORKSPACE2 = "workspace2";
-    protected static final String TIMESTAMP1 = "timestamp1";
-    protected static final String TIMESTAMP2 = "timestamp2";
 
     public static final String NO_WORKSPACE_ID = "master"; // default is master if unspecified
     public static final String NO_PROJECT_ID = "no_project";
     public static final String NO_SITE_ID = "no_site";
 
-    protected static final String COMMITID = "commitId";
-
-    public String getSiteName( WebScriptRequest req ) {
-        return getSiteName( req, false );
-    }
-
-    public String getSiteName( WebScriptRequest req, boolean createIfNonexistent ) {
-        String runAsUser = AuthenticationUtil.getRunAsUser();
-        boolean changeUser = !EmsScriptNode.ADMIN_USER_NAME.equals( runAsUser );
-        if ( changeUser ) {
-            AuthenticationUtil.setRunAsUser( EmsScriptNode.ADMIN_USER_NAME );
-        }
-
-        String siteName = req.getServiceMatch().getTemplateVars().get(SITE_NAME);
-        if ( siteName == null ) {
-            siteName = req.getServiceMatch().getTemplateVars().get(SITE_NAME2);
-        }
-        if ( siteName == null || siteName.length() <= 0 ) {
-            siteName = NO_SITE_ID;
-        }
-
-        if ( changeUser ) {
-            AuthenticationUtil.setRunAsUser( runAsUser );
-        }
-
-        if ( createIfNonexistent ) {
-            WorkspaceNode workspace = getWorkspace( req );
-            createSite( siteName, workspace.getSysmlId() );
-        }
-        return siteName;
-    }
-
-    public static EmsScriptNode getSitesFolder( WorkspaceNode workspace ) {
-        EmsScriptNode sitesFolder = null;
-        // check and see if the Sites folder already exists
-        NodeRef sitesNodeRef = NodeUtil.findNodeRefByType( "Sites", SearchType.CM_NAME, false,
-                                                           workspace, null, true, NodeUtil.getServices(), false );
-        if ( sitesNodeRef != null ) {
-            sitesFolder = new EmsScriptNode( sitesNodeRef, NodeUtil.getServices() );
-        }
-
-        // This case should never occur b/c the master workspace will always
-        // have a Sites folder:
-        else {
-            Debug.error( "Can't find Sites folder in the workspace " + workspace );
-        }
-        return sitesFolder;
-//        EmsScriptNode sf = NodeUtil.getCompanyHome( getServices() ).childByNamePath( "Sites" );
-//        return sf;
-    }
-
-    public static EmsScriptNode getSitesFolder( String refId ) {
-        EmsScriptNode sitesFolder = null;
-        WorkspaceNode workspace = WorkspaceNode.getWorkspaceFromId(refId, NodeUtil.getServices(), null, null,
-                        NodeUtil.getUserName());
-        NodeRef sitesNodeRef = NodeUtil.findNodeRefByType("Sites", SearchType.CM_NAME, false,
-                        workspace, null, true, NodeUtil.getServices(), false );
-        if ( sitesNodeRef != null ) {
-            sitesFolder = new EmsScriptNode( sitesNodeRef, NodeUtil.getServices() );
-        } else {
-            Debug.error( "Can't find Sites folder in the workspace " + workspace );
-        }
-        return sitesFolder;
-    }
-
-    public EmsScriptNode createSite( String siteName, String refId ) {
-
-        EmsScriptNode siteNode = getSiteNode( siteName, refId, null, false );
-        if (refId != null) return siteNode; // sites can only be made in master
-        boolean invalidSiteNode = siteNode == null || !siteNode.exists();
-
-        // Create a alfresco Site if creating the site on the master and if the site does not exists:
-        if ( invalidSiteNode ) {
-            NodeUtil.transactionCheck( logger, null );
-            SiteInfo foo = services.getSiteService().createSite( siteName, siteName, siteName, siteName, SiteVisibility.PUBLIC );
-            siteNode = new EmsScriptNode( foo.getNodeRef(), services );
-            siteNode.createOrUpdateAspect( "cm:taggable" );
-            siteNode.createOrUpdateAspect(Acm.ACM_SITE);
-            // this should always be in master so no need to check workspace
-//            if (workspace == null) { // && !siteNode.getName().equals(NO_SITE_ID)) {
-                // default creation adds GROUP_EVERYONE as SiteConsumer, so remove
-                siteNode.removePermission( "SiteConsumer", "GROUP_EVERYONE" );
-                if ( siteNode.getName().equals(NO_SITE_ID)) {
-                    siteNode.setPermission( "SiteCollaborator", "GROUP_EVERYONE" );
-                }
-//            }
-        }
-
-        // If this site is supposed to go into a non-master workspace, then create the site folders
-        // there if needed:
-        if ((invalidSiteNode || (!invalidSiteNode && !refId.equals(siteNode.getWorkspace().getSysmlId())))) {
-
-            EmsScriptNode sitesFolder = getSitesFolder(refId);
-
-            // Now, create the site folder:
-            if (sitesFolder == null ) {
-                Debug.error("Could not create site " + siteName + "!");
-            } else {
-                siteNode = sitesFolder.createFolder( siteName, null, !invalidSiteNode ? siteNode.getNodeRef() : null );
-                if ( siteNode != null ) siteNode.getOrSetCachedVersion();
-            }
-        }
-
-        return siteNode;
-    }
 
     public ServiceRegistry getServices() {
         if ( services == null ) {
@@ -631,114 +392,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
             return false;
         }
         return true;
-    }
-
-    protected Map< String, EmsScriptNode >
-            searchForElements( String type, String pattern,
-                                       boolean ignoreWorkspace,
-                                       WorkspaceNode workspace, Date dateTime ) {
-
-        // always use DB for search on latest
-        //if (NodeUtil.doGraphDb) {
-            if (workspace == null && dateTime == null) {
-                return searchForElementsPostgres( type, pattern, ignoreWorkspace, workspace, dateTime );
-            } else {
-                return searchForElementsOriginal( type, pattern, ignoreWorkspace, workspace, dateTime );
-            }
-//        } else {
-//            return searchForElementsOriginal( type, pattern, ignoreWorkspace, workspace, dateTime );
-//        }
-    }
-
-    /**
-     * Perform Lucene search for the specified pattern and ACM type
-     * TODO: Scope Lucene search by adding either parent or path context
-     * @param type        escaped ACM type for lucene search: e.g. "@sysml\\:documentation:\""
-     * @param pattern   Pattern to look for
-     */
-    protected Map<String, EmsScriptNode> searchForElementsOriginal(String type,
-                                                           String pattern,
-                                                           boolean ignoreWorkspace,
-                                                           WorkspaceNode workspace,
-                                                           Date dateTime) {
-        return this.searchForElements( type, pattern, ignoreWorkspace,
-                                       workspace, dateTime, null );
-    }
-
-    /**
-     * Perform Lucene search for the specified pattern and ACM type
-     * As opposed to searchForElementsOriginal, this returns a Map of noderef ids to
-     * script nodes - since postgres db needs this to look up properly
-     *
-     * @param type
-     * @param pattern
-     * @param ignoreWorkspace
-     * @param workspace
-     * @param dateTime
-     * @return
-     */
-    protected Map<String, EmsScriptNode> searchForElementsPostgres(String type,
-                                                                  String pattern,
-                                                                  boolean ignoreWorkspace,
-                                                                  WorkspaceNode workspace,
-                                                                  Date dateTime) {
-        Map<String, EmsScriptNode> resultsMap = new HashMap<>();
-        ResultSet results = null;
-        String queryPattern = type + pattern + "\"";
-        results = NodeUtil.luceneSearch( queryPattern, services );
-        if (results != null) {
-            ArrayList< NodeRef > resultList =
-                    NodeUtil.resultSetToNodeRefList( results );
-            results.close();
-            for (NodeRef nr: resultList) {
-                EmsScriptNode node = new EmsScriptNode(nr, services, response);
-                resultsMap.put( node.getNodeRef().toString(), node );
-            }
-        }
-        return resultsMap;
-    }
-
-    /**
-     * Perform Lucene search for the specified pattern and ACM type for the specified
-     * siteName.
-     *
-     * TODO: Scope Lucene search by adding either parent or path context
-     * @param type      escaped ACM type for lucene search: e.g. "@sysml\\:documentation:\""
-     * @param pattern   Pattern to look for
-     */
-    protected Map<String, EmsScriptNode> searchForElements(String type,
-                                                                  String pattern,
-                                                                  boolean ignoreWorkspace,
-                                                                  WorkspaceNode workspace,
-                                                                  Date dateTime,
-                                                                  String siteName) {
-
-        return NodeUtil.searchForElements( type, pattern, ignoreWorkspace,
-                                                          workspace,
-                                                          dateTime, services,
-                                                          response,
-                                                          responseStatus,
-                                                          siteName);
-
-    }
-
-    /**
-     * Helper utility to check the value of a request parameter
-     *
-     * @param req
-     *            WebScriptRequest with parameter to be checked
-     * @param name
-     *            String of the request parameter name to check
-     * @param value
-     *            String of the value the parameter is being checked for
-     * @return True if parameter is equal to value, False otherwise
-     */
-    public static boolean checkArgEquals(WebScriptRequest req, String name,
-            String value) {
-        if (req.getParameter(name) == null) {
-            return false;
-        }
-        return req.getParameter(name).equals(value);
     }
 
     /**
@@ -863,27 +516,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         return refId;
     }
 
-    public static String getCommitId( WebScriptRequest req ) {
-        return req.getServiceMatch().getTemplateVars().get(COMMITID);
-    }
-
-    private static String getWorkspaceNum( WebScriptRequest req, boolean isWs1 ) {
-        String key = isWs1 ? WORKSPACE1 : WORKSPACE2;
-        String refId = req.getServiceMatch().getTemplateVars().get(key);
-        if ( refId == null || refId.length() <= 0 ) {
-            refId = NO_WORKSPACE_ID;
-        }
-        return refId;
-    }
-
-    public static String getWorkspace1( WebScriptRequest req) {
-        return getWorkspaceNum(req, true);
-    }
-
-    public static String getWorkspace2( WebScriptRequest req) {
-        return getWorkspaceNum(req, false);
-    }
-
     public WorkspaceNode getWorkspace( WebScriptRequest req ) {
         return getWorkspace( req, //false,
                         null );
@@ -902,10 +534,15 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
                     Status responseStatus,
                     //boolean createIfNotFound,
                     String userName ) {
-        String nameOrId = getRefId( req );
-        return WorkspaceNode.getWorkspaceFromId( nameOrId, services, response, responseStatus,
-                        //createIfNotFound,
-                        userName );
+        String refId = getRefId( req );
+        String projectId = getProjectId(req);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
+        EmsScriptNode node = EmsScriptNode.getSiteNode(orgId);
+        node = node.childByNamePath("/" + projectId +  "/refs/" + refId);
+        if (node != null)
+            return new WorkspaceNode(node.getNodeRef(), services);
+        return null;
     }
 
     protected static boolean urlEndsWith( String url, String suffix ) {
@@ -925,14 +562,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         return gotSuffix;
     }
 
-    protected static boolean isContainedViewRequest( WebScriptRequest req ) {
-        if ( req == null ) return false;
-        String url = req.getURL();
-        boolean gotSuffix = urlEndsWith( url, "views" );
-        return gotSuffix;
-    }
-
-
     /**
      * This needs to be called with the incoming JSON request to populate the local source
      * variable that is used in the sendDeltas call.
@@ -941,49 +570,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      */
     protected void populateSourceApplicationFromJson(JSONObject postJson) throws JSONException {
         requestSourceApplication = postJson.optString( "source" );
-    }
-
-    /**
-     * Send progress messages to the log, JMS, and email.
-     *
-     * @param msg  The message
-     * @param projectSysmlId  The project sysml id
-     * @param refName  The workspace name
-     * @param sendEmail Set to true to send a email also
-     */
-    public void sendProgress( String msg, String projectSysmlId, String refName,
-                              boolean sendEmail) {
-
-        String projectId = Utils.isNullOrEmpty(projectSysmlId) ? "unknown_project" : projectSysmlId;
-        String refId = Utils.isNullOrEmpty(refName) ? "unknown_workspace" : refName;
-        String subject = "Progress for project: "+projectId+" ref: "+ refId;
-
-        // Log the progress:
-        log(Level.INFO,"%s msg: %s\n",subject,msg);
-        //logger.info(subject+" msg: "+msg+"\n");
-
-        // Send the progress over JMS:
-        CommitUtil.sendProgress(msg, refId, projectId);
-
-        // Email the progress (this takes a long time, so only do it for critical events):
-        if (sendEmail) {
-            String hostname = NodeUtil.getHostname();
-            if (!Utils.isNullOrEmpty( hostname )) {
-                String sender = hostname + "@jpl.nasa.gov";
-                String username = NodeUtil.getUserName();
-                if (!Utils.isNullOrEmpty( username )) {
-                    EmsScriptNode user = new EmsScriptNode(services.getPersonService().getPerson(username),
-                                                           services);
-                    if (user != null) {
-                        String recipient = (String) user.getProperty("cm:email");
-                        if (!Utils.isNullOrEmpty( recipient )) {
-                            ActionUtil.sendEmailTo( sender, recipient, msg, subject, services );
-                        }
-                    }
-                }
-            }
-        }
-
     }
 
     /**
@@ -1122,24 +708,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         version.put("mmsVersion", NodeUtil.getMMSversion());
         return version;
     }
-    /**
-     * getMMSversion <br/>
-     * getMMSversion wraps
-     *
-     * @param req
-     * @return
-     */
-    public static JSONObject getMMSversion(WebScriptRequest req) {
-        // Calls getBooleanArg to check if they have request for mms version
-        // TODO: Possibly remove this and implement as an aspect?
-        JSONObject jsonVersion = null;
-        boolean paramVal = getBooleanArg(req, "mmsVersion", false);
-        if (paramVal) {
-            jsonVersion = getMMSversion();
-        }
-
-        return jsonVersion;
-    }
 
     /**
      * Helper utility to get the String value of a request parameter, calls on
@@ -1184,10 +752,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
                     "Could not retrieve JSON");
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-    }
-
-    public JSONObject getRequestJSON() {
-        return privateRequestJSON;
     }
 
     public JSONObject getRequestJSON(WebScriptRequest req) {

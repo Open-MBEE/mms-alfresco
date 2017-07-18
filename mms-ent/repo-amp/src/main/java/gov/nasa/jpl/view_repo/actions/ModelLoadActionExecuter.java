@@ -87,10 +87,10 @@ public class ModelLoadActionExecuter extends ActionExecuterAbstractBase {
 
     @Override
     protected void executeImpl(Action action, NodeRef nodeRef) {
+        /*
         final Timer timer = new Timer();
         final String projectId = (String) action.getParameterValue(PARAM_PROJECT_ID);
         final String projectName = (String) action.getParameterValue(PARAM_PROJECT_NAME);
-        EmsScriptNode projectNode = (EmsScriptNode) action.getParameterValue(PARAM_PROJECT_NODE);
         final String workspaceId = (String) action.getParameterValue(PARAM_WORKSPACE_ID);
         if (logger.isDebugEnabled())
             logger.debug("started execution of " + projectName + " [id: " + projectId + "]");
@@ -172,48 +172,11 @@ public class ModelLoadActionExecuter extends ActionExecuterAbstractBase {
                     logger.debug("ModelLoadActionExecuter: " + timer);
             }
         };
+        */
 
     }
 
-//    public static Set<EmsScriptNode> loadJson(JSONObject content, ModelContext modelContext,
-//            ServiceContext serviceContext) {
-//        if (modelContext == null)
-//            modelContext = new ModelContext();
-//        if (serviceContext == null)
-//            serviceContext = new ServiceContext();
-//        ModelPost modelService = new ModelPost(serviceContext.repository, serviceContext.services);
-//        modelService.setLogLevel(Level.DEBUG);
-//        // modelService.setRunWithoutTransactions(false);
-//        // TODO
-//        // modelService.setProjectNode(modelContext.projectNode);
-//        // boolean succeeded = false;
-//        Set<EmsScriptNode> elements = null;
-//        try {
-//            if (serviceContext.status == null)
-//                serviceContext.status = new Status();
-//            if (serviceContext.response == null)
-//                serviceContext.response = new StringBuffer();
-//            // FIXME: make sure this all matches with ModelService handleUpdate
-//
-//            // TODO
-//            // elements = modelService.createOrUpdateModel(content,
-//            // serviceContext.status, modelContext.workspace, null,
-//            // true);
-//
-//            // TODO
-//            // modelService.addRelationshipsToProperties(elements,
-//            // modelContext.workspace);
-//        } catch (Exception e) {
-//            serviceContext.status.setCode(HttpServletResponse.SC_BAD_REQUEST);
-//            serviceContext.response.append("ERROR: could not parse request\n");
-//            e.printStackTrace();
-//        }
-//        // if (status.getCode() == HttpServletResponse.SC_OK) {
-//        // succeeded = true;
-//        // }
-//        serviceContext.response.append(modelService.getResponse().toString());
-//        return elements;
-//    }
+
 
     protected void clearCache() {
         response = new StringBuffer();

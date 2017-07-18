@@ -74,9 +74,6 @@ public class ModelsGet extends ModelGet {
         timestamp = req.getParameter("timestamp");
         dateTime = TimeUtils.dateFromTimestamp(timestamp);
 
-        WorkspaceNode workspace = getWorkspace(req);
-        boolean wsFound = workspace != null && workspace.exists();
-        if (!wsFound) {
             String refId = getRefId(req);
             String projectId = getProjectId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
@@ -87,7 +84,6 @@ public class ModelsGet extends ModelGet {
                     refId + (dateTime == null ? "" : " at " + dateTime));
                 return false;
             }
-        }
 
         return true;
     }
@@ -120,7 +116,7 @@ public class ModelsGet extends ModelGet {
                 }
             }
 
-            JSONObject top = NodeUtil.newJsonObject();
+            JSONObject top = new JSONObject();
             if (elementsJson.length() > 0) {
                 top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
                 String[] accepts = req.getHeaderValues("Accept");

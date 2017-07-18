@@ -68,7 +68,7 @@ public class ProjectsGet extends AbstractJavaWebScript{
 
         Map<String, Object> model = new HashMap<>();
         JSONObject json = new JSONObject();
-
+/*
         try {
             if (validateRequest(req, status)) {
                 WorkspaceNode workspace = getWorkspace( req );
@@ -98,54 +98,10 @@ public class ProjectsGet extends AbstractJavaWebScript{
         status.setCode(responseStatus.getCode());
 
         printFooter(user, logger, timer);
-
+*/
         return model;
     }
 
-    /**
-     * Returns all projects found in the given workspace
-     *
-     * @param workspace
-     * @param status
-     * @return
-     * @throws JSONException
-     */
-    protected JSONObject handleRequest (WorkspaceNode workspace, Status status) throws JSONException {
-
-        JSONObject json = new JSONObject ();
-        JSONArray elements = new JSONArray();
-        json.put(Sjm.ELEMENTS, elements);
-
-        Map< String, EmsScriptNode > nodeList = searchForElements(NodeUtil.SearchType.TYPE.prefix,
-                                                                  Acm.ACM_PROJECT, false,
-                                                                  workspace, null,
-                                                                  null);
-
-        if (nodeList != null) {
-
-          for (EmsScriptNode node : nodeList.values()) {
-
-              if (checkPermissions(node, PermissionService.READ)) {
-
-                  JSONObject project = new JSONObject();
-                  JSONObject specialization = new JSONObject();
-
-                  elements.put(project);
-                  project.put(Acm.JSON_ID, node.getSysmlId());
-                  project.put(Acm.JSON_NAME, node.getProperty(Acm.CM_TITLE));
-                  project.put(Acm.JSON_SPECIALIZATION, specialization);
-                  specialization.put(Acm.JSON_PROJECT_VERSION, node.getProperty(Acm.ACM_PROJECT_VERSION));
-                  specialization.put(Acm.JSON_TYPE, node.getProperty(Acm.ACM_TYPE));
-              }
-              else {
-                  log(Level.ERROR, HttpServletResponse.SC_UNAUTHORIZED,"No permissions to read node: %s",node);
-              }
-          }
-
-        }
-
-        return json;
-    }
 
     /**
      * Validate the request and check some permissions
