@@ -116,7 +116,7 @@ General Design
     * Edge types
     * Node types
     * Commits
-    * Configurations
+    * Refs
 * Functions defined that are recursive for getting parents, children etc.
 
 * All access to the graph is done via the PostgresHelper that contains functions to interface with the database
@@ -150,22 +150,22 @@ Some assertions about the graph:
 * All elastic references in the graph must exist in ES
 
 ### 5. Graph
-Structure of the graph for each “workspace”
+Structure of the graph for each "project"
 
                +---------+
             +--| Commits |
     +===+   |  +---------+          +-------------+    +----------+
-    | W |   |                   +---| Holding bin |----| Elements |
-    | O |   |  +-------+        |   +-------------+    +----------+
-    | R |   +--| Nodes |--------|
-    | K |   |  +-------+        |   +----------+
-    | S |   |                   +---| Elements |
-    | P | --|  +-------+            +----------+
-    | A |   +--| Edges |
-    | A |   |  +-------+
-    | C |   |
-    | E |   |  +----------------+
-    +===+   +--| Configurations |
+    | P |   |                   +---| Holding bin |----| Elements |
+    | R |   |  +-------+        |   +-------------+    +----------+
+    | O |   +--| Nodes |--------|
+    | J |   |  +-------+        |   +----------+
+    | E |   |                   +---| Elements |
+    | C | --|  +-------+            +----------+
+    | T |   +--| Edges |
+    |   |   |  +-------+
+    |   |   |
+    |   |   |  +----------------+
+    +===+   +--| Refs           |
                +----------------+
 
 ### 6. Example webscript in new world: modelpost
