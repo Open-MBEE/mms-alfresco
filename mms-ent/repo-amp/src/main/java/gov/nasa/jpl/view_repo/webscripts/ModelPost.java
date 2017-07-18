@@ -253,7 +253,7 @@ public class ModelPost extends AbstractJavaWebScript {
                         // Create return json:
                         resultJson = new JSONObject();
                         resultJson.put("filename", filename);
-                        // TODO: want full path here w/ path to site also, but Dorris doesnt use it,
+                        // TODO: want full path here w/ path to site also, but Doris does not use it,
                         //		 so leaving it as is.
                         resultJson.put("path", path);
                         resultJson.put("site", siteName);

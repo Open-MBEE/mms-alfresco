@@ -38,9 +38,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.view_repo.util.*;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
+import org.alfresco.repo.copy.CopyServiceImpl;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
@@ -59,22 +63,20 @@ import gov.nasa.jpl.mbee.util.Utils;
 
 /**
  * @author johnli
- *
  */
 
 public class WorkspacesPost extends AbstractJavaWebScript {
-	static Logger logger = Logger.getLogger(WorkspacesPost.class);
+    static Logger logger = Logger.getLogger(WorkspacesPost.class);
 
     public WorkspacesPost() {
         super();
     }
 
-    public WorkspacesPost(Repository repositoryHelper, ServiceRegistry registry){
+    public WorkspacesPost(Repository repositoryHelper, ServiceRegistry registry) {
         super(repositoryHelper, registry);
     }
 
-    @Override
-    protected boolean validateRequest(WebScriptRequest req, Status status) {
+    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
@@ -82,14 +84,12 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         return checkRequestContent(req) && SitePermission.hasPermissionToBranch(orgId, projectId, refId);
     }
 
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
+    @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         WorkspacesPost instance = new WorkspacesPost(repository, getServices());
-        return instance.executeImplImpl( req, status, cache );
+        return instance.executeImplImpl(req, status, cache);
     }
 
-    @Override
-    protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache){
+    @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         printHeader(user, logger, req);
         Timer timer = new Timer();
@@ -97,17 +97,20 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
         int statusCode = HttpServletResponse.SC_OK;
         JSONObject json = null;
-        try{
-            if(validateRequest(req, status)){
+        try {
+            if (validateRequest(req, status)) {
                 JSONObject reqJson = (JSONObject) req.parseContent();
                 String projectId = getProjectId(req);
                 String sourceWorkspaceParam = reqJson.getJSONArray("refs").getJSONObject(0).optString("parentRefId");
                 String newName = reqJson.getJSONArray("refs").getJSONObject(0).optString("name");
+                String type = reqJson.getJSONArray("refs").getJSONObject(0).optString("type");
                 String copyTime = req.getParameter("copyTime");
-                Date copyDateTime = TimeUtils.dateFromTimestamp( copyTime );
-                if (copyDateTime == null) copyDateTime = new Date();
-                String follow = req.getParameter( "follow" );
-                if (follow != null) copyDateTime = null;
+                Date copyDateTime = TimeUtils.dateFromTimestamp(copyTime);
+                if (copyDateTime == null)
+                    copyDateTime = new Date();
+                String follow = req.getParameter("follow");
+                if (follow != null)
+                    copyDateTime = null;
 
                 json = createWorkSpace(projectId, sourceWorkspaceParam, newName, copyDateTime, reqJson, user, status);
                 statusCode = status.getCode();
@@ -117,8 +120,9 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "JSON malformed\n");
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        } catch (Exception e){
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal stack trace:\n %s \n", e.getLocalizedMessage());
+        } catch (Exception e) {
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal stack trace:\n %s \n",
+                e.getLocalizedMessage());
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         if (json == null) {
@@ -145,12 +149,13 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         return model;
     }
 
-    public JSONObject createWorkSpace(String projectId, String sourceWorkId, String newWorkName, Date cpyTime, JSONObject jsonObject,
-                    String user, Status status) throws JSONException {
+    public JSONObject createWorkSpace(String projectId, String sourceWorkId, String newWorkName, Date cpyTime,
+        JSONObject jsonObject, String user, Status status) throws JSONException {
         status.setCode(HttpServletResponse.SC_OK);
         if (Debug.isOn()) {
-            Debug.outln("createWorkSpace(sourceWorkId=" + sourceWorkId + ", newWorkName=" + newWorkName + ", cpyTime="
-                            + cpyTime + ", jsonObject=" + jsonObject + ", user=" + user + ", status=" + status + ")");
+            Debug.outln(
+                "createWorkSpace(sourceWorkId=" + sourceWorkId + ", newWorkName=" + newWorkName + ", cpyTime=" + cpyTime
+                    + ", jsonObject=" + jsonObject + ", user=" + user + ", status=" + status + ")");
         }
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, sourceWorkId == null ? "master" : sourceWorkId);
@@ -195,7 +200,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         }
 
         if ((newWorkspaceId != null && newWorkspaceId.equals("master")) || (workspaceName != null && workspaceName
-                        .equals("master"))) {
+            .equals("master"))) {
             log(Level.WARN, "Cannot change attributes of the master workspace.", HttpServletResponse.SC_BAD_REQUEST);
             status.setCode(HttpServletResponse.SC_BAD_REQUEST);
             return null;
@@ -229,15 +234,28 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 return null;
             } else {
                 EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs");
-                EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId);
-
-                if (dstWs != null) {
+                // Copy the images from the parent folder
+                FileFolderService fileService = services.getFileFolderService();
+                try {
+                    fileService.copy(srcWs.getNodeRef(), refContainerNode.getNodeRef(), newWorkspaceId);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                if (existingRef != null) {
                     // keep history of the branch
                     String srcId = srcWs.getName().equals("master") ? "master" : srcWs.getId();
-                    dstWs.setProperty("cm:title", dstWs.getId() + "_" + srcId);
-                    dstWs.setProperty("cm:name", dstWs.getName());
-                    CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag, jsonObject != null ? jsonObject.optString("source") : null);
-                    finalWorkspace = dstWs;
+                    existingRef.setProperty("cm:title", existingRef.getId() + "_" + srcId);
+                    existingRef.setProperty("cm:name", existingRef.getName());
+
+                    existingRef.addAspect("ems:HasWorkspace");
+                    existingRef.setProperty("ems:workspace", existingRef.getNodeRef());
+
+                    existingRef.addAspect("ems:Workspace");
+                    existingRef.setProperty("ems:workspace_name", newWorkspaceId);
+
+                    CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
+                        jsonObject != null ? jsonObject.optString("source") : null);
+                    finalWorkspace = existingRef;
                 }
             }
         } else {
@@ -267,6 +285,5 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
         return wsJson;
     }
-
 }
 

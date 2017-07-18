@@ -151,12 +151,12 @@ GetElementBeforeCommit
     [Documentation]     "Gets an element that exists before the commit. Grabs a commit that does not contain the element and requests for the element at that time. It should return the element at a previous commit than the one requested."
     [Tags]              B15
     ${element} =        Get    url=${ROOT}/projects/PA/refs/master/elements/300         headers=&{REQ_HEADER}
-    ${commitId} =       Get Commit In Between Latest and Element        ${300}      ${element.json()["elements"][0]["_commitId"]}
+    ${commitId} =       Get Last Commit
     ${result} =         Get     url=${ROOT}/projects/PA/refs/master/elements/300?commitId=${commitId}       headers=&{REQ_HEADER}
+	# Grab an element with an older commitId
     Should Be Equal     ${result.status_code}       ${200}
     # Tests to see that the element is infact the element at a different point, also verifies that the element is not the same element at the commit
-    Should Not Be Equal     ${result.json()["elements"][0]["_commitId"]}        ${element.json()["elements"][0]["_commitId"]}
-    Should Not Be Equal     ${result.json()["elements"][0]["_commitId"]}        ${commitId}
+    Should Be Equal     ${result.json()["elements"][0]["_commitId"]}        ${element.json()["elements"][0]["_commitId"]}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 id
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -167,6 +167,7 @@ GetElementAfterCommit
     [Tags]              B16
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/CreateElementAfterCommit.json
 	${result} =			Post		    url=${ROOT}/projects/PA/refs/master/elements     data=${post_json}		headers=&{REQ_HEADER}
+	Sleep				${2}
 	# Grab an element with an older commitId
     ${element} =        Get    url=${ROOT}/projects/PA/refs/master/elements/300         headers=&{REQ_HEADER}
     ${result} =         Get     url=${ROOT}/projects/PA/refs/master/elements/ElementAfterCommit?commitId=${element.json()["elements"][0]["_commitId"]}       headers=&{REQ_HEADER}
