@@ -368,24 +368,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         return true;
     }
 
-    /**
-     * Returns true if the user has permission to do workspace operations, which is determined
-     * by the LDAP group or if the user is admin.
-     *
-     */
-    protected boolean userHasWorkspaceLdapPermissions() {
-        // TODO: Fix this to not check the workspace node, since there isn't any.
-        /*
-        if (!NodeUtil.userHasWorkspaceLdapPermissions()) {
-            log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "User %s does not have LDAP permissions to perform workspace operations.  LDAP group with permissions: %s",
-                    NodeUtil.getUserName(), NodeUtil.getWorkspaceLdapGroup());
-            return false;
-        }
-        */
-        return true;
-    }
-
-
     protected boolean checkRequestVariable(Object value, String type) {
         if (value == null) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "%s not found.\n",type);
@@ -455,30 +437,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         } catch (Exception e) {
             // do nothing, just means no content when content-type was specified
         }
-    }
-
-    protected static String getIdFromRequest( WebScriptRequest req ) {
-        String[] ids = new String[] { "id", "modelid", "modelId", "productid", "productId",
-                                      "viewid", "viewId", "refid", "refId",
-                                      "elementid", "elementId" };
-        String id = null;
-        for ( String idv : ids ) {
-            id = req.getServiceMatch().getTemplateVars().get(idv);
-            if ( id != null ) break;
-        }
-        logger.debug(String.format("Got id = %s", id));
-        if ( id == null ) return null;
-        boolean gotElementSuffix  = ( id.toLowerCase().trim().endsWith("/elements") );
-        if ( gotElementSuffix ) {
-            id = id.substring( 0, id.lastIndexOf( "/elements" ) );
-        } else {
-            boolean gotViewSuffix  = ( id.toLowerCase().trim().endsWith("/views") );
-            if ( gotViewSuffix ) {
-                id = id.substring( 0, id.lastIndexOf( "/views" ) );
-            }
-        }
-        if (logger.isDebugEnabled()) logger.debug("id = " + id);
-        return id;
     }
 
     public static String getOrgId( WebScriptRequest req ) {

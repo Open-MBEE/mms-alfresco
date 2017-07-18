@@ -78,5 +78,15 @@ public class WorkspaceNode extends EmsScriptNode {
         return ws.getName();
     }
 
+    public void delete() {
+        if (!checkPermissions(PermissionService.WRITE, getResponse(), getStatus())) {
+            log("no write permissions to delete workpsace " + getName());
+            return;
+        }
+
+        // Add the delete aspect to mark as "deleted"
+        makeSureNodeRefIsNotFrozen();
+        addAspect("ems:Deleted");
+    }
 }
 

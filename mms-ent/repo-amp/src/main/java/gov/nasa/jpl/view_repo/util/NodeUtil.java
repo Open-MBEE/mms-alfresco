@@ -224,7 +224,6 @@ public class NodeUtil {
 
     /**
      * A cache of alfresco nodes stored as a map from NodeRef and time to node as determined by
-     * {@link #getNodeRefAtTime(NodeRef, Date)}.
      */
     public static Map<NodeRef, Map<Long, Object>> nodeAtTimeCache =
                     Collections.synchronizedMap(new HashMap<NodeRef, Map<Long, Object>>());
@@ -283,8 +282,6 @@ public class NodeUtil {
     private static Timer timerByType = null;
     private static Timer timerLucene = null;
 
-    public static final Comparator<? super NodeRef> nodeRefComparator = GenericComparator.instance();
-
     public static ServiceRegistry services = null;
     public static Repository repository = null;
 
@@ -298,63 +295,6 @@ public class NodeUtil {
             return "NULL_OBJECT";
         }
     };
-
-    public static NodeRef nodeAtTimeCachePut(NodeRef nodeRef, Date date, NodeRef refAtTime) {
-        if (!doNodeAtTimeCaching || nodeRef == null) {
-            return null;
-        }
-        // Get an integer for the date, the number if milliseconds since
-        // 1/1/1970. Zero means now.
-        Long millis = date == null ? 0 : date.getTime();
-        // Get the current time to see if the date is in the future.
-        Long now = null;
-        if (date != null) {
-            now = (new Date()).getTime();
-        }
-        // If the date is in the future, set to zero, which means now.
-        // TODO -- Do other caches need to check for this?
-        if (now != null && millis > now)
-            millis = 0l;
-        if (logger.isDebugEnabled())
-            logger.debug("nodeAtTimeCachePut(" + nodeRef + ", " + millis + ", " + refAtTime + ")");
-        // logger.warn( "nodeAtTimeCachePut("
-        // + nodeRef + ", " + millis
-        // + ", " + refAtTime + ")" );
-        Object value = refAtTime;
-        if (refAtTime == null)
-            value = NULL_OBJECT;
-        Object oldValue = Utils.put(nodeAtTimeCache, nodeRef, millis, value);
-        if (oldValue == null)
-            return null;
-        if (oldValue == NULL_OBJECT)
-            return null;
-        if (oldValue instanceof NodeRef) {
-            return (NodeRef) oldValue;
-        }
-        logger.error("Bad value stored in nodeAtTimeCache(" + nodeRef + ", " + millis + "): " + oldValue);
-        return null;
-    }
-
-    public static Object nodeAtTimeCacheGet(NodeRef nodeRef, Date date) {
-        if (!doNodeAtTimeCaching || nodeRef == null) {
-            return null;
-        }
-        Long millis = date == null ? 0 : date.getTime();
-        if (logger.isDebugEnabled())
-            logger.debug("nodeAtTimeCacheGet(" + nodeRef + ", " + millis + ")");
-        Object o = Utils.get(nodeAtTimeCache, nodeRef, millis);
-        // logger.warn( "nodeAtTimeCacheGet("
-        // + nodeRef + ", " + millis
-        // + ") = " + o );
-        return o;
-        // if ( o == NULL_OBJECT ) return null;
-        // try {
-        // return (NodeRef)o;
-        // } catch (ClassCastException e) {
-        // e.printStackTrace();
-        // }
-        // return null;
-    }
 
     /**
      * clear or create the cache for correcting bad node refs (that refer to wrong versions)
@@ -805,37 +745,6 @@ public class NodeUtil {
         return companyHome;
     }
 
-    public static class VersionLowerBoundComparator implements Comparator<Object> {
-
-        @Override
-        public int compare(Object o1, Object o2) {
-            Date d1 = null;
-            Date d2 = null;
-            if (o1 instanceof Version) {
-                d1 = ((Version) o1).getFrozenModifiedDate();
-            } else if (o1 instanceof Date) {
-                d1 = (Date) o1;
-            } else if (o1 instanceof Long) {
-                d1 = new Date((Long) o1);
-            } else if (o1 instanceof String) {
-                d1 = TimeUtils.dateFromTimestamp((String) o1);
-            }
-            if (o2 instanceof Version) {
-                d2 = ((Version) o2).getFrozenModifiedDate();
-            } else if (o2 instanceof Date) {
-                d2 = (Date) o2;
-            } else if (o2 instanceof Long) {
-                d2 = new Date((Long) o2);
-            } else if (o1 instanceof String) {
-                d2 = TimeUtils.dateFromTimestamp((String) o2);
-            }
-            // more recent first
-            return -GenericComparator.instance().compare(d1, d2);
-        }
-    }
-
-    public static VersionLowerBoundComparator versionLowerBoundComparator = new VersionLowerBoundComparator();
-
     public static int compareVersions(NodeRef ref1, NodeRef ref2) {
         Date d1 = getLastModified(ref1);
         Date d2 = getLastModified(ref2);
@@ -1009,13 +918,6 @@ public class NodeUtil {
         return null;
     }
 
-    public static boolean isDeleted(NodeRef ref) {
-        if (ref == null)
-            return false;
-        EmsScriptNode node = new EmsScriptNode(ref, getServices());
-        return node.isDeleted();
-    }
-
     public static boolean exists(EmsScriptNode node) {
         return exists(node, false);
     }
@@ -1037,13 +939,6 @@ public class NodeUtil {
         return node.exists(includeDeleted);
     }
 
-    public static boolean scriptNodeExists(NodeRef ref) {
-        if (ref == null)
-            return false;
-        EmsScriptNode node = new EmsScriptNode(ref, getServices());
-        return node.scriptNodeExists();
-    }
-
     public static String getUserName() {
         String userName = AuthenticationUtil.getRunAsUser();
         return userName;
@@ -1052,18 +947,16 @@ public class NodeUtil {
     public static EmsScriptNode getUserHomeFolder(String userName, boolean createIfNotFound) {
         NodeRef homeFolderNode = null;
         EmsScriptNode homeFolderScriptNode = null;
-        if (userName.equals("admin")) {
-            homeFolderNode = null;//TODO
-        } else {
-            PersonService personService = getServices().getPersonService();
-            NodeService nodeService = getServices().getNodeService();
-            NodeRef personNode = personService.getPerson(userName);
-            homeFolderNode = (NodeRef) getNodeProperty(personNode, ContentModel.PROP_HOMEFOLDER, getServices(), true,
+        PersonService personService = getServices().getPersonService();
+        NodeService nodeService = getServices().getNodeService();
+        NodeRef personNode = personService.getPerson(userName);
+        homeFolderNode = (NodeRef) getNodeProperty(personNode, ContentModel.PROP_HOMEFOLDER, getServices(), true,
                             true);
-        }
         if (homeFolderNode == null || !exists(homeFolderNode)) {
-            NodeRef ref = null;//TODO findNodeRefById("User Homes", true, null, null, getServices(), false);
-            EmsScriptNode homes = new EmsScriptNode(ref, getServices());
+            EmsScriptNode homes = getCompanyHome(getServices());
+            if (homes != null) {
+                homes = homes.childByNamePath("/User Homes");
+            }
             if (createIfNotFound && homes != null && homes.exists()) {
                 homeFolderScriptNode = homes.createFolder(userName);
                 if (homeFolderScriptNode != null)
@@ -1110,18 +1003,6 @@ public class NodeUtil {
             return null;
         EmsScriptNode node = new EmsScriptNode(ref, getServices());
         return node.getName();
-    }
-
-
-    /**
-     * Returns true if the passed refs are equal, checks for master (null) refs also
-     *
-     * @param ws1
-     * @param ws2
-     * @return
-     */
-    public static boolean workspacesEqual(WorkspaceNode ws1, WorkspaceNode ws2) {
-        return ((ws1 == null && ws2 == null) || (ws1 != null && ws1.equals(ws2)));
     }
 
     /**
@@ -1451,68 +1332,6 @@ public class NodeUtil {
             ActionUtil.sendEmailTo(sender, recipient, msg, subject, services);
             heisenbugSeen = true;
         }
-    }
-
-    /**
-     * Retrieves the LDAP group that is given permision to do workspace operations Looks in
-     * companyhome/MMS/branch_perm. Returns default LDAP group if no node is found.
-     *
-     */
-    public static String getWorkspaceLdapGroup() {
-
-        String ldapGroup = null;
-        EmsScriptNode context = NodeUtil.getCompanyHome(services);
-
-        if (context != null) {
-            EmsScriptNode mmsFolder = context.childByNamePath("MMS");
-
-            if (mmsFolder != null) {
-                EmsScriptNode branchPermNode = mmsFolder.childByNamePath("branch_perm");
-
-                if (branchPermNode != null) {
-                    ldapGroup = (String) branchPermNode.getProperty("ems:ldapGroup");
-                }
-            }
-        }
-
-        return Utils.isNullOrEmpty(ldapGroup) ? "mbee-dev-admin" : ldapGroup;
-    }
-
-    /**
-     * Returns true if the user is part of the LDAP group that has permissions to perform workspace
-     * operations.
-     *
-     * @return
-     */
-    public static boolean userHasWorkspaceLdapPermissions() {
-
-        if (skipWorkspacePermissionCheck) {
-            return true;
-        }
-
-        String ldapGroup = getWorkspaceLdapGroup();
-        String user = NodeUtil.getUserName();
-
-        if (!Utils.isNullOrEmpty(user)) {
-
-            // Get all the groups (authorities) for the user:
-            List<String> authorityNames = NodeUtil.getUserGroups(user);
-
-            for (String group : authorityNames) {
-                // Check against default alfresco admin group:
-                if (group.equals("GROUP_ALFRESCO_ADMINISTRATORS")) {
-                    return true;
-                }
-
-                // Check against LDAP group:
-                if (group.equals("GROUP_" + ldapGroup)) {
-                    return true;
-                }
-            }
-
-        }
-
-        return false;
     }
 
     public static String getHostname() {

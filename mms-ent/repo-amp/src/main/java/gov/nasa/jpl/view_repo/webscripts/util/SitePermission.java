@@ -51,9 +51,9 @@ public class SitePermission {
         } else {
             hasPerm = targetNode.checkPermissions("Write");
         }
-        if (!hasPerm) {
-            hasPerm = NodeUtil.userHasWorkspaceLdapPermissions(); //???
-        }
+        //if (!hasPerm) {
+        //    hasPerm = NodeUtil.userHasWorkspaceLdapPermissions(); //???
+        //}
         return hasPerm;
     }
 

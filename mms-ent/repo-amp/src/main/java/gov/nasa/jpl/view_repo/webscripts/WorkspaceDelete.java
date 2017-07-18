@@ -36,7 +36,7 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         String wsId = req.getServiceMatch().getTemplateVars().get(REF_ID);
-        return checkRequestVariable(wsId, REF_ID) && userHasWorkspaceLdapPermissions();
+        return checkRequestVariable(wsId, REF_ID);
     }
 
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
@@ -66,7 +66,7 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
                     WorkspaceNode target = getWorkspace(req);
                     if (target != null) {
                         result = printObject(target);
-                        //target.delete(true); //this didn't actually delete the alfresco folder just added deleted aspect
+                        target.delete(); //this didn't actually delete the alfresco folder just added deleted aspect
                         status.setCode(HttpServletResponse.SC_OK);
                     } else {
                         log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Could not find workspace %s", wsId);
