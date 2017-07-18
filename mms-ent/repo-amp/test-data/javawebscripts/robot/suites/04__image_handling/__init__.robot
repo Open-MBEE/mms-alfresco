@@ -1,4 +1,4 @@
 *** Settings ***
-Documentation       Suite for testing the permssion features of the MMS
+Documentation       Suite for testing images of the MMS
 Resource            ../resources.robot
 
