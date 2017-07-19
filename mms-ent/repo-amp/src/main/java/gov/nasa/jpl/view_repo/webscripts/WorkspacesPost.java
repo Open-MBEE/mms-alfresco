@@ -238,24 +238,18 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 FileFolderService fileService = services.getFileFolderService();
                 try {
                     fileService.copy(srcWs.getNodeRef(), refContainerNode.getNodeRef(), newWorkspaceId);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                if (existingRef != null) {
+                    existingRef =
+                        orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId, false, null, true);
                     // keep history of the branch
-                    String srcId = srcWs.getName().equals("master") ? "master" : srcWs.getId();
-                    existingRef.setProperty("cm:title", existingRef.getId() + "_" + srcId);
-                    existingRef.setProperty("cm:name", existingRef.getName());
-
-                    existingRef.addAspect("ems:HasWorkspace");
-                    existingRef.setProperty("ems:workspace", existingRef.getNodeRef());
-
-                    existingRef.addAspect("ems:Workspace");
-                    existingRef.setProperty("ems:workspace_name", newWorkspaceId);
+//                    String srcId = srcWs.getName().equals("master") ? "master" : srcWs.getId();
+//                    existingRef.setProperty("cm:title", existingRef.getId() + "_" + srcId);
+//                    existingRef.setProperty("cm:name", existingRef.getName());
 
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
                         jsonObject != null ? jsonObject.optString("source") : null);
                     finalWorkspace = existingRef;
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
                 }
             }
         } else {
