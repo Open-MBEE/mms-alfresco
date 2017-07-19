@@ -87,9 +87,10 @@ public class ProductsGet extends AbstractJavaWebScript {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         String extended = req.getParameter("extended");
+        String depth = req.getParameter("depth");
         String groupId = req.getServiceMatch().getTemplateVars().get("groupId");
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : projectId, commitId, extended != null && extended.equals("true"));
+        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : projectId, commitId, extended != null && extended.equals("true"), groupId != null ?  depth != null ? Integer.parseInt(depth) : 1 : 10000 );
     }
 }

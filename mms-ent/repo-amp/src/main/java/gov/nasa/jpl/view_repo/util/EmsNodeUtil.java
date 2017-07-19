@@ -508,6 +508,9 @@ public class EmsNodeUtil {
         return results;
     }
 
+    public JSONArray getDocJson(String sysmlId, String commitId, boolean extended) {
+        return getDocJson(sysmlId, commitId, extended, 10000);
+    }
     /**
      * Get the documents that exist in a site at a specified time
      *
@@ -515,7 +518,7 @@ public class EmsNodeUtil {
      * @param commitId Commit ID to look up documents at
      * @return JSONArray of the documents in the site
      */
-    public JSONArray getDocJson(String sysmlId, String commitId, boolean extended) {
+    public JSONArray getDocJson(String sysmlId, String commitId, boolean extended, int depth) {
 
         JSONArray result = new JSONArray();
         List<Node> docNodes = pgh.getNodesByType(DbNodeTypes.DOCUMENT);
@@ -525,7 +528,7 @@ public class EmsNodeUtil {
             docSysml2Elastic.put(node.getSysmlId(), node.getElasticId());
         });
 
-        List<Pair<String, String>> siteChildren = pgh.getChildren(sysmlId, DbEdgeTypes.CONTAINMENT, 10000);
+        List<Pair<String, String>> siteChildren = pgh.getChildren(sysmlId, DbEdgeTypes.CONTAINMENT, depth);
         Set<String> siteChildrenIds = new HashSet<>();
         siteChildren.forEach((child) -> {
             siteChildrenIds.add(child.first);
