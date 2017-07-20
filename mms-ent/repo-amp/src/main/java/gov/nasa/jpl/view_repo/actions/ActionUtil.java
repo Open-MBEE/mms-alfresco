@@ -64,18 +64,6 @@ public class ActionUtil {
         // do nothing
     }
 
-    private static String getContextUrl() {
-
-        String hostname = getHostName();
-        if (hostname.endsWith("/" )) {
-            hostname = hostname.substring( 0, hostname.lastIndexOf( "/" ) );
-        }
-        if (!hostname.contains( "jpl.nasa.gov" )) {
-            hostname += ".jpl.nasa.gov";
-        }
-        return "https://" + hostname + "/alfresco";
-    }
-
     /**
      * Send off an email to the modifier of the node
      * @param node      Node whose modifier should be sent an email
@@ -280,19 +268,5 @@ public class ActionUtil {
         AuthenticationUtil.setRunAsUser( origUser );
 
         return jobNode;
-    }
-
-    public static String getHostName() {
-            if (hostname == null) {
-                Process tr;
-            try {
-                tr = Runtime.getRuntime().exec( new String[]{ "hostname" } );
-                    BufferedReader rd = new BufferedReader( new InputStreamReader( tr.getInputStream() ) );
-                    hostname = rd.readLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            }
-        return hostname;
     }
 }

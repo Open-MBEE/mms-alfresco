@@ -73,11 +73,6 @@ public class WorkspaceNode extends EmsScriptNode {
         return ws.getNodeRef().getId();
     }
 
-    public static String getName( WorkspaceNode ws ) {
-        if ( ws == null ) return "master";
-        return ws.getName();
-    }
-
     public void delete() {
         if (!checkPermissions(PermissionService.WRITE, getResponse(), getStatus())) {
             log("no write permissions to delete workpsace " + getName());

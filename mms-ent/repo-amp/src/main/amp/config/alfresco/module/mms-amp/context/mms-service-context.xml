@@ -12,13 +12,6 @@
           singleton="false">
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.utils.updateworkspaceldapgroup.post"
-        class="gov.nasa.jpl.view_repo.webscripts.UpdateWorkspaceLdapGroup" parent="webscript"
-        singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
     <bean id="webscript.gov.nasa.jpl.mms.refs.elements.element.get"
         class="gov.nasa.jpl.view_repo.webscripts.ModelGet" parent="webscript"
         singleton="false">
@@ -180,13 +173,6 @@
 
     <bean id="webscript.gov.nasa.jpl.mms.mmsversion.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsVersion" parent="webscript"
-          singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper"/>
-        <property name="services" ref="ServiceRegistry"/>
-    </bean>
-
-    <bean id="webscript.gov.nasa.jpl.mms.svgtopng.post"
-        class="gov.nasa.jpl.view_repo.webscripts.SvgToPngPost" parent="webscript"
           singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper"/>
         <property name="services" ref="ServiceRegistry"/>

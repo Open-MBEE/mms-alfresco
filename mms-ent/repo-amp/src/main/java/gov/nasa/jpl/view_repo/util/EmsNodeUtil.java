@@ -1251,10 +1251,6 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public boolean isInitialCommit() {
-        return pgh.isInitialCommit();
-    }
-
     public boolean isDeleted(String sysmlid) {
         return pgh.isDeleted(sysmlid);
     }

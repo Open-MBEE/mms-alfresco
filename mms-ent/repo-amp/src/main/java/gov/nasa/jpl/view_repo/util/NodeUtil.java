@@ -314,26 +314,6 @@ public class NodeUtil {
         return Utils.put(propertyCache, nodeRef, propertyName, value);
     }
 
-    public static void propertyCachePut(NodeRef nodeRef, Map<QName, Serializable> properties) {
-        if (!doPropertyCaching || nodeRef == null || Utils.isNullOrEmpty(properties)) {
-            return;
-        }
-        Map<String, Object> cachedProps = NodeUtil.propertyCacheGetProperties(nodeRef);
-        if (cachedProps == null) {
-            cachedProps = new HashMap<>();
-            NodeUtil.propertyCache.put(nodeRef, cachedProps);
-        } else {
-            cachedProps.clear();
-        }
-        for (QName qName : properties.keySet()) {
-            String key = getShortQName(qName);
-            Serializable value = properties.get(key);
-            cachedProps.put(key, value);
-            if (logger.isTraceEnabled())
-                logger.trace("propertyCachePut(" + nodeRef + ", " + key + ", " + value + ") from map");
-        }
-    }
-
     public static Object propertyCacheGet(NodeRef nodeRef, String propertyName) {
         if (!doPropertyCaching || nodeRef == null || Utils.isNullOrEmpty(propertyName)) {
             return null;
@@ -342,12 +322,6 @@ public class NodeUtil {
         if (logger.isTraceEnabled())
             logger.trace("propertyCachePut(" + nodeRef + ", " + propertyName + ", " + o + ")");
         return o;
-    }
-
-    public static Map<String, Object> propertyCacheGetProperties(NodeRef nodeRef) {
-        if (!doPropertyCaching || nodeRef == null)
-            return null;
-        return propertyCache.get(nodeRef);
     }
 
     public static NodeRef getCurrentNodeRefFromCache(NodeRef maybeFrozenNodeRef) {
@@ -693,18 +667,6 @@ public class NodeUtil {
      *
      * @param s Fully qualified or short-name QName string
      *
-     * @return QName
-     */
-    public static QName createQName(String s) {
-        return createQName(s, null);
-    }
-
-    /**
-     * Helper to create a QName from either a fully qualified or short-name QName string
-     * <P>
-     *
-     * @param s Fully qualified or short-name QName string
-     *
      * @param services ServiceRegistry for getting the service to resolve the name space
      * @return QName
      */
@@ -854,43 +816,6 @@ public class NodeUtil {
         if (logger.isTraceEnabled())
             logger.trace("getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay + ") = " + result);
         return result;
-    }
-
-    /**
-     * Find or create a folder
-     *
-     * @param source node within which folder will have been created; may be null
-     * @param path folder path as folder-name1 + '/' + folder-name2 . . .
-     * @return the existing or new folder
-     */
-    public static EmsScriptNode mkdir(EmsScriptNode source, String path, ServiceRegistry services,
-                    StringBuffer response, Status status) {
-
-        if (source == null) {
-            log("Can't determine source node of path " + path + "!", response);
-            return null;
-        }
-        // find the folder corresponding to the path beginning from the source
-        // node
-        EmsScriptNode folder = source.childByNamePath(path);
-        if (folder == null) {
-            String[] arr = path.split("/");
-            for (String p : arr) {
-                folder = source.childByNamePath(p);
-                if (folder == null) {
-                    folder = source.createFolder(p);
-                    source.getOrSetCachedVersion();
-                    if (folder == null) {
-                        log("Can't create folder for path " + path + "!", response);
-                        return null;
-                    } else {
-                        folder.getOrSetCachedVersion();
-                    }
-                }
-                source = folder;
-            }
-        }
-        return folder;
     }
 
     /**

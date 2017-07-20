@@ -307,21 +307,6 @@ public class EmsScriptNode extends ScriptNode
         setResponse(response);
     }
 
-    public EmsScriptNode getWorkspaceSource() {
-        if (!hasAspect("ems:HasWorkspace"))
-            return null;
-        // ems:source is workspace meta data so dont need dateTime/workspace
-        // args
-        NodeRef ref = (NodeRef) getNodeRefProperty("ems:source", null, null);
-        if (ref != null) {
-            return new EmsScriptNode(ref, getServices());
-        }
-        String msg = "Error! Node has HasWorkspace aspect but no source node!";
-        log(msg);
-        // Debug.error( msg );
-        return null;
-    }
-
     /**
      * Gets the version history
      *
@@ -448,24 +433,6 @@ public class EmsScriptNode extends ScriptNode
         return folder;
     }
 
-    /**
-     * Check whether or not a node has the specified aspect, add it if not
-     *
-     * @param type String Short name (e.g., sysml:View) of the aspect to look for
-     * @return true if node updated with aspect
-     */
-    public boolean createOrUpdateAspect(String type) {
-        if (Acm.getJSON2ACM().keySet().contains(type)) {
-            type = Acm.getJSON2ACM().get(type);
-        }
-
-        updateBogusProperty(type);
-
-        transactionCheck();
-
-        return changeAspect(type);
-    }
-
     protected void updateBogusProperty(String type) {
         // Make sure the aspect change makes it into the version history by
         // updating a bogus property.
@@ -479,23 +446,6 @@ public class EmsScriptNode extends ScriptNode
         int randNum = rand.nextInt(10000000);
         setProperty(Acm.ASPECTS_WITH_BOGUS_PROPERTY.get(type), randNum);
     }
-
-    public void removeAssociations(String type) {
-        QName typeQName = createQName(type);
-        makeSureNodeRefIsNotFrozen();
-        transactionCheck();
-        List<AssociationRef> refs = services.getNodeService().getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
-
-        if (refs != null) {
-            // check all associations to see if there's a matching association
-            for (AssociationRef ref : refs) {
-                if (ref.getTypeQName().equals(typeQName)) {
-                    services.getNodeService().removeAssociation(ref.getSourceRef(), ref.getTargetRef(), typeQName);
-                }
-            }
-        }
-    }
-
 
     /**
      * Check whether or not a node has a property, update or create as necessary
@@ -570,25 +520,6 @@ public class EmsScriptNode extends ScriptNode
         checksum.update(data, 0, data.length);
         cs = checksum.getValue();
         return cs;
-    }
-
-
-    public static List<EmsScriptNode> toEmsScriptNodeList(ArrayList<NodeRef> resultSet,
-                    // Date dateTime,
-                    ServiceRegistry services, StringBuffer response, Status status) {
-
-        ArrayList<EmsScriptNode> emsNodeList = new ArrayList<>();
-        if (resultSet != null)
-            for (NodeRef ref : resultSet) {
-                // NodeRef ref = row.getNodeRef();
-                if (ref == null)
-                    continue;
-                EmsScriptNode node = new EmsScriptNode(ref, services, response, status);
-                if (!node.exists())
-                    continue;
-                emsNodeList.add(node);
-            }
-        return emsNodeList;
     }
 
     /**
@@ -892,13 +823,6 @@ public class EmsScriptNode extends ScriptNode
         return true;
     }
 
-    public Object getNodeRefProperty(String acmType, Date dateTime, WorkspaceNode ws) {
-        return getNodeRefProperty(acmType, false, dateTime, ws);
-    }
-
-    public Object getNodeRefProperty(String acmType, boolean skipNodeRefCheck, Date dateTime, WorkspaceNode ws) {
-        return getNodeRefProperty(acmType, false, dateTime, false, skipNodeRefCheck, ws);
-    }
 
     /**
      * Getting a noderef property needs to be contextualized by the workspace and time This works
@@ -1298,39 +1222,6 @@ public class EmsScriptNode extends ScriptNode
         return false;
     }
 
-    public boolean isFolder() {
-        try {
-            services.getNodeService().getType(this.getNodeRef());
-        } catch (Throwable e) {
-            logger.warn("Call to services.getNodeService().getType(nodeRef=" + this.getNodeRef() + ") for this = "
-                            + this + " failed!");
-            e.printStackTrace();
-        }
-        try {
-            return isSubType("cm:folder");
-        } catch (Throwable e) {
-            logger.warn("Call to isSubType() on this = " + this + " failed!");
-            e.printStackTrace();
-        }
-        try {
-            QName type = null;
-            type = parent.getQNameType();
-            return type != null && !services.getDictionaryService().isSubClass(type, ContentModel.TYPE_FOLDER);
-        } catch (Throwable e) {
-            logger.warn("Trying to call getQNameType() on parent = " + parent + ".");
-            e.printStackTrace();
-        }
-        try {
-            String type = getTypeShort();
-            return type.equals("folder") || type.endsWith(":folder");
-        } catch (Throwable e) {
-            logger.warn("Trying to call getQNameType() on parent = " + parent + ".");
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
     @Override
     public int compare(EmsScriptNode arg0, EmsScriptNode arg1) {
         if (arg0 == arg1)
@@ -1353,195 +1244,6 @@ public class EmsScriptNode extends ScriptNode
 
     public EmsScriptNode(NodeRef nodeRef, ServiceRegistry services) {
         super(nodeRef, services);
-    }
-
-    public EmsScriptNode clone(EmsScriptNode parent) {
-        if (!exists()) {
-            Debug.error(true, false, "Warning! cloning non-existent node!");
-        }
-        if (Debug.isOn()) {
-            Debug.outln("making clone() of " + this + " under parent " + parent);
-        }
-        if (parent == null || !parent.exists()) {
-            Debug.error("Error! Trying to clone a node under a bad parent: " + parent
-                            + "; changing parent to node being cloned " + this);
-            parent = this;
-            if (!exists()) {
-                Debug.error("Error! Can't clone under non-existent parent!");
-            }
-        }
-
-        // create node of same type, except a site will be of type cm:folder.
-        String type = getTypeShort();
-        boolean isSiteOrSites = type.startsWith("st:site");
-        if (isSiteOrSites) {
-            type = "cm:folder";
-        }
-
-        parent.makeSureNodeRefIsNotFrozen();
-        EmsScriptNode node = parent.createNode(getName(), type);
-        // EmsScriptNode node = parent.createSysmlNode( getName(), type,
-        // modStatus, workspace );
-
-        if (node == null) {
-            Debug.error("Could not create node in parent " + parent.getName());
-            return null;
-        }
-
-        // add missing aspects
-        NodeService nodeService = getServices().getNodeService();
-        Set<QName> myAspects = nodeService.getAspects(getNodeRef());
-        for (QName qName : myAspects) {
-            if (qName == null)
-                continue;
-            node.createOrUpdateAspect(qName.toString());
-        }
-
-        // copy properties except those of a site.
-        Map<QName, Serializable> properties = nodeService.getProperties(getNodeRef());
-        if (isSiteOrSites) {
-            properties.remove(createQName("st:sitePreset"));
-            properties.remove(createQName("sys:undeletable"));
-        }
-        // makeSureNodeRefIsNotFrozen(); // Doesnt make sense to always call
-        // this on "this"
-        transactionCheck();
-        NodeRef ref = node.getNodeRef();
-        nodeService.setProperties(ref, properties);
-        NodeUtil.propertyCachePut(ref, properties);
-
-        node.checkedNodeVersion = false;
-
-        return node;
-    }
-
-    /**
-     * Changes the aspect of the node to the one specified, taking care to save off and re-apply
-     * properties from current aspect if downgrading. Handles downgrading to a Element, by removing
-     * all the needed aspects. Also removing old sysml aspects if changing the sysml aspect.
-     *
-     * @param aspectName The aspect to change to
-     */
-    private boolean changeAspect(String aspectName) {
-
-        Set<QName> aspects = new LinkedHashSet<>();
-        boolean retVal = false;
-        Map<String, Object> oldProps = null;
-        DictionaryService dServ = services.getDictionaryService();
-        AspectDefinition aspectDef;
-        boolean saveProps = false;
-
-        if (aspectName == null) {
-            return false;
-        }
-
-        QName qName = NodeUtil.createQName(aspectName);
-
-        // If downgrading to an Element, then need to remove
-        // all aspects without saving any properties or adding
-        // any aspects:
-        if (aspectName.equals(Acm.ACM_ELEMENT)) {
-            for (String aspect : Acm.ACM_ASPECTS) {
-                if (hasAspect(aspect)) {
-                    boolean myRetVal = removeAspect(aspect);
-                    retVal = retVal || myRetVal;
-                }
-            }
-
-            return retVal;
-        }
-
-        // Get all the aspects for this node, find all of their parents, and see
-        // if
-        // the new aspect is any of the parents.
-        makeSureNodeRefIsNotFrozen();
-        aspects.addAll(getAspectsSet());
-        ArrayList<QName> queue = new ArrayList<>(aspects);
-        QName name;
-        QName parentQName;
-        while (!queue.isEmpty()) {
-            name = queue.get(0);
-            queue.remove(0);
-            aspectDef = dServ.getAspect(name);
-            parentQName = aspectDef.getParentName();
-            if (parentQName != null) {
-                if (parentQName.equals(qName)) {
-                    saveProps = true;
-                    break;
-                }
-                if (!queue.contains(parentQName)) {
-                    queue.add(parentQName);
-                }
-            }
-        }
-
-        // If changing aspects to a parent aspect (ie downgrading), then we must
-        // save off the
-        // properties before removing the current aspect, and then re-apply
-        // them:
-        if (saveProps) {
-            oldProps = getProperties();
-        }
-        // No need to go any further if it already has the aspect and the new
-        // aspect is not
-        // a parent of the current aspect:
-        else if (hasAspect(aspectName)) {
-            return false;
-        }
-
-        // Remove all the existing sysml aspects if the aspect is not a parent
-        // of the new aspect,
-        // and it is a sysml aspect:
-        List<String> sysmlAspects = Arrays.asList(Acm.ACM_ASPECTS);
-        if (sysmlAspects.contains(aspectName)) {
-
-            Set<QName> parentAspectNames = new LinkedHashSet<>();
-            parentAspectNames.add(qName);
-            name = qName; // The new aspect QName
-            while (name != null) {
-                aspectDef = dServ.getAspect(name);
-                parentQName = aspectDef.getParentName();
-                if (parentQName != null) {
-                    parentAspectNames.add(parentQName);
-                }
-                name = parentQName;
-            }
-
-            for (String aspect : Acm.ACM_ASPECTS) {
-                if (hasAspect(aspect) && !parentAspectNames.contains(NodeUtil.createQName(aspect))) {
-                    boolean removeVal = removeAspect(aspect);
-                    retVal = retVal || removeVal;
-                }
-            }
-        }
-
-        // Apply the new aspect if needed:
-        if (!hasAspect(aspectName)) {
-            // if makeSureNodeRefIsNotFrozen() is called earlier, below is not
-            // necessary
-            makeSureNodeRefIsNotFrozen();
-            retVal = addAspect(aspectName);
-        }
-
-        // Add the saved properties if needed:
-        if (oldProps != null) {
-            aspectDef = dServ.getAspect(qName);
-            Set<QName> aspectProps = aspectDef.getProperties().keySet();
-
-            // Only add the properties that are valid for the new aspect:
-            String propName;
-            QName propQName;
-            for (Entry<String, Object> entry : oldProps.entrySet()) {
-                propName = entry.getKey();
-                propQName = NodeUtil.createQName(propName);
-
-                if (aspectProps.contains(propQName)) {
-                    setProperty(propName, (Serializable) entry.getValue());
-                }
-            }
-        }
-
-        return retVal;
     }
 
     @Override
