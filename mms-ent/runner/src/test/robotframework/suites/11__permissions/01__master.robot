@@ -5,7 +5,7 @@ Resource        ../resources.robot
 *** Test Cases ***
 CreateManager
 	[Documentation]		"Create a Manager User"
-	[Tags]				create 3
+	[Tags]				permissions 1101
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateManager.json
 	${result} =			Post		url=${ROOT}/api/people		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -17,7 +17,7 @@ CreateManager
 
 CreateCollaborator
 	[Documentation]		"Create a Collaborator User"
-	[Tags]				create 1
+	[Tags]				permissions 1102
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateCollaborator.json
 	${result} =			Post		url=${ROOT}/api/people		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -29,7 +29,7 @@ CreateCollaborator
 
 CreateConsumer
 	[Documentation]		"Create a Consumer User"
-	[Tags]				create 2
+	[Tags]				permissions 1103
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateConsumer.json
 	${result} =			Post		url=${ROOT}/api/people		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -41,7 +41,7 @@ CreateConsumer
 
 CreateLoser
 	[Documentation]		"Create a Loser User"
-	[Tags]				create 4
+	[Tags]				permissions 1104
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateLoser.json
 	${result} =			Post		url=${ROOT}/api/people		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -53,7 +53,7 @@ CreateLoser
 
 ReadAsManager
     [Documentation]     "Read an existing element as Manager."
-    [Tags]              read 3
+    [Tags]              permissions 1105
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/UpdateElements.json
 	${result} =			Get		url=http://Manager:password@${SERVER}/alfresco/service/projects/PA/refs/master/elements/300		data=${post_json}		headers=&{REQ_HEADER}
     Should Be Equal		${result.status_code}		${200}
@@ -64,7 +64,7 @@ ReadAsManager
 
 ReadAsCollaborator
     [Documentation]     "Read an existing element as Collaborator."
-    [Tags]              read 1
+    [Tags]              permissions 1106
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/UpdateElements.json
 	${result} =			Get		url=http://Collaborator:password@${SERVER}/alfresco/service/projects/PA/refs/master/elements/300		data=${post_json}		headers=&{REQ_HEADER}
     Should Be Equal		${result.status_code}		${200}
@@ -75,7 +75,7 @@ ReadAsCollaborator
 
 ReadAsConsumer
     [Documentation]     "Read an existing element as Consumer."
-    [Tags]              read 2
+    [Tags]              permissions 1107
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/UpdateElements.json
 	${result} =			Get		url=http://Consumer:password@${SERVER}/alfresco/service/projects/PA/refs/master/elements/300		data=${post_json}		headers=&{REQ_HEADER}
     Should Be Equal		${result.status_code}		${200}
@@ -86,14 +86,14 @@ ReadAsConsumer
 
 ReadAsLoser
     [Documentation]     "Read an existing element as Loser."
-    [Tags]              read 4
+    [Tags]              permissions 1108
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/UpdateElements.json
 	${result} =			Get		url=http://None:password@${SERVER}/alfresco/service/projects/PA/refs/master/elements/300		data=${post_json}		headers=&{REQ_HEADER}
     Should Be Equal		${result.status_code}		${403}
 
 UpdateAsManager
     [Documentation]     "Update an existing element as Manager."
-    [Tags]              update 3
+    [Tags]              permissions 1109
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/UpdateElements.json
 	${result} =			Post		url=http://Manager:password@${SERVER}/alfresco/service/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
     Should Be Equal		${result.status_code}		${200}
@@ -105,7 +105,7 @@ UpdateAsManager
 
 UpdateAsCollaborator
     [Documentation]     "Update an existing element as Collaborator."
-    [Tags]              update 1
+    [Tags]              permissions 1110
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/UpdateElements.json
 	${result} =			Post		url=http://Collaborator:password@${SERVER}/alfresco/service/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
     Should Be Equal		${result.status_code}		${200}
@@ -117,7 +117,7 @@ UpdateAsCollaborator
 
 UpdateAsConsumer
     [Documentation]     "Update an existing element as Consumer."
-    [Tags]              update 2
+    [Tags]              permissions 1111
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/UpdateElements.json
 	${result} =			Post		url=http://Consumer:password@${SERVER}/alfresco/service/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
     Should Be Equal		${result.status_code}		${403}
@@ -125,7 +125,7 @@ UpdateAsConsumer
 
 UpdateAsLoser
     [Documentation]     "Update an existing element as Loser."
-    [Tags]              update 4
+    [Tags]              permissions 1112
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/UpdateElements.json
 	${result} =			Post		url=http://None:password@${SERVER}/alfresco/service/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
     Should Be Equal		${result.status_code}		${403}

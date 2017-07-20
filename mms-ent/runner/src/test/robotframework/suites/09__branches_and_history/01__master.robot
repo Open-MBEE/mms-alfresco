@@ -6,7 +6,7 @@ Resource        ../resources.robot
 
 PostNewElementsToPAHistory
 	[Documentation]		"Post elements to PA"
-	[Tags]				B1
+	[Tags]				branches critical 0901
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/PostElementsToPAHistory.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -18,7 +18,7 @@ PostNewElementsToPAHistory
 
 GetElementHistoryFromPA
 	[Documentation]		"get /projects/PA/refs/master/elements/test_history_element/history"
-	[Tags]				B2
+	[Tags]				branches critical 0902
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/test_history_element/history		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${commit0} =		Commit Naught		${result.json()}
@@ -30,7 +30,7 @@ GetElementHistoryFromPA
 
 PostUpdateToElementHistoryInPA
 	[Documentation]		"Post elements to PA"
-	[Tags]				B3
+	[Tags]				branches critical 0903
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/PostUpdateToElementHistoryInPA.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -42,7 +42,7 @@ PostUpdateToElementHistoryInPA
 
 GetElementHistoryFromPAWithUpdate
 	[Documentation]		"get /projects/PA/refs/master/elements/test_history_element/history"
-	[Tags]				B4
+	[Tags]				branches critical 0904
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/test_history_element/history		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${commit1} =		Commit Naught		${result.json()}
@@ -54,7 +54,7 @@ GetElementHistoryFromPAWithUpdate
 
 PostNewBranchToPA
 	[Documentation]		"Post new branch to PA"
-	[Tags]				B5
+	[Tags]				branches critical 0905
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/PostNewBranchToPA.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -66,7 +66,7 @@ PostNewBranchToPA
 
 PostUpdateToElementMasterInPA
 	[Documentation]		"Post update to element in master"
-	[Tags]				B6
+	[Tags]				branches critical 0906
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/PostUpdateToElementMasterInPA.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -78,7 +78,7 @@ PostUpdateToElementMasterInPA
 
 PostUpdateToElementBranchInPA
 	[Documentation]		"Post update to element in newbranch"
-	[Tags]				B7
+	[Tags]				branches critical 0907
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/PostUpdateToElementBranchInPA.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/newbranch/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -90,7 +90,7 @@ PostUpdateToElementBranchInPA
 
 GetElementHistoryFromPAOnMaster
 	[Documentation]		"get history on master"
-	[Tags]				B8
+	[Tags]				branches critical 0908
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/test_history_element/history		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${commit2} =		Commit Naught		${result.json()}
@@ -102,7 +102,7 @@ GetElementHistoryFromPAOnMaster
 
 GetElementHistoryFromPAOnNewBranch
 	[Documentation]		"get history on branch"
-	[Tags]				B9
+	[Tags]				branches critical 0909
 	${result} =			Get		url=${ROOT}/projects/PA/refs/newbranch/elements/test_history_element/history		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${commit3} =		Commit Naught		${result.json()}
@@ -114,31 +114,31 @@ GetElementHistoryFromPAOnNewBranch
 # TODO write a method to compare commitN to itself on response or its name -- Are these tests irrelevant now?
 GetCommitHistoryFromPAOnMasterC0
 	[Documentation]		"check get element using commit 0 on master"
-	[Tags]				B10
+	[Tags]				branches critical 0910
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/test_history_element?commitId=${commit0}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 
 GetCommitHistoryFromPAOnMasterC2
 	[Documentation]		"get element using commit 2 on master"
-	[Tags]				B11
+	[Tags]				branches critical 0911
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/test_history_element?commitId=${commit2}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 
 GetCommitHistoryFromPAOnNewBranchC0
 	[Documentation]		"get element using commit 0 on new branch"
-	[Tags]				B12
+	[Tags]				branches critical 0912
 	${result} =			Get		url=${ROOT}/projects/PA/refs/newbranch/elements/test_history_element?commitId=${commit0}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 
 GetCommitHistoryFromPAOnNewBranchC3
 	[Documentation]		"get element using commit 3 on new branch"
-	[Tags]				B13
+	[Tags]				branches critical 0913
 	${result} =			Get		url=${ROOT}/projects/PA/refs/newbranch/elements/test_history_element?commitId=${commit3}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 
 GetElementAtCommit
     [Documentation]     "Gets an element at a commit -- Should return element"
-    [Tags]              B14
+    [Tags]              branches critical 0914
     ${element} =        Get    url=${ROOT}/projects/PA/refs/master/elements/300         headers=&{REQ_HEADER}
     ${commitId} =       Get Commit From Json       ${element.json()}
     ${result} =         Get     url=${ROOT}/projects/PA/refs/master/elements/300?commitId=${commitId}       headers=&{REQ_HEADER}
@@ -149,7 +149,7 @@ GetElementAtCommit
 
 GetElementBeforeCommit
     [Documentation]     "Gets an element that exists before the commit. Grabs a commit that does not contain the element and requests for the element at that time. It should return the element at a previous commit than the one requested."
-    [Tags]              B15
+    [Tags]              branches critical 0915
     ${element} =        Get    url=${ROOT}/projects/PA/refs/master/elements/300         headers=&{REQ_HEADER}
     ${commitId} =       Get Last Commit
     ${result} =         Get     url=${ROOT}/projects/PA/refs/master/elements/300?commitId=${commitId}       headers=&{REQ_HEADER}
@@ -164,7 +164,7 @@ GetElementBeforeCommit
 
 GetElementAfterCommit
     [Documentation]     "Get an element that doesn't exist at the current commit. Should return a 404"
-    [Tags]              B16
+    [Tags]              branches critical 0916
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/CreateElementAfterCommit.json
 	${result} =			Post		    url=${ROOT}/projects/PA/refs/master/elements     data=${post_json}		headers=&{REQ_HEADER}
 	Sleep				${2}
@@ -175,7 +175,7 @@ GetElementAfterCommit
 
 GetElementAtInvalidCommit
     [Documentation]     "Try to get an element at an invalid commit."
-    [Tags]              B17
+    [Tags]              branches critical 0917
     ${result} =         Get    url=${ROOT}/projects/PA/refs/master/elements/300?commitId=ThisIdShouldNotExistAtAll         headers=&{REQ_HEADER}
     Should be Equal     ${result.status_code}       ${404}
 

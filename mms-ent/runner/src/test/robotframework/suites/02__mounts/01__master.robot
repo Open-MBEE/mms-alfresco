@@ -5,7 +5,7 @@ Resource        ../resources.robot
 *** Test Cases ***
 ProjectCreationForMountsPB
 	[Documentation]		"Create a project (ID: PB) under the organization with (ID: initorg).  Symbolically PB."
-	[Tags]				M1
+	[Tags]				mounts critical 0201
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreationForMountsPB.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -17,7 +17,7 @@ ProjectCreationForMountsPB
 
 ProjectCreationForMountsPC
 	[Documentation]		"Create a project (ID: PC) under the organization with (ID: initorg).  Symbolically PC."
-	[Tags]				M2
+	[Tags]				mounts critical 0202
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreationForMountsPC.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -29,7 +29,7 @@ ProjectCreationForMountsPC
 
 ProjectCreationForMountsPD
 	[Documentation]		"Create a project (ID: PD) under the organization with (ID: initorg).  Symbolically PD."
-	[Tags]				M3
+	[Tags]				mounts critical 0203
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreationForMountsPD.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -41,7 +41,7 @@ ProjectCreationForMountsPD
 
 PostNewElementsToPB
 	[Documentation]		"Post unique elements to the newly created project (ID: PB). Symbolically PB -> E1 -> E2"
-	[Tags]				M4
+	[Tags]				mounts critical 0204
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/PostElementsToPB.json
 	${result} =			Post		url=${ROOT}/projects/PB/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -53,7 +53,7 @@ PostNewElementsToPB
 
 PostNewElementsToPC
 	[Documentation]		"Post unique elements to the newly created project (ID: PC). Symbolically PC -> E3 -> E4"
-	[Tags]				M5
+	[Tags]				mounts critical 0205
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/PostElementsToPC.json
 	${result} =			Post		url=${ROOT}/projects/PC/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -65,7 +65,7 @@ PostNewElementsToPC
 
 PostNewElementsToPD
 	[Documentation]		"Post unique elements to the newly created project (ID: PD). Symbolically PD -> E5 -> E6"
-	[Tags]				M6
+	[Tags]				mounts critical 0206
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/PostElementsToPD.json
 	${result} =			Post		url=${ROOT}/projects/PD/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -77,7 +77,7 @@ PostNewElementsToPD
 
 MountCreationPA|PB
 	[Documentation]		"Assign a mount to project (ID: PA) which is (ID: PB). Symbolically PA -> PB"
-	[Tags]				M7
+	[Tags]				mounts critical 0207
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateMountPA|PB.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -89,7 +89,7 @@ MountCreationPA|PB
 
 MountCreationPB|PC
 	[Documentation]		"Assign a mount to project (ID: PB) which is (ID: PC). Symbolically PB -> PC"
-	[Tags]				M8
+	[Tags]				mounts critical 0208
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateMountPB|PC.json
 	${result} =			Post		url=${ROOT}/projects/PB/refs/master/elements		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -101,7 +101,7 @@ MountCreationPB|PC
 
 MountCreationPC|PD
 	[Documentation]		"Assign a mount to project (ID: PC) which is (ID: 121314). Symbolically PC -> PD"
-	[Tags]				M9
+	[Tags]				mounts critical 0209
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateMountPC|PD.json
 	${result} =			Post		url=${ROOT}/projects/PC/refs/master/elements		    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -113,7 +113,7 @@ MountCreationPC|PD
 
 MountCreationPC|PA
 	[Documentation]		"Assign a mount to project (ID: PC) which is (ID: PA). Symbolically PC -> PA"
-	[Tags]				M10
+	[Tags]				mounts critical 0210
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateMountPC|PA.json
 	${result} =			Post		url=${ROOT}/projects/PC/refs/master/elements	    data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -126,7 +126,7 @@ MountCreationPC|PA
 # # So in the next example _projectID: PB and _refId is master.  Returns both e1 and e2 b/c of depth
 GetElementFromMountedProjectPB
 	[Documentation]		"Gets a element that only exists in project (ID: PB) from (ID: PA)."
-	[Tags]				M11
+	[Tags]				mounts critical 0211
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e1		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
@@ -136,7 +136,7 @@ GetElementFromMountedProjectPB
 
 GetElementFromMountedProjectPC
 	[Documentation]		"Gets a element that only exists in project (ID: PC) from (ID: PA)."
-	[Tags]				M12
+	[Tags]				mounts critical 0212
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e3		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
@@ -146,7 +146,7 @@ GetElementFromMountedProjectPC
 
 GetElementFromMountedProjectPD
 	[Documentation]		"Gets a element that only exists in project (ID: PD) from (ID: PA)."
-	[Tags]				M13
+	[Tags]				mounts critical 0213
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e5		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
@@ -156,7 +156,7 @@ GetElementFromMountedProjectPD
 
 GetElementFromMountedProjectPA|PC
 	[Documentation]		"Gets a element that only exists in project (ID: PA) from (ID: PC)."
-	[Tags]				M14
+	[Tags]				mounts critical 0214
 	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
@@ -166,7 +166,7 @@ GetElementFromMountedProjectPA|PC
 ##get single element in each project with depth=-1 and extended=true
 GetExtendedElementFromMountedProjectPB
 	[Documentation]		"Gets a element that only exists in project (ID: PB) from (ID: PA)."
-	[Tags]				M15
+	[Tags]				mounts critical 0215
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e1?depth=-1&extended=true		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
@@ -176,7 +176,7 @@ GetExtendedElementFromMountedProjectPB
 
 GetExtendedElementFromMountedProjectPC
 	[Documentation]		"Gets a element that only exists in project (ID: PC) from (ID: PA)."
-	[Tags]				M16
+	[Tags]				mounts critical 0216
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e3?depth=-1&extended=true		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
@@ -186,7 +186,7 @@ GetExtendedElementFromMountedProjectPC
 
 GetExtendedElementFromMountedProjectPD
 	[Documentation]		"Gets a element that only exists in project (ID: PD) from (ID: PA)."
-	[Tags]				M17
+	[Tags]				mounts critical 0217
 	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/e5?depth=-1&extended=true		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
@@ -196,7 +196,7 @@ GetExtendedElementFromMountedProjectPD
 
 GetExtendedElementFromMountedProjectPA|PC
 	[Documentation]		"Gets a element that only exists in project (ID: PA) from (ID: PC)."
-	[Tags]				M18
+	[Tags]				mounts critical 0218
 	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300?depth=-1&extended=true		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
@@ -206,7 +206,7 @@ GetExtendedElementFromMountedProjectPA|PC
 ##bulk element get for root only
 GetElementsFromAllMountedProjectsViaPA
 	[Documentation]		"Gets all elements that are in other projects mounted to PA."
-	[Tags]				M19
+	[Tags]				mounts critical 0219
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/GetAllElementsAcrossMounts.json
 	${result} =			Put		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}       headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -217,7 +217,7 @@ GetElementsFromAllMountedProjectsViaPA
 ## bulk get with depth = -1 get all elements and make sure there are no duplicates in the return
 GetExtendedElementsFromAllMountedProjectsViaPA
 	[Documentation]		"Gets all elements that are in other projects mounted to PA."
-	[Tags]				M20
+	[Tags]				mounts critical 0220
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/GetAllElementsAcrossMounts.json
 	${result} =			Put		url=${ROOT}/projects/PA/refs/master/elements?depth=-1&extended=true		data=${post_json}       headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -228,7 +228,7 @@ GetExtendedElementsFromAllMountedProjectsViaPA
 ##Request all the elements and their children and make sure there's no duplicates
 GetElementsFromAllMountedProjectsViaPADuplicates
 	[Documentation]		"Gets all elements that are in other projects mounted to PA."
-	[Tags]				M21
+	[Tags]				mounts critical 0221
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/GellAllElementsAcrossMountsDuplicates.json
 	${result} =			Put		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}       headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -239,7 +239,7 @@ GetElementsFromAllMountedProjectsViaPADuplicates
 
 GetExtendedElementsFromAllMountedProjectsViaPADuplicates
 	[Documentation]		"Gets all elements that are in other projects mounted to PA."
-	[Tags]				M22
+	[Tags]				mounts critical 0222
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/GellAllElementsAcrossMountsDuplicates.json
 	${result} =			Put		url=${ROOT}/projects/PA/refs/master/elements?depth=-1&extended=true		data=${post_json}       headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
