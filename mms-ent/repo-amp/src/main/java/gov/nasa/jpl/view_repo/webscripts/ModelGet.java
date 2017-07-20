@@ -339,7 +339,7 @@ public class ModelGet extends AbstractJavaWebScript {
                 }
             }
         }
-        if (mountsJson == null) {
+        if (!mountsJson.has(Sjm.MOUNTS)) {
             mountsJson = emsNodeUtil.getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
         }
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
