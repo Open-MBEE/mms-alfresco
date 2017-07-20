@@ -119,8 +119,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             }
             model.put("status", status);
             model.put("cache", cache);
-            NodeUtil.ppAddQualifiedNameId2Json(req, model); // TODO: weave in as aspect
-            NodeUtil.addEditable(model, editable);
 
             try {
                 // execute script if it exists
@@ -318,56 +316,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     private void executeFinallyImpl(WebScriptRequest req, Status status, Cache cache, Map<String, Object> model) {
     }
 
-
-    /**
-     * Render a template (of given format) to the Web Script Response
-     *
-     * @param format template format (null, default format)
-     * @param model  data model to render
-     * @param writer where to output
-     */
-    final protected void renderFormatTemplate(String format, Map<String, Object> model, Writer writer) {
-        format = (format == null) ? "" : format;
-
-        String templatePath = getDescription().getId() + "." + format;
-
-        logger.debug(String.format("Rendering template '%s'", templatePath));
-
-        renderTemplate(templatePath, model, writer);
-    }
-
-    /**
-     * Get map of template parameters that are available with given request.
-     * This method is for FreeMarker Editor Extension plugin of Surf Dev Tools.
-     *
-     * @param req webscript request
-     * @param res webscript response
-     * @return
-     * @throws IOException
-     */
-    public Map<String, Object> getTemplateModel(WebScriptRequest req, WebScriptResponse res) throws IOException {
-        // construct model for script / template
-        Status status = new Status();
-        Cache cache = new Cache(getDescription().getRequiredCache());
-        Map<String, Object> model = new HashMap<>(8, 1.0f);
-
-        model.put("status", status);
-        model.put("cache", cache);
-
-        // execute script if it exists
-        ScriptDetails script = getExecuteScript(req.getContentType());
-        if (script != null) {
-            Map<String, Object> scriptModel = createScriptParameters(req, res, script, model);
-            // add return model allowing script to add items to template model
-            Map<String, Object> returnModel = new HashMap<>(8, 1.0f);
-            scriptModel.put("model", returnModel);
-            executeScript(script.getContent(), scriptModel);
-            mergeScriptModelIntoTemplateModel(script.getContent(), returnModel, model);
-        }
-        // create model for template rendering
-        return createTemplateParameters(req, res, model);
-    }
-
     private Boolean hasPermission(WebScriptRequest req, WebScriptResponse res) {
         String descriptionPath = getDescription().getDescPath();
         String methodType = getMethod(descriptionPath);
@@ -476,57 +424,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         return null;
     }
 
-    /*
-     * Listing of any path that does not specified a site Id,
-     * however, read permission is allowed through
-     */
-    private boolean isAllowablePath(String descriptionPath) {
-        switch (descriptionPath) {
-            case "gov/nasa/jpl/mms/refs/sites/products.get.desc.xml":
-            case "gov/nasa/jpl/mms/refs/projects.get.desc.xml":
-            case "gov/nasa/jpl/mms/refs/sites.get.desc.xml":
-            case "gov/nasa/jpl/mms/refs.get.desc.xml":
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private JSONObject getElementsJson(WebScriptRequest req, String methodType) {
-        JSONObject topJson = null;
-        try {
-            Object content = req.parseContent();
-            topJson = getTopJson(req, content, methodType);
-            if (methodType.equalsIgnoreCase("GET")) {
-                if (topJson != null) {
-                    topJson = new JSONObject().put(Sjm.ELEMENTS, new JSONArray().put(topJson));
-                }
-            }
-        } catch (Exception ex) {
-            logger.debug(String.format("%s", LogUtil.getStackTrace(ex)));
-        }
-        return topJson;
-    }
-
-    private JSONObject getTopJson(WebScriptRequest req, Object content, String methodType) {
-        JSONObject top = null;
-
-        if (methodType.equalsIgnoreCase("POST") || methodType.equalsIgnoreCase("PUT")) {
-            top = getJsonFromRequestBody(content);
-        } else if (methodType.equalsIgnoreCase("GET") || methodType.equalsIgnoreCase("DELETE")) {
-            String modelId = extractSysmlId(req);
-            if (!Utils.isNullOrEmpty(modelId)) {
-                String refId = AbstractJavaWebScript.getRefId(req);
-                String projectId = AbstractJavaWebScript.getProjectId(req);
-                EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-                top = emsNodeUtil.getNodeBySysmlid(modelId);
-                if (top.isNull(Sjm.SYSMLID))
-                    top.put(Sjm.SYSMLID, modelId);
-            } else
-                top = getJsonFromRequestBody(content);
-        }
-        return top;
-    }
 
     public static String getArtifactId(WebScriptRequest req) {
         String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACT_ID);
@@ -534,31 +431,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             artifactId = null;
         }
         return artifactId;
-    }
-
-    private String extractSysmlId(WebScriptRequest req) {
-        String[] idKeys = {"modelid", "elementid", "elementId"};
-        String modelId = null;
-        for (String idKey : idKeys) {
-            modelId = req.getServiceMatch().getTemplateVars().get(idKey);
-            if (modelId != null) {
-                break;
-            }
-        }
-        return modelId;
-    }
-
-    private JSONObject getJsonFromRequestBody(Object content) {
-        if (content instanceof JSONObject) {
-            return (JSONObject) content;
-        } else if (content instanceof String) {
-            return new JSONObject((String) content);
-        }
-        return null;
-    }
-
-    private String getMethod() {
-        return getMethod(getDescription().getDescPath());
     }
 
     private String getMethod(String descriptionPath) {

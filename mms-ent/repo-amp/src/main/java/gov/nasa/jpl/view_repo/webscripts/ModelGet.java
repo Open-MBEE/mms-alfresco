@@ -76,22 +76,19 @@ public class ModelGet extends AbstractJavaWebScript {
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        WorkspaceNode workspace = getWorkspace(req);
-        boolean wsFound = workspace != null && workspace.exists();
-        if (!wsFound) {
             String refId = getRefId(req);
             String projectId = getProjectId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+
             if (refId != null && refId.equalsIgnoreCase("master")) {
                 return true;
-            } else if (refId != null && !emsNodeUtil.refExists(refId)) {
+            }
+            else if (refId != null && !emsNodeUtil.refExists(refId)) {
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
                     refId);
                 return false;
             }
-        }
-
-        return true;
+            return true;
     }
 
     /**
@@ -171,15 +168,8 @@ public class ModelGet extends AbstractJavaWebScript {
 
     protected Map<String, Object> handleArtifactGet(WebScriptRequest req, Status status, String accept) {
 
-        JSONObject resultJson = null;
         Map<String, Object> model = new HashMap<>();
 
-        String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        String projectId = getProjectId(req);
-        String refId = getRefId(req);
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-
-        String cs = req.getParameter("cs");
         String extensionArg = accept.replaceFirst(".*/(\\w+).*", "$1");
 
         if (!extensionArg.startsWith(".")) {
@@ -187,115 +177,46 @@ public class ModelGet extends AbstractJavaWebScript {
         }
 
         String extension = !extensionArg.equals("*") ? extensionArg : ".svg";  // Assume .svg if no extension provided
-        String commitId = req.getParameter("commitId");
-        Map<String, String> commitAndTimestamp = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
-        String timestamp = !Utils.isNullOrEmpty(commitAndTimestamp) ? commitAndTimestamp.get(Sjm.TIMESTAMP) : null;
-        if (timestamp == null) {
-            Date today = new Date();
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            timestamp = df.format(today);
-        }
+        String commitId = req.getParameter("commitId"); //need to support this
 
         if (!Utils.isNullOrEmpty(extension) && !extension.startsWith(".")) {
             extension = "." + extension;
         }
 
-        WorkspaceNode workspace = getWorkspace(req, AuthenticationUtil.getRunAsUser());
-
         if (validateRequest(req, status)) {
 
             try {
-                String[] idKeys = {"modelid", "elementid", "elementId"};
-                String artifactIdPath = null;
-                for (String idKey : idKeys) {
-                    artifactIdPath = req.getServiceMatch().getTemplateVars().get(idKey);
-                    if (artifactIdPath != null) {
-                        break;
-                    }
-                }
-                // Get the artifact name from the url:
-
-                if (artifactIdPath != null) {
-                    int lastIndex = artifactIdPath.lastIndexOf("/");
-
-                    if (artifactIdPath.length() > (lastIndex + 1)) {
-
-                        String artifactId = lastIndex != -1 ? artifactIdPath.substring(lastIndex + 1) : artifactIdPath;
+                String artifactId = req.getServiceMatch().getTemplateVars().get("elementId");
+                String projectId = getProjectId(req);
+                String refId = getRefId(req);
+                if (artifactId != null) {
+                    int lastIndex = artifactId.lastIndexOf("/");
+                    if (artifactId.length() > (lastIndex + 1)) {
+                        artifactId = lastIndex != -1 ? artifactId.substring(lastIndex + 1) : artifactId;
                         String filename = artifactId + extension;
-
-                        EmsScriptNode matchingNode = null;
-
-                        // Search for artifact file by checksum (this may return nodes in parent refs):
-                        if (!Utils.isNullOrEmpty(cs)) {
-                            ArrayList<NodeRef> refs = NodeUtil
-                                .findNodeRefsByType("" + cs, SearchType.CHECKSUM.prefix, false, workspace,
-                                    TimeUtils.dateFromTimestamp(timestamp), false, false, services, false);
-                            List<EmsScriptNode> nodeList =
-                                EmsScriptNode.toEmsScriptNodeList(refs, services, response, status);
-
-                            // Find the first node with matching name (just in case there is multiple artifacts with
-                            // the same checksum but different names):
-                            for (EmsScriptNode node : nodeList) {
-
-                                if (node.getSysmlId().equals(filename)) {
-                                    matchingNode = node;
-                                    break;
-                                }
-                            }
+                        JSONObject result = handleArtifactMountSearch(new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename);
+                        if (result != null) {
+                            model.put("res", new JSONObject().put("artifacts", new JSONArray().put(result)));
                         } else {
-                            // Otherwise, search by the id (this may return nodes in parent refs):
-                            matchingNode = NodeUtil
-                                .findScriptNodeById(filename, workspace, TimeUtils.dateFromTimestamp(timestamp), false,
-                                    services, response);
+                            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
                         }
-
-                        // Create return json if matching node found:
-                        if (matchingNode != null) {
-
-                            resultJson = new JSONObject();
-                            JSONArray jsonArray = new JSONArray();
-                            JSONObject jsonArtifact = new JSONObject();
-                            resultJson.put("artifacts", jsonArray);
-                            jsonArtifact.put("id", matchingNode.getSysmlId());
-                            String url = matchingNode.getUrl();
-                            if (url != null) {
-                                jsonArtifact.put("url", url.replace("/d/d/", "/service/api/node/content/"));
-                            }
-                            jsonArray.put(jsonArtifact);
-                        } else {
-                            String fileStr = "File " + filename;
-                            String err = Utils.isNullOrEmpty(cs) ?
-                                fileStr + " not found!\n" :
-                                (fileStr + " with cs=" + cs + " not found!\n");
-                            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, err);
-                            model.put("res", createResponseJson());
-                        }
-
                     } else {
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Invalid artifactId!\n");
-                        model.put("res", createResponseJson());
+                        log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid artifactId!\n");
                     }
-
                 } else {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "artifactId not supplied!\n");
-                    model.put("res", createResponseJson());
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "ArtifactId not supplied!\n");
                 }
-
             } catch (JSONException e) {
-                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Issues creating return JSON\n");
+                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Issues creating return JSON\n");
                 e.printStackTrace();
-                model.put("res", createResponseJson());
             }
         } else {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid request!\n");
-            model.put("res", createResponseJson());
         }
-
         status.setCode(responseStatus.getCode());
         if (!model.containsKey("res")) {
-            model.put("res", resultJson != null ? resultJson : createResponseJson());
+            model.put("res", createResponseJson());
         }
-
         return model;
     }
 
@@ -311,14 +232,7 @@ public class ModelGet extends AbstractJavaWebScript {
         // REVIEW -- Why check for errors here if validate has already been
         // called? Is the error checking code different? Why?
         try {
-            String[] idKeys = {"modelid", "elementid", "elementId"};
-            String modelId = null;
-            for (String idKey : idKeys) {
-                modelId = req.getServiceMatch().getTemplateVars().get(idKey);
-                if (modelId != null) {
-                    break;
-                }
-            }
+            String modelId = req.getServiceMatch().getTemplateVars().get("elementId");
             String projectId = getProjectId(req);
             String refId = getRefId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
@@ -329,9 +243,7 @@ public class ModelGet extends AbstractJavaWebScript {
                 log(Level.ERROR, HttpServletResponse.SC_GONE, "Element %s is deleted", modelId);
                 return new JSONArray();
             }
-
             return handleElementHierarchy(modelId, req);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -412,6 +324,34 @@ public class ModelGet extends AbstractJavaWebScript {
         return depth;
     }
 
+    protected JSONObject handleArtifactMountSearch(JSONObject mountsJson, String filename) {
+        String projectId = mountsJson.getString(Sjm.SYSMLID);
+        String refId = mountsJson.getString(Sjm.REFID);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
+        EmsScriptNode siteNode = EmsScriptNode.getSiteNode(orgId);
+        if (siteNode != null) {
+            EmsScriptNode artifactNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
+            if (artifactNode != null) {
+                String url = artifactNode.getUrl();
+                if (url != null) {
+                    return new JSONObject().put("id", artifactNode.getSysmlId()).put("url", url.replace("/d/d/", "/service/api/node/content/"));
+                }
+            }
+        }
+        if (!mountsJson.has(Sjm.MOUNTS)) {
+            mountsJson = emsNodeUtil.getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
+        }
+        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
+        for (int i = 0; i < mountsArray.length(); i++) {
+            JSONObject result = handleArtifactMountSearch(mountsArray.getJSONObject(i), filename);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
     /**
      * Recurse a view hierarchy to get all allowed elements
      *
@@ -426,7 +366,6 @@ public class ModelGet extends AbstractJavaWebScript {
     protected JSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
         throws JSONException, SQLException, IOException {
         // get timestamp if specified
-        String commitId = req.getParameter("commitId");
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         Long depth = getDepthFromRequest(req);
@@ -436,14 +375,7 @@ public class ModelGet extends AbstractJavaWebScript {
         JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
 
         JSONArray elasticElements = handleMountSearch(mountsJson, extended, rootSysmlid, depth);
-        JSONArray elasticElementsCleaned = new JSONArray();
-
-        for (int i = 0; i < elasticElements.length(); i++) {
-            JSONObject o = elasticElements.getJSONObject(i);
-            elasticElementsCleaned.put(o);
-        }
-
-        return elasticElementsCleaned;
+        return elasticElements;
     }
 
     protected JSONArray handleMountSearch(JSONObject mountsJson, boolean extended, String rootSysmlid, Long depth)
@@ -466,51 +398,6 @@ public class ModelGet extends AbstractJavaWebScript {
         }
         return new JSONArray();
 
-    }
-
-    /*
-     * This method searched through the specified results and compare
-     * the sysmlIds with the specified input parameter. If a match is
-     * found, that JSONObject is returned; otherwise, a null JSONObject
-     * is returned.
-     *
-     * NOTE: only the "updated" and "added" elements need to be searched
-     * since all "deleted" and "moved" elements are listed as "updated".
-     */
-    private JSONObject findInResults(EmsNodeUtil emsNodeUtil, JSONObject results, String sysmlId) {
-        JSONObject resObj = null;
-        JSONObject jObj = null;
-        boolean fResFound = false;
-
-        JSONArray jArray = results.getJSONArray("updated");
-        for (int i = 0; i < jArray.length(); i++) {
-            jObj = jArray.getJSONObject(i);
-            if (jObj != null) {
-                String sID = jObj.getString(Sjm.SYSMLID);
-                if (sID.equalsIgnoreCase(sysmlId)) {
-                    String elasticID = jObj.getString(Sjm.ELASTICID);
-                    System.err.println("Found SysmlID=" + sID + ", elasticID=" + elasticID);
-                    resObj = emsNodeUtil.getElasticElement(elasticID);
-                    break;
-                }
-            }
-        }
-
-        jArray = results.getJSONArray("added");
-        for (int j = 0; j < jArray.length(); j++) {
-            jObj = jArray.getJSONObject(j);
-            if (jObj != null) {
-                String sID = jObj.getString(Sjm.SYSMLID);
-                if (sID.equalsIgnoreCase(sysmlId)) {
-                    String elasticID = jObj.getString(Sjm.ELASTICID);
-                    System.err.println("Found SysmlID=" + sID + ", elasticID=" + elasticID);
-                    resObj = emsNodeUtil.getElasticElement(elasticID);
-                    break;
-                }
-            }
-        }
-
-        return resObj;
     }
 
 }

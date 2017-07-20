@@ -207,12 +207,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         }
 
         // Only create the workspace if the workspace id was not supplied:
-        EmsScriptNode existingRef =
-            orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId, false, null, true);
+        EmsScriptNode existingRef = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
         if (newWorkspaceId == null || existingRef == null) {
 
-            EmsScriptNode srcWs =
-                orgNode.childByNamePath("/" + projectId + "/refs/" + sourceWorkspaceId, false, null, true);
+            EmsScriptNode srcWs = orgNode.childByNamePath("/" + projectId + "/refs/" + sourceWorkspaceId);
 
             if (newWorkspaceId == null) {
                 newWorkspaceId =
@@ -235,13 +233,12 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);
                 return null;
             } else {
-                EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs", false, null, true);
+                EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs");
                 // Copy the images from the parent folder
                 FileFolderService fileService = services.getFileFolderService();
                 try {
                     fileService.copy(srcWs.getNodeRef(), refContainerNode.getNodeRef(), newWorkspaceId);
-                    existingRef =
-                        orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId, false, null, true);
+                    finalWorkspace = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
                     // keep history of the branch
 //                    String srcId = srcWs.getName().equals("master") ? "master" : srcWs.getId();
 //                    existingRef.setProperty("cm:title", existingRef.getId() + "_" + srcId);
@@ -249,7 +246,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
                         jsonObject != null ? jsonObject.optString("source") : null);
-                    finalWorkspace = existingRef;
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -257,32 +253,12 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         } else {
             // Workspace was found, so update it:
             if (existingRef.getId() != null) {
-
-                if (existingRef.isDeleted()) {
-
-                    existingRef.removeAspect("ems:Deleted");
-                    log(Level.INFO, HttpServletResponse.SC_OK, "Workspace undeleted and modified");
-
-                } else {
-                    log(Level.INFO, "Workspace is modified", HttpServletResponse.SC_OK);
-                }
-
-                // Update the name/description:
-                // Note: allowing duplicate workspace names, so no need to check for other
-                //       refs with the same name
-                if (workspaceName != null) {
-                    existingRef.createOrUpdateProperty("ems:workspace_name", workspaceName);
-                }
-                if (desc != null) {
-                    existingRef.createOrUpdateProperty("ems:description", desc);
-                }
                 finalWorkspace = existingRef;
             } else {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Workspace not found.");
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);
                 return null;
             }
-
             wsJson.put(Sjm.MODIFIED, date);
             wsJson.put(Sjm.MODIFIER, user);
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
@@ -297,7 +273,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             } else {
                 finalWorkspace.setPermission("SiteConsumer", "GROUP_EVERYONE");
             }
-            finalWorkspace.createOrUpdateProperty("ems:permission", permission);
         }
 
         return wsJson;

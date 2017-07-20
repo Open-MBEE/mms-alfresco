@@ -259,19 +259,6 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 		}
 	}
 
-	protected void saveCoverToRepo(String coverFilename, String coverContent) {
-		log(String.format("Saving %s to repository...", coverFilename));
-		try {
-			EmsScriptNode htmlNode = createScriptNode(coverFilename);
-			ActionUtil.saveStringToFile(htmlNode, "text/html", services,
-					coverContent);
-		} catch (Throwable ex) {
-			// allowing process to continue;
-			log("Failed to save %s to repository!");
-			log(ex.getMessage());
-		}
-	}
-
 	protected EmsScriptNode saveHtmlToRepo(String htmlFilename,
 			String htmlContent) throws Throwable {
 		log(String.format("Saving %s to repository...", htmlFilename));
@@ -986,7 +973,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 	 */
 	private JSONObject saveAndStartAction(WebScriptRequest req, Status status) {
 		JSONObject postJson = null;
-		WorkspaceNode workspace = getWorkspace(req);
+		//WorkspaceNode workspace = getWorkspace(req);
 		JSONObject reqPostJson = (JSONObject) req.parseContent();
 		if (reqPostJson != null) {
 			postJson = reqPostJson;
@@ -997,7 +984,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 					String user = AuthenticationUtil.getRunAsUser();
 					EmsScriptNode userHomeFolder = getUserHomeFolder(user);
 
-					postJson = handleCreate(json, userHomeFolder, workspace, status);
+					postJson = handleCreate(json, userHomeFolder, null, status);
 				}
 			}
 		}
@@ -1042,7 +1029,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 	public void startAction(EmsScriptNode jobNode, JSONObject postJson, WorkspaceNode workspace) {
 		ActionService actionService = services.getActionService();
 		Action htmlToPdfAction = actionService.createAction(HtmlToPdfActionExecuter.NAME);
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_WORKSPACE, workspace);
+		//htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_WORKSPACE, workspace);
 		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_DOCUMENT_ID, postJson.optString("docId"));
 		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TAG_ID, postJson.optString("tagId"));
 		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TIME_STAMP, postJson.optString("time"));
@@ -1059,52 +1046,6 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_INDEX, postJson.optString("index"));
 		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_DISABLED_COVER_PAGE, postJson.optString("disabledCoverPage"));
 		services.getActionService().executeAction(htmlToPdfAction, jobNode.getNodeRef(), true, true);
-	}
-
-	protected void createCoverPage(String coverFilename, String coverContent)
-			throws Throwable {
-		log(String.format("Saving %s to filesystem...", coverFilename));
-		Path coverPath = Paths.get(this.fsWorkingDir, coverFilename);
-		Document document = Jsoup.parse(coverContent, "UTF-8");
-		if (document == null) {
-			throw new Throwable("Failed to parse HTML cover content!");
-		}
-		Element head = document.head();
-		head.append("<meta charset=\"utf-8\" />");
-		StringBuffer style = new StringBuffer();
-		style.append("<link href=\"css/mm-mms.styles.min.css\" rel=\"stylesheet\" type=\"text/css\" />");
-		style.append("<link href=\"css/ve-mms.styles.min.css\" rel=\"stylesheet\" type=\"text/css\" />");
-		head.append(style.toString());
-		BufferedWriter bw = null;
-		try {
-			bw = new BufferedWriter(new FileWriter(coverPath.toString()));
-			bw.write(document.toString());
-		} catch (Throwable ex) {
-			ex.printStackTrace();
-			throw new Throwable(String.format(
-					"Failed to save %s to filesystem! %s", coverFilename,
-					ex.getMessage()));
-		} finally {
-			if (bw != null)
-				bw.close();
-		}
-	}
-
-	/*
-	 * builds up of header right-hand-side
-	 */
-	protected String buildHeaderContentRHS(String tagId, String timestamp,
-			String displayTime) throws IOException {
-		String contentRight = displayTime;
-		if (Utils.isNullOrEmpty(displayTime)) {
-			Date d = new Date();
-			if (timestamp.compareToIgnoreCase("latest") != 0)
-				d = TimeUtils.dateFromTimestamp(timestamp);
-			contentRight = getFormattedDate(d);
-		}
-		if (timestamp.compareToIgnoreCase("latest") != 0)
-			contentRight = String.format("%s %s", tagId, contentRight);
-		return contentRight;
 	}
 
 	protected String getFormattedDate(Date date) {

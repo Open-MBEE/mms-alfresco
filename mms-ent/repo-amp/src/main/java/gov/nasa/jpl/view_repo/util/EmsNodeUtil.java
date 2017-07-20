@@ -598,7 +598,7 @@ public class EmsNodeUtil {
 
             String content = o.toString();
             if (isImageData(content)) {
-                content = extractAndReplaceImageData(content, workspace, organization);
+                content = extractAndReplaceImageData(content, organization);
                 o = new JSONObject(content);
             }
 
@@ -678,59 +678,6 @@ public class EmsNodeUtil {
         } catch (IOException ex) {
 
         }
-    }
-
-    public JSONObject processConfiguration(JSONObject postJson, String user, String date) {
-
-        String oldId = null;
-        JSONObject element = new JSONObject();
-
-        List<Pair<String, String>> configs = pgh.getTags();
-
-        for (Pair<String, String> config : configs) {
-            logger.debug(config.second + " " + postJson.getString(Sjm.NAME));
-            if (config.second.equalsIgnoreCase(postJson.getString(Sjm.NAME))) {
-                oldId = config.first;
-                break;
-            }
-        }
-
-        if (oldId != null) {
-            logger.debug("exists...");
-            element.put(Sjm.NAME, postJson.getString(Sjm.NAME));
-            element.put(Sjm.DESCRIPTION, postJson.getString(Sjm.DESCRIPTION));
-            element.put(Sjm.MODIFIER, user);
-            element.put(Sjm.MODIFIED, date);
-
-            try {
-                ElasticResult r = eh.indexElement(element);
-                pgh.updateTag(postJson.getString(Sjm.NAME), r.elasticId, oldId);
-            } catch (IOException e) {
-                logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-            }
-
-        } else {
-            List<Map<String, String>> commits = pgh.getAllCommits();
-
-            element.put(Sjm.NAME, postJson.getString(Sjm.NAME));
-            element.put(Sjm.DESCRIPTION, postJson.getString(Sjm.DESCRIPTION));
-            element.put(Sjm.CREATOR, user);
-            element.put(Sjm.CREATED, date);
-            element.put(Sjm.MODIFIER, user);
-            element.put(Sjm.MODIFIED, date);
-            element.put("commitId", commits.get(0).get("commitId"));
-            element.put("_timestamp", commits.get(0).get("timestamp"));
-
-            try {
-                ElasticResult r = eh.indexElement(element);
-                pgh.createBranchFromWorkspace(postJson.getString(Sjm.NAME), postJson.getString(Sjm.NAME), r.elasticId,
-                    true);
-            } catch (IOException e) {
-                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
-            }
-        }
-
-        return element;
     }
 
     public void deleteRef(String refId) {
@@ -1304,16 +1251,8 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public boolean isInitialCommit() {
-        return pgh.isInitialCommit();
-    }
-
     public boolean isDeleted(String sysmlid) {
         return pgh.isDeleted(sysmlid);
-    }
-
-    public boolean siteExists(String siteName) {
-        return siteName.equals("swsdp") || pgh.siteExists(siteName);
     }
 
     public boolean orgExists(String orgName) {
@@ -1322,14 +1261,6 @@ public class EmsNodeUtil {
 
     public boolean refExists(String refId) {
         return pgh.refExists(refId);
-    }
-
-    public String getSite(String sysmlid) {
-        String result = null;
-        for (String parent : pgh.getRootParents(sysmlid, DbEdgeTypes.CONTAINMENT)) {
-            result = parent;
-        }
-        return result;
     }
 
     private void diffUpdateJson(JSONObject json, JSONObject existing) {
@@ -1545,7 +1476,7 @@ public class EmsNodeUtil {
         return m.matches();
     }
 
-    private String extractAndReplaceImageData(String value, WorkspaceNode ws, String siteName) {
+    private String extractAndReplaceImageData(String value, String siteName) {
         if (value == null) {
             return null;
         }
@@ -1573,9 +1504,8 @@ public class EmsNodeUtil {
                 // No need to pass a date since this is called in the context of
                 // updating a node, so the time is the current time (which is
                 // null).
-                String subfolder = this.projectId + "/refs/" + this.workspaceName;
                 EmsScriptNode artNode = NodeUtil
-                    .updateOrCreateArtifact(name, extension, content, null, siteName, subfolder, ws, null, null, null,
+                    .updateOrCreateArtifact(name, extension, content, null, siteName, projectId, this.workspaceName, null, null, null,
                         false);
                 if (artNode == null || !artNode.exists()) {
                     logger.debug("Failed to pull out image data for value! " + value);
