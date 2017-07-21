@@ -5,7 +5,47 @@
             "ownerId": "package2",
             "name": "doc2",
             "_appliedStereotypeIds": [
-                "_17_0_1_232f03dc_1325612611695_581988_21583"
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "type": "Class"
+        },
+        {
+            "id": "doc3",
+            "ownerId": "doc1",
+            "name": "doc3",
+            "documentation": "This is a depth of 1 doc.",
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "type": "Class"
+        },
+        {
+            "id": "doc4",
+            "ownerId": "doc1",
+            "name": "doc4",
+            "documentation": "This is a depth of 1 doc.",
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "type": "Class"
+        },
+        {
+            "id": "doc5",
+            "ownerId": "doc2",
+            "name": "doc5",
+            "documentation": "This is a depth of 2 doc.",
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "type": "Class"
+        },
+        {
+            "id": "doc6",
+            "ownerId": "doc3",
+            "name": "doc6",
+            "documentation": "This is a depth of 3 doc.",
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
             ],
             "type": "Class"
         }

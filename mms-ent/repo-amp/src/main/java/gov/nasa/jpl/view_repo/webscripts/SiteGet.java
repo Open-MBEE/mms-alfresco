@@ -107,11 +107,11 @@ public class SiteGet extends AbstractJavaWebScript {
         try {
             if (validateRequest(req, status)) {
                 String projectId = getProjectId(req);
-                WorkspaceNode workspace = getWorkspace(req);
+                String refId = getRefId(req);
                 String timestamp = req.getParameter("timestamp");
                 Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
 
-                JSONArray jsonArray = handleSite(projectId, workspace, dateTime, req);
+                JSONArray jsonArray = handleSite(projectId, refId, dateTime, req);
                 json = new JSONObject();
                 json.put("groups", jsonArray);
             }
@@ -139,23 +139,22 @@ public class SiteGet extends AbstractJavaWebScript {
     /**
      * Get all the sites that are contained in the workspace, and create json with that info in it.
      *
-     * @param workspace The workspace to get sites for
      * @param dateTime  The time to base the site retrieval, or null
      * @return json to return
      *
      * @throws IOException
      */
-    private JSONArray handleSite(String projectId, WorkspaceNode workspace, Date dateTime, WebScriptRequest req)
+    private JSONArray handleSite(String projectId, String refId, Date dateTime, WebScriptRequest req)
                     throws IOException {
 
         //String orgId = getOrgId(req);
         //populateSites(projectId, orgId, workspace, dateTime);
 
         JSONArray json = new JSONArray();
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         PostgresHelper pgh = new PostgresHelper();
         pgh.setProject(projectId);
-        pgh.setWorkspace(workspace);
+        pgh.setWorkspace(refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         ElasticHelper eh = new ElasticHelper();
         List<String> ids = new ArrayList<>();
@@ -218,45 +217,6 @@ public class SiteGet extends AbstractJavaWebScript {
         }
 
         return json;
-    }
-
-    private void populateSites(String projectId, String orgId, WorkspaceNode workspace, Date dateTime) {
-        EmsScriptNode emsNode;
-        String name = null;
-        NodeRef siteRef;
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, workspace);
-        String user = AuthenticationUtil.getFullyAuthenticatedUser();
-
-        List<SiteInfo> sites = services.getSiteService().listSites(user);
-
-        for (SiteInfo siteInfo : sites) {
-
-            try {
-                siteRef = siteInfo.getNodeRef();
-                if (dateTime != null) {
-                    siteRef = NodeUtil.getNodeRefAtTime(siteRef, dateTime);
-                }
-
-                if (siteRef != null) {
-                    emsNode = new EmsScriptNode(siteRef, services);
-                    if (!emsNode.hasPermission(PermissionService.READ)) {
-                        continue;
-                    }
-                    name = emsNode.getName();
-
-                    if (!emsNodeUtil.siteExists(name)) {
-                        JSONObject o = new JSONObject();
-                        o.put(Sjm.NAME, name + "_no_project");
-                        o.put(Sjm.SYSMLID, name + "_no_project");
-                        o.put(Sjm.TYPE, "Project");
-                        CommitUtil.sendProjectDelta(o, orgId, user);
-                    }
-                }
-
-            } catch (Exception e) {
-                log(Level.ERROR, e.getMessage());
-            }
-        }
     }
 
     /**

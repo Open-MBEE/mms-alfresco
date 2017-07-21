@@ -1926,7 +1926,7 @@ public class PostgresHelper {
                     refId);
 
             if (commitId != 0) {
-                query += String.format(" AND timestamp < (SELECT timestamp FROM commits WHERE id = %s)", commitId);
+                query += String.format(" AND timestamp <= (SELECT timestamp FROM commits WHERE id = %s)", commitId);
             }
             query += " ORDER BY timestamp DESC";
 

@@ -12,13 +12,6 @@
           singleton="false">
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.utils.updateworkspaceldapgroup.post"
-        class="gov.nasa.jpl.view_repo.webscripts.UpdateWorkspaceLdapGroup" parent="webscript"
-        singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
     <bean id="webscript.gov.nasa.jpl.mms.refs.elements.element.get"
         class="gov.nasa.jpl.view_repo.webscripts.ModelGet" parent="webscript"
         singleton="false">
@@ -71,21 +64,6 @@
         <property name="services" ref="ServiceRegistry"/>
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.projects.get"
-          class="gov.nasa.jpl.view_repo.webscripts.ProjectsGet" parent="webscript"
-          singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
-    <!-- adding new bean -->
-    <bean id="webscript.gov.nasa.jpl.mms.refs.views.get"
-        class="gov.nasa.jpl.view_repo.webscripts.ViewGet" parent="webscript"
-        singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
     <!-- adding new bean -->
     <bean id="webscript.gov.nasa.jpl.mms.refs.sites.get"
           class="gov.nasa.jpl.view_repo.webscripts.SiteGet" parent="webscript"
@@ -112,13 +90,6 @@
     <bean id="webscript.gov.nasa.jpl.mms.refs.mounts.get"
           class="gov.nasa.jpl.view_repo.webscripts.MountsGet" parent="webscript"
           singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
-    <bean id="webscript.gov.nasa.jpl.mms.diff.post"
-        class="gov.nasa.jpl.view_repo.webscripts.WorkspaceDiffPost" parent="webscript"
-        singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
@@ -158,20 +129,6 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean id="webscript.gov.nasa.jpl.mms.refs.artifact.post"
-        class="gov.nasa.jpl.view_repo.webscripts.ArtifactPost" parent="webscript"
-        singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
-    <bean id="webscript.gov.nasa.jpl.mms.refs.artifact.get"
-        class="gov.nasa.jpl.view_repo.webscripts.ArtifactGet" parent="webscript"
-        singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
     <bean id="webscript.gov.nasa.jpl.mms.refs.elements.elements.get"
         class="gov.nasa.jpl.view_repo.webscripts.ModelsGet" parent="webscript"
         singleton="false">
@@ -193,14 +150,6 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <!-- utilities for synchronizing sites including creating a admin user -->
-    <bean id="webscript.gov.nasa.jpl.utils.site_perm_sync.post"
-        class="gov.nasa.jpl.view_repo.webscripts.util.SitePermSync" parent="webscript"
-        singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
     <!-- get module info -->
     <bean id="webscript.gov.nasa.jpl.utils.moduleinfo.get"
         class="gov.nasa.jpl.view_repo.webscripts.util.ModuleInfoGet" parent="webscript"
@@ -217,13 +166,6 @@
 
     <bean id="webscript.gov.nasa.jpl.mms.mmsversion.get"
         class="gov.nasa.jpl.view_repo.webscripts.MmsVersion" parent="webscript"
-          singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper"/>
-        <property name="services" ref="ServiceRegistry"/>
-    </bean>
-
-    <bean id="webscript.gov.nasa.jpl.mms.svgtopng.post"
-        class="gov.nasa.jpl.view_repo.webscripts.SvgToPngPost" parent="webscript"
           singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper"/>
         <property name="services" ref="ServiceRegistry"/>

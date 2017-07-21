@@ -14,11 +14,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
+import gov.nasa.jpl.view_repo.db.Node;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.apache.commons.compress.archivers.dump.DumpArchiveEntry;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,14 +28,10 @@ import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.connections.JmsConnection;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
-import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbCommitTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.Service;
 
 /**
  * Utilities for saving commits and sending out deltas based on commits
@@ -651,22 +646,26 @@ public class CommitUtil {
 
         try {
             ElasticHelper eh = new ElasticHelper();
+            eSite = eh.indexElement(site);
+            eProject = eh.indexElement(project);
+            eh.refreshIndex();
 
             // only insert if the site does not exist already
             if (pgh.getNodeFromSysmlId(orgId) == null) {
-
-                eSite = eh.indexElement(site);
                 eSiteHoldingBin = eh.indexElement(siteHoldingBin);
+                eh.refreshIndex();
 
                 pgh.insertNode(eSite.elasticId, orgId, DbNodeTypes.SITE);
                 pgh.insertNode(eSiteHoldingBin.elasticId, "holding_bin_" + orgId, DbNodeTypes.HOLDINGBIN);
                 pgh.insertEdge(orgId, eSiteHoldingBin.sysmlid, DbEdgeTypes.CONTAINMENT);
+            } else {
+                Map<String, String> siteElastic = new HashMap<>();
+                siteElastic.put("elasticid", eSite.elasticId);
+                pgh.updateNode(orgId, siteElastic);
             }
 
             // only insert if the project does not exist already
             if (pgh.getNodeFromSysmlId(projectSysmlid) == null) {
-
-                eProject = eh.indexElement(project);
                 eProjectHoldingBin = eh.indexElement(projectHoldingBin);
                 eViewInstanceBin = eh.indexElement(viewInstanceBin);
                 eh.refreshIndex();
@@ -687,6 +686,10 @@ public class CommitUtil {
                 jmsMsg.put("refs", addedElements);
                 jmsMsg.put("source", "mms");
                 sendJmsMsg(jmsMsg, TYPE_DELTA, null, projectSysmlid);
+            } else {
+                Map<String, String> projectElastic = new HashMap<>();
+                projectElastic.put("elasticid", eProject.elasticId);
+                pgh.updateNode(projectSysmlid, projectElastic);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -741,49 +744,6 @@ public class CommitUtil {
         return branchJson;
     }
 
-    public static JSONObject getWorkspaceDetails(EmsScriptNode ws, Date date) {
-        JSONObject json = new JSONObject();
-        addWorkspaceNamesAndIds(json, ws, false);
-        if (null == date) {
-            date = new Date();
-        }
-        json.put("time", TimeUtils.toTimestamp(date));
-        return json;
-    }
-
-    /**
-     * Add the workspace name and id metadata onto the provided JSONObject
-     *
-     * @param json
-     * @param ws
-     * @throws JSONException
-     */
-    public static void addWorkspaceNamesAndIds(JSONObject json, EmsScriptNode ws, boolean chkPermissions)
-        throws JSONException {
-        json.put("name", ws.getProperty("ems:workspace_name"));
-        json.put("id", ws.getNodeRef().getId());
-        json.put("qualifiedName", EmsScriptNode.getQualifiedName(ws, null));
-        json.put("qualifiedId", EmsScriptNode.getQualifiedId(ws, null));
-
-        // If it is the master workspace, then determine if the user has permissions,
-        // and add a indication to the json:
-        if (ws == null && chkPermissions) {
-            // Decided not to do this using the site manger, but rather with the ldap group
-            // checkSiteManagerPermissions(json, services);
-            json.put("workspaceOperationsPermission", NodeUtil.userHasWorkspaceLdapPermissions());
-        }
-    }
-
-    public static boolean sendMerge(EmsScriptNode src, EmsScriptNode dst, Date srcDateTime) throws JSONException {
-        // FIXME: need to add merge event into commit history
-        JSONObject mergeJson = new JSONObject();
-
-        mergeJson.put("sourceWorkspace", getWorkspaceDetails(src, srcDateTime));
-        mergeJson.put("mergedWorkspace", getWorkspaceDetails(dst, null));
-
-        return sendJmsMsg(mergeJson, TYPE_MERGE, null, null);
-    }
-
     protected static boolean sendJmsMsg(JSONObject json, String eventType, String refId, String projectId) {
         boolean status = false;
         if (jmsConnection != null) {
@@ -801,30 +761,6 @@ public class CommitUtil {
 
         return status;
     }
-
-    /**
-     * Send off progress to various endpoints
-     *
-     * @param msg       String message to be published
-     * @param projectId String of the project Id to post to
-     * @return true if publish completed
-     * @throws JSONException
-     */
-    public static boolean sendProgress(String msg, String workspaceId, String projectId) {
-        // FIXME: temporarily remove progress notifications until it's actually
-        // ready to be used
-        // boolean jmsStatus = false;
-        //
-        // if (jmsConnection != null) {
-        // jmsConnection.setWorkspace( workspaceId );
-        // jmsConnection.setProjectId( projectId );
-        // jmsStatus = jmsConnection.publishTopic( msg, "progress" );
-        // }
-        //
-        // return jmsStatus;
-        return true;
-    }
-
 
     private static JSONObject createNode(String sysmlid, String user, String date, JSONObject e) {
         // JSONObject o = new JSONObject();
@@ -859,16 +795,16 @@ public class CommitUtil {
                     return false;
                 }
 
-                EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary", false, null, true);
+                EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary");
                 if (documentLibrary == null) {
                     documentLibrary = site.createFolder("documentLibrary");
                     documentLibrary.createOrUpdateProperty(Acm.CM_TITLE, "Document Library");
                 }
-                EmsScriptNode projectDocumentLibrary = documentLibrary.childByNamePath(projectId, false, null, true);
+                EmsScriptNode projectDocumentLibrary = documentLibrary.childByNamePath(projectId);
                 if (projectDocumentLibrary == null) {
                     projectDocumentLibrary = documentLibrary.createFolder(projectId);
                 }
-                EmsScriptNode siteCharFolder = projectDocumentLibrary.childByNamePath(folderId, false, null, true);
+                EmsScriptNode siteCharFolder = projectDocumentLibrary.childByNamePath(folderId);
                 if (siteCharFolder == null) {
                     siteCharFolder = projectDocumentLibrary.createFolder(folderId);
                     siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
