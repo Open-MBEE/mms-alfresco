@@ -14,11 +14,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
+import gov.nasa.jpl.view_repo.db.Node;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.apache.commons.compress.archivers.dump.DumpArchiveEntry;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,14 +28,10 @@ import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.connections.JmsConnection;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
-import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbCommitTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.Service;
 
 /**
  * Utilities for saving commits and sending out deltas based on commits
@@ -651,22 +646,26 @@ public class CommitUtil {
 
         try {
             ElasticHelper eh = new ElasticHelper();
+            eSite = eh.indexElement(site);
+            eProject = eh.indexElement(project);
+            eh.refreshIndex();
 
             // only insert if the site does not exist already
             if (pgh.getNodeFromSysmlId(orgId) == null) {
-
-                eSite = eh.indexElement(site);
                 eSiteHoldingBin = eh.indexElement(siteHoldingBin);
+                eh.refreshIndex();
 
                 pgh.insertNode(eSite.elasticId, orgId, DbNodeTypes.SITE);
                 pgh.insertNode(eSiteHoldingBin.elasticId, "holding_bin_" + orgId, DbNodeTypes.HOLDINGBIN);
                 pgh.insertEdge(orgId, eSiteHoldingBin.sysmlid, DbEdgeTypes.CONTAINMENT);
+            } else {
+                Map<String, String> siteElastic = new HashMap<>();
+                siteElastic.put("elasticid", eSite.elasticId);
+                pgh.updateNode(orgId, siteElastic);
             }
 
             // only insert if the project does not exist already
             if (pgh.getNodeFromSysmlId(projectSysmlid) == null) {
-
-                eProject = eh.indexElement(project);
                 eProjectHoldingBin = eh.indexElement(projectHoldingBin);
                 eViewInstanceBin = eh.indexElement(viewInstanceBin);
                 eh.refreshIndex();
@@ -687,6 +686,10 @@ public class CommitUtil {
                 jmsMsg.put("refs", addedElements);
                 jmsMsg.put("source", "mms");
                 sendJmsMsg(jmsMsg, TYPE_DELTA, null, projectSysmlid);
+            } else {
+                Map<String, String> projectElastic = new HashMap<>();
+                projectElastic.put("elasticid", eProject.elasticId);
+                pgh.updateNode(projectSysmlid, projectElastic);
             }
         } catch (Exception e) {
             e.printStackTrace();
