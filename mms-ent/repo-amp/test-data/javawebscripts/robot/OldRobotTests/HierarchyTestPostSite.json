@@ -1,9 +1,0 @@
-{
-    "elements": [{
-        "sysmlId": "PROJECT-5c79ccb6-68a2-4411-be7b-339a05b9e779",
-        "name": "HierarchyTest",
-        "specialization": {
-            "type": "Project"
-        }
-    }]
-}
