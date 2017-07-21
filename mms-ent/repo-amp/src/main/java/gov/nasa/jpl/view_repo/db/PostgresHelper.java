@@ -810,6 +810,11 @@ public class PostgresHelper {
                 .format("SELECT id FROM commits WHERE refId = '%s' ORDER BY timestamp DESC LIMIT 1", workspaceId));
             if (rs.next()) {
                 return rs.getInt(1);
+            } else {
+                rs = execQuery(String.format("SELECT parentcommit FROM refs WHERE refId = '%s'", workspaceId));
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -827,6 +832,11 @@ public class PostgresHelper {
                     workspaceId));
             if (rs.next()) {
                 return rs.getString(1);
+            } else {
+                rs = this.conn.prepareStatement(String.format("select commits.elasticid from refs left join commits on  refs.parentcommit = commits.id where refs.refid = '%s'",workspaceId)).executeQuery();
+                if (rs.next()) {
+                    return rs.getString(1);
+                }
             }
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));

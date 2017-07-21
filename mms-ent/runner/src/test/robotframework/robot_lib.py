@@ -216,6 +216,15 @@ def compare_json(test_name):  # , json_object, filters):
         return False
     return ordered(baseline_json) == ordered(result_json)
 
+def compare_json_to_json(json1, json2):  # , json_object, filters):
+    """
+    Compare 2 JSON objects against each other.
+    :param json1:
+    :param json2:
+    :return:
+    """
+    return ordered(json1) == ordered(json2)
+
 def id_exists(test_name):
     """
     Takes a JSON object and looks for the baseline json that is specified by test_name.
