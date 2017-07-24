@@ -1,0 +1,10 @@
+{
+    "refs": [
+        {
+            "id": "pa_branch_1",
+            "type": "Branch",
+            "name": "Branch 1",
+            "parentRefId": "master"
+        }
+    ]
+}
