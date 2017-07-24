@@ -195,7 +195,8 @@ public class CommitUtil {
             return false;
         }
         for (int i = 0; i < appliedS.length(); i++) {
-            if (appliedS.getString(i).equals("_15_0_be00301_1199377756297_348405_2678")) {
+            String s = appliedS.getString(i);
+            if (Sjm.PROPERTYSIDS.containsValue(s)) {
                 return true;
             }
         }
