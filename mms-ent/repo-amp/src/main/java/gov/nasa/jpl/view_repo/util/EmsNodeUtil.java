@@ -611,8 +611,9 @@ public class EmsNodeUtil {
             }
 
             boolean added = !existingMap.containsKey(sysmlid);
-            if (!added)
+            if (!added) {
                 diffUpdateJson(o, existingMap.get(sysmlid));
+            }
 
             // pregenerate the elasticId
             o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
@@ -1311,6 +1312,22 @@ public class EmsNodeUtil {
                 partial.put(attr, original.get(attr));
             }
         }
+    }
+
+    public boolean isUpdated(JSONObject json, JSONObject existing) {
+        if (existing == null || json.optString(Sjm.MODIFIED).equals(existing.optString(Sjm.MODIFIED))) {
+            return false;
+        }
+
+        for (String attr : JSONObject.getNames(existing)) {
+            if (json.has(attr) && existing.has(attr)) {
+                if (json.get(attr) != existing.get(attr)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public JSONArray addExtendedInformation(JSONArray elements) {
