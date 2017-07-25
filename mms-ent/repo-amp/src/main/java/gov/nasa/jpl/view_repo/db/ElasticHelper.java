@@ -532,7 +532,7 @@ public class ElasticHelper {
         try {
             result = client.execute(deleteByQuery);
             if (!result.isSucceeded()) {
-                logger.error("Delete Failed!");
+                logger.error("Deleting Elastic Elements Failed!");
                 logger.error(result.getErrorMessage());
             }
         } catch (Exception e) {
