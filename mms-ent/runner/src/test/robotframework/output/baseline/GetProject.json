@@ -1,3 +1,14 @@
 {
-    "projects": []
+    "projects": [
+        {
+            "_creator": "admin",
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "id": "PA",
+            "name": "Initial Organization Project",
+            "orgId": "initorg",
+            "type": "Project"
+        }
+    ]
 }
