@@ -925,6 +925,20 @@ public class PostgresHelper {
                 }
             }
 
+            for (Map.Entry<String, String> entry : values.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                vals.append(key).append(" = ");
+
+                if (key.equals("nodetype")) {
+                    vals.append(values.get(key)).append(",");
+                } else if (values.get(key) != null) {
+                    vals.append("'").append(values.get(key)).append("',");
+                } else {
+                    vals.append(values.get(key)).append(",");
+                }
+            }
+
             vals.setLength(vals.length() - 1);
 
             String query = String
