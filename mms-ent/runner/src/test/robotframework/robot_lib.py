@@ -6,6 +6,7 @@ import platform
 import os
 import shutil
 import subprocess
+import requests
 
 '''
 Example of GetSites JSON converted to Robot Framework
@@ -13,7 +14,7 @@ Example of GetSites JSON converted to Robot Framework
 Get Sites
     [Documentation]     Get Sites
     [Tags]              Get   Sites
-    ${result} =         Get  ${ROOT}/workspaces/master/sites
+    ${result} =         Get  ${ROOT}/refs/master/sites
     Should Be Equal     ${result.status_code}  ${200}
     ${json} =           Set Variable  ${result.json()}
     ${some_stuff} =     Create List    ${COMMON_FILTERS}
@@ -24,8 +25,8 @@ Get Sites
 # Global Variables
 develop_baseline_dir = '../developBaselineDir/'
 debug_test = False
-ROOT_RETURN_ELEMENTS = ['elements', 'workspaces', 'configurations', 'products', 'sites', 'views', 'ownersNotFound',
-                        'message', 'workspace1', 'workspace2']
+ROOT_RETURN_ELEMENTS = ['elements', 'refs', 'configurations', 'products', 'sites', 'views', 'ownersNotFound',
+                        'message', 'workspace1', 'workspace2', 'documents']
 
 robot_dir = os.getcwd() + '/runner/src/test/robotframework'
 output_dir = os.listdir(robot_dir + '/output')
@@ -215,6 +216,15 @@ def compare_json(test_name):  # , json_object, filters):
         return False
     return ordered(baseline_json) == ordered(result_json)
 
+def compare_json_to_json(json1, json2):  # , json_object, filters):
+    """
+    Compare 2 JSON objects against each other.
+    :param json1:
+    :param json2:
+    :return:
+    """
+    return ordered(json1) == ordered(json2)
+
 def id_exists(test_name):
     """
     Takes a JSON object and looks for the baseline json that is specified by test_name.
@@ -314,15 +324,15 @@ def get_sysmlid_from_dict(json_object):
 
 def get_id_from_workspace(workspace_json):
     """
-    Method will grab the ID out of the json object. Typically used for the the workspaces tests when branching or
-    creating workspaces based off of tags.
+    Method will grab the ID out of the json object. Typically used for the the refs tests when branching or
+    creating refs based off of tags.
     :param workspace_json: Name of the JSON object that contains the id needed for the test
     :return: ID found in the JSON object
     """
     # workspace_object = open('output/original/{}_orig.json'.format(workspace_json))
     # workspace_object = json.load(workspace_object)
-    # return workspace_object['workspaces'][0]['id']
-    return get_id_from_json(workspace_json, 'workspaces')
+    # return workspace_object['refs'][0]['id']
+    return get_id_from_json(workspace_json, 'refs')
 
 
 def get_id_from_json(test_name, root_key):
@@ -391,7 +401,7 @@ def is_empty_json(json_object):
 
 def create_workspace_json(ws_name, ws_description="Some workspace", ws_parent="master"):
     workspace_json = {
-        "workspaces": [{
+        "refs": [{
             "name": str(ws_name),
             "description": "<p>{}</p>\n".format(ws_description),
             "permission": "read",
@@ -402,6 +412,116 @@ def create_workspace_json(ws_name, ws_description="Some workspace", ws_parent="m
     json_file.writelines(json.dumps(workspace_json))
     return workspace_json
 
+def get_elements_from_elasticsearch(sysmlId, index="mms", elasticHost="localhost"):
+    """
+    Method will return an array of elements based on the sysmlid provided. It will be the entire history of the element.
+    :param sysmlid: string
+    :param index: ElasticSearch Index
+    :param elastichost: Hostname of ElasticSearch
+    :return:
+    """
+    query = {
+        "query":{
+            "term":{
+                "id":sysmlId
+            }
+        }
+    }
+    res = requests.post("http://{}:9200/{}/_search".format(elasticHost,index), data=json.dumps(query))
+    return res.json()["hits"]["hits"]
+
+
+def find_element_by_commit(sysmlId, commitId):
+        """
+        Returns an element at a specific commit.
+        :param sysmlid:
+        :param commitId:
+        :return:
+        """
+        elementList = get_elements_from_elasticsearch(sysmlId)
+        for element in elementList:
+            if element["_source"]["_commitId"] == commitId:
+                return element["_source"]
+
+def get_element_commit_ids(sysmlId):
+    """
+    Returns a list of commit ids based on the element sysmlid provided.
+    :param sysmlid:
+    :return:
+    """
+    elements = get_elements_from_elasticsearch(sysmlId=sysmlId)
+    commits = []
+    for element in elements:
+        commits.append(element["_source"]["_commitId"])
+    return commits
+
+def element_exists_in_commit(sysmlId, commitId):
+    return find_element_by_commit(sysmlId=sysmlId,commitId=commitId) > 0
+
+def get_commit_timestamp(commitId, index="mms", elasticHost="localhost"):
+    query = {
+        "query":{
+            "term":{
+                "_commitId":commitId
+            }
+        }
+    }
+    res = requests.post("http://{}:9200/{}/_search".format(elasticHost,index), data=json.dumps(query))
+    return res.json()["hits"]["hits"][0]["_source"]["_created"]
+
+def get_commit_from_json(jsonObject):
+    return jsonObject["elements"][0]["_commitId"]
+
+def get_all_commits(index="mms", elasticHost="localhost", excludeCommits=[]):
+    """
+    Returns all commits in elasticsearch. This is only useful when there is a small number of elements and commits in
+    elasticsearch. If this is used a model that is large then the method may return more commits than desired.
+    :param index:
+    :param elasticHost:
+    :return:
+    """
+    query = {
+        "query":{
+            "match_all":{}
+        },
+        "size":"30"
+    }
+    res = requests.post("http://{}:9200/{}/commit/_search".format(elasticHost,index), data=json.dumps(query))
+    commitObjectList = {}
+    for hit in res.json()["hits"]["hits"]:
+        if(hit['_source']['_elasticId']) not in excludeCommits:
+            commitObjectList[hit['_source']['_created']] = hit['_source']['_elasticId']
+    return commitObjectList
+
+def get_all_project_commits(projectId, index="mms", elasticHost="localhost"):
+    query = {
+        "query": {
+            "term":{
+                "_projectId": projectId
+            }
+        }
+    }
+    res = requests.post("http://{}:9200/{}/_search".format(elasticHost, index), data=json.dumps(query))
+    commitObjectList = []
+    for hit in res.json()["hits"]["hits"]:
+        if hit["_source"]["_commitId"] not in commitObjectList:
+            commitObjectList.append(hit["_source"]["_commitId"])
+    return commitObjectList
+
+
+def get_last_commit():
+    commits = get_all_commits()
+    sorted_list = sorted(commits)
+    return commits[sorted_list[-1]]
+
+def get_commit_in_between_latest_and_element(sysmlId, projectId):
+    element_commits = get_element_commit_ids(sysmlId)
+    commits = get_all_commits(excludeCommits=element_commits)
+    sorted_list = sorted(commits)
+    project_commits = get_all_project_commits(projectId)
+    for c in sorted_list:
+        if commits[c] not in element_commits and commits[c] in project_commits:
+            return commits[c]
 
 # Main Application when running from the commandline
 if __name__ == "__main__":

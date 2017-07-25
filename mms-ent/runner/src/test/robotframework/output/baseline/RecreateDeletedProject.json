@@ -1,0 +1,14 @@
+{
+    "projects": [
+        {
+            "_creator": "admin",
+            "_modifier": "admin",
+            "_projectId": "DeleteProject",
+            "_refId": "master",
+            "id": "DeleteProject",
+            "name": "Project meant to be deleted",
+            "orgId": "initorg",
+            "type": "Project"
+        }
+    ]
+}

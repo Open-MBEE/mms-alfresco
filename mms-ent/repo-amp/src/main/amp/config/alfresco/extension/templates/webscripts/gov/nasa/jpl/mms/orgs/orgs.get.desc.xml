@@ -2,6 +2,7 @@
 <!DOCTYPE webscript>
 <webscript>
     <shortname>get org projects</shortname>
+    <url>/orgs</url>
     <url>/orgs/{orgId}</url>
     <url>/orgs/{orgId}/projects</url>
     <url>/projects</url>

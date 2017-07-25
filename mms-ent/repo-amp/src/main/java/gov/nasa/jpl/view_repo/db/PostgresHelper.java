@@ -810,6 +810,11 @@ public class PostgresHelper {
                 .format("SELECT id FROM commits WHERE refId = '%s' ORDER BY timestamp DESC LIMIT 1", workspaceId));
             if (rs.next()) {
                 return rs.getInt(1);
+            } else {
+                rs = execQuery(String.format("SELECT parentcommit FROM refs WHERE refId = '%s'", workspaceId));
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -827,6 +832,11 @@ public class PostgresHelper {
                     workspaceId));
             if (rs.next()) {
                 return rs.getString(1);
+            } else {
+                rs = this.conn.prepareStatement(String.format("select commits.elasticid from refs left join commits on  refs.parentcommit = commits.id where refs.refid = '%s'",workspaceId)).executeQuery();
+                if (rs.next()) {
+                    return rs.getString(1);
+                }
             }
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -1926,7 +1936,7 @@ public class PostgresHelper {
                     refId);
 
             if (commitId != 0) {
-                query += String.format(" AND timestamp < (SELECT timestamp FROM commits WHERE id = %s)", commitId);
+                query += String.format(" AND timestamp <= (SELECT timestamp FROM commits WHERE id = %s)", commitId);
             }
             query += " ORDER BY timestamp DESC";
 
@@ -1936,7 +1946,7 @@ public class PostgresHelper {
                 Map<String, Object> commit = new HashMap<>();
                 commit.put(Sjm.SYSMLID, rs.getString(1));
                 commit.put(Sjm.CREATOR, rs.getString(2));
-                commit.put(Sjm.TIMESTAMP, rs.getTime(3));
+                commit.put(Sjm.TIMESTAMP, rs.getTimestamp(3));
                 commit.put("refId", rs.getString(4));
                 commit.put("commitType", rs.getString(5));
                 result.add(commit);

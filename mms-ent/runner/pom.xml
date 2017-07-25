@@ -9,7 +9,7 @@
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
         <artifactId>mms-ent</artifactId>
-        <version>3.0.1</version>
+        <version>3.0.2-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -154,6 +154,91 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>testrail</id>
+            <properties>
+                <skipTests>false</skipTests>
+            </properties>
+            <repositories>
+                <repository>
+                    <id>jcenter</id>
+                    <name>bintray</name>
+                    <url>https://jcenter.bintray.com/</url>
+                </repository>
+            </repositories>
+            <dependencies>
+                <!-- https://jcenter.bintray.com/org/openmbee/testrail/ -->
+                <dependency>
+                    <groupId>org.openmbee.testrail</groupId>
+                    <artifactId>testrail-cli</artifactId>
+                    <version>1.0.0</version>
+                </dependency>
+                <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+                <dependency>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                    <version>2.2.11</version>
+                    <scope>provided</scope>
+                </dependency>
+                <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+                <dependency>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-impl</artifactId>
+                    <version>2.2.11</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>move-junit-ouput</id>
+                                <phase>post-integration-test</phase>
+                                <configuration>
+                                    <target>
+                                        <mkdir dir="target/robotframework-reports/junit"></mkdir>
+                                        <move file="target/robotframework-reports/TEST-suites.xml" todir="target/robotframework-reports/junit"></move>
+                                    </target>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>post-results-testrail</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <mainClass>org.openmbee.testrail.cli.JUnitPublisher</mainClass>
+                            <arguments>
+                                <!-- Equivalent to => -d dir -h host -u user -p pass -sid suite-id -pid plan-id -->
+                                <argument>--directory</argument><argument>${project.basedir}/target/robotframework-reports/junit</argument>
+                                <argument>--host</argument><argument>${env.TESTRAIL_HOST}</argument>
+                                <argument>--user</argument><argument>${env.TESTRAIL_USER}</argument>
+                                <argument>--password</argument><argument>${env.TESTRAIL_PASS}</argument>
+                                <argument>--suite-id</argument><argument>${env.TESTRAIL_SUITE_ID}</argument>
+                                <!--<argument>&#45;&#45;plan-id</argument><argument>${env.TESTRAIL_PLAN_ID}</argument>-->
+                                <!--<argument>${env.TESTRAIL_RUN_NAME}</argument>-->
+                            </arguments>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

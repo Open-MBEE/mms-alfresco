@@ -26,13 +26,9 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import gov.nasa.jpl.mbee.util.Timer;
+import gov.nasa.jpl.view_repo.util.*;
 
-import javax.servlet.http.HttpServletResponse;
-
-import gov.nasa.jpl.view_repo.webscripts.util.ConfigurationsWebscript;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -47,22 +43,17 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.util.Acm;
-import gov.nasa.jpl.view_repo.util.CommitUtil;
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
-import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
-import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- *
- * @author cinyoung
+ * @author han
  */
 public class ProjectPost extends AbstractJavaWebScript {
-	static Logger logger = Logger.getLogger(ProjectPost.class);
+    static Logger logger = Logger.getLogger(ProjectPost.class);
 
     public ProjectPost() {
         super();
@@ -72,8 +63,8 @@ public class ProjectPost extends AbstractJavaWebScript {
         super(repositoryHelper, registry);
     }
 
-    private final String MODEL_PATH = "Models";
-    private final String MODEL_PATH_SEARCH = "/" + MODEL_PATH;
+    private final String REF_PATH = "refs";
+    private final String REF_PATH_SEARCH = "/" + REF_PATH;
 
     /**
      * Webscript entry point
@@ -95,45 +86,43 @@ public class ProjectPost extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
 
                 JSONObject json = (JSONObject) req.parseContent();
-                JSONArray elementsArray = json != null ? json.optJSONArray(Sjm.ELEMENTS) : null;
-                JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ?
-                                elementsArray.getJSONObject(0) :
-                                new JSONObject();
+                JSONArray elementsArray = json.optJSONArray("projects");
+                JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ? elementsArray.getJSONObject(0) : new JSONObject();
 
-                // We are now getting the project id form the json object, but
+                String orgId = getOrgId(req);
+
+                // We are now getting the project id from the json object, but
                 // leaving the check from the request
                 // for backwards compatibility:
-                String siteName = getSiteName(req);
-                String projectId = projJson.has(Acm.JSON_ID) ?
-                                projJson.getString(Acm.JSON_ID) :
-                                getProjectId(req, siteName);
+                String projectId = projJson.has(Sjm.SYSMLID) ? projJson.getString(Sjm.SYSMLID) : getProjectId(req);
+                if (validateProjectId(projectId)) {
 
-                boolean delete = getBooleanArg(req, "delete", false);
-                boolean createSite = getBooleanArg(req, "createSite", false);
+                    SiteInfo siteInfo = services.getSiteService().getSite(orgId);
+                    if (siteInfo != null) {
 
-                WorkspaceNode workspace = getWorkspace(req);
+                        CommitUtil.sendProjectDelta(projJson, orgId, user);
 
-                SiteInfo siteInfo = services.getSiteService().getSite(siteName);
-                if (siteInfo == null) {
-                    String sitePreset = "site-dashboard";
-                    String siteTitle = (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : siteName;
-                    String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
-                    if (!ShareUtils.constructSiteDashboard(sitePreset, siteName, siteTitle, siteDescription, false)) {
-                        // TODO: Add some logging for failed site creation
-                        log("Site was not created");
+                        if (projectId != null && !projectId.equals(NO_SITE_ID)) {
+                            statusCode = updateOrCreateProject(projJson, projectId, orgId);
+                        } else {
+                            statusCode = updateOrCreateProject(projJson, projectId);
+                        }
                     } else {
-                        log(Level.INFO, HttpServletResponse.SC_OK, "Model folder created.\n");
-                        statusCode = 200;
+                        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+                        // This should not happen, since the Organization should be created before a Project is posted
+                        if (emsNodeUtil.orgExists(orgId)) {
+                            statusCode = HttpServletResponse.SC_FORBIDDEN;
+                        } else {
+                            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Organization does not exist\n");
+                            statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+                        }
                     }
-                }
-
-                if (siteName != null && !siteName.equals(NO_SITE_ID)) {
-                    statusCode = updateOrCreateProject(projJson, workspace, projectId, siteName, createSite, delete);
                 } else {
-                    statusCode = updateOrCreateProject(projJson, workspace, projectId);
+                    statusCode = HttpServletResponse.SC_BAD_REQUEST;
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, String.format("Invalid Project Id '%s' from client",
+                        projectId));
                 }
 
-                CommitUtil.sendProjectDelta(projJson, siteName, user);
             } else {
                 statusCode = responseStatus.getCode();
             }
@@ -142,7 +131,7 @@ public class ProjectPost extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace:\n %s \n",
-                            e.getLocalizedMessage());
+                e.getLocalizedMessage());
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
@@ -154,19 +143,14 @@ public class ProjectPost extends AbstractJavaWebScript {
         return model;
     }
 
-    public int updateOrCreateProject(JSONObject jsonObject, WorkspaceNode workspace, String projectId)
-                    throws JSONException {
-        EmsScriptNode projectNode = findScriptNodeById(projectId, workspace, null, true);
+    public int updateOrCreateProject(JSONObject jsonObject, String projectId) throws JSONException {
+        EmsScriptNode projectNode = getSiteNode(projectId);
 
         if (projectNode == null) {
             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find project\n");
             return HttpServletResponse.SC_NOT_FOUND;
         }
 
-        String projectName = null;
-        if (jsonObject.has(Acm.JSON_NAME)) {
-            projectName = jsonObject.getString(Acm.JSON_NAME);
-        }
         String projectVersion = null;
         if (jsonObject.has(Acm.JSON_SPECIALIZATION)) {
             JSONObject specialization = jsonObject.getJSONObject(Acm.JSON_SPECIALIZATION);
@@ -181,18 +165,6 @@ public class ProjectPost extends AbstractJavaWebScript {
                 projectNode.createOrUpdateProperty(Acm.ACM_ID, projectId);
             }
             projectNode.createOrUpdateProperty(Acm.ACM_TYPE, "Project");
-            boolean nameChanged = false;
-            if (projectName != null) {
-                projectNode.createOrUpdateProperty(Acm.CM_TITLE, projectName);
-                String oldName = (String) projectNode.getProperty(Acm.ACM_NAME);
-                nameChanged = !projectName.equals(oldName);
-                if (nameChanged) {
-                    projectNode.createOrUpdateProperty(Acm.ACM_NAME, projectName);
-                }
-            }
-            if (idChanged || nameChanged) {
-                projectNode.removeChildrenFromJsonCache(true);
-            }
             if (projectVersion != null) {
                 projectNode.createOrUpdateProperty(Acm.ACM_PROJECT_VERSION, projectVersion);
             }
@@ -207,97 +179,58 @@ public class ProjectPost extends AbstractJavaWebScript {
      *
      * @param jsonObject JSONObject that has the name of the project
      * @param projectId  Project ID
-     * @param siteName   Site project should reside in
      * @return HttpStatusResponse code for success of the POST request
      * @throws JSONException
      */
-    public int updateOrCreateProject(JSONObject jsonObject, WorkspaceNode workspace, String projectId, String siteName,
-                    boolean createSite, boolean delete) throws JSONException {
+    public int updateOrCreateProject(JSONObject jsonObject, String projectId, String orgId) throws JSONException {
         // see if project exists for workspace
-        EmsScriptNode projectNodeAll = findScriptNodeById(projectId, workspace, null, true, siteName);
-        EmsScriptNode projectNode =
-                        (projectNodeAll != null && NodeUtil.workspacesEqual(projectNodeAll.getWorkspace(), workspace)) ?
-                                        projectNodeAll :
-                                        null;
 
-        boolean idChanged = false;
-        boolean nameChanged = false;
+        // make sure Model package under site exists
+        SiteInfo orgInfo = services.getSiteService().getSite(orgId);
+        if (orgInfo != null) {
+            EmsScriptNode site = new EmsScriptNode(orgInfo.getNodeRef(), services);
 
-        // only create site, models, and projects directory in master workspace
-        if (workspace == null) {
-            EmsScriptNode siteNode = getSiteNode(siteName, workspace, null);
-            // make sure Model package under site exists
-            EmsScriptNode modelContainerNode = null;
-            if (siteNode != null) {
-                modelContainerNode = siteNode.childByNamePath(MODEL_PATH_SEARCH, false, workspace, true);
+            if (!checkPermissions(site, "Write")) {
+                return HttpServletResponse.SC_FORBIDDEN;
+            }
 
-                if (!checkPermissions(siteNode, "Write")) {
-                    return HttpServletResponse.SC_FORBIDDEN;
-                }
-                if (modelContainerNode == null) {
-                    modelContainerNode = siteNode.createFolder("Models");
-                    if (modelContainerNode != null)
-                        modelContainerNode.getOrSetCachedVersion();
-                    siteNode.getOrSetCachedVersion();
-                    log(Level.INFO, HttpServletResponse.SC_OK, "Model folder created.\n");
-                }
+            EmsScriptNode projectContainerNode = site.childByNamePath(projectId);
+            if (projectContainerNode == null) {
+                projectContainerNode = site.createFolder(projectId);
+                projectContainerNode.createOrUpdateProperty(Acm.CM_TITLE, jsonObject.optString(Sjm.NAME));
+                log(Level.INFO, HttpServletResponse.SC_OK, "Project folder created.\n");
+            }
 
-                if (projectNode == null) {
-                    projectNode = modelContainerNode.createFolder(projectId, Acm.ACM_PROJECT,
-                                    projectNodeAll != null ? projectNodeAll.getNodeRef() : null);
-                    modelContainerNode.getOrSetCachedVersion();
-                }
+            EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary");
+            if (documentLibrary == null) {
+                documentLibrary = site.createFolder("documentLibrary");
+            }
 
+            EmsScriptNode documentProjectContainer = documentLibrary.childByNamePath(projectId);
+            if (documentProjectContainer == null) {
+                documentProjectContainer = documentLibrary.createFolder(projectId);
+                documentProjectContainer.createOrUpdateProperty(Acm.CM_TITLE, jsonObject.optString(Sjm.NAME));
+            }
 
-                // if project node is still null here, means we're in branch and it
-                // doesn't exist in master
-                if (projectNode == null && workspace != null) {
-                    EmsScriptNode pnode = findScriptNodeById(projectId, workspace.getParentWorkspace(), null, true, siteName);
-                    //            if (pnode != null) {
-                    //                projectNode = workspace.replicateWithParentFolders(pnode);
-                    //            }
-                }
+            EmsScriptNode refContainerNode = projectContainerNode.childByNamePath(REF_PATH_SEARCH);
+            if (refContainerNode == null) {
+                refContainerNode = projectContainerNode.createFolder("refs");
+            }
 
-                if (projectNode == null) {
-                    log(Level.WARN, HttpServletResponse.SC_BAD_REQUEST, "Projects must be created in master workspace.\n");
-                    return HttpServletResponse.SC_BAD_REQUEST;
-                }
+            EmsScriptNode branch = refContainerNode.childByNamePath("master");
+            if (branch == null) {
+                branch = refContainerNode.createFolder("master");
+                EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+                JSONObject masterWs = new JSONObject();
+                masterWs.put("id", "master");
+                masterWs.put("name", "master");
+                String elasticId = emsNodeUtil.insertSingleElastic(masterWs);
+                emsNodeUtil.insertRef("master", "master", elasticId, false);
+            }
 
-                if (delete) {
-                    projectNode.makeSureNodeRefIsNotFrozen();
-                    projectNode.remove();
-                    log(Level.INFO, "Project deleted.\n", HttpServletResponse.SC_OK);
-                } else {
-                    if (checkPermissions(projectNode, PermissionService.WRITE)) {
-                        String projectName = null;
-                        if (jsonObject.has(Acm.JSON_NAME)) {
-                            projectName = jsonObject.getString(Acm.JSON_NAME);
-                        }
-                        String projectVersion = null;
-                        if (jsonObject.has(Acm.JSON_SPECIALIZATION)) {
-                            JSONObject specialization = jsonObject.getJSONObject(Acm.JSON_SPECIALIZATION);
-                            if (specialization != null && specialization.has(Acm.JSON_PROJECT_VERSION)) {
-                                projectVersion = specialization.getString(Acm.JSON_PROJECT_VERSION);
-                            }
-                        }
-
-                        idChanged = projectNode.createOrUpdateProperty(Acm.ACM_ID, projectId);
-                        projectNode.createOrUpdateProperty(Acm.ACM_TYPE, "Project");
-                        if (projectName != null) {
-                            projectNode.createOrUpdateProperty(Acm.CM_TITLE, projectName);
-                            nameChanged = projectNode.createOrUpdateProperty(Acm.ACM_NAME, projectName);
-                        }
-                        if (projectVersion != null) {
-                            projectNode.createOrUpdateProperty(Acm.ACM_PROJECT_VERSION, projectVersion);
-                        }
-                        log(Level.INFO, "Project metadata updated.\n", HttpServletResponse.SC_OK);
-
-                    }
-                }
-                if (idChanged || nameChanged) {
-                    projectNode.removeChildrenFromJsonCache(true);
-                }
-                projectNode.getOrSetCachedVersion();
+            if (branch == null) {
+                log(Level.WARN, HttpServletResponse.SC_BAD_REQUEST, "Projects must be created in master workspace.\n");
+                return HttpServletResponse.SC_BAD_REQUEST;
             }
         }
 
@@ -311,4 +244,12 @@ public class ProjectPost extends AbstractJavaWebScript {
         return checkRequestContent(req);
     }
 
+    /**
+     * Check project id for validity
+     */
+    protected boolean validateProjectId(String projectId) {
+        Pattern p = Pattern.compile("^[\\w-]+$");
+        Matcher m = p.matcher(projectId);
+        return m.matches();
+    }
 }

@@ -1,15 +1,14 @@
-#ref is the endpoint which returns branches and tags
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "description": "Specification for creating a org.",
+    "description": "Specification for projects",
     "properties": {
         "projects": {
             "type": "array",
-            "description": "An array of elements",
+            "description": "An array of projects",
             "items": {
                 "type": "object",
-                "$ref": "#/definitions/Element"
+                "$ref": "#/definitions/Project"
             }
         },
         "message": {
@@ -27,14 +26,24 @@
                 "name": {
                     "type": "string",
                     "description": "[UML:name for named element] Unique identifier of the project. "
-                }
+                },
                 "orgId": {
                     "type": "string",
                     "description": "[xmi:id] Unique identifier of the org the project belongs to."
                 },
                 "type": {
                      "type": "string",
-                     "description": "[uml:id]"
+                     "description": "Project"
+                },
+                "_mounts": {
+                    "type": "array",
+                    "description": "array of project objects mounted by this project (in no particular order, recursively), only available via mounts endpoint (given refId)",
+                    "items": {
+                        "type": "object",
+                        "oneOf": [
+                            { "$ref": "#/definitions/Project"}
+                        ]
+                    }
                 }
             }
         }

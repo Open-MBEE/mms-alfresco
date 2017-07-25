@@ -45,13 +45,13 @@ echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"/rest/views/Test_viewid?recur
 echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"/ve/configurations/Test_site\\"
 
 # get {artifactId}
-echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"/workspaces/master/artifacts/Test_artifactId\\"
+echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"/refs/master/artifacts/Test_artifactId\\"
 
 # get sites
-echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"/workspaces/master/sites\\"
+echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"/refs/master/sites\\"
 
 # get {productId}
-echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"/workspaces/master/sites/Regression_Test_Site/products/Test_productId\\"
+echo curl $CURL_FLAGS $CURL_GET_FLAGS $SERVICE_URL"/refs/master/sites/Regression_Test_Site/products/Test_productId\\"
 echo
 
 ######################################## POST REQUESTS ########################################
@@ -89,10 +89,10 @@ echo curl $CURL_FLAGS $CURL_POST_FLAGS $SERVICE_URL @JsonData/[TBD :D ] "/rest/v
 echo curl $CURL_FLAGS $CURL_POST_FLAGS $SERVICE_URL @JsonData/[TBD :D ] "/rest/views/Test_viewid?force=true,false&amp;recurse=true,false&amp;doc=true,false&amp;product=true,false&amp;user=Test_user\\"
 
 # Post {artifactId}
-echo curl $CURL_FLAGS $CURL_POST_FLAGS $SERVICE_URL @JsonData/[TBD :D ] "/workspaces/master/sites/Regression_Test_Site/artifacts/Test_artifactId\\"
+echo curl $CURL_FLAGS $CURL_POST_FLAGS $SERVICE_URL @JsonData/[TBD :D ] "/refs/master/sites/Regression_Test_Site/artifacts/Test_artifactId\\"
 
 # Post {productId}
-echo curl $CURL_FLAGS $CURL_POST_FLAGS $SERVICE_URL @JsonData/[TBD :D ] "/workspaces/master/sites/Regression_Test_Site/products/Test_productId\\"
+echo curl $CURL_FLAGS $CURL_POST_FLAGS $SERVICE_URL @JsonData/[TBD :D ] "/refs/master/sites/Regression_Test_Site/products/Test_productId\\"
 echo
 
 ######################################## DELETE REQUESTS ########################################

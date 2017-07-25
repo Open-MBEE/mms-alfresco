@@ -5,11 +5,12 @@
     <description>
         post projects
     </description>
-      <url>/orgs/{orgId}/projects</url>
-      <format default="json">argument</format>
-      <authentication>user</authentication>
-      <transaction>required</transaction>
-      <family>MMS REST API</family>
+    <url>/orgs/{orgId}/projects</url>
+    <url>/orgs/{orgId}/projects/{projectId}</url>
+    <format default="json">argument</format>
+    <authentication>user</authentication>
+    <transaction>required</transaction>
+    <family>MMS REST API</family>
     <args>
         <arg>
             <name>posted content</name>
@@ -20,8 +21,8 @@
                 "specialization":{"type":"Project",
                                   "projectVersion": projectVersion if there is a version
                                  }
-                                
-            }]} 
+
+            }]}
             </description>
         </arg>
         <arg>

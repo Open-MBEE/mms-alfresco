@@ -137,23 +137,19 @@ public class Sjm {
         STEREOTYPEIDS = new HashMap<>();
         STEREOTYPEIDS.put("_17_0_2_3_87b0275_1371477871400_792964_43374", "document");
         STEREOTYPEIDS.put("_17_0_1_232f03dc_1325612611695_581988_21583", "view");
+        STEREOTYPEIDS.put("_11_5EAPbeta_be00301_1147420760998_43940_227", "view");
+        STEREOTYPEIDS.put("_18_0beta_9150291_1392290067481_33752_4359", "view");
+        STEREOTYPEIDS.put("_17_0_1_407019f_1332453225141_893756_11936", "view");
         STEREOTYPEIDS.put("_17_0_2_3_407019f_1389807639137_860750_29082", "conforms");
         STEREOTYPEIDS.put("_16_5_4_409a058d_1259862803278_226185_1083", "exposes");
         STEREOTYPEIDS.put("_17_0_5_1_8660276_1407362513794_939259_26181", "characterizes");
     }
 
-
-    public enum Aggregation {
-        COMPOSITE("composite"), SIMPLE("simple"), NONE("none");
-
-        private final String value;
-
-        Aggregation(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
+    public static final Map<String, String> PROPERTYSIDS;
+    static {
+        PROPERTYSIDS = new HashMap<>();
+        PROPERTYSIDS.put("composite", "_15_0_be00301_1199377756297_348405_2678");
+        PROPERTYSIDS.put("none", "_15_0_be00301_1199378032543_992832_3096");
+        PROPERTYSIDS.put("shared", "_15_0_be00301_1199378020836_340320_3071");
     }
 }

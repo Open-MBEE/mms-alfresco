@@ -5,11 +5,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.EmsNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -22,7 +20,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 
 public class WorkspaceHistoryGet extends AbstractJavaWebScript{

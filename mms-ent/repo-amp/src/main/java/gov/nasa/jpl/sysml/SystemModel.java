@@ -666,7 +666,7 @@ public interface SystemModel<E, C, T, P, N, I, U, R, V, W, CT> {
 
 
 //    // problem solving session
-//    // TODO -- replace sessions with model workspaces
+//    // TODO -- replace sessions with model refs
 //    // TODO -- otherwise, create a Session class that would include these session functions, which would return Sessions.
 //	/**
 //	 * Create a new problem solving session.

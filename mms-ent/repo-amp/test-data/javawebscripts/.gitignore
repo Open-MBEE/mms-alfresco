@@ -1,5 +1,0 @@
-*ResultDir
-/testBaselineDir/
-/output/
-/developBaselineDir/sorted_*
-*.pyc

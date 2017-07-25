@@ -213,7 +213,7 @@ public class ModelPost extends AbstractJavaWebScript {
             extension = "." + extension;
         }
 
-        workspace = getWorkspace(req, AuthenticationUtil.getRunAsUser());
+        //workspace = getWorkspace(req, AuthenticationUtil.getRunAsUser());
 
         try {
             Object binaryContent = req.getContent().getContent();
@@ -227,7 +227,7 @@ public class ModelPost extends AbstractJavaWebScript {
         String refId = getRefId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         JSONObject project = emsNodeUtil.getProject(projectId);
-        siteName = project.optString("orgId");
+        siteName = project.optString("orgId", null);
 
         if (siteName != null && validateRequest(req, status)) {
 
@@ -253,7 +253,7 @@ public class ModelPost extends AbstractJavaWebScript {
                         // Create return json:
                         resultJson = new JSONObject();
                         resultJson.put("filename", filename);
-                        // TODO: want full path here w/ path to site also, but Dorris doesnt use it,
+                        // TODO: want full path here w/ path to site also, but Doris does not use it,
                         //		 so leaving it as is.
                         resultJson.put("path", path);
                         resultJson.put("site", siteName);
@@ -264,7 +264,7 @@ public class ModelPost extends AbstractJavaWebScript {
                             new EmsTransaction(this.services, this.response, this.responseStatus) {
                                 @Override public void run() throws Exception {
                                     svgArtifact = NodeUtil.updateOrCreateArtifact(artifactId, extension, null, content,
-                                        siteName, path, workspace, null, response, null, false);
+                                        siteName, projectId, refId, null, response, null, false);
                                 }
                             };
 
@@ -284,7 +284,7 @@ public class ModelPost extends AbstractJavaWebScript {
                                             @Override public void run() throws Exception {
                                                 try {
                                                     pngArtifact = NodeUtil.updateOrCreateArtifactPng(svgArtifact,
-                                                        pngPath, siteName, path, workspace, null, response,
+                                                        pngPath, siteName, projectId, refId, null, response,
                                                         null, false);
                                                 } catch (Throwable ex) {
                                                     throw new Exception("Failed to convert SVG to PNG!\n");

@@ -17,18 +17,8 @@
     </bean>
 
     <!-- add in the Actions -->
-    <bean id="modelLoad" class="gov.nasa.jpl.view_repo.actions.ModelLoadActionExecuter" parent="action-executer">
-        <property name="services" ref="ServiceRegistry"/>
-        <property name="repository" ref="repositoryHelper"/>
-    </bean>
 
     <bean id="workspaceDiff" class="gov.nasa.jpl.view_repo.actions.WorkspaceDiffActionExecuter"
-          parent="action-executer">
-        <property name="services" ref="ServiceRegistry"/>
-        <property name="repository" ref="repositoryHelper"/>
-    </bean>
-
-    <bean id="configurationGeneration" class="gov.nasa.jpl.view_repo.actions.ConfigurationGenerationActionExecuter"
           parent="action-executer">
         <property name="services" ref="ServiceRegistry"/>
         <property name="repository" ref="repositoryHelper"/>
@@ -62,11 +52,6 @@
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.CommitUtil.setJmsConnection"/>
         <property name="arguments" ref="jmsConnection"/>
-    </bean>
-
-    <bean id="svgToPng" class="gov.nasa.jpl.view_repo.actions.SvgToPngActionExecuter" parent="action-executer">
-        <property name="services" ref="ServiceRegistry"/>
-        <property name="repository" ref="repositoryHelper"/>
     </bean>
 
     <!-- Definitions for sending active sync messages -->

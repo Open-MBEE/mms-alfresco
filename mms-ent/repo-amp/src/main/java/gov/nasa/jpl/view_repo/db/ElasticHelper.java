@@ -33,9 +33,11 @@ import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
+import io.searchbox.indices.Refresh;
 import io.searchbox.params.Parameters;
 import io.searchbox.core.DeleteByQuery;
 import io.searchbox.core.Delete;
+
 
 /**
  * @author Jason Han jason.han@jpl.nasa.gov, Laura Mann laura.mann@jpl.nasa.gov
@@ -318,6 +320,21 @@ public class ElasticHelper {
         result.current = k;
 
         return result;
+    }
+    /**
+     * refresh the index                         (1)
+     *
+     * @return Boolean isRefreshed
+     */
+    public Boolean refreshIndex() throws IOException {
+        Refresh refresh = new Refresh.Builder().addIndex(elementIndex).build();
+        JestResult result = client.execute(refresh);
+        if(result.isSucceeded()){
+            return true;
+        }else{
+            return false;
+        }
+
     }
 
     public boolean updateElement(String id, JSONObject payload) throws JSONException, IOException {

@@ -1,35 +1,34 @@
-# this should be the history endpoint
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
-    "description": "Version listing specification. This is version element information",
+    "description": "Returns list of commits where the element changed",
     "properties": {
-        "versions": {
+        "commits": {
             "type": "array",
             "items": {
                 "type": "object",
                 "oneOf": [
-                    {"$ref": "#/definitions/Version"}
+                    {"$ref": "#/definitions/Commit"}
                 ]
             }
         }
     },
 
     "definitions": {
-        "Version": {
+        "Commit": {
             "properties": {
-                "sysmlid": {
+                "id": {
                     "type": "string",
-                    "description": "Unique model identifier of the element. Equivalent to MDID"
+                    "description": "id of the commit"
                 },
-                "timestamp": {
+                "_created": {
                     "type": "string",
                     "format": "date-time",
-                    "description": "Timestamp at which the version was created, which can be used for lookup purposes"
+                    "description": "Timestamp of the commit"
                 },
-                "versionLabel": {
+                "_creator": {
                     "type": "string",
-                    "description": "Version label, e.g., 1.0, 1.1"
+                    "description": "username of the person who made the commit"
                 }
             }
         }
