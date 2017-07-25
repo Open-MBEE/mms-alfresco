@@ -97,6 +97,11 @@ public class ProjectPost extends AbstractJavaWebScript {
                 String projectId = projJson.has(Sjm.SYSMLID) ? projJson.getString(Sjm.SYSMLID) : getProjectId(req);
                 if (validateProjectId(projectId)) {
 
+                    if (orgId == null) {
+                        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+                        orgId = emsNodeUtil.getOrganizationFromProject(projectId);
+                    }
+
                     SiteInfo siteInfo = services.getSiteService().getSite(orgId);
                     if (siteInfo != null) {
 
