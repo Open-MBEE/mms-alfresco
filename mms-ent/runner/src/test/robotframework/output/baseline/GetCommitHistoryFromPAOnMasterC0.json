@@ -1,0 +1,14 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "name": "initial",
+            "ownerId": "PA",
+            "type": "Class"
+        }
+    ]
+}
