@@ -122,9 +122,11 @@ DeleteProject
 	${post_json} =		Get File		${CURDIR}/../../JsonData/ProjectForDeleteProject.json
 	${result} =			Post			url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
 	${post_json} =		Get File		${CURDIR}/../../JsonData/PostNewElementsForDeleteProject.json
 	${result} =			Post			url=${ROOT}/projects/DeleteProject/refs/master/elements         data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
 	${result} =		 Delete	  url=${ROOT}/projects/${TEST_NAME}
 	Should Be Equal	 ${result.status_code}	   ${200}
 	${result} =			Get		url=${ROOT}/orgs/initorg/projects/${TEST_NAME}		headers=&{REQ_HEADER}
