@@ -611,7 +611,9 @@ public class EmsNodeUtil {
             }
 
             boolean added = !existingMap.containsKey(sysmlid);
+            boolean updated = false;
             if (!added) {
+                updated = isUpdated(o, existingMap.get(sysmlid));
                 diffUpdateJson(o, existingMap.get(sysmlid));
             }
 
@@ -648,7 +650,7 @@ public class EmsNodeUtil {
                 newObj.put(Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
                 newObj.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
                 commitAdded.put(newObj);
-            } else {
+            } else if (updated) {
                 logger.debug("ELEMENT UPDATED!");
                 updatedElements.put(o);
 
@@ -660,6 +662,8 @@ public class EmsNodeUtil {
                 parent.put(Sjm.SYSMLID, sysmlid);
                 parent.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
                 commitUpdated.put(parent);
+            } else {
+                logger.debug("ELEMENT UNCHANGED!");
             }
 
             newElements.put(o);
@@ -689,7 +693,7 @@ public class EmsNodeUtil {
                 .toString();
             eh.bulkUpdateElements(elasticIds, payload);
         } catch (IOException ex) {
-
+            // This catch left intentionally blank
         }
     }
 
@@ -1314,16 +1318,14 @@ public class EmsNodeUtil {
         }
     }
 
-    public boolean isUpdated(JSONObject json, JSONObject existing) {
+    private boolean isUpdated(JSONObject json, JSONObject existing) {
         if (existing == null || json.optString(Sjm.MODIFIED).equals(existing.optString(Sjm.MODIFIED))) {
             return false;
         }
 
         for (String attr : JSONObject.getNames(existing)) {
-            if (json.has(attr) && existing.has(attr)) {
-                if (json.get(attr) != existing.get(attr)) {
-                    return true;
-                }
+            if ((json.has(attr) && existing.has(attr)) && (json.get(attr) != existing.get(attr))) {
+                return true;
             }
         }
 
