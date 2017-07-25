@@ -273,8 +273,10 @@ public class ModelGet extends AbstractJavaWebScript {
             logger.warn(e.getMessage());
         }
 
-        if (checkInProjectAndRef || (commitId.equals(lastestCommitId))) {
+        if (commitId.equals(lastestCommitId)) {
             return emsNodeUtil.getElementByElasticID(currentElement);
+        } else if (checkInProjectAndRef) {
+            return emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
         } else {
 
             element = emsNodeUtil.getElementAtCommit(elementId, commitId);
