@@ -2155,11 +2155,10 @@ public class PostgresHelper {
      */
     public void dropDatabase(String databaseName) {
 
-        PostgresPool.removeConnection(EmsConfig.get("pg.host"), databaseName);
-
-        String query = "ALTER DATABASE  \"_" + databaseName  +"\" CONNECTION LIMIT 0";
-        String query2 = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = \'_" + databaseName +"\'";
-        String query3 = "DROP DATABASE \"_" + databaseName +"\";";
+        String query = "ALTER DATABASE  \"_" + databaseName + "\" CONNECTION LIMIT 0";
+        String query2 =
+            "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = \'_" + databaseName + "\'";
+        String query3 = "DROP DATABASE \"_" + databaseName + "\";";
 
         connectConfig();
 
@@ -2167,10 +2166,23 @@ public class PostgresHelper {
             this.configConn.createStatement().executeUpdate(query);
             this.configConn.prepareCall(query2).execute();
             this.configConn.createStatement().executeUpdate(query3);
+
+            // Should only try to remove the connection from postgres if the queries succeed.
+            PostgresPool.removeConnection(EmsConfig.get("pg.host"), databaseName);
         } catch (SQLException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+
+            // If any of the queries fail, reset the connection limit of the database
+            query = "ALTER DATABASE  \"_" + databaseName + "\" CONNECTION LIMIT -1";
+            try {
+                this.configConn.createStatement().executeUpdate(query);
+            } catch (SQLException e2) {
+                logger.warn(String.format("%s", LogUtil.getStackTrace(e2)));
+            }
+        } finally {
+            closeConfig();
         }
-        closeConfig();
     }
 
     /**
