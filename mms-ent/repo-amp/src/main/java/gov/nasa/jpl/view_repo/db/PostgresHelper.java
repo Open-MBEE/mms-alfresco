@@ -101,7 +101,7 @@ public class PostgresHelper {
                     .getInstance(this.projectProperties.get("location"), this.projectProperties.get("dbname"))
                     .getConnection();
             }
-        } catch (IOException | SQLException | PropertyVetoException e) {
+        } catch (SQLException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
@@ -112,7 +112,7 @@ public class PostgresHelper {
                 this.configConn =
                     PostgresPool.getInstance(EmsConfig.get("pg.host"), EmsConfig.get("pg.name")).getConnection();
             }
-        } catch (IOException | SQLException | PropertyVetoException e) {
+        } catch (SQLException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
