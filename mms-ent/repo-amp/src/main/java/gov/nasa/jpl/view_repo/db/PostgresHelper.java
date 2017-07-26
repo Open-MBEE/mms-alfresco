@@ -1831,7 +1831,7 @@ public class PostgresHelper {
             if (isTag) {
                 execUpdate(String
                     .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s, edgeProperties%1$s FROM %2$s",
-                        workspaceId, EmsConfig.get("pg.host")));
+                        workspaceId, EmsConfig.get("pg.user")));
             }
 
         } catch (SQLException e) {
