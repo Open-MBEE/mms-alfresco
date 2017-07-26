@@ -4,15 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import gov.nasa.jpl.view_repo.util.*;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.NodeUtil;
 
 public class SitePermission {
 
@@ -51,9 +48,6 @@ public class SitePermission {
         } else {
             hasPerm = targetNode.checkPermissions("Write");
         }
-        //if (!hasPerm) {
-        //    hasPerm = NodeUtil.userHasWorkspaceLdapPermissions(); //???
-        //}
         return hasPerm;
     }
 

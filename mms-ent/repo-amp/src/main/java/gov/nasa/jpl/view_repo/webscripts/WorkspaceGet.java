@@ -5,10 +5,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.LogUtil;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -21,7 +21,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 
 public class WorkspaceGet extends AbstractJavaWebScript{
@@ -54,26 +53,14 @@ public class WorkspaceGet extends AbstractJavaWebScript{
         try{
             if(validateRequest(req, status)){
                 String wsID = req.getServiceMatch().getTemplateVars().get(REF_ID);
-                /*
-                String userName = AuthenticationUtil.getRunAsUser();
-                String wsID = req.getServiceMatch().getTemplateVars().get(REF_ID);
-                WorkspaceNode workspace =
-                        WorkspaceNode.getWorkspaceFromId( wsID,
-                                                                  getServices(),
-                                                                  getResponse(),
-                                                                  status,
-                                                                  //false,
-                                                                  userName );
-                object = getWorkspace(workspace, wsID);
-                */
                 object = getRef(projectId, wsID);
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON object could not be created \n");
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace \n");
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         if(object == null){
@@ -83,7 +70,7 @@ public class WorkspaceGet extends AbstractJavaWebScript{
                 if (!Utils.isNullOrEmpty(response.toString())) object.put("message", response.toString());
                 model.put("res", NodeUtil.jsonToString( object, 4 ));
             } catch (JSONException e){
-                e.printStackTrace();
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 model.put("res", createResponseJson());
             }
         }
@@ -98,7 +85,7 @@ public class WorkspaceGet extends AbstractJavaWebScript{
     protected JSONObject getRef(String projectId, String refId) {
         JSONObject json = new JSONObject();
         JSONArray jsonArray = new JSONArray();
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
         JSONObject ref = emsNodeUtil.getRefJson(refId);
         jsonArray.put(ref);
         json.put("refs" , jsonArray);

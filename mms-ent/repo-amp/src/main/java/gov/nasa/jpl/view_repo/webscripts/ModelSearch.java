@@ -97,19 +97,6 @@ public class ModelSearch extends ModelPost {
         try {
             JSONObject top = new JSONObject();
             JSONArray elementsJson = executeSearchRequest(req, top);
-            //        {
-            //            "id": documentId,
-            //            "projectId": projectId of document,
-            //            "name": name of document,
-            //            "refId": refid of document
-            //            "_views": [
-            //            {"name": name of view, "id": id of view, "refid": refid of view, "projectId": projectId of view] }
-            // :TODO
-            // 1) filter out/ mounts logic -- this is already done by projectsGet
-            // 2) getChildren in postgresHelper with edge type and depth (view or childview)
-            // 3) Do this twice once for view and once for childview
-            // 4) not reporting 404 on empty return
-            // paginate results
             top.put("elements", elementsJson);
 
             if (!Utils.isNullOrEmpty(response.toString())) {

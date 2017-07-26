@@ -57,11 +57,11 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
                 String projectId = getProjectId(req);
 
                 // can't delete master
-                if (wsId.equals("master")) {
+                if (wsId.equals(NO_WORKSPACE_ID)) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Cannot delete master workspace");
                     status.setCode(HttpServletResponse.SC_BAD_REQUEST);
                 } else {
-                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), wsId);
+                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, wsId);
                     emsNodeUtil.deleteRef(wsId);
                     WorkspaceNode target = getWorkspace(req);
                     if (target != null) {

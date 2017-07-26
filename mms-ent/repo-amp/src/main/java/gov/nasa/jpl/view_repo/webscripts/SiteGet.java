@@ -40,9 +40,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -60,13 +57,9 @@ import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
-import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 
 /**
  * @author gcgandhi
@@ -117,11 +110,11 @@ public class SiteGet extends AbstractJavaWebScript {
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace:\n %s \n",
                             e.getLocalizedMessage());
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         if (json == null) {
             model.put("res", createResponseJson());
@@ -147,9 +140,6 @@ public class SiteGet extends AbstractJavaWebScript {
     private JSONArray handleSite(String projectId, String refId, Date dateTime, WebScriptRequest req)
                     throws IOException {
 
-        //String orgId = getOrgId(req);
-        //populateSites(projectId, orgId, workspace, dateTime);
-
         JSONArray json = new JSONArray();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         PostgresHelper pgh = new PostgresHelper();
@@ -163,13 +153,8 @@ public class SiteGet extends AbstractJavaWebScript {
         try {
             List<Node> siteNodes = pgh.getSites();
             List<Node> alfSites = pgh.getSites(true, false);
-            siteNodes.forEach((n) -> {
-                ids.add(n.getElasticId());
-            });
-            alfSites.forEach((a) -> {
-                alfs.add(a.getSysmlId());
-            });
-            //JSONArray elements = filterByPermission(eh.getElementsFromElasticIds(ids), req);
+            siteNodes.forEach(n -> ids.add(n.getElasticId()));
+            alfSites.forEach(a -> alfs.add(a.getSysmlId()));
             JSONArray elements = eh.getElementsFromElasticIds(ids);
 
             if (logger.isDebugEnabled())
@@ -187,9 +172,7 @@ public class SiteGet extends AbstractJavaWebScript {
 
                 newo.put("_" + Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
 
-                // FIXME: MMS-489: Add "editable" key to output - look at view-repo updates
-
-                siteNodes.forEach((n)->{
+                siteNodes.forEach(n -> {
                     if (n.getSysmlId().equals(o.getString(Sjm.SYSMLID))) {
                         if (n.getNodeType() == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                             String path = "path|/Sites/" + orgId + "/documentLibrary/" + projectId + "/" + n.getSysmlId();
@@ -212,7 +195,6 @@ public class SiteGet extends AbstractJavaWebScript {
                 }
             }
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 

@@ -912,30 +912,17 @@ public class PostgresHelper {
         StringBuilder vals = new StringBuilder();
 
         try {
-
-            for (String col : values.keySet()) {
-                vals.append(col).append(" = ");
-
-                if (col.equals("nodetype")) {
-                    vals.append(values.get(col)).append(",");
-                } else if (values.get(col) != null) {
-                    vals.append("'").append(values.get(col)).append("',");
-                } else {
-                    vals.append(values.get(col)).append(",");
-                }
-            }
-
             for (Map.Entry<String, String> entry : values.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
                 vals.append(key).append(" = ");
 
                 if (key.equals("nodetype")) {
-                    vals.append(values.get(key)).append(",");
-                } else if (values.get(key) != null) {
-                    vals.append("'").append(values.get(key)).append("',");
+                    vals.append(value).append(",");
+                } else if (value != null) {
+                    vals.append("'").append(value).append("',");
                 } else {
-                    vals.append(values.get(key)).append(",");
+                    vals.append(value).append(",");
                 }
             }
 

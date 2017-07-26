@@ -31,7 +31,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.LogUtil;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -46,6 +45,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.LogUtil;
 
 /**
  * @author han
@@ -53,8 +53,8 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 public class OrgGet extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(OrgGet.class);
 
-    private static final String PROJECTS = "projects";
-    private static final String ORGS = "orgs";
+    public static final String PROJECTS = "projects";
+    public static final String ORGS = "orgs";
 
     public OrgGet() {
         super();
