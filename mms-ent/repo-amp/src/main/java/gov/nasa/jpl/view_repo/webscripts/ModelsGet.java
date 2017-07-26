@@ -77,7 +77,7 @@ public class ModelsGet extends ModelGet {
             String refId = getRefId(req);
             String projectId = getProjectId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            if (refId != null && refId.equalsIgnoreCase("master")) {
+            if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
                 return true;
             } else if (refId != null && !emsNodeUtil.refExists(refId)) {
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
@@ -112,7 +112,7 @@ public class ModelsGet extends ModelGet {
                     elementsJson = handleRequest(req, depth);
                 } catch (JSONException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request");
-                    e.printStackTrace();
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
             }
 

@@ -116,7 +116,7 @@ public class ShareUtils {
             json.put("description", siteDescription);
             json.put("visibility", isPublic ? "PUBLIC" : "PRIVATE");
         } catch ( JSONException e ) {
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             logger.error( "Could not create JSON for site creation" );
             return false;
         }
@@ -239,7 +239,7 @@ public class ShareUtils {
                 logger.error(String.format("Failed request: %s with status: %s", targetURL, connection.getResponseMessage()));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
             if(connection != null) {
                 connection.disconnect();

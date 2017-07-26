@@ -1,7 +1,6 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,7 +40,6 @@ import org.springframework.extensions.webscripts.WebScriptStatus;
  * limitations under the License.
  */
 
-import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission.Permission;
 
@@ -78,7 +76,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
-    @Override final public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException {
+    @Override public final void execute(WebScriptRequest req, WebScriptResponse res) throws IOException {
 
         // retrieve requested format
         String format = req.getFormat();
@@ -314,15 +312,13 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
      * @param model  model
      */
     private void executeFinallyImpl(WebScriptRequest req, Status status, Cache cache, Map<String, Object> model) {
+        // This method left intentionally empty
     }
 
     private Boolean hasPermission(WebScriptRequest req, WebScriptResponse res) {
         String descriptionPath = getDescription().getDescPath();
         String methodType = getMethod(descriptionPath);
         Permission permissionType = getPermissionType(methodType);
-
-        //if (isAllowablePath(descriptionPath))
-          //  return true;
 
         String refId = AbstractJavaWebScript.getRefId(req);
         String projectId = AbstractJavaWebScript.getProjectId(req);
