@@ -1568,9 +1568,9 @@ public class EmsNodeUtil {
             // Get a list of commits based on references <commitId, JSONObject>
             List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
 
+            Date commitTimestamp = null;
             for (Map<String, Object> m : refsCommits) {
                 String commitIdCheck = (String) m.get(Sjm.SYSMLID);
-                Date commitTimestamp = null;
 
                 if (logger.isDebugEnabled()) {
                     logger.debug(m.get(Sjm.SYSMLID) + " " + m.get(Sjm.TIMESTAMP));

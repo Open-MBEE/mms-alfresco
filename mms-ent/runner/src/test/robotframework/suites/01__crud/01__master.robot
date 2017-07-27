@@ -149,3 +149,5 @@ RecreateDeletedProject
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+	${result} =		 Delete	  url=${ROOT}/projects/DeleteProject
+	Should Be Equal	 ${result.status_code}	   ${200}
