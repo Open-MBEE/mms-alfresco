@@ -57,7 +57,7 @@ GetElementAtCommit
 
 GetElementBeforeCommit
     [Documentation]     "Gets an element that exists before the commit. Grabs a commit that does not contain the element and requests for the element at that time. It should return the element at a previous commit than the one requested."
-    [Tags]              C6
+	[Tags]				branches		critical		090206
     ${element} =        Get    url=${ROOT}/projects/PA/refs/master/elements/300         headers=&{REQ_HEADER}
 	${post_json} =		Get File	    ${CURDIR}/../../JsonData/UpdateElementToGetElementBeforeCommit.json
     ${result} =         Post    url=${ROOT}/projects/PA/refs/master/elements      data=${post_json}           headers=&{REQ_HEADER}
