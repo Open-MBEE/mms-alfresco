@@ -53,7 +53,6 @@ public class ProjectDelete extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject json = null;
 
         try {
             if (validateRequest(req, status)) {
@@ -79,11 +78,8 @@ public class ProjectDelete extends AbstractJavaWebScript {
                 e.getLocalizedMessage());
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        if (json == null) {
-            model.put("res", createResponseJson());
-        } else {
-            model.put("res", json);
-        }
+
+        model.put("res", createResponseJson());
         status.setCode(responseStatus.getCode());
 
         printFooter(user, logger, timer);

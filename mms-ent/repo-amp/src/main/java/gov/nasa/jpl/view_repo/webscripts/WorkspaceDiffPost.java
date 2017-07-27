@@ -92,7 +92,7 @@ public class WorkspaceDiffPost extends ModelPost {
             top = handleDiff(req, json, status);
         } catch ( Exception e ) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error: %s", e.getMessage());
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
             try {
                 if (!Utils.isNullOrEmpty(response.toString())) {

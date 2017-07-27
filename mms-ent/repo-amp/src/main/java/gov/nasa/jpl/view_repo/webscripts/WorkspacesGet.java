@@ -95,7 +95,7 @@ public class WorkspacesGet extends AbstractJavaWebScript{
     protected JSONObject handleWorkspace (String projectId, boolean findDeleted) throws JSONException{
         JSONObject json = new JSONObject();
         JSONArray jArray = null;
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
         jArray = emsNodeUtil.getRefsJson();
         json.put("refs", jArray);
         return json;

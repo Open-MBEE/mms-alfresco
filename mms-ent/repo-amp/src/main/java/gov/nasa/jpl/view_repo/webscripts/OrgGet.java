@@ -45,13 +45,16 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
+import gov.nasa.jpl.view_repo.util.LogUtil;
 
 /**
  * @author han
  */
 public class OrgGet extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(OrgGet.class);
+
+    public static final String PROJECTS = "projects";
+    public static final String ORGS = "orgs";
 
     public OrgGet() {
         super();
@@ -75,11 +78,9 @@ public class OrgGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        if (checkMmsVersions) {
-            if (compareMmsVersions(req, getResponse(), getResponseStatus())) {
-                model.put("res", createResponseJson());
-                return model;
-            }
+        if (checkMmsVersions && compareMmsVersions(req, getResponse(), getResponseStatus())) {
+            model.put("res", createResponseJson());
+            return model;
         }
         JSONObject json = null;
         String[] accepts = req.getHeaderValues("Accept");
@@ -88,7 +89,7 @@ public class OrgGet extends AbstractJavaWebScript {
         try {
             if (validateRequest(req, status)) {
                 String orgId = getOrgId(req);
-                Boolean projects = req.getPathInfo().contains("projects");
+                Boolean projects = req.getPathInfo().contains(PROJECTS);
                 JSONArray jsonArray;
 
                 if (projects) {
@@ -97,7 +98,7 @@ public class OrgGet extends AbstractJavaWebScript {
                     if (projectId != null) {
                         jsonArray = handleProject(projectId);
                         json = new JSONObject();
-                        json.put("projects", filterProjectByPermission(jsonArray));
+                        json.put(PROJECTS, filterProjectByPermission(jsonArray));
                         if (jsonArray.length() == 0) {
                             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Project does not exist\n");
                             responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
@@ -107,21 +108,21 @@ public class OrgGet extends AbstractJavaWebScript {
                     } else if (orgId != null) {
                         jsonArray = handleOrgProjects(orgId);
                         json = new JSONObject();
-                        json.put("projects", filterProjectByPermission(jsonArray));
+                        json.put(PROJECTS, filterProjectByPermission(jsonArray));
                     } else {
                         jsonArray = handleProjects();
                         json = new JSONObject();
-                        json.put("projects", filterProjectByPermission(jsonArray));
+                        json.put(PROJECTS, filterProjectByPermission(jsonArray));
                     }
 
                 } else {
                     jsonArray = handleOrg(orgId);
                     json = new JSONObject();
-                    json.put("orgs", filterOrgsByPermission(jsonArray));
+                    json.put(ORGS, filterOrgsByPermission(jsonArray));
                     if (orgId != null) {
                         if (jsonArray.length() == 0) {
                             responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
-                        } else if (json.getJSONArray("orgs").length() == 0) {
+                        } else if (json.getJSONArray(ORGS).length() == 0) {
                             responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
                         }
                     }
@@ -129,11 +130,11 @@ public class OrgGet extends AbstractJavaWebScript {
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace:\n %s \n",
                             e.getLocalizedMessage());
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         if (json == null) {
             model.put("res", createResponseJson());

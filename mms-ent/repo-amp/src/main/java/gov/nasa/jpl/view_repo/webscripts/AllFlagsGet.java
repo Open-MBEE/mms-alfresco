@@ -8,7 +8,7 @@ import gov.nasa.jpl.view_repo.util.NodeUtil;
 
 public class AllFlagsGet extends FlagSet {
 
-    public static String[] flags =
+    private static final String[] flags =
             new String[] { "debug",
                            "fullCache",
                            "nodeAtTimeCache",
@@ -104,7 +104,6 @@ public class AllFlagsGet extends FlagSet {
                 NodeUtil.jsonCache.clear();
             }
             EmsScriptNode.expressionStuffDefault = val;
-            //EmsScriptNode.addingAffectedIds = val;
         } else if (path.equalsIgnoreCase("versionCache")) {
             NodeUtil.doVersionCaching = val;
         } else if (path.equalsIgnoreCase("versionHistoryCache")) {
