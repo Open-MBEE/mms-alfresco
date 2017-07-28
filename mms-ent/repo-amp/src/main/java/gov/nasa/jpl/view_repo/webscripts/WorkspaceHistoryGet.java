@@ -21,6 +21,7 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.LogUtil;
 
 public class WorkspaceHistoryGet extends AbstractJavaWebScript{
     static Logger logger = Logger.getLogger(WorkspaceHistoryGet.class);
@@ -57,10 +58,10 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript{
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON object could not be created \n");
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace \n");
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         if(object == null){
@@ -70,7 +71,7 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript{
                 if (!Utils.isNullOrEmpty(response.toString())) object.put("message", response.toString());
                 model.put("res", NodeUtil.jsonToString( object, 4 ));
             } catch (JSONException e){
-                e.printStackTrace();
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 model.put("res", createResponseJson());
             }
         }
@@ -84,7 +85,7 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript{
 
     protected JSONObject getRefHistory(String projectId, String refId) {
         JSONObject json = new JSONObject();
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
         JSONArray commits = emsNodeUtil.getRefHistory(refId);
         json.put("commits" , commits);
         return json;

@@ -5,6 +5,7 @@
     <url>/orgs</url>
     <url>/orgs/{orgId}</url>
     <url>/orgs/{orgId}/projects</url>
+    <url>/orgs/{orgId}/projects/{projectId}</url>
     <url>/projects</url>
     <url>/projects/{projectId}</url>
     <format default="json">argument</format>

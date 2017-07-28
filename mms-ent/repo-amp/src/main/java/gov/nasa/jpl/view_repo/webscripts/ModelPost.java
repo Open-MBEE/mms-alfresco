@@ -157,14 +157,13 @@ public class ModelPost extends AbstractJavaWebScript {
 
             JSONObject postJson = new JSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
-            //logger.debug(String.format("ModelPost processing %d elements.", elements.length()));
             Set<String> oldElasticIds = new HashSet<>();
             JSONObject results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), myWorkspace, user, oldElasticIds);
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
             if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews)) {
                 if (!oldElasticIds.isEmpty()) {
-                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);//can be backgrounded if need be
+                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
                 }
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
 
@@ -179,7 +178,6 @@ public class ModelPost extends AbstractJavaWebScript {
                 newElementsObject.put(Sjm.COMMITID, commitId);
                 newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
                 newElementsObject.put(Sjm.CREATOR, user);
-                // Timestamp needs to be ISO format
 
                 if (prettyPrint) {
                     model.put("res", newElementsObject.toString(4));
@@ -213,8 +211,6 @@ public class ModelPost extends AbstractJavaWebScript {
             extension = "." + extension;
         }
 
-        //workspace = getWorkspace(req, AuthenticationUtil.getRunAsUser());
-
         try {
             Object binaryContent = req.getContent().getContent();
             content = binaryContent.toString();
@@ -222,7 +218,6 @@ public class ModelPost extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        // Get the site name from the request:
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
@@ -390,11 +385,8 @@ public class ModelPost extends AbstractJavaWebScript {
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         String elementId = req.getServiceMatch().getTemplateVars().get("elementid");
-        if (elementId != null) {
-            // TODO - move this to ViewModelPost - really non hierarchical post
-            if (!checkRequestVariable(elementId, "elementid")) {
-                return false;
-            }
+        if (elementId != null && !checkRequestVariable(elementId, "elementid")) {
+            return false;
         }
 
         return checkRequestContent(req);

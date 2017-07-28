@@ -63,8 +63,8 @@ public class ProjectPost extends AbstractJavaWebScript {
         super(repositoryHelper, registry);
     }
 
-    private final String REF_PATH = "refs";
-    private final String REF_PATH_SEARCH = "/" + REF_PATH;
+    private static final String REF_PATH = "refs";
+    private static final String REF_PATH_SEARCH = "/" + REF_PATH;
 
     /**
      * Webscript entry point
@@ -97,6 +97,11 @@ public class ProjectPost extends AbstractJavaWebScript {
                 String projectId = projJson.has(Sjm.SYSMLID) ? projJson.getString(Sjm.SYSMLID) : getProjectId(req);
                 if (validateProjectId(projectId)) {
 
+                    if (orgId == null) {
+                        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
+                        orgId = emsNodeUtil.getOrganizationFromProject(projectId);
+                    }
+
                     SiteInfo siteInfo = services.getSiteService().getSite(orgId);
                     if (siteInfo != null) {
 
@@ -108,7 +113,7 @@ public class ProjectPost extends AbstractJavaWebScript {
                             statusCode = updateOrCreateProject(projJson, projectId);
                         }
                     } else {
-                        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+                        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
                         // This should not happen, since the Organization should be created before a Project is posted
                         if (emsNodeUtil.orgExists(orgId)) {
                             statusCode = HttpServletResponse.SC_FORBIDDEN;
@@ -143,7 +148,7 @@ public class ProjectPost extends AbstractJavaWebScript {
         return model;
     }
 
-    public int updateOrCreateProject(JSONObject jsonObject, String projectId) throws JSONException {
+    public int updateOrCreateProject(JSONObject jsonObject, String projectId) {
         EmsScriptNode projectNode = getSiteNode(projectId);
 
         if (projectNode == null) {
@@ -182,7 +187,7 @@ public class ProjectPost extends AbstractJavaWebScript {
      * @return HttpStatusResponse code for success of the POST request
      * @throws JSONException
      */
-    public int updateOrCreateProject(JSONObject jsonObject, String projectId, String orgId) throws JSONException {
+    public int updateOrCreateProject(JSONObject jsonObject, String projectId, String orgId) {
         // see if project exists for workspace
 
         // make sure Model package under site exists
@@ -217,15 +222,15 @@ public class ProjectPost extends AbstractJavaWebScript {
                 refContainerNode = projectContainerNode.createFolder("refs");
             }
 
-            EmsScriptNode branch = refContainerNode.childByNamePath("master");
+            EmsScriptNode branch = refContainerNode.childByNamePath(NO_WORKSPACE_ID);
             if (branch == null) {
-                branch = refContainerNode.createFolder("master");
-                EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+                branch = refContainerNode.createFolder(NO_WORKSPACE_ID);
+                EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
                 JSONObject masterWs = new JSONObject();
-                masterWs.put("id", "master");
-                masterWs.put("name", "master");
+                masterWs.put("id", NO_WORKSPACE_ID);
+                masterWs.put("name", NO_WORKSPACE_ID);
                 String elasticId = emsNodeUtil.insertSingleElastic(masterWs);
-                emsNodeUtil.insertRef("master", "master", elasticId, false);
+                emsNodeUtil.insertRef(NO_WORKSPACE_ID, NO_WORKSPACE_ID, elasticId, false);
             }
 
             if (branch == null) {

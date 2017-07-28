@@ -101,7 +101,7 @@ public class PostgresHelper {
                     .getInstance(this.projectProperties.get("location"), this.projectProperties.get("dbname"))
                     .getConnection();
             }
-        } catch (IOException | SQLException | PropertyVetoException e) {
+        } catch (SQLException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
@@ -112,7 +112,7 @@ public class PostgresHelper {
                 this.configConn =
                     PostgresPool.getInstance(EmsConfig.get("pg.host"), EmsConfig.get("pg.name")).getConnection();
             }
-        } catch (IOException | SQLException | PropertyVetoException e) {
+        } catch (SQLException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
@@ -912,16 +912,17 @@ public class PostgresHelper {
         StringBuilder vals = new StringBuilder();
 
         try {
+            for (Map.Entry<String, String> entry : values.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                vals.append(key).append(" = ");
 
-            for (String col : values.keySet()) {
-                vals.append(col).append(" = ");
-
-                if (col.equals("nodetype")) {
-                    vals.append(values.get(col)).append(",");
-                } else if (values.get(col) != null) {
-                    vals.append("'").append(values.get(col)).append("',");
+                if (key.equals("nodetype")) {
+                    vals.append(value).append(",");
+                } else if (value != null) {
+                    vals.append("'").append(value).append("',");
                 } else {
-                    vals.append(values.get(col)).append(",");
+                    vals.append(value).append(",");
                 }
             }
 
@@ -1831,7 +1832,7 @@ public class PostgresHelper {
             if (isTag) {
                 execUpdate(String
                     .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s, edgeProperties%1$s FROM %2$s",
-                        workspaceId, EmsConfig.get("pg.host")));
+                        workspaceId, EmsConfig.get("pg.user")));
             }
 
         } catch (SQLException e) {

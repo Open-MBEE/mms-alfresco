@@ -79,7 +79,7 @@ GetProjects
 GetProject
 	[Documentation]		"Get posted project."
 	[Tags]				crud		critical		0108
-	${result} =			Get		url=${ROOT}/orgs/initorg/projects/PA		headers=&{REQ_HEADER}
+	${result} =			Get		url=${ROOT}/projects/PA		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
@@ -130,7 +130,7 @@ DeleteProject
 	${result} =		 Delete	  url=${ROOT}/projects/${TEST_NAME}
 	Should Be Equal	 ${result.status_code}	   ${200}
 	${result} =			Get		url=${ROOT}/orgs/initorg/projects/${TEST_NAME}		headers=&{REQ_HEADER}
-	Should Be Equal		${result.status_code}		${200}
+	Should Be Equal		${result.status_code}		${404}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -149,3 +149,5 @@ RecreateDeletedProject
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+	${result} =		 Delete	  url=${ROOT}/projects/DeleteProject
+	Should Be Equal	 ${result.status_code}	   ${200}

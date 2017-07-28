@@ -20,7 +20,7 @@
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY~
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
@@ -28,12 +28,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -41,7 +36,6 @@ import javax.servlet.http.HttpServletResponse;
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -54,8 +48,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.mbee.util.TimeUtils;
-import gov.nasa.jpl.view_repo.util.NodeUtil.SearchType;
 
 /**
  * Descriptor in /view-repo/src/main/amp/config/alfresco/extension/templates/webscripts
@@ -66,6 +58,9 @@ import gov.nasa.jpl.view_repo.util.NodeUtil.SearchType;
 public class ModelGet extends AbstractJavaWebScript {
 
     static Logger logger = Logger.getLogger(ModelGet.class);
+
+    private static final String ELEMENTID = "elementId";
+    private static final String COMMITID = "commitId";
 
     public ModelGet() {
         super();
@@ -80,7 +75,7 @@ public class ModelGet extends AbstractJavaWebScript {
             String projectId = getProjectId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-            if (refId != null && refId.equalsIgnoreCase("master")) {
+            if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
                 return true;
             }
             else if (refId != null && !emsNodeUtil.refExists(refId)) {
@@ -104,7 +99,7 @@ public class ModelGet extends AbstractJavaWebScript {
         printHeader(user, logger, req);
         Timer timer = new Timer();
 
-        Map<String, Object> model = new HashMap<>();
+        Map<String, Object> model;
 
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
@@ -127,17 +122,17 @@ public class ModelGet extends AbstractJavaWebScript {
         JSONObject top = new JSONObject();
 
         if (validateRequest(req, status)) {
-            Boolean isCommit = req.getParameter("commitId") != null;
+            Boolean isCommit = req.getParameter(COMMITID) != null;
             try {
                 if (isCommit) {
                     JSONArray commitJsonToArray = new JSONArray();
-                    JSONObject commitJson = handleCommitRequest(req, top);
+                    JSONObject commitJson = handleCommitRequest(req);
                     commitJsonToArray.put(commitJson);
-                    if (commitJson.length() > 0) {
+                    if (commitJson != null && commitJson.length() > 0) {
                         top.put(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
                     }
                 } else {
-                    JSONArray elementsJson = handleRequest(req, top, NodeUtil.doGraphDb);
+                    JSONArray elementsJson = handleRequest(req);
                     if (elementsJson.length() > 0) {
                         top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
                     }
@@ -177,7 +172,7 @@ public class ModelGet extends AbstractJavaWebScript {
         }
 
         String extension = !extensionArg.equals("*") ? extensionArg : ".svg";  // Assume .svg if no extension provided
-        String commitId = req.getParameter("commitId"); //need to support this
+        // String commitId = req.getParameter(COMMITID); //need to support this
 
         if (!Utils.isNullOrEmpty(extension) && !extension.startsWith(".")) {
             extension = "." + extension;
@@ -186,11 +181,11 @@ public class ModelGet extends AbstractJavaWebScript {
         if (validateRequest(req, status)) {
 
             try {
-                String artifactId = req.getServiceMatch().getTemplateVars().get("elementId");
+                String artifactId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
                 if (artifactId != null) {
-                    int lastIndex = artifactId.lastIndexOf("/");
+                    int lastIndex = artifactId.lastIndexOf('/');
                     if (artifactId.length() > (lastIndex + 1)) {
                         artifactId = lastIndex != -1 ? artifactId.substring(lastIndex + 1) : artifactId;
                         String filename = artifactId + extension;
@@ -208,7 +203,7 @@ public class ModelGet extends AbstractJavaWebScript {
                 }
             } catch (JSONException e) {
                 log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Issues creating return JSON\n");
-                e.printStackTrace();
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             }
         } else {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid request!\n");
@@ -228,11 +223,11 @@ public class ModelGet extends AbstractJavaWebScript {
      * @param useDb Flag to use database
      * @return JSONArray of elements
      */
-    private JSONArray handleRequest(WebScriptRequest req, final JSONObject top, boolean useDb) {
+    private JSONArray handleRequest(WebScriptRequest req) {
         // REVIEW -- Why check for errors here if validate has already been
         // called? Is the error checking code different? Why?
         try {
-            String modelId = req.getServiceMatch().getTemplateVars().get("elementId");
+            String modelId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
             String projectId = getProjectId(req);
             String refId = getRefId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
@@ -245,24 +240,24 @@ public class ModelGet extends AbstractJavaWebScript {
             }
             return handleElementHierarchy(modelId, req);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         return new JSONArray();
     }
 
-    private JSONObject handleCommitRequest(WebScriptRequest req, JSONObject top) {
+    private JSONObject handleCommitRequest(WebScriptRequest req) {
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         JSONObject element;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-        String elementId = req.getServiceMatch().getTemplateVars().get("elementId");
+        String elementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
         String currentElement = emsNodeUtil.getById(elementId).getElasticId();
 
         // This is the commit of the version of the element we want
-        String commitId = (req.getParameter("commitId").isEmpty()) ?
+        String commitId = (req.getParameter(COMMITID).isEmpty()) ?
             emsNodeUtil.getById(elementId).getLastCommit() :
-            req.getParameter("commitId");
+            req.getParameter(COMMITID);
 
         // This is the lastest commit for the element
         String lastestCommitId = emsNodeUtil.getById(elementId).getLastCommit();
@@ -360,13 +355,12 @@ public class ModelGet extends AbstractJavaWebScript {
      * @param rootSysmlid Root view to find elements for
      * @param req         WebScriptRequest
      * @return JSONArray of elements
-     * @throws JSONException JSON element creation error
      * @throws SQLException  SQL error
      * @throws IOException   IO error
      */
 
     protected JSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
-        throws JSONException, SQLException, IOException {
+        throws SQLException, IOException {
         // get timestamp if specified
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -376,12 +370,11 @@ public class ModelGet extends AbstractJavaWebScript {
 
         JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
 
-        JSONArray elasticElements = handleMountSearch(mountsJson, extended, rootSysmlid, depth);
-        return elasticElements;
+        return handleMountSearch(mountsJson, extended, rootSysmlid, depth);
     }
 
     protected JSONArray handleMountSearch(JSONObject mountsJson, boolean extended, String rootSysmlid, Long depth)
-        throws JSONException, SQLException, IOException {
+        throws SQLException, IOException {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
         JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
         if (tmpElements.length() > 0) {

@@ -158,7 +158,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                     + ", jsonObject=" + jsonObject + ", user=" + user + ", status=" + status + ")");
         }
 
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, sourceWorkId == null ? "master" : sourceWorkId);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, sourceWorkId == null ? NO_WORKSPACE_ID : sourceWorkId);
         JSONObject project = emsNodeUtil.getProject(projectId);
         EmsScriptNode orgNode = getSiteNode(project.optString("orgId"));
         String date = TimeUtils.toTimestamp(new Date().getTime());
@@ -199,8 +199,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             workspaceName = newWorkName;   // The name is given on the URL typically, not the ID
         }
 
-        if ((newWorkspaceId != null && newWorkspaceId.equals("master")) || (workspaceName != null && workspaceName
-            .equals("master"))) {
+        if ((newWorkspaceId != null && newWorkspaceId.equals(NO_WORKSPACE_ID)) || (workspaceName != null && workspaceName
+            .equals(NO_WORKSPACE_ID))) {
             log(Level.WARN, "Cannot change attributes of the master workspace.", HttpServletResponse.SC_BAD_REQUEST);
             status.setCode(HttpServletResponse.SC_BAD_REQUEST);
             return null;
@@ -228,7 +228,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
 
 
-            if (!"master".equals(sourceWorkspaceId) && srcWs.getId() == null) {
+            if (!NO_WORKSPACE_ID.equals(sourceWorkspaceId) && srcWs.getId() == null) {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Source workspace not found.");
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);
                 return null;
@@ -239,15 +239,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 try {
                     fileService.copy(srcWs.getNodeRef(), refContainerNode.getNodeRef(), newWorkspaceId);
                     finalWorkspace = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
-                    // keep history of the branch
-//                    String srcId = srcWs.getName().equals("master") ? "master" : srcWs.getId();
-//                    existingRef.setProperty("cm:title", existingRef.getId() + "_" + srcId);
-//                    existingRef.setProperty("cm:name", existingRef.getName());
-
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
                         jsonObject != null ? jsonObject.optString("source") : null);
                 } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
             }
         } else {
