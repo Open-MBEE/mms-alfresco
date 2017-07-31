@@ -109,16 +109,33 @@ UpdateElements
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
+InvalidUpdateElement
+	[Documentation]	 "Update an existing element with no changes. Should ignore commit."
+	[Tags]			  crud		critical		0111
+	${post_json} =		Get File		${CURDIR}/../../JsonData/UpdateElements.json
+	${elementa} =		Get	url=${ROOT}/projects/PA/refs/master/elements/300		headers=&{REQ_HEADER}
+    ${commitIda} =		Get Commit From Json		${elementa.json()}
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+	Should Be Equal		${result.status_code}		${200}
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+	Sleep				${POST_DELAY_INDEXING}
+	${elementb} =		Get	url=${ROOT}/projects/PA/refs/master/elements/300		headers=&{REQ_HEADER}
+    ${commitIdb} =		Get Commit From Json		${elementb.json()}
+	Should Be Equal		${commitIda}		${commitIdb}
+
 UpdateProject
 	[Documentation]	 "Update an existing project."
-	[Tags]			  crud		critical		0111
+	[Tags]			  crud		critical		0112
 	${post_json} =		Get File		${CURDIR}/../../JsonData/ProjectUpdate.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects/PA		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 
 DeleteProject
 	[Documentation]  "Delete an existing project"
-	[Tags]			crud		critical		0112
+	[Tags]			crud		critical		0113
 	${post_json} =		Get File		${CURDIR}/../../JsonData/ProjectForDeleteProject.json
 	${result} =			Post			url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -138,7 +155,7 @@ DeleteProject
 
 RecreateDeletedProject
 	[Documentation]	 "Test recreating the DeleteProject again to make sure that it can be recreated without issues."
-	[Tags]			  crud		critical		0113
+	[Tags]			  crud		critical		0114
 	${post_json} =		Get File		${CURDIR}/../../JsonData/ProjectForDeleteProject.json
 	${result} =			Post			url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
