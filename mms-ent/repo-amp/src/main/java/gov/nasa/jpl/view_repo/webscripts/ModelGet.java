@@ -173,6 +173,8 @@ public class ModelGet extends AbstractJavaWebScript {
 
         String extension = !extensionArg.equals("*") ? extensionArg : ".svg";  // Assume .svg if no extension provided
         // String commitId = req.getParameter(COMMITID); //need to support this
+        // Case One: Search on or before the commitId you branched from
+        // Case Two: Search by CommitId
 
         if (!Utils.isNullOrEmpty(extension) && !extension.startsWith(".")) {
             extension = "." + extension;
@@ -329,6 +331,9 @@ public class ModelGet extends AbstractJavaWebScript {
         EmsScriptNode siteNode = EmsScriptNode.getSiteNode(orgId);
         if (siteNode != null) {
             EmsScriptNode artifactNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
+            artifactNode.getEmsVersionHistory();
+            // search by refId, get parent method...
+            // getRefsCommits
             if (artifactNode != null) {
                 String url = artifactNode.getUrl();
                 if (url != null) {
