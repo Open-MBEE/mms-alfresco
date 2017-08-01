@@ -129,7 +129,8 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20160212</version><!--$NO-MVN-MAN-VER$-->
+            <version>20170516</version><!--$NO-MVN-MAN-VER$-->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.antlr</groupId>
