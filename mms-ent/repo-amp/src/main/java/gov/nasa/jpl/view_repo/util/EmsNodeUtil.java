@@ -1302,8 +1302,10 @@ public class EmsNodeUtil {
             return false;
         }
 
-        logger.error("New Element: " + json);
-        logger.error("Old Element: " + existing);
+        if (logger.isDebugEnabled()) {
+            logger.error("New Element: " + json);
+            logger.error("Old Element: " + existing);
+        }
 
         Map<String, Object> newElement = toMap(json);
         Map<String, Object> oldElement = toMap(existing);
