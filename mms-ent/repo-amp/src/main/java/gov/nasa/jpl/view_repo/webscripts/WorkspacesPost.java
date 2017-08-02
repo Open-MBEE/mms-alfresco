@@ -104,15 +104,9 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 String sourceWorkspaceParam = reqJson.getJSONArray("refs").getJSONObject(0).optString("parentRefId");
                 String newName = reqJson.getJSONArray("refs").getJSONObject(0).optString("name");
                 String type = reqJson.getJSONArray("refs").getJSONObject(0).optString("type");
-                String copyTime = req.getParameter("copyTime");
-                Date copyDateTime = TimeUtils.dateFromTimestamp(copyTime);
-                if (copyDateTime == null)
-                    copyDateTime = new Date();
-                String follow = req.getParameter("follow");
-                if (follow != null)
-                    copyDateTime = null;
+                String commitId = req.getParameter("commitId");
 
-                json = createWorkSpace(projectId, sourceWorkspaceParam, newName, copyDateTime, reqJson, user, status);
+                json = createWorkSpace(projectId, sourceWorkspaceParam, newName, commitId, reqJson, user, status);
                 statusCode = status.getCode();
             } else {
                 statusCode = HttpServletResponse.SC_FORBIDDEN;
@@ -149,12 +143,12 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         return model;
     }
 
-    public JSONObject createWorkSpace(String projectId, String sourceWorkId, String newWorkName, Date cpyTime,
+    public JSONObject createWorkSpace(String projectId, String sourceWorkId, String newWorkName, String commitId,
         JSONObject jsonObject, String user, Status status) throws JSONException {
         status.setCode(HttpServletResponse.SC_OK);
         if (Debug.isOn()) {
             Debug.outln(
-                "createWorkSpace(sourceWorkId=" + sourceWorkId + ", newWorkName=" + newWorkName + ", cpyTime=" + cpyTime
+                "createWorkSpace(sourceWorkId=" + sourceWorkId + ", newWorkName=" + newWorkName + ", commitId=" + commitId
                     + ", jsonObject=" + jsonObject + ", user=" + user + ", status=" + status + ")");
         }
 
@@ -234,15 +228,18 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 return null;
             } else {
                 EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs");
-                // Copy the images from the parent folder
                 FileFolderService fileService = services.getFileFolderService();
-                try {
-                    fileService.copy(srcWs.getNodeRef(), refContainerNode.getNodeRef(), newWorkspaceId);
-                    finalWorkspace = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
-                    CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
-                        jsonObject != null ? jsonObject.optString("source") : null);
-                } catch (FileNotFoundException e) {
-                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+
+                if (commitId == null || commitId.equals("")) {
+                    // Copy the images from the parent folder
+                    try {
+                        fileService.copy(srcWs.getNodeRef(), refContainerNode.getNodeRef(), newWorkspaceId);
+                        finalWorkspace = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
+                        CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
+                            jsonObject != null ? jsonObject.optString("source") : null, services);
+                    } catch (FileNotFoundException e) {
+                        logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                    }
                 }
             }
         } else {

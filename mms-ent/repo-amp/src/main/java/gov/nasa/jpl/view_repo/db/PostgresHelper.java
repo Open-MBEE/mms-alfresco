@@ -566,6 +566,25 @@ public class PostgresHelper {
         return result;
     }
 
+    public List<Node> getAllNodes() {
+        List<Node> result = new ArrayList<>();
+
+        try {
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId);
+            ResultSet rs = query.executeQuery();
+            while (rs.next()) {
+                result.add(resultSetToNode(rs));
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return result;
+    }
+
     public boolean isMoved(String sysmlid, String owner) {
         try {
             Set<Pair<String, String>> dbowner = getImmediateParents(sysmlid, DbEdgeTypes.CONTAINMENT);
@@ -729,10 +748,14 @@ public class PostgresHelper {
     }
 
     public Set<String> getElasticIds() {
+        return getElasticIds(false);
+    }
+
+    public Set<String> getElasticIds(boolean withDeleted) {
         Set<String> elasticIds = new HashSet<>();
         try {
             String query = String
-                .format("SELECT elasticid FROM \"nodes%s\" WHERE deleted = %b", workspaceId, false);
+                .format("SELECT elasticid FROM \"nodes%s\" WHERE deleted = %b", workspaceId, withDeleted);
             ResultSet rs = execQuery(query);
             while (rs.next()) {
                 elasticIds.add(rs.getString(1));
@@ -962,13 +985,6 @@ public class PostgresHelper {
 
     public void insertEdge(String parentSysmlId, String childSysmlId, DbEdgeTypes edgeType) {
 
-        insertEdge(parentSysmlId, childSysmlId, edgeType, null);
-
-    }
-
-    public void insertEdge(String parentSysmlId, String childSysmlId, DbEdgeTypes edgeType,
-        Map<String, String> properties) {
-
         if (parentSysmlId == null || childSysmlId == null || parentSysmlId.isEmpty() || childSysmlId.isEmpty()) {
             logger.warn("Parent or child not found");
             logger.warn("parentSysmlId: " + parentSysmlId);
@@ -976,47 +992,18 @@ public class PostgresHelper {
             return;
         }
 
-        List<String> edgeProperties = new ArrayList<>();
-
         try {
-            ResultSet rs = execQuery(
+            execQuery(
                 "INSERT INTO \"edges" + workspaceId + "\" (parent, child, edgeType) VALUES ((SELECT id FROM \"nodes"
                     + workspaceId + "\" WHERE sysmlId = '" + parentSysmlId + "')," + "(SELECT id FROM \"nodes"
                     + workspaceId + "\" WHERE sysmlId = '" + childSysmlId + "'), " + edgeType.getValue()
                     + ") RETURNING id");
-            if (properties != null) {
-                if (rs.next()) {
-                    edgeProperties.add(rs.getString(1));
-                }
-            }
         } catch (Exception e) {
             if (e.getMessage().contains("duplicate key")) {
                 logger.info(String.format("%s", LogUtil.getStackTrace(e)));
             } else {
                 logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
             }
-        } finally {
-            close();
-        }
-
-        if (!edgeProperties.isEmpty()) {
-            for (String edgeId : edgeProperties) {
-                insertEdgeProperty(edgeId, properties);
-            }
-        }
-    }
-
-    public void insertEdgeProperty(String edgeId, Map<String, String> properties) {
-        try {
-            String query = "";
-            for (Map.Entry<String, String> entry : properties.entrySet()) {
-                query +=
-                    "INSERT INTO \"edgeProperties" + workspaceId + "\" (edgeid, key, value) VALUES (" + edgeId + ",'"
-                        + entry.getKey() + "','" + entry.getValue() + "');";
-            }
-            execUpdate(query);
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
             close();
         }
@@ -1344,51 +1331,6 @@ public class PostgresHelper {
         return result;
     }
 
-    public List<Map<String, String>> getChildViews(String sysmlId) {
-        List<Map<String, String>> result = new ArrayList<>();
-        try {
-            Node n = getNodeFromSysmlId(sysmlId);
-            ResultSet rs =
-                execQuery("SELECT sysmlid, aggregation FROM get_childviews(" + n.getId() + ", '" + workspaceId + "')");
-            while (rs.next()) {
-                Map<String, String> resultMap = new HashMap<>();
-                resultMap.put(rs.getString(1), rs.getString(2));
-                result.add(resultMap);
-            }
-        } catch (NullPointerException npe) {
-
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-        return result;
-    }
-
-    public List<String> deleteChildViews(String sysmlId) {
-        List<String> deleted = new ArrayList<>();
-        try {
-            Node n = getNodeFromSysmlId(sysmlId);
-            if (n == null) {
-                return deleted;
-            }
-            ResultSet rs = execQuery("SELECT node.elasticid FROM \"edges" + workspaceId + "\" JOIN \"nodes" + workspaceId + "\" as node ON child = node.id WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue());
-            while(rs.next()) {
-                deleted.add(rs.getString(1));
-            }
-            logger.error("DELETE FROM \"edgeproperties" + workspaceId + "\" WHERE edgeid in (SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue() + ")");
-            execUpdate("DELETE FROM \"edgeproperties" + workspaceId + "\" WHERE edgeid in (SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue() + ")");
-            execUpdate("UPDATE \"nodes" + workspaceId + "\" SET deleted = true WHERE id in (SELECT child FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue() + ")");
-            execUpdate("DELETE FROM \"edges" + workspaceId + "\" WHERE parent = " + n.getId() + " AND edgeType = " + DbEdgeTypes.CHILDVIEW.getValue());
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-
-        return deleted;
-    }
-
     public void deleteEdgesForNode(String sysmlId) {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
@@ -1431,22 +1373,6 @@ public class PostgresHelper {
                 return;
 
             execUpdate("DELETE FROM edges WHERE parent = " + pn.getId() + " AND child = " + cn.getId() + " AND edgetype = " + dbet.getValue());
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-    }
-
-    public void deleteEdges(String parentSysmlId, DbEdgeTypes edgeType) {
-        try {
-            Node pn = getNodeFromSysmlId(parentSysmlId);
-            String deleteProperties = "DELETE FROM \"edgeproperties" + workspaceId + "\" WHERE edgeId in (SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = " + pn.getId() + " AND edgeType = " + edgeType.getValue() + ")";
-            execUpdate(deleteProperties);
-            String query =
-                "DELETE FROM \"edges" + workspaceId + "\" WHERE parent = " + pn.getId() + " AND edgeType = " + edgeType
-                    .getValue();
-            execUpdate(query);
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1596,9 +1522,6 @@ public class PostgresHelper {
             execUpdate("CREATE INDEX childIndex on edges(child);");
             execUpdate("CREATE INDEX parentIndex on edges(parent);");
 
-            execUpdate(
-                "CREATE TABLE edgeProperties(edgeId integer REFERENCES edges(id) ON UPDATE NO ACTION ON DELETE CASCADE not null, key text not null, value text not null, CONSTRAINT unique_edgeproperties UNIQUE (edgeId, key));");
-
             execUpdate("CREATE TABLE commitType(id bigserial primary key, name text not null);");
             execUpdate("CREATE INDEX commitTypeIndex on commitType(id);");
 
@@ -1623,18 +1546,6 @@ public class PostgresHelper {
                     + "        return -1;\n" + "      when not_null_violation then\n" + "        return -1;\n"
                     + "  end;\n" + "$$ language plpgsql;");
 
-            execUpdate("CREATE OR REPLACE FUNCTION insert_edge_property(text, text, text, integer, text, text)\n"
-                + "  returns integer as $$\n" + "  begin\n" + "  execute '\n"
-                + "      insert into ' || (format('edgeProperties%s', $3)) || ' (edgeId, key, value) values((select id from ' || format('edges%s', $3) || ' where parent = (select id from ' || format('nodes%s', $3) || ' where sysmlId = ''' || $1 || ''') and child = (select id from ' || format('nodes%s', $3) || ' where sysmlId = ''' || $2 || ''') and edgeType = ' || $4 || '), ''' || $5 || ''', ''' || $6 || ''');';\n"
-                + "      return 1;\n" + "    exception\n" + "      when unique_violation then\n"
-                + "        return -1;\n" + "      when not_null_violation then\n" + "        return -1;\n" + "  end;\n"
-                + "$$ language plpgsql;");
-
-            execUpdate("CREATE OR REPLACE FUNCTION get_edge_properties(edge integer, text)\n"
-                + "  returns table(key text, value text) as $$\n" + "  begin\n" + "    return query\n"
-                + "    execute '\n" + "      select key, value from ' || (format('edgeproperties%s', $1)) || ' where edgeid = ' || edge;\n"
-                + "  end;\n" + "$$ language plpgsql;");
-
             execUpdate("CREATE OR REPLACE FUNCTION get_children(integer, integer, text, integer)\n"
                 + "  returns table(id bigint) as $$\n" + "  begin\n" + "    return query\n" + "    execute '\n"
                 + "    with recursive children(depth, nid, path, cycle, deleted) as (\n"
@@ -1644,19 +1555,6 @@ public class PostgresHelper {
                 + "        from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and \n"
                 + "        edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || ' \n" + "      )\n"
                 + "      select distinct nid from children;';\n" + "  end;\n" + "$$ language plpgsql;");
-
-            execUpdate("CREATE OR REPLACE FUNCTION get_childviews(integer, text)\n"
-                + "  returns table(sysmlid text, aggregation text) as $$\n" + "  begin\n" + "    return query\n"
-                + "    execute '\n" + "    with childviews(sysmlid, aggregation) as (\n" + "        (\n"
-                + "        select typeid.value as sysmlid, aggregation.value as aggregation\n"
-                + "          from ' || format('edges%s', $2) || ' as edges\n"
-                + "          join ' || format('edgeproperties%s', $2) || ' as ordering on edges.id = ordering.edgeid and ordering.key = ''order''\n"
-                + "          join ' || format('edgeproperties%s', $2) || ' as aggregation on edges.id = aggregation.edgeid and aggregation.key = ''aggregation''\n"
-                + "          join ' || format('edgeproperties%s', $2) || ' as typeid on edges.id = typeid.edgeid and typeid.key = ''typeId''\n"
-                + "          join ' || format('nodes%s', $2) || ' as child on typeid.value = child.sysmlid and (child.nodetype = 4 or child.nodetype = 12)\n"
-                + "          where edges.parent = ' || $1 || '\n" + "          order by ordering.value::integer ASC\n"
-                + "        )\n" + "      )\n" + "      select sysmlid, aggregation from childviews;';\n" + "  end;\n"
-                + "$$ language plpgsql;");
 
             execUpdate("CREATE OR REPLACE FUNCTION get_parents(integer, integer, text)\n"
                 + "  returns table(id bigint, height integer, root boolean) as $$\n" + "  begin\n"
@@ -1740,6 +1638,9 @@ public class PostgresHelper {
             execUpdate("INSERT INTO commitType(id, name) VALUES (2, 'branch');");
             execUpdate("INSERT INTO commitType(id, name) VALUES (3, 'merge');");
 
+            execUpdate(String.format("GRANT ALL PRIVILEGES ON TABLE nodes%s TO %s", workspaceId, EmsConfig.get("pg.user")));
+            execUpdate(String.format("GRANT ALL PRIVILEGES ON TABLE edges%s TO %s", workspaceId, EmsConfig.get("pg.user")));
+
             execUpdate(String.format("GRANT USAGE, SELECT ON SEQUENCE nodes_id_seq TO %s;", EmsConfig.get("pg.user")));
             execUpdate(String.format("GRANT USAGE, SELECT ON SEQUENCE refs_id_seq TO %s;", EmsConfig.get("pg.user")));
 
@@ -1770,8 +1671,7 @@ public class PostgresHelper {
         }
     }
 
-    public void createBranchFromWorkspace(String childWorkspaceName, String workspaceName, String elasticId,
-        boolean isTag) {
+    public void createBranchFromWorkspace(String childWorkspaceName, String workspaceName, String elasticId, boolean isTag, boolean populateTables) {
         if (childWorkspaceName == null || childWorkspaceName.length() == 0 || childWorkspaceName.equals("master")) {
             return;
         }
@@ -1783,24 +1683,22 @@ public class PostgresHelper {
             // insert record into workspace table
             insertRef(childWorkspaceNameSanitized, workspaceName, getHeadCommit(), elasticId, isTag);
 
-            // copy nodes first
             execUpdate(String.format(
                 "CREATE TABLE nodes%s (LIKE nodes%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
                 childWorkspaceNameSanitized, workspaceId));
-            execUpdate(
-                String.format("INSERT INTO nodes%s SELECT * FROM nodes%s", childWorkspaceNameSanitized, workspaceId));
-            execUpdate(String.format(
-                "ALTER TABLE ONLY nodes%s ADD CONSTRAINT nodes%s_nodetype_fkey FOREIGN KEY (nodetype) REFERENCES nodetypes(id)",
-                childWorkspaceNameSanitized, childWorkspaceNameSanitized));
-
-            // once nodes are copied can copy edges
             execUpdate(String.format(
                 "CREATE TABLE edges%s (LIKE edges%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
                 childWorkspaceNameSanitized, workspaceId));
-            execUpdate(
-                String.format("INSERT INTO edges%s SELECT * FROM edges%s", childWorkspaceNameSanitized, workspaceId));
+
+            if (!populateTables) {
+                copyTable("nodes", childWorkspaceNameSanitized, workspaceId);
+                copyTable("edges", childWorkspaceNameSanitized, workspaceId);
+            }
 
             // add constraints last otherwise they won't hold
+            execUpdate(String.format(
+                "ALTER TABLE ONLY nodes%s ADD CONSTRAINT nodes%s_nodetype_fkey FOREIGN KEY (nodetype) REFERENCES nodetypes(id)",
+                childWorkspaceNameSanitized, childWorkspaceNameSanitized));
             execUpdate(String.format(
                 "ALTER TABLE ONLY edges%s ADD CONSTRAINT edges%s_child_fkey FOREIGN KEY (child) REFERENCES nodes%s(id)",
                 childWorkspaceNameSanitized, childWorkspaceNameSanitized, childWorkspaceNameSanitized));
@@ -1811,22 +1709,22 @@ public class PostgresHelper {
                 "ALTER TABLE ONLY edges%s ADD CONSTRAINT edges%s_edgetype_fkey FOREIGN KEY (edgetype) REFERENCES edgetypes(id)",
                 childWorkspaceNameSanitized, childWorkspaceNameSanitized));
 
-            // once edges are copied, can copy edgeproperties
-            execUpdate(String.format(
-                "CREATE TABLE edgeProperties%s (LIKE edgeProperties%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
-                childWorkspaceNameSanitized, workspaceId));
-            execUpdate(String.format(
-                "ALTER TABLE ONLY edgeProperties%s ADD CONSTRAINT edgeproperties%s_edgeid_fkey FOREIGN KEY (edgeid) REFERENCES edges%s(id)",
-                childWorkspaceNameSanitized, childWorkspaceNameSanitized, childWorkspaceNameSanitized));
-            execUpdate(
-                String.format("INSERT INTO edgeProperties%s SELECT * FROM edgeProperties%s", childWorkspaceNameSanitized, workspaceId));
-
             if (isTag) {
                 execUpdate(String
-                    .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s, edgeProperties%1$s FROM %2$s",
+                    .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s",
                         workspaceId, EmsConfig.get("pg.user")));
             }
 
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+    }
+
+    private void copyTable(String name, String toRef, String fromRef) {
+        try {
+            execUpdate(String.format("INSERT INTO %1$s%2$s SELECT * FROM %1$s%3$s", name, toRef, fromRef));
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1865,6 +1763,20 @@ public class PostgresHelper {
     public void deleteRef(String id) {
         try {
             execUpdate(String.format("UPDATE refs SET deleted = true WHERE refId = '%s'", id));
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+    }
+
+    public void deleteRefTables(String id) {
+        if (id == null || id.isEmpty()) {
+            return;
+        }
+        try {
+            execUpdate("DROP TABLE IF EXISTS \"nodes" + id + "\"");
+            execUpdate("DROP TABLE IF EXISTS \"edges" + id + "\"");
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {

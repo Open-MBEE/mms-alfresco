@@ -72,7 +72,7 @@ public class EmsNodeUtil {
         switchWorkspace(workspaceName);
     }
 
-    private void switchWorkspace(String workspaceName) {
+    public void switchWorkspace(String workspaceName) {
         if (!this.workspaceName.equals(workspaceName) && pgh != null) {
             if (workspaceName.equals("null")) {
                 workspaceName = "";
@@ -1620,6 +1620,21 @@ public class EmsNodeUtil {
         return value;
     }
 
+    public JSONObject getModelAtCommit(String commitId) {
+        JSONObject result = new JSONObject();
+        JSONArray elements = new JSONArray();
+        for (Node n : pgh.getAllNodes()) {
+            JSONObject pastElement = getElementAtCommit(n.getSysmlId(), commitId);
+            if (pastElement.has(Sjm.SYSMLID)) {
+                elements.put(pastElement);
+            }
+        }
+
+        result.put(Sjm.ELEMENTS, elements);
+
+        return result;
+    }
+
     /**
      * Method will take a sysmlId and search for it at a specific commit. If the element is not found at the current
      * commit then it will find the previous commit (in the same branch or it's parent) and search for the element at
@@ -1662,9 +1677,9 @@ public class EmsNodeUtil {
             // Get a list of commits based on references <commitId, JSONObject>
             List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
 
-            Date commitTimestamp = null;
             for (Map<String, Object> m : refsCommits) {
                 String commitIdCheck = (String) m.get(Sjm.SYSMLID);
+                Date commitTimestamp = null;
 
                 if (logger.isDebugEnabled()) {
                     logger.debug(m.get(Sjm.SYSMLID) + " " + m.get(Sjm.TIMESTAMP));

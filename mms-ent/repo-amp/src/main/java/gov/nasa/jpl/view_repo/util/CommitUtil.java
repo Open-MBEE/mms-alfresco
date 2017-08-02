@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import gov.nasa.jpl.view_repo.db.Node;
 import org.alfresco.service.ServiceRegistry;
@@ -460,11 +461,12 @@ public class CommitUtil {
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
-                // TODO: Add in the Alfresco Site creation based on type=SiteAndPackage
 
             } catch (Exception e1) {
                 logger.warn("Could not complete graph storage");
-                e1.printStackTrace();
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("%s", LogUtil.getStackTrace(e1)));
+                }
                 return false;
             }
         } else {
@@ -489,7 +491,7 @@ public class CommitUtil {
     public static boolean updateNullEdges(List<String> updateParents, String projectId) {
         try {
             eh = new ElasticHelper();
-            Set<String> updateSet = new HashSet<String>(updateParents);
+            Set<String> updateSet = new HashSet<>(updateParents);
             String owner = "holding_bin_"+projectId;
             JSONObject query = new JSONObject();
             query.put("doc", new JSONObject().put("ownerId", owner ));
@@ -512,7 +514,7 @@ public class CommitUtil {
      * @throws JSONException
      */
     public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId,
-        String source, ServiceRegistry services, boolean withChildViews) throws JSONException {
+        String source, ServiceRegistry services, boolean withChildViews) {
 
         JSONObject jmsPayload = new JSONObject();
         try {
@@ -693,12 +695,21 @@ public class CommitUtil {
                 pgh.updateNode(projectSysmlid, projectElastic);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
     }
 
     // make sure only one branch is made at a time
-    public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created, String elasticId, Boolean isTag, String source) throws JSONException {
+    public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created,
+        String elasticId, Boolean isTag, String source, ServiceRegistry services) {
+        return sendBranch(projectId, src, created, elasticId, isTag, source, services, null);
+    }
+
+    // make sure only one branch is made at a time
+    public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created,
+        String elasticId, Boolean isTag, String source, ServiceRegistry services, String commitId) {
         // FIXME: need to include branch in commit history
         JSONObject branchJson = new JSONObject();
         branchJson.put("source", source);
@@ -712,29 +723,43 @@ public class CommitUtil {
             pgh.setWorkspace(srcId);
 
             try {
-                pgh.createBranchFromWorkspace(created.optString(Sjm.SYSMLID), created.optString(Sjm.NAME), elasticId,
-                    isTag);
+                pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId,
+                    commitId == null, isTag);
                 pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                 eh = new ElasticHelper();
+
+                if (commitId != null) {
+                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
+                    emsNodeUtil.switchProject(projectId);
+                    emsNodeUtil.switchWorkspace(srcId);
+                    JSONObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
+                    if (!CommitUtil.sendDeltas(modelFromCommit, projectId, created.getString(Sjm.SYSMLID), source, services, true)) {
+                        pgh.deleteRefTables(created.getString(Sjm.SYSMLID));
+                        executor.shutdown();
+                        executor.awaitTermination(60L, TimeUnit.SECONDS);
+                    }
+                }
+
                 Set<String> elementsToUpdate = pgh.getElasticIds();
                 String payload = new JSONObject().put("script", new JSONObject().put("inline",
-                    "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
-                        + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
+                    "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
                     .put("params", new JSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
                 eh.bulkUpdateElements(elementsToUpdate, payload);
                 created.put("status", "created");
 
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 created.put("status", "failed");
-                e.printStackTrace();
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+                }
             }
 
             try {
                 eh.updateElement(elasticId, new JSONObject().put("doc", created));
             } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+                }
             }
 
             branchJson.put("createdRef", created);
@@ -764,7 +789,6 @@ public class CommitUtil {
     }
 
     private static JSONObject createNode(String sysmlid, String user, String date, JSONObject e) {
-        // JSONObject o = new JSONObject();
 
         if (e == null) {
             e = new JSONObject();
