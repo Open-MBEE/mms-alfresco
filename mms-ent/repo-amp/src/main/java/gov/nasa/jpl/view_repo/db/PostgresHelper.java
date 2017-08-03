@@ -1487,7 +1487,7 @@ public class PostgresHelper {
         } catch (SQLException se) {
             // Catch Duplicate error and do nothing
         } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
             close();
         }
@@ -1522,6 +1522,9 @@ public class PostgresHelper {
             execUpdate("CREATE INDEX childIndex on edges(child);");
             execUpdate("CREATE INDEX parentIndex on edges(parent);");
 
+            execUpdate(
+                "CREATE TABLE edgeProperties(edgeId integer REFERENCES edges(id) ON UPDATE NO ACTION ON DELETE CASCADE not null, key text not null, value text not null, CONSTRAINT unique_edgeproperties UNIQUE (edgeId, key));");
+
             execUpdate("CREATE TABLE commitType(id bigserial primary key, name text not null);");
             execUpdate("CREATE INDEX commitTypeIndex on commitType(id);");
 
@@ -1546,6 +1549,18 @@ public class PostgresHelper {
                     + "        return -1;\n" + "      when not_null_violation then\n" + "        return -1;\n"
                     + "  end;\n" + "$$ language plpgsql;");
 
+            execUpdate("CREATE OR REPLACE FUNCTION insert_edge_property(text, text, text, integer, text, text)\n"
+                + "  returns integer as $$\n" + "  begin\n" + "  execute '\n"
+                + "      insert into ' || (format('edgeProperties%s', $3)) || ' (edgeId, key, value) values((select id from ' || format('edges%s', $3) || ' where parent = (select id from ' || format('nodes%s', $3) || ' where sysmlId = ''' || $1 || ''') and child = (select id from ' || format('nodes%s', $3) || ' where sysmlId = ''' || $2 || ''') and edgeType = ' || $4 || '), ''' || $5 || ''', ''' || $6 || ''');';\n"
+                + "      return 1;\n" + "    exception\n" + "      when unique_violation then\n"
+                + "        return -1;\n" + "      when not_null_violation then\n" + "        return -1;\n" + "  end;\n"
+                + "$$ language plpgsql;");
+
+            execUpdate("CREATE OR REPLACE FUNCTION get_edge_properties(edge integer, text)\n"
+                + "  returns table(key text, value text) as $$\n" + "  begin\n" + "    return query\n"
+                + "    execute '\n" + "      select key, value from ' || (format('edgeproperties%s', $1)) || ' where edgeid = ' || edge;\n"
+                + "  end;\n" + "$$ language plpgsql;");
+
             execUpdate("CREATE OR REPLACE FUNCTION get_children(integer, integer, text, integer)\n"
                 + "  returns table(id bigint) as $$\n" + "  begin\n" + "    return query\n" + "    execute '\n"
                 + "    with recursive children(depth, nid, path, cycle, deleted) as (\n"
@@ -1555,6 +1570,19 @@ public class PostgresHelper {
                 + "        from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and \n"
                 + "        edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || ' \n" + "      )\n"
                 + "      select distinct nid from children;';\n" + "  end;\n" + "$$ language plpgsql;");
+
+            execUpdate("CREATE OR REPLACE FUNCTION get_childviews(integer, text)\n"
+                + "  returns table(sysmlid text, aggregation text) as $$\n" + "  begin\n" + "    return query\n"
+                + "    execute '\n" + "    with childviews(sysmlid, aggregation) as (\n" + "        (\n"
+                + "        select typeid.value as sysmlid, aggregation.value as aggregation\n"
+                + "          from ' || format('edges%s', $2) || ' as edges\n"
+                + "          join ' || format('edgeproperties%s', $2) || ' as ordering on edges.id = ordering.edgeid and ordering.key = ''order''\n"
+                + "          join ' || format('edgeproperties%s', $2) || ' as aggregation on edges.id = aggregation.edgeid and aggregation.key = ''aggregation''\n"
+                + "          join ' || format('edgeproperties%s', $2) || ' as typeid on edges.id = typeid.edgeid and typeid.key = ''typeId''\n"
+                + "          join ' || format('nodes%s', $2) || ' as child on typeid.value = child.sysmlid and (child.nodetype = 4 or child.nodetype = 12)\n"
+                + "          where edges.parent = ' || $1 || '\n" + "          order by ordering.value::integer ASC\n"
+                + "        )\n" + "      )\n" + "      select sysmlid, aggregation from childviews;';\n" + "  end;\n"
+                + "$$ language plpgsql;");
 
             execUpdate("CREATE OR REPLACE FUNCTION get_parents(integer, integer, text)\n"
                 + "  returns table(id bigint, height integer, root boolean) as $$\n" + "  begin\n"
@@ -1638,9 +1666,6 @@ public class PostgresHelper {
             execUpdate("INSERT INTO commitType(id, name) VALUES (2, 'branch');");
             execUpdate("INSERT INTO commitType(id, name) VALUES (3, 'merge');");
 
-            execUpdate(String.format("GRANT ALL PRIVILEGES ON TABLE nodes%s TO %s", workspaceId, EmsConfig.get("pg.user")));
-            execUpdate(String.format("GRANT ALL PRIVILEGES ON TABLE edges%s TO %s", workspaceId, EmsConfig.get("pg.user")));
-
             execUpdate(String.format("GRANT USAGE, SELECT ON SEQUENCE nodes_id_seq TO %s;", EmsConfig.get("pg.user")));
             execUpdate(String.format("GRANT USAGE, SELECT ON SEQUENCE refs_id_seq TO %s;", EmsConfig.get("pg.user")));
 
@@ -1690,7 +1715,7 @@ public class PostgresHelper {
                 "CREATE TABLE edges%s (LIKE edges%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
                 childWorkspaceNameSanitized, workspaceId));
 
-            if (!populateTables) {
+            if (populateTables) {
                 copyTable("nodes", childWorkspaceNameSanitized, workspaceId);
                 copyTable("edges", childWorkspaceNameSanitized, workspaceId);
             }

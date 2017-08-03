@@ -637,9 +637,7 @@ public class EmsNodeUtil {
                 updatedElements.put(o);
 
                 JSONObject parent = new JSONObject();
-                if (existingMap.containsKey(sysmlid)) {
-                    parent.put("previousElasticId", existingMap.get(sysmlid).getString(Sjm.ELASTICID));
-                }
+                parent.put("previousElasticId", existingMap.get(sysmlid).getString(Sjm.ELASTICID));
                 oldElasticIds.add(existingMap.get(sysmlid).getString(Sjm.ELASTICID));
                 parent.put(Sjm.SYSMLID, sysmlid);
                 parent.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
@@ -1303,8 +1301,8 @@ public class EmsNodeUtil {
         }
 
         if (logger.isDebugEnabled()) {
-            logger.error("New Element: " + json);
-            logger.error("Old Element: " + existing);
+            logger.debug("New Element: " + json);
+            logger.debug("Old Element: " + existing);
         }
 
         Map<String, Object> newElement = toMap(json);
@@ -1631,7 +1629,6 @@ public class EmsNodeUtil {
         }
 
         result.put(Sjm.ELEMENTS, elements);
-
         return result;
     }
 
@@ -1677,9 +1674,9 @@ public class EmsNodeUtil {
             // Get a list of commits based on references <commitId, JSONObject>
             List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
 
+            Date commitTimestamp = null;
             for (Map<String, Object> m : refsCommits) {
                 String commitIdCheck = (String) m.get(Sjm.SYSMLID);
-                Date commitTimestamp = null;
 
                 if (logger.isDebugEnabled()) {
                     logger.debug(m.get(Sjm.SYSMLID) + " " + m.get(Sjm.TIMESTAMP));

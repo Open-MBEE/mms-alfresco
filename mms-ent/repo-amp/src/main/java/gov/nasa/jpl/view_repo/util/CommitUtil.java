@@ -723,18 +723,16 @@ public class CommitUtil {
             pgh.setWorkspace(srcId);
 
             try {
-                pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId,
-                    commitId == null, isTag);
+                pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId, isTag, true);
                 pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                 eh = new ElasticHelper();
 
-                if (commitId != null) {
+                if (commitId != null && !commitId.isEmpty()) {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
                     emsNodeUtil.switchProject(projectId);
                     emsNodeUtil.switchWorkspace(srcId);
                     JSONObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
                     if (!CommitUtil.sendDeltas(modelFromCommit, projectId, created.getString(Sjm.SYSMLID), source, services, true)) {
-                        pgh.deleteRefTables(created.getString(Sjm.SYSMLID));
                         executor.shutdown();
                         executor.awaitTermination(60L, TimeUnit.SECONDS);
                     }
