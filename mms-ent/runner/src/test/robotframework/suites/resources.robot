@@ -15,6 +15,7 @@ ${ROOT}         http://${AUTH}@${SERVER}/alfresco/service
 # GLOBAL DELAYS TO ALLOW FOR INDEXING IN SOLR
 ${POST_DELAY_INDEXING}      2s
 ${DELETE_DELAY_INDEXING}    10s
+${BRANCH_DELAY_INDEXING}    15s
 
 # UNCOMMENT TO TEST KEYWORDS -- This will make all other tests fail!
 #*** Test Cases ***

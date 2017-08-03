@@ -551,7 +551,7 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public JSONObject processPostJson(JSONArray elements, WorkspaceNode workspace, String user,
+    public JSONObject processPostJson(JSONArray elements, String user,
         Set<String> oldElasticIds) {
 
         JSONObject result = new JSONObject();

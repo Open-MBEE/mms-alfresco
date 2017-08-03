@@ -229,17 +229,14 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             } else {
                 EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs");
                 FileFolderService fileService = services.getFileFolderService();
-
-                if (commitId == null || commitId.equals("")) {
-                    // Copy the images from the parent folder
-                    try {
-                        fileService.copy(srcWs.getNodeRef(), refContainerNode.getNodeRef(), newWorkspaceId);
-                        finalWorkspace = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
-                        CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
-                            jsonObject != null ? jsonObject.optString("source") : null, services);
-                    } catch (FileNotFoundException e) {
-                        logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                    }
+                // Copy the images from the parent folder
+                try {
+                    fileService.copy(srcWs.getNodeRef(), refContainerNode.getNodeRef(), newWorkspaceId);
+                    finalWorkspace = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
+                    CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
+                        jsonObject != null ? jsonObject.optString("source") : null, services, commitId);
+                } catch (FileNotFoundException e) {
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
             }
         } else {

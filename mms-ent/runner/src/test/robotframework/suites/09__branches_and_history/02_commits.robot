@@ -104,3 +104,18 @@ BranchFromBranchAndCheckCommits
 	${branch_2_json} =	Get		 url=${ROOT}/projects/PA/refs/pa_branch_2/history
 	${result} =			Compare Json To Json		${branch_2_json.json()}		${branch_1_json.json()}
 	Should be true		${result}
+
+BranchFromThePastAndCheckCommits
+	[Documentation]		"Create branch1, create branch 2 immediately from branch 1, getting branch history from branch 1 and branch 2 should be the same."
+	[Tags]				branches		critical		090210
+	${branch_1_history} =	Get		 url=${ROOT}/projects/PA/refs/pa_branch_1/history
+	${commitId} =       Set Variable        ${branch_1_history.json()["commits"][4]["id"]}
+	${post_json} =		Get File		${CURDIR}/../../JsonData/PostBranchFromPast.json
+	${branch_1_json} =	Post		url=${ROOT}/projects/PA/refs?commitId=${commitId}		data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${branch_1_json.status_code}		${200}
+	Sleep				${BRANCH_DELAY_INDEXING}
+	${branch_history} =	Get		 url=${ROOT}/projects/PA/refs/pa_branch_past/history
+	${filter} =			Create List     _timestamp
+	Generate JSON		${TEST_NAME}		${branch_history.json()}		${filter}
+	${compare_result} =	Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}

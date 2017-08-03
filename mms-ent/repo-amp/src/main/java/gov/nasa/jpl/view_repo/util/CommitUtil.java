@@ -212,8 +212,6 @@ public class CommitUtil {
         pgh.setProject(projectId);
         pgh.setWorkspace(refId);
 
-        //Boolean initialCommit = pgh.isInitialCommit();
-
         JSONArray added = delta.optJSONArray("addedElements");
         JSONArray updated = delta.optJSONArray("updatedElements");
         JSONArray deleted = delta.optJSONArray("deletedElements");
@@ -234,8 +232,6 @@ public class CommitUtil {
         if (bulkElasticEntry(added, "added", withChildViews) && bulkElasticEntry(updated, "updated", withChildViews)) {
 
             try {
-                List<Pair<String, String>> plist = new LinkedList<>();
-
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
                 List<Map<String, String>> edgeInserts = new ArrayList<>();
                 List<Map<String, String>> childEdgeInserts = new ArrayList<>();
@@ -261,23 +257,22 @@ public class CommitUtil {
                         addEdges.add(p);
                     }
 
-                    String doc = e.optString("documentation");
+                    String doc = e.optString(Sjm.DOCUMENTATION);
                     if (doc != null && !doc.equals("")) {
-                        NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc,
-                            viewEdges);
+                        NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
                     }
 
                     if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                         createOrUpdateSiteChar(e, projectId, refId, services);
                     }
 
-                    if (e.has("_contents")) {
-                        JSONObject contents = e.optJSONObject("_contents");
+                    if (e.has(Sjm.CONTENTS)) {
+                        JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
                             NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                         }
-                    } else if (e.has("specification") && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
-                        JSONObject iss = e.optJSONObject("specification");
+                    } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
+                        JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
                         if (iss != null) {
                             NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
                                 viewEdges);
@@ -310,7 +305,6 @@ public class CommitUtil {
                     deletedSysmlIds.add(e.getString(Sjm.SYSMLID));
                 }
 
-                List<Pair<String, String>> updatedPlist = new LinkedList<>();
                 for (int i = 0; i < updated.length(); i++) {
                     JSONObject e = updated.getJSONObject(i);
                     jmsUpdated.put(e.getString(Sjm.SYSMLID));
@@ -323,7 +317,7 @@ public class CommitUtil {
                         Pair<String, String> p = new Pair<>(e.getString(Sjm.OWNERID), e.getString(Sjm.SYSMLID));
                         addEdges.add(p);
                     }
-                    String doc = e.optString("documentation");
+                    String doc = e.optString(Sjm.DOCUMENTATION);
                     if (doc != null && !doc.equals("")) {
                         NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
                     }
@@ -332,13 +326,13 @@ public class CommitUtil {
                         createOrUpdateSiteChar(e, projectId, refId, services);
                     }
 
-                    if (e.has("_contents")) {
-                        JSONObject contents = e.optJSONObject("_contents");
+                    if (e.has(Sjm.CONTENTS)) {
+                        JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
                             NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                         }
-                    } else if (e.has("specification") && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
-                        JSONObject iss = e.optJSONObject("specification");
+                    } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
+                        JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
                         if (iss != null) {
                             NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
                                 viewEdges);
@@ -728,9 +722,7 @@ public class CommitUtil {
                 eh = new ElasticHelper();
 
                 if (commitId != null && !commitId.isEmpty()) {
-                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
-                    emsNodeUtil.switchProject(projectId);
-                    emsNodeUtil.switchWorkspace(srcId);
+                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
                     JSONObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
                     if (!CommitUtil.sendDeltas(modelFromCommit, projectId, created.getString(Sjm.SYSMLID), source, services, true)) {
                         executor.shutdown();

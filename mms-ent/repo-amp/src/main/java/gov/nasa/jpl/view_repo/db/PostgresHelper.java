@@ -571,7 +571,7 @@ public class PostgresHelper {
 
         try {
             connect();
-            PreparedStatement query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId);
+            PreparedStatement query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\"");
             ResultSet rs = query.executeQuery();
             while (rs.next()) {
                 result.add(resultSetToNode(rs));
