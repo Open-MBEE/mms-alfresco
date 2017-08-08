@@ -1049,6 +1049,24 @@ public class PostgresHelper {
 
         return null;
     }
+    public String getTimestamp(String lookUp, String value) {
+        String timestamp;
+        try {
+            String query = "SELECT elasticId, timestamp FROM commits WHERE %s = '%s';";
+            ResultSet rs = execQuery(String.format(query, lookUp, value));
+
+            if (rs.next()) {
+                timestamp = rs.getString(2);
+                return timestamp;
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return null;
+    }
 
     public String getCommit(String column, String lookUp, String value) {
         try {
@@ -1236,7 +1254,23 @@ public class PostgresHelper {
         }
         return result;
     }
+    public Set<String> getBranchParents(String refId) {
+        Set<String> result = new HashSet<>();
+        try {
 
+            String query = "SELECT parent FROM refs WHERE refid=%s";
+            ResultSet rs = execQuery(String.format(query, refId));
+
+            while (rs.next()) {
+                result.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return result;
+    }
     /**
      * Returns in order of height from sysmlID up for containment only
      *

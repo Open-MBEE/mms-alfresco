@@ -1,16 +1,8 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -504,6 +496,7 @@ public class EmsNodeUtil {
     public JSONArray getDocJson(String sysmlId, String commitId, boolean extended) {
         return getDocJson(sysmlId, commitId, extended, 10000);
     }
+
     /**
      * Get the documents that exist in a site at a specified time
      *
@@ -1127,6 +1120,10 @@ public class EmsNodeUtil {
         return pgh.getCommitAndTimestamp("elasticId", elasticid);
     }
 
+    public String getTimestampFromElasticId(String elasticid) {
+        return pgh.getTimestamp("elasticId", elasticid);
+    }
+
     public JSONObject getElementByElasticID(String elasticId) {
         try {
             return eh.getElementByElasticId(elasticId);
@@ -1260,6 +1257,37 @@ public class EmsNodeUtil {
 
         return result;
     }
+
+    public JSONObject imageVersionBeforeTimestamp(Map<String, String> versions, String timestamp) {
+        Map<String, Long> convertToDate = new HashMap<>();
+        Long commitDate = new Long(TimeUtils.fromTimestampToMillis(timestamp));
+        for (Map.Entry<String, String> entry : versions.entrySet()) {
+            convertToDate.put(entry.getKey(), TimeUtils.fromTimestampToMillis(entry.getValue()));
+        }
+        Long nearestDate = getClosestDate(new ArrayList<Long>(convertToDate.values()), commitDate);
+        System.out.println("what");
+        return null;
+    }
+
+    public Long getClosestDate(ArrayList<Long> timestamps, Long commitTimestamp) {
+        //        current_date = dates[0]
+        //        current_min = abs(current_date - date.today())
+        //        for d in dates:
+        //        if abs(d - date.today()) < current_min:
+        //        current_min = abs(d - date.today())
+        //        current_date = d
+        Long nearestTimestamp = timestamps.get(0);
+        Long min = Math.abs(nearestTimestamp - commitTimestamp);
+        for (int i = 1; i < timestamps.size(); i++) {
+            Long currentTimestamp = Math.abs(timestamps.get(i) - commitTimestamp);
+            if (currentTimestamp < min) {
+                min = currentTimestamp;
+                nearestTimestamp = timestamps.get(i);
+            }
+        }
+        return nearestTimestamp;
+    }
+
 
     public boolean isDeleted(String sysmlid) {
         return pgh.isDeleted(sysmlid);
@@ -1509,8 +1537,8 @@ public class EmsNodeUtil {
                 // updating a node, so the time is the current time (which is
                 // null).
                 EmsScriptNode artNode = NodeUtil
-                    .updateOrCreateArtifact(name, extension, content, null, siteName, projectId, this.workspaceName, null, null, null,
-                        false);
+                    .updateOrCreateArtifact(name, extension, content, null, siteName, projectId, this.workspaceName,
+                        null, null, null, false);
                 if (artNode == null || !artNode.exists()) {
                     logger.debug("Failed to pull out image data for value! " + value);
                     break;
