@@ -24,7 +24,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.TicketComponent;
+import org.alfresco.repo.security.person.PersonServiceImpl;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PersonService;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -73,6 +77,12 @@ public class LoginTicket extends DeclarativeWebScript
         try {
             username = ticketComponent.validateTicket(ticket);
             result.put("username", username);
+            System.out.println("---------------------------------");
+
+            PersonServiceImpl personService = new PersonServiceImpl();
+            NodeRef nodeRef = personService.getPersonOrNull(username);
+            PersonService.PersonInfo personInfo = personService.getPerson(nodeRef);
+            System.out.println(personInfo.getFirstName() + " " + personInfo.getLastName());
         } catch (AuthenticationException e) {
             //status.setRedirect(true);
             status.setCode(HttpServletResponse.SC_NOT_FOUND);
