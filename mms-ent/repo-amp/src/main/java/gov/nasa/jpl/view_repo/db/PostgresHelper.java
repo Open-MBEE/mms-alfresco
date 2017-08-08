@@ -571,7 +571,7 @@ public class PostgresHelper {
 
         try {
             connect();
-            PreparedStatement query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\"");
+            PreparedStatement query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE initialcommit IS NOT NULL");
             ResultSet rs = query.executeQuery();
             while (rs.next()) {
                 result.add(resultSetToNode(rs));
@@ -1711,6 +1711,7 @@ public class PostgresHelper {
             execUpdate(String.format(
                 "CREATE TABLE nodes%s (LIKE nodes%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
                 childWorkspaceNameSanitized, workspaceId));
+
             execUpdate(String.format(
                 "CREATE TABLE edges%s (LIKE edges%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
                 childWorkspaceNameSanitized, workspaceId));
@@ -1718,6 +1719,8 @@ public class PostgresHelper {
             if (populateTables) {
                 copyTable("nodes", childWorkspaceNameSanitized, workspaceId);
                 copyTable("edges", childWorkspaceNameSanitized, workspaceId);
+            } else {
+                execUpdate(String.format("INSERT INTO nodes%s SELECT * FROM nodes%s WHERE initialcommit IS NULL", childWorkspaceNameSanitized, workspaceId));
             }
 
             // add constraints last otherwise they won't hold

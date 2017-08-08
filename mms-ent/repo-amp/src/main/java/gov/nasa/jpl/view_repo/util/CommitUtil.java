@@ -3,19 +3,13 @@ package gov.nasa.jpl.view_repo.util;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import gov.nasa.jpl.view_repo.db.Node;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -204,8 +198,8 @@ public class CommitUtil {
         return false;
     }
 
-    private static boolean processDeltasForDb(JSONObject delta, String projectId,
-        String refId, JSONObject jmsPayload, boolean withChildViews, ServiceRegistry services) {
+    private static boolean processDeltasForDb(JSONObject delta, String projectId, String refId, JSONObject jmsPayload,
+        boolean withChildViews, ServiceRegistry services) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
         PostgresHelper pgh = new PostgresHelper();
@@ -252,6 +246,7 @@ public class CommitUtil {
                         node.put("lastcommit", commitElasticId);
                         nodeInserts.add(node);
                     }
+
                     if (e.has(Sjm.OWNERID) && e.getString(Sjm.OWNERID) != null && e.getString(Sjm.SYSMLID) != null) {
                         Pair<String, String> p = new Pair<>(e.getString(Sjm.OWNERID), e.getString(Sjm.SYSMLID));
                         addEdges.add(p);
@@ -259,7 +254,7 @@ public class CommitUtil {
 
                     String doc = e.optString(Sjm.DOCUMENTATION);
                     if (doc != null && !doc.equals("")) {
-                        NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
+                        processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
                     }
 
                     if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
@@ -269,14 +264,13 @@ public class CommitUtil {
                     if (e.has(Sjm.CONTENTS)) {
                         JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
-                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
+                            processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                         }
                     } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
                         JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
                         if (iss != null) {
-                            NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
-                                viewEdges);
-                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
+                            processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
+                            processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                         }
                     }
                     if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
@@ -319,7 +313,7 @@ public class CommitUtil {
                     }
                     String doc = e.optString(Sjm.DOCUMENTATION);
                     if (doc != null && !doc.equals("")) {
-                        NodeUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
+                        processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
                     }
 
                     if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
@@ -329,14 +323,13 @@ public class CommitUtil {
                     if (e.has(Sjm.CONTENTS)) {
                         JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
-                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
+                            processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                         }
                     } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
                         JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
                         if (iss != null) {
-                            NodeUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss,
-                                viewEdges);
-                            NodeUtil.processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges); //for sections
+                            processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
+                            processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                         }
                     }
                     if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
@@ -420,7 +413,7 @@ public class CommitUtil {
                     pgh.runBulkQueries(edgeInserts, "edges");
                     pgh.commitTransaction();
                     nullParents = pgh.findNullParents();
-                    if(nullParents != null){
+                    if (nullParents != null) {
                         updateNullEdges(nullParents, projectId);
                     }
                     pgh.cleanEdges();
@@ -476,6 +469,133 @@ public class CommitUtil {
 
         return true;
     }
+
+    public static void processNodesAndEdgesWithoutCommit(JSONArray elements, List<Map<String, String>> nodeInserts,
+        List<Map<String, String>> edgeInserts, List<Map<String, String>> childEdgeInserts) {
+
+        List<Pair<String, String>> addEdges = new ArrayList<>();
+        List<Pair<String, String>> viewEdges = new ArrayList<>();
+        List<Pair<String, String>> childViewEdges = new ArrayList<>();
+        List<String> uniqueEdge = new ArrayList<>();
+
+        for (int i = 0; i < elements.length(); i++) {
+            JSONObject e = elements.getJSONObject(i);
+            Map<String, String> node = new HashMap<>();
+            int nodeType = getNodeType(e).getValue();
+
+            if (e.has(Sjm.ELASTICID)) {
+                node.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
+                node.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
+                node.put("nodetype", Integer.toString(nodeType));
+                node.put("initialcommit", e.getString(Sjm.ELASTICID));
+                node.put("lastcommit", e.getString(Sjm.COMMITID));
+                nodeInserts.add(node);
+            }
+
+            if (e.has(Sjm.OWNERID) && e.getString(Sjm.OWNERID) != null && e.getString(Sjm.SYSMLID) != null) {
+                Pair<String, String> p = new Pair<>(e.getString(Sjm.OWNERID), e.getString(Sjm.SYSMLID));
+                addEdges.add(p);
+            }
+
+            String doc = e.optString(Sjm.DOCUMENTATION);
+            if (doc != null && !doc.equals("")) {
+                processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
+            }
+
+            if (e.has(Sjm.CONTENTS)) {
+                JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
+                if (contents != null) {
+                    processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
+                }
+            } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
+                JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
+                if (iss != null) {
+                    processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
+                    processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
+                }
+            }
+            if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
+                JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
+                if (owned != null) {
+                    for (int j = 0; j < owned.length(); j++) {
+                        Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(j));
+                        childViewEdges.add(p);
+                    }
+                }
+            }
+            if (isPartProperty(e)) {
+                String type = e.optString(Sjm.TYPEID);
+                if (type != null) {
+                    Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), type);
+                    childViewEdges.add(p);
+                }
+            }
+        }
+
+        for (Pair<String, String> e : addEdges) {
+            String edgeTest = e.first + e.second + DbEdgeTypes.CONTAINMENT.getValue();
+            if (!uniqueEdge.contains(edgeTest)) {
+                Map<String, String> edge = new HashMap<>();
+                edge.put("parent", e.first);
+                edge.put("child", e.second);
+                edge.put("edgetype", Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
+                edgeInserts.add(edge);
+                uniqueEdge.add(edgeTest);
+            }
+        }
+
+        for (Pair<String, String> e : viewEdges) {
+            String edgeTest = e.first + e.second + DbEdgeTypes.VIEW.getValue();
+            if (!uniqueEdge.contains(edgeTest)) {
+                Map<String, String> edge = new HashMap<>();
+                edge.put("parent", e.first);
+                edge.put("child", e.second);
+                edge.put("edgetype", Integer.toString(DbEdgeTypes.VIEW.getValue()));
+                childEdgeInserts.add(edge);
+                uniqueEdge.add(edgeTest);
+            }
+        }
+
+        for (Pair<String, String> e : childViewEdges) {
+            String edgeTest = e.first + e.second + DbEdgeTypes.CHILDVIEW.getValue();
+            if (!uniqueEdge.contains(edgeTest)) {
+                Map<String, String> edge = new HashMap<>();
+                edge.put("parent", e.first);
+                edge.put("child", e.second);
+                edge.put("edgetype", Integer.toString(DbEdgeTypes.CHILDVIEW.getValue()));
+                childEdgeInserts.add(edge);
+                uniqueEdge.add(edgeTest);
+            }
+        }
+    }
+
+    public static boolean insertForBranchInPast(PostgresHelper pgh, List<Map<String, String>> list, String type, String projectId) {
+        Savepoint sp = null;
+        List<String> nullParents;
+        try {
+            sp = pgh.startTransaction();
+            pgh.runBulkQueries(list, type);
+            pgh.commitTransaction();
+            nullParents = pgh.findNullParents();
+            if (nullParents != null) {
+                updateNullEdges(nullParents, projectId);
+            }
+            pgh.cleanEdges();
+        } catch (Exception e) {
+            try {
+                pgh.rollBackToSavepoint(sp);
+                return false;
+            } catch (SQLException se) {
+                logger.error(String.format("%s", LogUtil.getStackTrace(se)));
+            }
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            pgh.close();
+        }
+
+        return true;
+    }
+
     /**
      * Update edges where the parent is null to the holding bin + _projectId
      *
@@ -486,9 +606,9 @@ public class CommitUtil {
         try {
             eh = new ElasticHelper();
             Set<String> updateSet = new HashSet<>(updateParents);
-            String owner = "holding_bin_"+projectId;
+            String owner = "holding_bin_" + projectId;
             JSONObject query = new JSONObject();
-            query.put("doc", new JSONObject().put("ownerId", owner ));
+            query.put("doc", new JSONObject().put("ownerId", owner));
             eh.bulkUpdateElements(updateSet, query.toString());
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
@@ -507,8 +627,8 @@ public class CommitUtil {
      * @return true if publish completed
      * @throws JSONException
      */
-    public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId,
-        String source, ServiceRegistry services, boolean withChildViews) {
+    public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId, String source,
+        ServiceRegistry services, boolean withChildViews) {
 
         JSONObject jmsPayload = new JSONObject();
         try {
@@ -669,7 +789,8 @@ public class CommitUtil {
 
                 pgh.insertNode(eProject.elasticId, eProject.sysmlid, DbNodeTypes.PROJECT);
                 pgh.insertNode(eProjectHoldingBin.elasticId, "holding_bin_" + projectSysmlid, DbNodeTypes.HOLDINGBIN);
-                pgh.insertNode(eViewInstanceBin.elasticId, "view_instances_bin_" + projectSysmlid, DbNodeTypes.HOLDINGBIN);
+                pgh.insertNode(eViewInstanceBin.elasticId, "view_instances_bin_" + projectSysmlid,
+                    DbNodeTypes.HOLDINGBIN);
 
                 pgh.insertEdge(orgId, eProject.sysmlid, DbEdgeTypes.CONTAINMENT);
                 pgh.insertEdge(projectSysmlid, eProjectHoldingBin.sysmlid, DbEdgeTypes.CONTAINMENT);
@@ -717,14 +838,27 @@ public class CommitUtil {
             pgh.setWorkspace(srcId);
 
             try {
-                pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId, isTag, true);
+                boolean hasCommit = (commitId != null && !commitId.isEmpty());
+                pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId,
+                    isTag, !hasCommit);
                 pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                 eh = new ElasticHelper();
 
-                if (commitId != null && !commitId.isEmpty()) {
+                if (hasCommit) {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
                     JSONObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
-                    if (!CommitUtil.sendDeltas(modelFromCommit, projectId, created.getString(Sjm.SYSMLID), source, services, true)) {
+
+                    List<Map<String, String>> nodeInserts = new ArrayList<>();
+                    List<Map<String, String>> edgeInserts = new ArrayList<>();
+                    List<Map<String, String>> childEdgeInserts = new ArrayList<>();
+
+                    processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS), nodeInserts, edgeInserts, childEdgeInserts);
+
+                    if (!edgeInserts.isEmpty() && !childEdgeInserts.isEmpty()) {
+                        insertForBranchInPast(pgh, nodeInserts, "nodes", projectId);
+                        insertForBranchInPast(pgh, edgeInserts, "edges", projectId);
+                        insertForBranchInPast(pgh, childEdgeInserts, "edges", projectId);
+                    } else {
                         executor.shutdown();
                         executor.awaitTermination(60L, TimeUnit.SECONDS);
                     }
@@ -732,7 +866,8 @@ public class CommitUtil {
 
                 Set<String> elementsToUpdate = pgh.getElasticIds();
                 String payload = new JSONObject().put("script", new JSONObject().put("inline",
-                    "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
+                    "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
+                        + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
                     .put("params", new JSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
                 eh.bulkUpdateElements(elementsToUpdate, payload);
                 created.put("status", "created");
@@ -765,8 +900,7 @@ public class CommitUtil {
         if (jmsConnection != null) {
             status = jmsConnection.publish(json, eventType, refId, projectId);
             if (logger.isDebugEnabled()) {
-                String msg =
-                    "Event: " + eventType + ", RefId: " + refId + ", ProjectId: " + projectId + "\n";
+                String msg = "Event: " + eventType + ", RefId: " + refId + ", ProjectId: " + projectId + "\n";
                 msg += "JSONObject: " + json;
                 logger.debug(msg);
             }
@@ -793,7 +927,8 @@ public class CommitUtil {
         return e;
     }
 
-    public static boolean createOrUpdateSiteChar(JSONObject siteChar, String projectId, String refId, ServiceRegistry services) {
+    public static boolean createOrUpdateSiteChar(JSONObject siteChar, String projectId, String refId,
+        ServiceRegistry services) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String folderName = siteChar.optString(Sjm.NAME);
@@ -834,4 +969,86 @@ public class CommitUtil {
         return false;
     }
 
+    private static Pattern pattern = Pattern.compile("<mms-cf.*mms-element-id=\"([^\"]*)\"");
+
+    public static void processDocumentEdges(String sysmlid, String doc, List<Pair<String, String>> documentEdges) {
+        if (doc != null) {
+            Matcher matcher = pattern.matcher(doc);
+
+            while (matcher.find()) {
+                String mmseid = matcher.group(1).replace("\"", "");
+                if (mmseid != null)
+                    documentEdges.add(new Pair<>(sysmlid, mmseid));
+            }
+        }
+    }
+
+    public static void processContentsJson(String sysmlId, JSONObject contents,
+        List<Pair<String, String>> documentEdges) {
+        if (contents != null) {
+            if (contents.has("operand")) {
+                JSONArray operand = contents.getJSONArray("operand");
+                for (int ii = 0; ii < operand.length(); ii++) {
+                    JSONObject value = operand.optJSONObject(ii);
+                    if (value != null && value.has("instanceId")) {
+                        documentEdges.add(new Pair<>(sysmlId, value.getString("instanceId")));
+                    }
+                }
+            }
+        }
+    }
+
+
+    public static void processInstanceSpecificationSpecificationJson(String sysmlId, JSONObject iss,
+        List<Pair<String, String>> documentEdges) {
+        if (iss != null) {
+            if (iss.has("value") && iss.has("type") && iss.getString("type").equals("LiteralString")) {
+                String string = iss.getString("value");
+                try {
+                    JSONObject json = new JSONObject(string);
+                    Set<Object> sources = findKeyValueInJsonObject(json, "source");
+                    for (Object source : sources) {
+                        if (source instanceof String) {
+                            documentEdges.add(new Pair<>(sysmlId, (String) source));
+                        }
+                    }
+                } catch (JSONException ex) {
+                    //case if value string isn't actually a serialized jsonobject
+                }
+            }
+        }
+    }
+
+
+
+    public static Set<Object> findKeyValueInJsonObject(JSONObject json, String keyMatch) {
+        Set<Object> result = new HashSet<>();
+        Iterator<?> keys = json.keys();
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
+            Object value = json.get(key);
+            if (key.equals(keyMatch)) {
+                result.add(value);
+            } else if (value instanceof JSONObject) {
+                result.addAll(findKeyValueInJsonObject((JSONObject) value, keyMatch));
+            } else if (value instanceof JSONArray) {
+                result.addAll(findKeyValueInJsonArray((JSONArray) value, keyMatch));
+            }
+        }
+        return result;
+    }
+
+    public static Set<Object> findKeyValueInJsonArray(JSONArray jsonArray, String keyMatch) {
+        Set<Object> result = new HashSet<>();
+
+        for (int ii = 0; ii < jsonArray.length(); ii++) {
+            if (jsonArray.get(ii) instanceof JSONObject) {
+                result.addAll(findKeyValueInJsonObject((JSONObject) jsonArray.get(ii), keyMatch));
+            } else if (jsonArray.get(ii) instanceof JSONArray) {
+                result.addAll(findKeyValueInJsonArray((JSONArray) jsonArray.get(ii), keyMatch));
+            }
+        }
+
+        return result;
+    }
 }

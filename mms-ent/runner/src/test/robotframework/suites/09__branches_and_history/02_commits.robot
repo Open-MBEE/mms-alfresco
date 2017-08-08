@@ -115,7 +115,7 @@ BranchFromThePastAndCheckCommits
 	Should Be Equal		${branch_1_json.status_code}		${200}
 	Sleep				${BRANCH_DELAY_INDEXING}
 	${branch_history} =	Get		 url=${ROOT}/projects/PA/refs/pa_branch_past/history
-	${filter} =			Create List     _timestamp
+	${filter} =			Create List		_timestamp		id
 	Generate JSON		${TEST_NAME}		${branch_history.json()}		${filter}
 	${compare_result} =	Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}

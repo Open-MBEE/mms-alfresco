@@ -94,6 +94,13 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
+    <bean id="webscript.gov.nasa.jpl.mms.ref.get"
+          class="gov.nasa.jpl.view_repo.webscripts.WorkspaceGet" parent="webscript"
+          singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
+
     <bean id="webscript.gov.nasa.jpl.mms.refs.get"
         class="gov.nasa.jpl.view_repo.webscripts.WorkspacesGet" parent="webscript"
         singleton="false">

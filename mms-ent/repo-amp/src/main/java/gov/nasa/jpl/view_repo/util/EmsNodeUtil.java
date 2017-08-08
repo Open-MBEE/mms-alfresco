@@ -1621,14 +1621,28 @@ public class EmsNodeUtil {
     public JSONObject getModelAtCommit(String commitId) {
         JSONObject result = new JSONObject();
         JSONArray elements = new JSONArray();
-        for (Node n : pgh.getAllNodes()) {
-            JSONObject pastElement = getElementAtCommit(n.getSysmlId(), commitId);
-            if (pastElement.has(Sjm.SYSMLID)) {
-                elements.put(pastElement);
+        // Construct a query for elasticsearch that will get the reference id of the commitId.
+        JSONObject query = new JSONObject()
+            .put("query", new JSONObject().put("term", new JSONObject().put(Sjm.COMMITID, commitId)));
+        try {
+            JSONArray queryResult = eh.search(query);
+            if (queryResult.length() > 0) {
+                String refId = queryResult.getJSONObject(0).getString(Sjm.REFID);
+
+                List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
+                for (Node n : pgh.getAllNodes()) {
+                    JSONObject pastElement = getElementAtCommit(n.getSysmlId(), commitId, refsCommits);
+                    if (pastElement.has(Sjm.SYSMLID)) {
+                        elements.put(pastElement);
+                    }
+                }
+                result.put(Sjm.ELEMENTS, elements);
+            }
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
             }
         }
-
-        result.put(Sjm.ELEMENTS, elements);
         return result;
     }
 
@@ -1642,6 +1656,10 @@ public class EmsNodeUtil {
      * @return Element JSON
      */
     public JSONObject getElementAtCommit(String sysmlId, String commitId) {
+        return getElementAtCommit(sysmlId, commitId, new ArrayList<>());
+    }
+
+    public JSONObject getElementAtCommit(String sysmlId, String commitId, List<Map<String, Object>> refsCommits) {
         // Used for intersecting the different elasticIds
         Set<String> elementIdSet = new HashSet<>();
         String latestId = null;
@@ -1663,7 +1681,7 @@ public class EmsNodeUtil {
 
             // Construct a query for elasticsearch that will get the reference id of the commitId.
             JSONObject query = new JSONObject()
-                .put("query", new JSONObject().put("term", new JSONObject().put("_commitId", commitId)));
+                .put("query", new JSONObject().put("term", new JSONObject().put(Sjm.COMMITID, commitId)));
             JSONArray queryResult = eh.search(query);
             if (queryResult.length() == 0) {
                 logger.error(String.format("Commit %s was not found", commitId));
@@ -1672,7 +1690,9 @@ public class EmsNodeUtil {
             String refId = queryResult.getJSONObject(0).getString("_refId");
 
             // Get a list of commits based on references <commitId, JSONObject>
-            List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
+            if (refsCommits == null || refsCommits.isEmpty()) {
+                refsCommits = pgh.getRefsCommits(refId);
+            }
 
             Date commitTimestamp = null;
             for (Map<String, Object> m : refsCommits) {
