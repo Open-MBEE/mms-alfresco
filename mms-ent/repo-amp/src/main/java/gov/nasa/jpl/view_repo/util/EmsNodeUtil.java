@@ -1622,26 +1622,19 @@ public class EmsNodeUtil {
         JSONObject result = new JSONObject();
         JSONArray elements = new JSONArray();
         // Construct a query for elasticsearch that will get the reference id of the commitId.
-        JSONObject query = new JSONObject()
-            .put("query", new JSONObject().put("term", new JSONObject().put(Sjm.COMMITID, commitId)));
-        try {
-            JSONArray queryResult = eh.search(query);
-            if (queryResult.length() > 0) {
-                String refId = queryResult.getJSONObject(0).getString(Sjm.REFID);
 
-                List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
-                for (Node n : pgh.getAllNodes()) {
-                    JSONObject pastElement = getElementAtCommit(n.getSysmlId(), commitId, refsCommits);
-                    if (pastElement.has(Sjm.SYSMLID)) {
-                        elements.put(pastElement);
-                    }
+        Map<String, Object> commit = pgh.getCommit(commitId);
+        if (commit != null) {
+            String refId = commit.get(Sjm.REFID).toString();
+
+            List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
+            for (Node n : pgh.getAllNodes()) {
+                JSONObject pastElement = getElementAtCommit(n.getSysmlId(), commitId, refsCommits);
+                if (pastElement.has(Sjm.SYSMLID)) {
+                    elements.put(pastElement);
                 }
-                result.put(Sjm.ELEMENTS, elements);
             }
-        } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
-            }
+            result.put(Sjm.ELEMENTS, elements);
         }
         return result;
     }
@@ -1679,55 +1672,52 @@ public class EmsNodeUtil {
                 elementIdSet.add(jsonObject.getString("id"));
             }
 
-            // Construct a query for elasticsearch that will get the reference id of the commitId.
-            JSONObject query = new JSONObject()
-                .put("query", new JSONObject().put("term", new JSONObject().put(Sjm.COMMITID, commitId)));
-            JSONArray queryResult = eh.search(query);
-            if (queryResult.length() == 0) {
-                logger.error(String.format("Commit %s was not found", commitId));
-                return element;
-            }
-            String refId = queryResult.getJSONObject(0).getString("_refId");
+            Map<String, Object> commit = pgh.getCommit(commitId);
+            if (commit != null) {
+                String refId = commit.get(Sjm.REFID).toString();
 
-            // Get a list of commits based on references <commitId, JSONObject>
-            if (refsCommits == null || refsCommits.isEmpty()) {
-                refsCommits = pgh.getRefsCommits(refId);
-            }
-
-            Date commitTimestamp = null;
-            for (Map<String, Object> m : refsCommits) {
-                String commitIdCheck = (String) m.get(Sjm.SYSMLID);
-
-                if (logger.isDebugEnabled()) {
-                    logger.debug(m.get(Sjm.SYSMLID) + " " + m.get(Sjm.TIMESTAMP));
+                // Get a list of commits based on references <commitId, JSONObject>
+                if (refsCommits == null || refsCommits.isEmpty()) {
+                    refsCommits = pgh.getRefsCommits(refId);
                 }
 
-                if (commitId.equals(m.get(Sjm.SYSMLID))) {
-                    commitTimestamp = (Date) m.get(Sjm.TIMESTAMP);
-                }
+                Date commitTimestamp = null;
+                for (Map<String, Object> m : refsCommits) {
+                    String commitIdCheck = (String) m.get(Sjm.SYSMLID);
 
-                if (elementIdSet.contains(commitIdCheck)) {
-                    Date elementDate = (Date) m.get(Sjm.TIMESTAMP);
-                    long timestamp = elementDate.getTime();
-                    // This will determine the nearest commit to the desired commitId at which the element was last
-                    //  modified or created.
-                    if (timestamp > latest && commitTimestamp != null && timestamp <= commitTimestamp.getTime()) {
-                        latest = timestamp;
-                        latestId = (String) m.get(Sjm.SYSMLID);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(m.get(Sjm.SYSMLID) + " " + m.get(Sjm.TIMESTAMP));
+                    }
+
+                    if (commitId.equals(m.get(Sjm.SYSMLID))) {
+                        commitTimestamp = (Date) m.get(Sjm.TIMESTAMP);
+                    }
+
+                    if (elementIdSet.contains(commitIdCheck)) {
+                        Date elementDate = (Date) m.get(Sjm.TIMESTAMP);
+                        long timestamp = elementDate.getTime();
+                        // This will determine the nearest commit to the desired commitId at which the element was last
+                        //  modified or created.
+                        if (timestamp > latest && commitTimestamp != null && timestamp <= commitTimestamp.getTime()) {
+                            latest = timestamp;
+                            latestId = (String) m.get(Sjm.SYSMLID);
+                        }
                     }
                 }
-            }
 
-            // If it finds the element it will try to get the element from elastic by sysmlId and commitId
-            if (latestId != null) {
-                element = eh.getElementByCommitId(latestId, sysmlId);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("elementId " + sysmlId + " commitId " + element.getString("_commitId"));
-                    logger.debug("Element Requested at commitId " + commitId);
-                    logger.debug("Element found " + element.toString());
+                // If it finds the element it will try to get the element from elastic by sysmlId and commitId
+                if (latestId != null) {
+                    element = eh.getElementByCommitId(latestId, sysmlId);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("elementId " + sysmlId + " commitId " + element.getString("_commitId"));
+                        logger.debug("Element Requested at commitId " + commitId);
+                        logger.debug("Element found " + element.toString());
+                    }
+                } else {
+                    logger.info(String.format("Was unable to find %s with commitId %s", sysmlId, commitId));
                 }
             } else {
-                logger.info(String.format("Was unable to find %s with commitId %s", sysmlId, commitId));
+                logger.error(String.format("Commit %s was not found", commitId));
             }
 
         } catch (IOException e) {

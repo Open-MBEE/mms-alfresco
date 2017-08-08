@@ -727,10 +727,12 @@ public class PostgresHelper {
             PreparedStatement query;
             if (withDeleted) {
                 query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ?");
+                query.setString(1, sysmlId);
             } else {
-                query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ? AND deleted = " + false);
+                query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
+                query.setString(1, sysmlId);
+                query.setBoolean(2, false);
             }
-            query.setString(1, sysmlId);
 
             ResultSet rs = query.executeQuery();
             if (rs.next()) {
@@ -754,8 +756,12 @@ public class PostgresHelper {
     public Set<String> getElasticIds(boolean withDeleted) {
         Set<String> elasticIds = new HashSet<>();
         try {
-            String query = String
-                .format("SELECT elasticid FROM \"nodes%s\" WHERE deleted = %b", workspaceId, withDeleted);
+            String query;
+            if (withDeleted) {
+                query = String.format("SELECT elasticid FROM \"nodes%s\"", workspaceId);
+            } else {
+                query = String.format("SELECT elasticid FROM \"nodes%s\" WHERE deleted = false", workspaceId);
+            }
             ResultSet rs = execQuery(query);
             while (rs.next()) {
                 elasticIds.add(rs.getString(1));
@@ -1029,13 +1035,23 @@ public class PostgresHelper {
         return null;
     }
 
-    public String getCommit(String column, String lookUp, String value) {
+    public Map<String, Object> getCommit(String commitId) {
         try {
-            String query = "SELECT %s FROM commits WHERE %s = '%s' AND refId = '%s';";
-            ResultSet rs = execQuery(String.format(query, column, lookUp, value, workspaceId));
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("SELECT commits.id, commits.elasticId, commits.refid, commits.timestamp, committype.name, creator FROM commits JOIN committype ON commits.committype = committype.id WHERE elasticId = ?");
+            query.setString(1, commitId);
+            ResultSet rs = query.executeQuery();
 
             if (rs.next()) {
-                return rs.getString(1);
+                Map<String, Object> result = new HashMap<>();
+                String refId = rs.getString(3).isEmpty() || rs.getString(3).equals("") ? "master" : rs.getString(3);
+                result.put(Sjm.SYSMLID, rs.getInt(1));
+                result.put(Sjm.ELASTICID, rs.getString(2));
+                result.put(Sjm.REFID, refId);
+                result.put(Sjm.TIMESTAMP, rs.getTimestamp(4));
+                result.put("commitType", rs.getString(5));
+                result.put(Sjm.CREATOR, rs.getString(6));
+                return result;
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -1706,7 +1722,6 @@ public class PostgresHelper {
             String childWorkspaceNameSanitized = childWorkspaceName.replace("-", "_").replaceAll("\\s+", "");
 
             // insert record into workspace table
-            insertRef(childWorkspaceNameSanitized, workspaceName, getHeadCommit(), elasticId, isTag);
 
             execUpdate(String.format(
                 "CREATE TABLE nodes%s (LIKE nodes%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
@@ -1717,6 +1732,7 @@ public class PostgresHelper {
                 childWorkspaceNameSanitized, workspaceId));
 
             if (populateTables) {
+                insertRef(childWorkspaceNameSanitized, workspaceName, getHeadCommit(), elasticId, isTag);
                 copyTable("nodes", childWorkspaceNameSanitized, workspaceId);
                 copyTable("edges", childWorkspaceNameSanitized, workspaceId);
             } else {

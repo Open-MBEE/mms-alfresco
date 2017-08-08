@@ -104,7 +104,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 String sourceWorkspaceParam = reqJson.getJSONArray("refs").getJSONObject(0).optString("parentRefId");
                 String newName = reqJson.getJSONArray("refs").getJSONObject(0).optString("name");
                 String type = reqJson.getJSONArray("refs").getJSONObject(0).optString("type");
-                String commitId = req.getParameter("commitId");
+                String commitId =
+                    reqJson.getJSONArray("refs").getJSONObject(0).optString("parentCommitId", null) != null ?
+                        reqJson.getJSONArray("refs").getJSONObject(0).optString("parentCommitId") :
+                        req.getParameter("commitId");
 
                 json = createWorkSpace(projectId, sourceWorkspaceParam, newName, commitId, reqJson, user, status);
                 statusCode = status.getCode();
@@ -147,9 +150,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         JSONObject jsonObject, String user, Status status) throws JSONException {
         status.setCode(HttpServletResponse.SC_OK);
         if (Debug.isOn()) {
-            Debug.outln(
-                "createWorkSpace(sourceWorkId=" + sourceWorkId + ", newWorkName=" + newWorkName + ", commitId=" + commitId
-                    + ", jsonObject=" + jsonObject + ", user=" + user + ", status=" + status + ")");
+            Debug.outln("createWorkSpace(sourceWorkId=" + sourceWorkId + ", newWorkName=" + newWorkName + ", commitId="
+                + commitId + ", jsonObject=" + jsonObject + ", user=" + user + ", status=" + status + ")");
         }
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, sourceWorkId == null ? NO_WORKSPACE_ID : sourceWorkId);
@@ -193,8 +195,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             workspaceName = newWorkName;   // The name is given on the URL typically, not the ID
         }
 
-        if ((newWorkspaceId != null && newWorkspaceId.equals(NO_WORKSPACE_ID)) || (workspaceName != null && workspaceName
-            .equals(NO_WORKSPACE_ID))) {
+        if ((newWorkspaceId != null && newWorkspaceId.equals(NO_WORKSPACE_ID)) || (workspaceName != null
+            && workspaceName.equals(NO_WORKSPACE_ID))) {
             log(Level.WARN, "Cannot change attributes of the master workspace.", HttpServletResponse.SC_BAD_REQUEST);
             status.setCode(HttpServletResponse.SC_BAD_REQUEST);
             return null;
@@ -234,7 +236,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                     fileService.copy(srcWs.getNodeRef(), refContainerNode.getNodeRef(), newWorkspaceId);
                     finalWorkspace = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
-                        jsonObject != null ? jsonObject.optString("source") : null, services, commitId);
+                        jsonObject != null ? jsonObject.optString("source") : null, commitId);
                 } catch (FileNotFoundException e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }

@@ -818,13 +818,13 @@ public class CommitUtil {
 
     // make sure only one branch is made at a time
     public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created,
-        String elasticId, Boolean isTag, String source, ServiceRegistry services) {
-        return sendBranch(projectId, src, created, elasticId, isTag, source, services, null);
+        String elasticId, Boolean isTag, String source) {
+        return sendBranch(projectId, src, created, elasticId, isTag, source, null);
     }
 
     // make sure only one branch is made at a time
     public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created,
-        String elasticId, Boolean isTag, String source, ServiceRegistry services, String commitId) {
+        String elasticId, Boolean isTag, String source, String commitId) {
         // FIXME: need to include branch in commit history
         JSONObject branchJson = new JSONObject();
         branchJson.put("source", source);
@@ -845,6 +845,8 @@ public class CommitUtil {
                 eh = new ElasticHelper();
 
                 if (hasCommit) {
+                    Map<String, Object> commit = pgh.getCommit(commitId);
+                    pgh.insertRef(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), (int) commit.get(Sjm.SYSMLID), elasticId, isTag);
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
                     JSONObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
 
@@ -854,10 +856,16 @@ public class CommitUtil {
 
                     processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS), nodeInserts, edgeInserts, childEdgeInserts);
 
-                    if (!edgeInserts.isEmpty() && !childEdgeInserts.isEmpty()) {
-                        insertForBranchInPast(pgh, nodeInserts, "nodes", projectId);
-                        insertForBranchInPast(pgh, edgeInserts, "edges", projectId);
-                        insertForBranchInPast(pgh, childEdgeInserts, "edges", projectId);
+                    if (!nodeInserts.isEmpty() || !edgeInserts.isEmpty() || !childEdgeInserts.isEmpty()) {
+                        if (!nodeInserts.isEmpty()) {
+                            insertForBranchInPast(pgh, nodeInserts, "nodes", projectId);
+                        }
+                        if (!edgeInserts.isEmpty()) {
+                            insertForBranchInPast(pgh, edgeInserts, "edges", projectId);
+                        }
+                        if (!childEdgeInserts.isEmpty()) {
+                            insertForBranchInPast(pgh, childEdgeInserts, "edges", projectId);
+                        }
                     } else {
                         executor.shutdown();
                         executor.awaitTermination(60L, TimeUnit.SECONDS);

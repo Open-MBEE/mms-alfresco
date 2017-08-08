@@ -27,8 +27,10 @@ develop_baseline_dir = '../developBaselineDir/'
 debug_test = False
 ROOT_RETURN_ELEMENTS = ['elements', 'refs', 'configurations', 'products', 'sites', 'views', 'ownersNotFound',
                         'message', 'workspace1', 'workspace2', 'documents']
-
-robot_dir = os.getcwd() + '/runner/src/test/robotframework'
+if "/runner/src/test/robotframework" not in os.getcwd():
+    robot_dir = os.getcwd() + '/runner/src/test/robotframework'
+else:
+    robot_dir = os.getcwd()
 output_dir = os.listdir(robot_dir + '/output')
 if "baseline" not in output_dir:
     os.mkdir(robot_dir + '/output/baseline')
