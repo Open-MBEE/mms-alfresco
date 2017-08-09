@@ -135,7 +135,7 @@ public class ModelSearch extends ModelPost {
 
                 if(checkIfPropOrSlot){
                     if(e.getString(Sjm.TYPE).equals("Property")){
-                        e = getOwnerJson(projectId, refId, e.getString(Sjm.OWNERID));
+                        e = getJsonBySysmlId(projectId, refId, e.getString(Sjm.OWNERID));
                     } else if (e.getString(Sjm.TYPE).equals("Slot")){
                         e = getGrandOwnerJson(projectId, refId, e.getString(Sjm.OWNERID));
                     }
@@ -164,19 +164,29 @@ public class ModelSearch extends ModelPost {
         return elements;
     }
 
-    private JSONObject getOwnerJson(String projectId, String refId, String ownerId) {
+    /**
+     * Returns the JSON of the specified ownerId
+     * @param projectId ID of project
+     * @param refId ref ID -- ie: master
+     * @param sysmlId of the Element to find grandowner of
+     * @return JSONObject
+     */
+    private JSONObject getJsonBySysmlId(String projectId, String refId, String sysmlId) {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        JSONObject node = emsNodeUtil.getById(ownerId).toJson();
+        JSONObject node = emsNodeUtil.getById(sysmlId).toJson();
         // Have to remove the _ because the node property for elasticId doesn't contain it for some reason.
         return emsNodeUtil.getElementByElasticID(node.getString(Sjm.ELASTICID.replace("_", "")));
     }
 
-    private JSONObject getGrandOwnerJson(String projectId, String refId, String ownerId) {
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        JSONObject node = emsNodeUtil.getById(ownerId).toJson();
-        // Have to remove the _ because the node property for elasticId doesn't contain it for some reason.
-        JSONObject result = emsNodeUtil.getElementByElasticID(node.getString(Sjm.ELASTICID.replace("_", "")));
-        node = emsNodeUtil.getById(result.getString(Sjm.OWNERID)).toJson();
-        return emsNodeUtil.getElementByElasticID(node.getString(Sjm.ELASTICID.replace("_", "")));
+    /**
+     * Calls the method getJsonBySysmlId twice, once on the SysMLID of the owner, then again on the result ownerId.
+     * Thus, returns the grandowner of the specified sysmlId.
+     * @param projectId ID of project
+     * @param refId ref ID -- ie: master
+     * @param sysmlId of the Element to find grandowner of
+     * @return JSONObject
+     */
+    private JSONObject getGrandOwnerJson(String projectId, String refId, String sysmlId) {
+        return getJsonBySysmlId(projectId, refId, getJsonBySysmlId(projectId, refId, sysmlId).getString(Sjm.OWNERID));
     }
 }
