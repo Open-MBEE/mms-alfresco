@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -13,6 +14,7 @@ import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.TimeUtils;
+import org.alfresco.service.cmr.version.Version;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
 import gov.nasa.jpl.view_repo.db.Node;
@@ -1120,7 +1122,7 @@ public class EmsNodeUtil {
         return pgh.getCommitAndTimestamp("elasticId", elasticid);
     }
 
-    public String getTimestampFromElasticId(String elasticid) {
+    public Long getTimestampFromElasticId(String elasticid) {
         return pgh.getTimestamp("elasticId", elasticid);
     }
 
@@ -1258,36 +1260,22 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public JSONObject imageVersionBeforeTimestamp(Map<String, String> versions, String timestamp) {
-        Map<String, Long> convertToDate = new HashMap<>();
-        Long commitDate = new Long(TimeUtils.fromTimestampToMillis(timestamp));
-        for (Map.Entry<String, String> entry : versions.entrySet()) {
-            convertToDate.put(entry.getKey(), TimeUtils.fromTimestampToMillis(entry.getValue()));
+    public Version imageVersionBeforeTimestamp(NavigableMap<Long, Version> versions, Long timestamp) {
+        Map.Entry<Long, Version> nearestDate = versions.floorEntry(timestamp);
+        if (nearestDate != null) {
+            return nearestDate.getValue();
         }
-        Long nearestDate = getClosestDate(new ArrayList<Long>(convertToDate.values()), commitDate);
-        System.out.println("what");
+        //        an entry with the greatest key less than or equal to key, or null if there is no such key
+        //        Throws:
+        //        ClassCastException - if the specified key cannot be compared with the keys currently in the map
+        //        NullPointerException - if the specified key is null and this map does not permit null keys
         return null;
     }
 
-    public Long getClosestDate(ArrayList<Long> timestamps, Long commitTimestamp) {
-        //        current_date = dates[0]
-        //        current_min = abs(current_date - date.today())
-        //        for d in dates:
-        //        if abs(d - date.today()) < current_min:
-        //        current_min = abs(d - date.today())
-        //        current_date = d
-        Long nearestTimestamp = timestamps.get(0);
-        Long min = Math.abs(nearestTimestamp - commitTimestamp);
-        for (int i = 1; i < timestamps.size(); i++) {
-            Long currentTimestamp = Math.abs(timestamps.get(i) - commitTimestamp);
-            if (currentTimestamp < min) {
-                min = currentTimestamp;
-                nearestTimestamp = timestamps.get(i);
-            }
-        }
-        return nearestTimestamp;
+    public String getDirectParentRef(String refId){
+        return pgh.getParentRef(refId);
+        //:TODO merge is a problem
     }
-
 
     public boolean isDeleted(String sysmlid) {
         return pgh.isDeleted(sysmlid);

@@ -31,14 +31,14 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptVersion;
+import org.alfresco.service.cmr.version.Version;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -325,13 +325,32 @@ public class ModelGet extends AbstractJavaWebScript {
         return depth;
     }
 
-    protected JSONObject getNearestVersionByCommit(Map<EmsScriptNode, String> versions, String commitId) {
-        //:TODO
-        return null;
-    }
-
-    protected JSONObject getArtifactFromParent() {
-        //:TODO
+    protected JSONObject getVersionedArtifactFromParent(EmsScriptNode siteNode, String projectId, String refId,
+        String filename, String timestamp, EmsNodeUtil emsNodeUtil) {
+        EmsScriptNode artifactNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
+        String parentRef = emsNodeUtil.getDirectParentRef(refId);
+        if (artifactNode != null) {
+            if (timestamp != null) {
+                // Gets the url with the nearest timestamp to the given commit
+                Long commitTimestamp = emsNodeUtil.getTimestampFromElasticId(timestamp);
+                NavigableMap<Long, Version> versions = artifactNode.getVersionPropertyHistory();
+                Version nearest = emsNodeUtil.imageVersionBeforeTimestamp(versions, commitTimestamp);
+                // :TODO return /service/api/node/content/workspace/SpacesStore/guuid/whateverthefilenameis.png
+                return new JSONObject().put("id", artifactNode.getSysmlId()).put("url",
+                    "/service/api/node/content/workspace/SpacesStore/" + String
+                        .valueOf(nearest.getVersionProperty("node-uuid") + filename));
+            } else {
+                // Gets the latest in the current Ref
+                String url = artifactNode.getUrl();
+                if (url != null) {
+                    return new JSONObject().put("id", artifactNode.getSysmlId())
+                        .put("url", url.replace("/d/d/", "/service/api/node/content/"));
+                }
+            }
+        } else if (parentRef != null) {
+            //need new timestamp
+            getVersionedArtifactFromParent(siteNode, projectId, parentRef, filename, timestamp, emsNodeUtil);
+        }
         return null;
     }
 
@@ -342,39 +361,14 @@ public class ModelGet extends AbstractJavaWebScript {
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         EmsScriptNode siteNode = EmsScriptNode.getSiteNode(orgId);
         Boolean isCommit = req.getParameter(COMMITID) != null;
-        if (siteNode != null && !isCommit) {
-            EmsScriptNode artifactNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
-            // search by refId, get parent method...
-            // getRefsCommits
-            // :TODO has to search it's parent branches
-            if (artifactNode != null) {
-                String url = artifactNode.getUrl();
-                if (url != null) {
-                    return new JSONObject().put("id", artifactNode.getSysmlId())
-                        .put("url", url.replace("/d/d/", "/service/api/node/content/"));
-                }
+        if (siteNode != null) {
+            String commitId;
+            if (isCommit) {
+                commitId = req.getParameter(COMMITID);
+            } else {
+                commitId = null;
             }
-        }
-        if (siteNode != null && isCommit) {
-            EmsScriptNode artifactNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
-            String commitId = req.getParameter(COMMITID); //need to support this
-            Object[] verisonHistory = artifactNode.getEmsVersionHistory();
-            // check for null
-            ScriptVersion[] castVersionHistory = new ScriptVersion[verisonHistory.length];
-            int i = 0;
-            for (Object o : verisonHistory) {
-                castVersionHistory[i++] = (ScriptVersion) o;
-            }
-            // :TODO return /service/api/node/content/workspace/SpacesStore/guuid/whateverthefilenameis.png
-            Map<String, String> versions = new HashMap<>();
-            for (int index = 0; index < castVersionHistory.length; index++) {
-                EmsScriptNode node = siteNode.childByNamePath(castVersionHistory[index].getNode().getUrl());
-                versions.put(String.valueOf(castVersionHistory[index].getVersionProperty("node-uuid")),
-                    String.valueOf(castVersionHistory[index].getVersionProperty("modified")));
-            }
-            Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
-            //JSONObject nearest = getNearestVersionByCommit(versions, commitId);
-            JSONObject nearest = emsNodeUtil.imageVersionBeforeTimestamp(versions, commitId);
+            return getVersionedArtifactFromParent(siteNode, projectId, refId, filename, commitId, emsNodeUtil);
         }
         if (!mountsJson.has(Sjm.MOUNTS)) {
             mountsJson = emsNodeUtil

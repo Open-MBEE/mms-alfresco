@@ -1049,14 +1049,14 @@ public class PostgresHelper {
 
         return null;
     }
-    public String getTimestamp(String lookUp, String value) {
-        String timestamp;
+    public Long getTimestamp(String lookUp, String value) {
+        Long timestamp;
         try {
-            String query = "SELECT elasticId, timestamp FROM commits WHERE %s = '%s';";
+            String query = "SELECT timestamp FROM commits WHERE %s = '%s';";
             ResultSet rs = execQuery(String.format(query, lookUp, value));
 
             if (rs.next()) {
-                timestamp = rs.getString(2);
+                timestamp = rs.getTimestamp(1).getTime();
                 return timestamp;
             }
         } catch (Exception e) {
@@ -1925,6 +1925,26 @@ public class PostgresHelper {
 
             if (rs.next()) {
                 return new Pair<>(rs.getString(1), rs.getString(2));
+            }
+
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return null;
+    }
+    public String getParentRef(String refId) {
+        if (refId == null || refId.isEmpty()) {
+            refId = "master";
+        }
+        refId = refId.replace("-", "_").replaceAll("\\s+", "");
+        try {
+            ResultSet rs = execQuery(
+                String.format("SELECT parent FROM refs WHERE deleted = false AND refId = '%s'", refId));
+
+            if (rs.next()) {
+                return rs.getString(1);
             }
 
         } catch (Exception e) {
