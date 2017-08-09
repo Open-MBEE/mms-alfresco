@@ -135,7 +135,7 @@ public class ModelSearch extends ModelPost {
 
                 if(checkIfPropOrSlot){
                     if(e.getString(Sjm.TYPE).equals("Property")){
-                        e = getOwnerJson(projectId, refId, e.getString(Sjm.OWNERID));
+                        e = getJsonBySysmlid(projectId, refId, e.getString(Sjm.OWNERID));
                     } else if (e.getString(Sjm.TYPE).equals("Slot")){
                         e = getGrandOwnerJson(projectId, refId, e.getString(Sjm.OWNERID));
                     }
@@ -164,19 +164,28 @@ public class ModelSearch extends ModelPost {
         return elements;
     }
 
-    private JSONObject getOwnerJson(String projectId, String refId, String ownerId) {
+    /**
+     * Returns the JSON of the specified ownerId
+     * @param projectId ID of project
+     * @param refId     ref ID -- ie: master
+     * @param sysmlId   SysML ID
+     * @return JSONObject
+     */
+    private JSONObject getJsonBySysmlid(String projectId, String refId, String sysmlId) {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        JSONObject node = emsNodeUtil.getById(ownerId).toJson();
+        JSONObject node = emsNodeUtil.getById(sysmlId).toJson();
         // Have to remove the _ because the node property for elasticId doesn't contain it for some reason.
         return emsNodeUtil.getElementByElasticID(node.getString(Sjm.ELASTICID.replace("_", "")));
     }
 
-    private JSONObject getGrandOwnerJson(String projectId, String refId, String ownerId) {
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        JSONObject node = emsNodeUtil.getById(ownerId).toJson();
-        // Have to remove the _ because the node property for elasticId doesn't contain it for some reason.
-        JSONObject result = emsNodeUtil.getElementByElasticID(node.getString(Sjm.ELASTICID.replace("_", "")));
-        node = emsNodeUtil.getById(result.getString(Sjm.OWNERID)).toJson();
-        return emsNodeUtil.getElementByElasticID(node.getString(Sjm.ELASTICID.replace("_", "")));
+    /**
+     *
+     * @param projectId
+     * @param refId
+     * @param sysmlId
+     * @return
+     */
+    private JSONObject getGrandOwnerJson(String projectId, String refId, String sysmlId) {
+        return getJsonBySysmlid(projectId, refId, getJsonBySysmlid(projectId, refId, sysmlId).getString(Sjm.OWNERID));
     }
 }
