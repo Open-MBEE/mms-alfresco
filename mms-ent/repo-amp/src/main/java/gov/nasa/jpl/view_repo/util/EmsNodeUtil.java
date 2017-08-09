@@ -1272,7 +1272,7 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public String getDirectParentRef(String refId){
+    public Pair<String, Long> getDirectParentRef(String refId){
         return pgh.getParentRef(refId);
         //:TODO merge is a problem
     }

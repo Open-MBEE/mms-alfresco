@@ -1934,7 +1934,7 @@ public class PostgresHelper {
         }
         return null;
     }
-    public String getParentRef(String refId) {
+    public Pair<String, Long> getParentRef(String refId) {
         if (refId == null || refId.isEmpty()) {
             refId = "master";
         }
@@ -1944,7 +1944,7 @@ public class PostgresHelper {
                 String.format("SELECT parent FROM refs WHERE deleted = false AND refId = '%s'", refId));
 
             if (rs.next()) {
-                return rs.getString(1);
+                return new Pair<>(rs.getString(1), rs.getTimestamp(2).getTime());
             }
 
         } catch (Exception e) {

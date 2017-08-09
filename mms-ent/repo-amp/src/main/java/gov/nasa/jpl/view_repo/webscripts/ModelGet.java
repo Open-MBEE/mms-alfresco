@@ -35,6 +35,7 @@ import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptVersion;
@@ -326,16 +327,15 @@ public class ModelGet extends AbstractJavaWebScript {
     }
 
     protected JSONObject getVersionedArtifactFromParent(EmsScriptNode siteNode, String projectId, String refId,
-        String filename, String timestamp, EmsNodeUtil emsNodeUtil) {
+        String filename, Long timestamp, EmsNodeUtil emsNodeUtil) {
         EmsScriptNode artifactNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
-        String parentRef = emsNodeUtil.getDirectParentRef(refId);
+        Pair<String, Long> parentRef = emsNodeUtil.getDirectParentRef(refId);
         if (artifactNode != null) {
             if (timestamp != null) {
                 // Gets the url with the nearest timestamp to the given commit
-                Long commitTimestamp = emsNodeUtil.getTimestampFromElasticId(timestamp);
                 NavigableMap<Long, Version> versions = artifactNode.getVersionPropertyHistory();
-                Version nearest = emsNodeUtil.imageVersionBeforeTimestamp(versions, commitTimestamp);
-                // :TODO return /service/api/node/content/workspace/SpacesStore/guuid/whateverthefilenameis.png
+                Version nearest = emsNodeUtil.imageVersionBeforeTimestamp(versions, timestamp);
+                // /service/api/node/content/workspace/SpacesStore/guuid/whateverthefilenameis.png
                 return new JSONObject().put("id", artifactNode.getSysmlId()).put("url",
                     "/service/api/node/content/workspace/SpacesStore/" + String
                         .valueOf(nearest.getVersionProperty("node-uuid") + filename));
@@ -347,10 +347,13 @@ public class ModelGet extends AbstractJavaWebScript {
                         .put("url", url.replace("/d/d/", "/service/api/node/content/"));
                 }
             }
-        } else if (parentRef != null) {
-            //need new timestamp
-            getVersionedArtifactFromParent(siteNode, projectId, parentRef, filename, timestamp, emsNodeUtil);
         }
+        if (parentRef != null) {
+            // recursive step
+            getVersionedArtifactFromParent(siteNode, projectId, parentRef.first, filename, parentRef.second,
+                emsNodeUtil);
+        }
+        
         return null;
     }
 
@@ -362,13 +365,14 @@ public class ModelGet extends AbstractJavaWebScript {
         EmsScriptNode siteNode = EmsScriptNode.getSiteNode(orgId);
         Boolean isCommit = req.getParameter(COMMITID) != null;
         if (siteNode != null) {
-            String commitId;
+            Long commitTimestamp;
             if (isCommit) {
-                commitId = req.getParameter(COMMITID);
+                String commitId = req.getParameter(COMMITID);
+                commitTimestamp = emsNodeUtil.getTimestampFromElasticId(commitId);
             } else {
-                commitId = null;
+                commitTimestamp = null;
             }
-            return getVersionedArtifactFromParent(siteNode, projectId, refId, filename, commitId, emsNodeUtil);
+            return getVersionedArtifactFromParent(siteNode, projectId, refId, filename, commitTimestamp, emsNodeUtil);
         }
         if (!mountsJson.has(Sjm.MOUNTS)) {
             mountsJson = emsNodeUtil
