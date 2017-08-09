@@ -125,18 +125,28 @@ public class ModelSearch extends ModelPost {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         JSONObject json = (JSONObject) req.parseContent();
+        boolean checkIfPropOrSlot = Boolean.parseBoolean(req.getParameter("checkType"));
         try {
             JSONArray elasticResult = emsNodeUtil.search(json);
             elasticResult = filterByPermission(elasticResult, req);
             Map<String, JSONArray> bins = new HashMap<>();
             for (int i = 0; i < elasticResult.length(); i++) {
                 JSONObject e = elasticResult.getJSONObject(i);
+
+                if(checkIfPropOrSlot){
+                    if(e.getString(Sjm.TYPE).equals("Property")){
+                        e = getOwnerJson(projectId, refId, e.getString(Sjm.OWNERID));
+                    } else if (e.getString(Sjm.TYPE).equals("Slot")){
+                        e = getGrandOwnerJson(projectId, refId, e.getString(Sjm.OWNERID));
+                    }
+                    elasticResult.put(i,e);
+                }
+
                 String key = e.getString(Sjm.PROJECTID) + " " +  e.getString(Sjm.REFID);
+
                 if (!bins.containsKey(key)) {
                     bins.put(key, new JSONArray());
                 }
-                JSONArray bin = bins.get(key);
-                bin.put(e);
             }
             for (Entry<String, JSONArray> entry: bins.entrySet()) {
                 String[] split = entry.getKey().split(" ");
@@ -152,5 +162,21 @@ public class ModelSearch extends ModelPost {
         }
 
         return elements;
+    }
+
+    private JSONObject getOwnerJson(String projectId, String refId, String ownerId) {
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        JSONObject node = emsNodeUtil.getById(ownerId).toJson();
+        // Have to remove the _ because the node property for elasticId doesn't contain it for some reason.
+        return emsNodeUtil.getElementByElasticID(node.getString(Sjm.ELASTICID.replace("_", "")));
+    }
+
+    private JSONObject getGrandOwnerJson(String projectId, String refId, String ownerId) {
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        JSONObject node = emsNodeUtil.getById(ownerId).toJson();
+        // Have to remove the _ because the node property for elasticId doesn't contain it for some reason.
+        JSONObject result = emsNodeUtil.getElementByElasticID(node.getString(Sjm.ELASTICID.replace("_", "")));
+        node = emsNodeUtil.getById(result.getString(Sjm.OWNERID)).toJson();
+        return emsNodeUtil.getElementByElasticID(node.getString(Sjm.ELASTICID.replace("_", "")));
     }
 }
