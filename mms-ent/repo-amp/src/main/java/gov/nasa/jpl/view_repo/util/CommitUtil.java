@@ -582,13 +582,13 @@ public class CommitUtil {
             }
             pgh.cleanEdges();
         } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             try {
                 pgh.rollBackToSavepoint(sp);
                 return false;
             } catch (SQLException se) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(se)));
             }
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
             pgh.close();
         }
