@@ -75,7 +75,7 @@ PostNewElementsToPD
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-MountCreationPA|PB
+MountCreationPAtoPB
 	[Documentation]		"Assign a mount to project (ID: PA) which is (ID: PB). Symbolically PA -> PB"
 	[Tags]				mounts		critical		0207
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateMountPAtoPB.json
@@ -87,7 +87,7 @@ MountCreationPA|PB
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-MountCreationPB|PC
+MountCreationPBtoPC
 	[Documentation]		"Assign a mount to project (ID: PB) which is (ID: PC). Symbolically PB -> PC"
 	[Tags]				mounts		critical		0208
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateMountPBtoPC.json
@@ -99,7 +99,7 @@ MountCreationPB|PC
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-MountCreationPC|PD
+MountCreationPCtoPD
 	[Documentation]		"Assign a mount to project (ID: PC) which is (ID: 121314). Symbolically PC -> PD"
 	[Tags]				mounts		critical		0209
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateMountPCtoPD.json
@@ -111,7 +111,7 @@ MountCreationPC|PD
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-MountCreationPC|PA
+MountCreationPCtoPA
 	[Documentation]		"Assign a mount to project (ID: PC) which is (ID: PA). Symbolically PC -> PA"
 	[Tags]				mounts		critical		0210
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/CreateMountPCtoPA.json
@@ -154,7 +154,7 @@ GetElementFromMountedProjectPD
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-GetElementFromMountedProjectPA|PC
+GetElementFromMountedProjectPAtoPC
 	[Documentation]		"Gets a element that only exists in project (ID: PA) from (ID: PC)."
 	[Tags]				mounts		critical		0214
 	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300		headers=&{REQ_HEADER}
@@ -194,7 +194,7 @@ GetExtendedElementFromMountedProjectPD
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-GetExtendedElementFromMountedProjectPA|PC
+GetExtendedElementFromMountedProjectPAtoPC
 	[Documentation]		"Gets a element that only exists in project (ID: PA) from (ID: PC)."
 	[Tags]				mounts		critical		0218
 	${result} =			Get		url=${ROOT}/projects/PC/refs/master/elements/300?depth=-1&extended=true		headers=&{REQ_HEADER}
