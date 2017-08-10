@@ -330,15 +330,19 @@ public class ModelGet extends AbstractJavaWebScript {
         String filename, Long timestamp, EmsNodeUtil emsNodeUtil) {
         EmsScriptNode artifactNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
         Pair<String, Long> parentRef = emsNodeUtil.getDirectParentRef(refId);
+        Version nearest = null;
         if (artifactNode != null) {
             if (timestamp != null) {
                 // Gets the url with the nearest timestamp to the given commit
                 NavigableMap<Long, Version> versions = artifactNode.getVersionPropertyHistory();
-                Version nearest = emsNodeUtil.imageVersionBeforeTimestamp(versions, timestamp);
+                nearest = emsNodeUtil.imageVersionBeforeTimestamp(versions, timestamp);
                 // /service/api/node/content/workspace/SpacesStore/guuid/whateverthefilenameis.png
-                return new JSONObject().put("id", artifactNode.getSysmlId()).put("url",
-                    "/service/api/node/content/workspace/SpacesStore/" + String
-                        .valueOf(nearest.getVersionProperty("node-uuid") + filename));
+                //search parent if null because image maybe in the future
+                if (nearest != null) {
+                    return new JSONObject().put("id", artifactNode.getSysmlId()).put("url",
+                        "/service/api/node/content/workspace/SpacesStore/" + String
+                            .valueOf(nearest.getVersionProperty("node-uuid") + filename));
+                }
             } else {
                 // Gets the latest in the current Ref
                 String url = artifactNode.getUrl();
@@ -348,9 +352,9 @@ public class ModelGet extends AbstractJavaWebScript {
                 }
             }
         }
-        if (parentRef != null) {
+        if (parentRef != null && nearest == null) {
             // recursive step
-            getVersionedArtifactFromParent(siteNode, projectId, parentRef.first , filename, parentRef.second,
+            getVersionedArtifactFromParent(siteNode, projectId, parentRef.first, filename, parentRef.second,
                 emsNodeUtil);
         }
 

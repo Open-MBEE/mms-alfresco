@@ -1979,7 +1979,7 @@ public class PostgresHelper {
         refId = refId.replace("-", "_").replaceAll("\\s+", "");
         try {
             ResultSet rs =
-                execQuery(String.format("SELECT parent FROM refs WHERE deleted = false AND refId = '%s'", refId));
+                execQuery(String.format("SELECT parent, timestamp FROM refs WHERE deleted = false AND refId = '%s'", refId));
 
             if (rs.next()) {
                 String checkForMaster =
