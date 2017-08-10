@@ -350,10 +350,10 @@ public class ModelGet extends AbstractJavaWebScript {
         }
         if (parentRef != null) {
             // recursive step
-            getVersionedArtifactFromParent(siteNode, projectId, parentRef.first, filename, parentRef.second,
+            getVersionedArtifactFromParent(siteNode, projectId, parentRef.first , filename, parentRef.second,
                 emsNodeUtil);
         }
-        
+
         return null;
     }
 
