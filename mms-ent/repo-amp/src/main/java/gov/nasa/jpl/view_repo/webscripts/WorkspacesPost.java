@@ -215,7 +215,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
             wsJson.put(Sjm.SYSMLID, newWorkspaceId);
             wsJson.put(Sjm.NAME, workspaceName);
-            wsJson.put(Sjm.COMMITID, emsNodeUtil.getHeadCommit());
+            wsJson.put(Sjm.COMMITID, commitId == null || commitId.isEmpty() ? emsNodeUtil.getHeadCommit() : commitId);
             wsJson.put(Sjm.CREATED, date);
             wsJson.put(Sjm.CREATOR, user);
             wsJson.put(Sjm.MODIFIED, date);
