@@ -10,13 +10,21 @@ import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mozilla.javascript.Scriptable;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -58,6 +66,9 @@ public class ProjectDelete extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
 
                 String projectId = getProjectId(req);
+
+                // Delete the site from share
+                deleteProjectSiteFolder(projectId);
 
                 // Postgres helper to commit elasticids before dropping db
                 ArrayList<String> commitList = getCommitElasticIDs(projectId);
@@ -172,5 +183,24 @@ public class ProjectDelete extends AbstractJavaWebScript {
         pgh = new PostgresHelper();
         pgh.deleteProjectFromProjectsTable(projectId);
         pgh.close();
+    }
+
+    /**
+     * Deletes the site folder from the share
+     * @param projectId
+     */
+    private void deleteProjectSiteFolder(String projectId){
+        // Folder called namedProjectId
+        pgh = new PostgresHelper();
+        String org = pgh.getOrganizationFromProject(projectId);
+        pgh.close();
+        SiteInfo orgInfo = services.getSiteService().getSite(org);
+        EmsScriptNode site = new EmsScriptNode(orgInfo.getNodeRef(), services);
+        EmsScriptNode docLib = site.childByNamePath("documentLibrary");
+
+        // Delete project folder in doc library
+        docLib.childByNamePath(projectId).remove();
+        // Delete site folder under org
+        site.childByNamePath(projectId).remove();
     }
 }
