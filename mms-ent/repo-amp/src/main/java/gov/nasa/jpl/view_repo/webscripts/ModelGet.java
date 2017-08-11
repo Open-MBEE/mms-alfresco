@@ -196,10 +196,11 @@ public class ModelGet extends AbstractJavaWebScript {
                     if (artifactId.length() > (lastIndex + 1)) {
                         artifactId = lastIndex != -1 ? artifactId.substring(lastIndex + 1) : artifactId;
                         String filename = artifactId + extension;
-                        String commitId = (req.getParameter(COMMITID) != null)? req.getParameter(COMMITID):null;
+                        String commitId = (req.getParameter(COMMITID) != null) ? req.getParameter(COMMITID) : null;
                         Long commitTimestamp = emsNodeUtil.getTimestampFromElasticId(commitId);
                         JSONObject result = handleArtifactMountSearch(
-                            new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename, commitTimestamp);
+                            new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename,
+                            commitTimestamp);
                         if (result != null) {
                             model.put("res", new JSONObject().put("artifacts", new JSONArray().put(result)));
                         } else {
@@ -354,8 +355,11 @@ public class ModelGet extends AbstractJavaWebScript {
             }
         }
         if (parentRef != null && nearest == null) {
+            // check for the earlist timestamp
+            Long earliestCommit =
+                (timestamp != null && parentRef.second.compareTo(timestamp) == 1) ? timestamp : parentRef.second;
             // recursive step
-            return getVersionedArtifactFromParent(siteNode, projectId, parentRef.first, filename, parentRef.second,
+            return getVersionedArtifactFromParent(siteNode, projectId, parentRef.first, filename, earliestCommit,
                 emsNodeUtil);
         }
 
@@ -377,7 +381,7 @@ public class ModelGet extends AbstractJavaWebScript {
         }
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
         for (int i = 0; i < mountsArray.length(); i++) {
-            JSONObject result = handleArtifactMountSearch(mountsArray.getJSONObject(i), filename, req);
+            JSONObject result = handleArtifactMountSearch(mountsArray.getJSONObject(i), filename, commitId);
             if (result != null) {
                 return result;
             }
