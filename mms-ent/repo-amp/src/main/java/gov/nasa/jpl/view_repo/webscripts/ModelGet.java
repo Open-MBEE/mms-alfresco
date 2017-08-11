@@ -373,7 +373,11 @@ public class ModelGet extends AbstractJavaWebScript {
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         EmsScriptNode siteNode = EmsScriptNode.getSiteNode(orgId);
         if (siteNode != null) {
-            return getVersionedArtifactFromParent(siteNode, projectId, refId, filename, commitId, emsNodeUtil);
+            JSONObject parentImage =
+                getVersionedArtifactFromParent(siteNode, projectId, refId, filename, commitId, emsNodeUtil);
+            if (parentImage != null) {
+                return parentImage;
+            }
         }
         if (!mountsJson.has(Sjm.MOUNTS)) {
             mountsJson = emsNodeUtil
