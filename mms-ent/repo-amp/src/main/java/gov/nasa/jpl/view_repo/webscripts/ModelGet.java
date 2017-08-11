@@ -355,7 +355,7 @@ public class ModelGet extends AbstractJavaWebScript {
             }
         }
         if (parentRef != null && nearest == null) {
-            // check for the earlist timestamp
+            // check for the earliest timestamp
             Long earliestCommit =
                 (timestamp != null && parentRef.second.compareTo(timestamp) == 1) ? timestamp : parentRef.second;
             // recursive step

@@ -1265,12 +1265,11 @@ public class EmsNodeUtil {
     }
 
     public Version imageVersionBeforeTimestamp(NavigableMap<Long, Version> versions, Long timestamp) {
+        // finds entry with the greatest key less than or equal to key, or null if it does not exist
         Map.Entry<Long, Version> nearestDate = versions.floorEntry(timestamp);
         if (nearestDate != null) {
             return nearestDate.getValue();
         }
-        //        an entry with the greatest key less than or equal to key, or null if there is no such key
-        //        Throws:
         //        ClassCastException - if the specified key cannot be compared with the keys currently in the map
         //        NullPointerException - if the specified key is null and this map does not permit null keys
         return null;
