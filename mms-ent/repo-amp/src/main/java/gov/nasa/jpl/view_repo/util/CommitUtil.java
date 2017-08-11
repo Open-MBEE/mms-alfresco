@@ -487,8 +487,7 @@ public class CommitUtil {
                 node.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
                 node.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
                 node.put("nodetype", Integer.toString(nodeType));
-                node.put("initialcommit", e.getString(Sjm.ELASTICID));
-                node.put("lastcommit", e.getString(Sjm.COMMITID));
+                node.put("deleted", "false");
                 nodeInserts.add(node);
             }
 
@@ -839,14 +838,12 @@ public class CommitUtil {
 
             try {
                 boolean hasCommit = (commitId != null && !commitId.isEmpty());
-                pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId,
-                    isTag, !hasCommit);
-                pgh.setWorkspace(created.getString(Sjm.SYSMLID));
+                pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), commitId, elasticId,
+                    isTag);
                 eh = new ElasticHelper();
 
                 if (hasCommit) {
-                    Map<String, Object> commit = pgh.getCommit(commitId);
-                    pgh.insertRef(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), (int) commit.get(Sjm.SYSMLID), elasticId, isTag);
+                    pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
                     JSONObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
 
@@ -858,7 +855,7 @@ public class CommitUtil {
 
                     if (!nodeInserts.isEmpty() || !edgeInserts.isEmpty() || !childEdgeInserts.isEmpty()) {
                         if (!nodeInserts.isEmpty()) {
-                            insertForBranchInPast(pgh, nodeInserts, "nodes", projectId);
+                            insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
                         }
                         if (!edgeInserts.isEmpty()) {
                             insertForBranchInPast(pgh, edgeInserts, "edges", projectId);
@@ -870,6 +867,8 @@ public class CommitUtil {
                         executor.shutdown();
                         executor.awaitTermination(60L, TimeUnit.SECONDS);
                     }
+                } else {
+                    pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                 }
 
                 Set<String> elementsToUpdate = pgh.getElasticIds();

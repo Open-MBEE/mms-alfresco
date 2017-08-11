@@ -1712,7 +1712,7 @@ public class PostgresHelper {
         }
     }
 
-    public void createBranchFromWorkspace(String childWorkspaceName, String workspaceName, String elasticId, boolean isTag, boolean populateTables) {
+    public void createBranchFromWorkspace(String childWorkspaceName, String workspaceName, String elasticId, String commitId, boolean isTag) {
         if (childWorkspaceName == null || childWorkspaceName.length() == 0 || childWorkspaceName.equals("master")) {
             return;
         }
@@ -1731,9 +1731,21 @@ public class PostgresHelper {
                 "CREATE TABLE edges%s (LIKE edges%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
                 childWorkspaceNameSanitized, workspaceId));
 
-            if (populateTables) {
-                insertRef(childWorkspaceNameSanitized, workspaceName, getHeadCommit(), elasticId, isTag);
-                copyTable("nodes", childWorkspaceNameSanitized, workspaceId);
+            int commit = 0;
+            if (commitId != null && !commitId.isEmpty()) {
+                Map<String, Object> commitObject = getCommit(commitId);
+                if (commitObject != null && commitObject.containsKey(Sjm.COMMITID)) {
+                    commit = (int) commitObject.get(Sjm.COMMITID);
+                }
+            } else {
+                commit = getHeadCommit();
+            }
+
+            insertRef(childWorkspaceNameSanitized, workspaceName, commit, elasticId, isTag);
+            copyTable("nodes", childWorkspaceNameSanitized, workspaceId);
+
+            if (commitId != null && !commitId.isEmpty()) {
+                execUpdate(String.format("UPDATE nodes%s SET deleted = true", childWorkspaceNameSanitized));
                 copyTable("edges", childWorkspaceNameSanitized, workspaceId);
             } else {
                 execUpdate(String.format("INSERT INTO nodes%s SELECT * FROM nodes%s WHERE initialcommit IS NULL", childWorkspaceNameSanitized, workspaceId));
@@ -1929,10 +1941,6 @@ public class PostgresHelper {
             close();
         }
         return result;
-    }
-
-    public void insertRef(String newWorkspaceId, String newWorkspaceName, String elasticId, boolean isTag) {
-        insertRef(newWorkspaceId, newWorkspaceName, getHeadCommit(), elasticId, isTag);
     }
 
     public void insertRef(String newWorkspaceId, String newWorkspaceName, int headCommit, String elasticId,
