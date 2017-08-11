@@ -214,7 +214,7 @@ public class PostgresHelper {
     public Savepoint startTransaction(String savePointName) throws SQLException {
         connect();
         this.conn.setAutoCommit(false);
-        logger.info("Starting transaction");
+        logger.debug("Starting transaction");
         if (savePointName != null) {
             this.savePoint = this.conn.setSavepoint(savePointName);
         } else {
@@ -227,12 +227,12 @@ public class PostgresHelper {
     public void commitTransaction() throws SQLException {
         try {
             if (!this.conn.getAutoCommit()) {
-                logger.info("Committing transaction");
+                logger.debug("Committing transaction");
                 this.conn.commit();
             } else {
-                logger.info("Cannot commit, no transaction");
+                logger.debug("Cannot commit, no transaction");
             }
-            logger.info("Transaction finished");
+            logger.debug("Transaction finished");
         } catch (SQLException e) {
             if (this.savePoint != null) {
                 this.conn.rollback(this.savePoint);
@@ -347,7 +347,6 @@ public class PostgresHelper {
     public void runBulkQueries(List<String> queries, boolean withResults) throws SQLException {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
         String queryCache = "";
-        //try {
         for (int i = 0; i < queries.size(); i++) {
             queryCache += queries.get(i);
             if (((i + 1) % limit) == 0 || i == (queries.size() - 1)) {
@@ -361,15 +360,11 @@ public class PostgresHelper {
                 queryCache = "";
             }
         }
-        //} catch (Exception e) {
-        //    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        //}
     }
 
     public void runBulkQueries(List<Map<String, String>> queries, String type) throws SQLException {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
         List<Map<String, String>> queryCache = new ArrayList<>();
-        //try {
         for (int i = 0; i < queries.size(); i++) {
             queryCache.add(queries.get(i));
             String storedInsert = "";
@@ -389,9 +384,6 @@ public class PostgresHelper {
                 queryCache = new ArrayList<>();
             }
         }
-        //} catch (Exception e) {
-        //    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        //}
     }
 
     public List<EdgeTypes> getEdgeTypes() {

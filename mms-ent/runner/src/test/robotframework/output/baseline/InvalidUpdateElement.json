@@ -1,10 +1,10 @@
 {
-    "_creator": "Collaborator",
+    "_creator": "admin",
     "elements": [
         {
             "_creator": "admin",
             "_editable": true,
-            "_modifier": "Collaborator",
+            "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
             "documentation": "something",
@@ -23,7 +23,7 @@
         {
             "_creator": "admin",
             "_editable": true,
-            "_modifier": "Collaborator",
+            "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
             "documentation": "else",

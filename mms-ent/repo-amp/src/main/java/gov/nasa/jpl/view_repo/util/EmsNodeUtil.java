@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Pair;
@@ -589,8 +588,11 @@ public class EmsNodeUtil {
             }
 
             boolean added = !existingMap.containsKey(sysmlid);
-            if (!added)
+            boolean updated = false;
+            if (!added) {
                 diffUpdateJson(o, existingMap.get(sysmlid));
+                updated = isUpdated(o, existingMap.get(sysmlid));
+            }
 
             // pregenerate the elasticId
             o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
@@ -625,7 +627,7 @@ public class EmsNodeUtil {
                 newObj.put(Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
                 newObj.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
                 commitAdded.put(newObj);
-            } else {
+            } else if (updated) {
                 logger.debug("ELEMENT UPDATED!");
                 updatedElements.put(o);
 
@@ -637,6 +639,8 @@ public class EmsNodeUtil {
                 parent.put(Sjm.SYSMLID, sysmlid);
                 parent.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
                 commitUpdated.put(parent);
+            } else {
+                logger.debug("ELEMENT UNCHANGED!");
             }
 
             newElements.put(o);
@@ -666,7 +670,7 @@ public class EmsNodeUtil {
                 .toString();
             eh.bulkUpdateElements(elasticIds, payload);
         } catch (IOException ex) {
-
+            // This catch left intentionally blank
         }
     }
 
@@ -1309,6 +1313,22 @@ public class EmsNodeUtil {
         }
     }
 
+    private boolean isUpdated(JSONObject json, JSONObject existing) {
+        if (existing == null) {
+            return false;
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.error("New Element: " + json);
+            logger.error("Old Element: " + existing);
+        }
+
+        Map<String, Object> newElement = toMap(json);
+        Map<String, Object> oldElement = toMap(existing);
+
+        return !isEquivalent(newElement, oldElement);
+    }
+
     public JSONArray addExtendedInformation(JSONArray elements) {
         JSONArray newElements = new JSONArray();
 
@@ -1424,16 +1444,6 @@ public class EmsNodeUtil {
         return sysmlid2elements;
     }
 
-    static Map<String, Object> jsonToMap(JSONObject json) {
-        Map<String, Object> result = new HashMap<>();
-
-        if (json != JSONObject.NULL) {
-            result = toMap(json);
-        }
-
-        return result;
-    }
-
     private static Map<String, Object> toMap(JSONObject object) {
         Map<String, Object> map = new HashMap<>();
 
@@ -1467,6 +1477,90 @@ public class EmsNodeUtil {
         }
 
         return list;
+    }
+
+    private static boolean isEquivalent(Map<String, Object> map1, Map<String, Object> map2) {
+        for (Map.Entry<String, Object> entry : map1.entrySet()) {
+            Object value1 = entry.getValue();
+            Object value2 = map2.get(entry.getKey());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Value 1: " + value1);
+                logger.debug("Value 2: " + value2);
+            }
+            if (value1 instanceof Map) {
+                if (!(value2 instanceof Map)) {
+                    return false;
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Is Equivalent: " + isEquivalent((Map<String, Object>) value1, (Map<String, Object>) value2));
+                    }
+                    if (!isEquivalent((Map<String, Object>) value1, (Map<String, Object>) value2)) return false;
+                }
+            } else if (value1 instanceof List) {
+                if (!(value2 instanceof List)) {
+                    return false;
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Is Equivalent: " + isEquivalent((List<Object>) value1, (List<Object>) value2));
+                    }
+                    if (!isEquivalent((List<Object>) value1, (List<Object>) value2)) return false;
+                }
+            } else if (value1 instanceof String) {
+                if (!(value2 instanceof String)) {
+                    return false;
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Is Equivalent: " + value1.equals(value2));
+                    }
+                    if (!value1.equals(value2)) return false;
+                }
+            } else if (value1 instanceof Boolean) {
+                if (!(value2 instanceof Boolean)) {
+                    return false;
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Is Equivalent: " + value1 != value2);
+                    }
+                    if (value1 != value2) return false;
+                }
+            } else {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Value 1 Type: " + value1.getClass());
+                    logger.debug("Value 2 Type: " + value2.getClass());
+                }
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean isEquivalent(List<Object> list1, List<Object> list2) {
+        if (list1.size() != list2.size()) {
+            List<Object> tester;
+            List<Object> testing;
+            if (list1.size() > list2.size()) {
+                testing = list1;
+                tester = list2;
+            } else {
+                testing = list2;
+                tester = list1;
+            }
+
+            for (Object element : testing) {
+                if (!tester.contains(element)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        for (Object element : list1) {
+            if (!list2.contains(element)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private String createId() {
