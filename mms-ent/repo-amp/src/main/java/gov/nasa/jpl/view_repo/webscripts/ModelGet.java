@@ -338,10 +338,18 @@ public class ModelGet extends AbstractJavaWebScript {
                 nearest = emsNodeUtil.imageVersionBeforeTimestamp(versions, timestamp);
                 // /service/api/node/content/workspace/SpacesStore/guuid/whateverthefilenameis.png
                 //search parent if null because image maybe in the future
+                // /service/api/node/content/versionStore/version2Store/806e96bb-41c5-4dbd-b4e4-469f41d0fea8
+                // /service/api/node/content/versionStore/version2Store/806e96bb-41c5-4dbd-b4e4-469f41d0fea8
+                // "frozenNodeRef" -> "workspace://SpacesStore/6242f0e9-47fb-4f5b-be11-d13600a6dd4f"
+                // http://localhost:8080/service/api/node/content/workspace/SpacesStore/6242f0e9-47fb-4f5b-be11-d13600a6dd4f/666.png
+                // "node-uuid" -> "806e96bb-41c5-4dbd-b4e4-469f41d0fea8"
+                //http://localhost:8080/alfresco/service/api/node/content/workspace/SpacesStore/6242f0e9-47fb-4f5b-be11-d13600a6dd4f --works
+                //
+
                 if (nearest != null) {
                     return new JSONObject().put("id", artifactNode.getSysmlId()).put("url",
-                        "/service/api/node/content/workspace/SpacesStore/" + String
-                            .valueOf(nearest.getVersionProperty("node-uuid") + filename));
+                        "/service/api/node/content/versionStore/version2Store/" + String
+                            .valueOf(nearest.getVersionProperty("node-uuid") +"/"+ filename));
                 }
             } else {
                 // Gets the latest in the current Ref
@@ -354,7 +362,7 @@ public class ModelGet extends AbstractJavaWebScript {
         }
         if (parentRef != null && nearest == null) {
             // recursive step
-            getVersionedArtifactFromParent(siteNode, projectId, parentRef.first, filename, parentRef.second,
+            return getVersionedArtifactFromParent(siteNode, projectId, parentRef.first, filename, parentRef.second,
                 emsNodeUtil);
         }
 
