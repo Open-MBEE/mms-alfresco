@@ -190,13 +190,16 @@ public class ModelGet extends AbstractJavaWebScript {
                 String artifactId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
+                EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
                 if (artifactId != null) {
                     int lastIndex = artifactId.lastIndexOf('/');
                     if (artifactId.length() > (lastIndex + 1)) {
                         artifactId = lastIndex != -1 ? artifactId.substring(lastIndex + 1) : artifactId;
                         String filename = artifactId + extension;
+                        String commitId = (req.getParameter(COMMITID) != null)? req.getParameter(COMMITID):null;
+                        Long commitTimestamp = emsNodeUtil.getTimestampFromElasticId(commitId);
                         JSONObject result = handleArtifactMountSearch(
-                            new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename, req);
+                            new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename, commitTimestamp);
                         if (result != null) {
                             model.put("res", new JSONObject().put("artifacts", new JSONArray().put(result)));
                         } else {
@@ -336,20 +339,10 @@ public class ModelGet extends AbstractJavaWebScript {
                 // Gets the url with the nearest timestamp to the given commit
                 NavigableMap<Long, Version> versions = artifactNode.getVersionPropertyHistory();
                 nearest = emsNodeUtil.imageVersionBeforeTimestamp(versions, timestamp);
-                // /service/api/node/content/workspace/SpacesStore/guuid/whateverthefilenameis.png
-                //search parent if null because image maybe in the future
-                // /service/api/node/content/versionStore/version2Store/806e96bb-41c5-4dbd-b4e4-469f41d0fea8
-                // /service/api/node/content/versionStore/version2Store/806e96bb-41c5-4dbd-b4e4-469f41d0fea8
-                // "frozenNodeRef" -> "workspace://SpacesStore/6242f0e9-47fb-4f5b-be11-d13600a6dd4f"
-                // http://localhost:8080/service/api/node/content/workspace/SpacesStore/6242f0e9-47fb-4f5b-be11-d13600a6dd4f/666.png
-                // "node-uuid" -> "806e96bb-41c5-4dbd-b4e4-469f41d0fea8"
-                //http://localhost:8080/alfresco/service/api/node/content/workspace/SpacesStore/6242f0e9-47fb-4f5b-be11-d13600a6dd4f --works
-                //
-
                 if (nearest != null) {
                     return new JSONObject().put("id", artifactNode.getSysmlId()).put("url",
                         "/service/api/node/content/versionStore/version2Store/" + String
-                            .valueOf(nearest.getVersionProperty("node-uuid") +"/"+ filename));
+                            .valueOf(nearest.getVersionProperty("node-uuid") + "/" + filename));
                 }
             } else {
                 // Gets the latest in the current Ref
@@ -369,22 +362,14 @@ public class ModelGet extends AbstractJavaWebScript {
         return null;
     }
 
-    protected JSONObject handleArtifactMountSearch(JSONObject mountsJson, String filename, WebScriptRequest req) {
+    protected JSONObject handleArtifactMountSearch(JSONObject mountsJson, String filename, Long commitId) {
         String projectId = mountsJson.getString(Sjm.SYSMLID);
         String refId = mountsJson.getString(Sjm.REFID);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         EmsScriptNode siteNode = EmsScriptNode.getSiteNode(orgId);
-        Boolean isCommit = req.getParameter(COMMITID) != null;
         if (siteNode != null) {
-            Long commitTimestamp;
-            if (isCommit) {
-                String commitId = req.getParameter(COMMITID);
-                commitTimestamp = emsNodeUtil.getTimestampFromElasticId(commitId);
-            } else {
-                commitTimestamp = null;
-            }
-            return getVersionedArtifactFromParent(siteNode, projectId, refId, filename, commitTimestamp, emsNodeUtil);
+            return getVersionedArtifactFromParent(siteNode, projectId, refId, filename, commitId, emsNodeUtil);
         }
         if (!mountsJson.has(Sjm.MOUNTS)) {
             mountsJson = emsNodeUtil
