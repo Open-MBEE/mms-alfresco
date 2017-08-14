@@ -20,13 +20,15 @@ package gov.nasa.jpl.view_repo.webscripts.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.NodeUtil;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.TicketComponent;
-import org.alfresco.repo.security.person.PersonServiceImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.json.JSONObject;
@@ -34,7 +36,10 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import static gov.nasa.jpl.view_repo.util.NodeUtil.services;
 
 /**
  * Login Ticket copied from org.alfresco.repo.web.scripts.bean.LoginTicket
@@ -54,7 +59,6 @@ public class LoginTicket extends DeclarativeWebScript
         this.ticketComponent = ticketComponent;
     }
 
-
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
@@ -63,6 +67,7 @@ public class LoginTicket extends DeclarativeWebScript
     {
         // retrieve ticket from request and current ticket
         String ticket = req.getExtensionPath();
+        String username;
         if (ticket == null || ticket.length() == 0)
         {
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Ticket not specified");
@@ -72,17 +77,19 @@ public class LoginTicket extends DeclarativeWebScript
         Map<String, Object> model = new HashMap<>(1, 1.0f);
         //model.put("ticket",  ticket);
 
-        String username = null;
         JSONObject result = new JSONObject();
         try {
             username = ticketComponent.validateTicket(ticket);
             result.put("username", username);
-            System.out.println("---------------------------------");
 
-            PersonServiceImpl personService = new PersonServiceImpl();
-            NodeRef nodeRef = personService.getPersonOrNull(username);
-            PersonService.PersonInfo personInfo = personService.getPerson(nodeRef);
-            System.out.println(personInfo.getFirstName() + " " + personInfo.getLastName());
+            // Needed to access the personService
+            AuthenticationUtil.setRunAsUser( "admin" );
+            PersonService serv = services.getPersonService();
+            NodeRef user = serv.getPerson(username);
+
+            PersonService.PersonInfo personInfo = services.getPersonService().getPerson(user);
+            result.put("first",personInfo.getFirstName());
+            result.put("last",personInfo.getLastName());
         } catch (AuthenticationException e) {
             //status.setRedirect(true);
             status.setCode(HttpServletResponse.SC_NOT_FOUND);
