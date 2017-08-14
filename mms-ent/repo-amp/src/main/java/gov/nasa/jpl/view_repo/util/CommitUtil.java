@@ -19,6 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Pair;
+import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.connections.JmsConnection;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
@@ -830,6 +831,10 @@ public class CommitUtil {
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
+
+            Timer timer = new Timer();
+            logger.info(String.format("Starting branch %s started by %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR)));
+
             String srcId = src.optString(Sjm.SYSMLID);
 
             PostgresHelper pgh = new PostgresHelper();
@@ -896,6 +901,7 @@ public class CommitUtil {
 
             branchJson.put("createdRef", created);
             sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
+            logger.info(String.format("Finished branch %s started by %s finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer));
         });
         executor.shutdown();
 
