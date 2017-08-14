@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -1616,6 +1617,25 @@ public class EmsNodeUtil {
         }
 
         return value;
+    }
+
+    public JSONObject getCommit(String commitId) {
+        Map<String, Object> commit = pgh.getCommit(commitId);
+        return commit != null ? new JSONObject(commit) : new JSONObject();
+    }
+
+    public JSONObject getCommitAtTimestamp(String timestamp) {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        Date time;
+        try {
+            time = df.parse(timestamp);
+
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
+        }
+        return null;
     }
 
     public JSONObject getModelAtCommit(String commitId) {

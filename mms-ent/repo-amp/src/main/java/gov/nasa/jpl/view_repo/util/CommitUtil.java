@@ -843,8 +843,8 @@ public class CommitUtil {
 
             try {
                 boolean hasCommit = (commitId != null && !commitId.isEmpty());
-                pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), commitId, elasticId,
-                    isTag);
+                pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId,
+                    commitId, isTag);
                 eh = new ElasticHelper();
 
                 if (hasCommit) {

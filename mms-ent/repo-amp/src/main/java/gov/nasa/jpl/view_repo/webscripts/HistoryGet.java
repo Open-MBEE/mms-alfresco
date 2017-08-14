@@ -131,9 +131,13 @@ public class HistoryGet extends ModelGet {
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), getRefId(req));
             Long depth = 0L;
 
-            jsonHist = emsNodeUtil.getNodeHistory(modelId);
+            String timestamp = req.getParameter("maxTimestamp");
 
-
+            if (timestamp == null || timestamp.isEmpty()) {
+                jsonHist = emsNodeUtil.getNodeHistory(modelId);
+            } else {
+                jsonHist = new JSONArray().put(emsNodeUtil.getCommitAtTimestamp(timestamp));
+            }
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));

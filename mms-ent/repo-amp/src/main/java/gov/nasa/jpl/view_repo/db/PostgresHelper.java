@@ -7,13 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.commons.lang.StringUtils;
@@ -854,7 +848,7 @@ public class PostgresHelper {
             if (rs.next()) {
                 return rs.getString(1);
             } else {
-                rs = this.conn.prepareStatement(String.format("select commits.elasticid from refs left join commits on  refs.parentcommit = commits.id where refs.refid = '%s'",workspaceId)).executeQuery();
+                rs = this.conn.prepareStatement(String.format("SELECT commits.elasticid FROM refs LEFT JOIN commits ON refs.parentcommit = commits.id WHERE refs.refid = '%s'",workspaceId)).executeQuery();
                 if (rs.next()) {
                     return rs.getString(1);
                 }
@@ -866,6 +860,33 @@ public class PostgresHelper {
         }
 
         return null;
+    }
+
+    public String getCommitAtTime(Date time) {
+        try {
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("SELECT elasticid FROM commits WHERE refId = ? WHERE timestamp < ? ORDER BY timestamp DESC LIMIT 1");
+            query.setString(1, workspaceId);
+            query.setDate(2, new java.sql.Date(time.getTime()));
+            ResultSet rs = query.executeQuery();
+            if (rs.next()) {
+                return rs.getString(1);
+            } else {
+                String commitId = null;
+                while(commitId == null) {
+                    rs = execQuery(String.format("SELECT parentcommit FROM refs WHERE refId = '%s'", workspaceId));
+                    if (rs.next()) {
+                        commitId = rs.getString(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return 0;
     }
 
     // insert commit and insert commit edges as well
@@ -1734,8 +1755,8 @@ public class PostgresHelper {
             int commit = 0;
             if (commitId != null && !commitId.isEmpty()) {
                 Map<String, Object> commitObject = getCommit(commitId);
-                if (commitObject != null && commitObject.containsKey(Sjm.COMMITID)) {
-                    commit = (int) commitObject.get(Sjm.COMMITID);
+                if (commitObject != null && commitObject.containsKey(Sjm.SYSMLID)) {
+                    commit = (int) commitObject.get(Sjm.SYSMLID);
                 }
             } else {
                 commit = getHeadCommit();
@@ -1746,9 +1767,8 @@ public class PostgresHelper {
 
             if (commitId != null && !commitId.isEmpty()) {
                 execUpdate(String.format("UPDATE nodes%s SET deleted = true", childWorkspaceNameSanitized));
-                copyTable("edges", childWorkspaceNameSanitized, workspaceId);
             } else {
-                execUpdate(String.format("INSERT INTO nodes%s SELECT * FROM nodes%s WHERE initialcommit IS NULL", childWorkspaceNameSanitized, workspaceId));
+                copyTable("edges", childWorkspaceNameSanitized, workspaceId);
             }
 
             // add constraints last otherwise they won't hold
