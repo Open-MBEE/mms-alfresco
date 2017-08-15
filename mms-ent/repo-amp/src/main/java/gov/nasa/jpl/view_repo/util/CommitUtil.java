@@ -488,6 +488,7 @@ public class CommitUtil {
                 node.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
                 node.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
                 node.put("nodetype", Integer.toString(nodeType));
+                node.put("lastcommit", e.getString(Sjm.COMMITID));
                 node.put("deleted", "false");
                 nodeInserts.add(node);
             }

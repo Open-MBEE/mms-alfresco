@@ -1,7 +1,6 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -298,14 +297,15 @@ public class EmsNodeUtil {
 
     public JSONArray getRefHistory(String refId) {
         JSONArray result = new JSONArray();
-
-        pgh.getRefsCommits(refId).forEach(refCommit -> {
+        List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId);
+        for (int i = 0; i < refCommits.size(); i++) {
+            Map<String, Object> refCommit = refCommits.get(i);
             JSONObject commit = new JSONObject();
             commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
             commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
             commit.put(Sjm.TIMESTAMP, refCommit.get(Sjm.TIMESTAMP));
             result.put(commit);
-        });
+        }
 
         return result;
     }
@@ -1622,20 +1622,6 @@ public class EmsNodeUtil {
     public JSONObject getCommit(String commitId) {
         Map<String, Object> commit = pgh.getCommit(commitId);
         return commit != null ? new JSONObject(commit) : new JSONObject();
-    }
-
-    public JSONObject getCommitAtTimestamp(String timestamp) {
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-        Date time;
-        try {
-            time = df.parse(timestamp);
-
-        } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
-            }
-        }
-        return null;
     }
 
     public JSONObject getModelAtCommit(String commitId) {

@@ -862,33 +862,6 @@ public class PostgresHelper {
         return null;
     }
 
-    public String getCommitAtTime(Date time) {
-        try {
-            connect();
-            PreparedStatement query = this.conn.prepareStatement("SELECT elasticid FROM commits WHERE refId = ? WHERE timestamp < ? ORDER BY timestamp DESC LIMIT 1");
-            query.setString(1, workspaceId);
-            query.setDate(2, new java.sql.Date(time.getTime()));
-            ResultSet rs = query.executeQuery();
-            if (rs.next()) {
-                return rs.getString(1);
-            } else {
-                String commitId = null;
-                while(commitId == null) {
-                    rs = execQuery(String.format("SELECT parentcommit FROM refs WHERE refId = '%s'", workspaceId));
-                    if (rs.next()) {
-                        commitId = rs.getString(1);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-
-        return 0;
-    }
-
     // insert commit and insert commit edges as well
     public void insertNode(String elasticId, String sysmlId, DbNodeTypes type) {
         try {
@@ -1766,7 +1739,7 @@ public class PostgresHelper {
             copyTable("nodes", childWorkspaceNameSanitized, workspaceId);
 
             if (commitId != null && !commitId.isEmpty()) {
-                execUpdate(String.format("UPDATE nodes%s SET deleted = true", childWorkspaceNameSanitized));
+                execUpdate(String.format("UPDATE nodes%s SET deleted = true WHERE initialcommit IS NOT NULL", childWorkspaceNameSanitized));
             } else {
                 copyTable("edges", childWorkspaceNameSanitized, workspaceId);
             }
