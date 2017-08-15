@@ -2,6 +2,7 @@ package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -291,13 +292,14 @@ public class EmsNodeUtil {
 
     public JSONArray getRefHistory(String refId) {
         JSONArray result = new JSONArray();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId);
         for (int i = 0; i < refCommits.size(); i++) {
             Map<String, Object> refCommit = refCommits.get(i);
             JSONObject commit = new JSONObject();
             commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
             commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
-            commit.put(Sjm.CREATED, refCommit.get(Sjm.CREATED));
+            commit.put(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
             result.put(commit);
         }
 
@@ -1708,15 +1710,15 @@ public class EmsNodeUtil {
                     String commitIdCheck = (String) m.get(Sjm.SYSMLID);
 
                     if (logger.isDebugEnabled()) {
-                        logger.debug(m.get(Sjm.SYSMLID) + " " + m.get(Sjm.TIMESTAMP));
+                        logger.debug(m.get(Sjm.SYSMLID) + " " + m.get(Sjm.CREATED));
                     }
 
                     if (commitId.equals(m.get(Sjm.SYSMLID))) {
-                        commitTimestamp = (Date) m.get(Sjm.TIMESTAMP);
+                        commitTimestamp = (Date) m.get(Sjm.CREATED);
                     }
 
                     if (elementIdSet.contains(commitIdCheck)) {
-                        Date elementDate = (Date) m.get(Sjm.TIMESTAMP);
+                        Date elementDate = (Date) m.get(Sjm.CREATED);
                         long timestamp = elementDate.getTime();
                         // This will determine the nearest commit to the desired commitId at which the element was last
                         //  modified or created.

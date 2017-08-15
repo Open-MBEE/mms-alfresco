@@ -1,13 +1,10 @@
 package gov.nasa.jpl.view_repo.db;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1964,7 +1961,7 @@ public class PostgresHelper {
     }
 
     public List<Map<String, Object>> getRefsCommits(String refId, int commitId) {
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
         List<Map<String, Object>> result = new ArrayList<>();
         try {
             String refIdString = refId.replace("-", "_").replaceAll("\\s+", "");
@@ -1989,7 +1986,7 @@ public class PostgresHelper {
                 Map<String, Object> commit = new HashMap<>();
                 commit.put(Sjm.SYSMLID, rs.getString(1));
                 commit.put(Sjm.CREATOR, rs.getString(2));
-                commit.put(Sjm.CREATED, df.format(rs.getTimestamp(3)));
+                commit.put(Sjm.CREATED, rs.getTimestamp(3));
                 commit.put("refId", rs.getString(4));
                 commit.put("commitType", rs.getString(5));
                 result.add(commit);
