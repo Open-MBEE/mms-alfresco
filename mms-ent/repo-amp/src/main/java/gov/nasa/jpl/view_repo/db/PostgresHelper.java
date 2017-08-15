@@ -864,7 +864,9 @@ public class PostgresHelper {
             if (rs.next()) {
                 return rs.getString(1);
             } else {
-                rs = this.conn.prepareStatement(String.format("SELECT commits.elasticid FROM refs LEFT JOIN commits ON refs.parentcommit = commits.id WHERE refs.refid = '%s'",workspaceId)).executeQuery();
+                rs = this.conn.prepareStatement(String.format(
+                    "SELECT commits.elasticid FROM refs LEFT JOIN commits ON refs.parentcommit = commits.id WHERE refs.refid = '%s'",
+                    workspaceId)).executeQuery();
                 if (rs.next()) {
                     return rs.getString(1);
                 }
@@ -1447,7 +1449,7 @@ public class PostgresHelper {
         }
     }
 
-    public List<String> findNullParents(){
+    public List<String> findNullParents() {
         List<String> nullParents = new ArrayList<>();
         try {
             ResultSet rs = execQuery(
