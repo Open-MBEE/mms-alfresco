@@ -1,10 +1,13 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -54,7 +57,7 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript{
         try{
             if(validateRequest(req, status)){
                 String wsID = req.getServiceMatch().getTemplateVars().get(REF_ID);
-                object = getRefHistory(projectId, wsID);
+                object = getRefHistory(req, projectId, wsID);
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON object could not be created \n");
@@ -83,10 +86,33 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript{
 
     }
 
-    protected JSONObject getRefHistory(String projectId, String refId) {
+    protected JSONObject getRefHistory(WebScriptRequest req, String projectId, String refId) {
         JSONObject json = new JSONObject();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
         JSONArray commits = emsNodeUtil.getRefHistory(refId);
+        String timestamp = req.getParameter("maxTimestamp");
+
+        if (timestamp != null && !timestamp.isEmpty()) {
+            for (int i = 0; i < commits.length(); i++) {
+                JSONObject current = commits.getJSONObject(i);
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+                Date requestedTime;
+                Date currentTime;
+                try {
+                    requestedTime = df.parse(timestamp);
+                    currentTime = df.parse(current.getString(Sjm.CREATED));
+                    if (requestedTime.getTime() >= currentTime.getTime()) {
+                        commits = new JSONArray().put(current);
+                        break;
+                    }
+                } catch (Exception e) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+                    }
+                }
+            }
+        }
+
         json.put("commits" , commits);
         return json;
     }

@@ -5,7 +5,7 @@
             "_inRefIds": [
                 "master"
             ],
-            "_modifier": "Manager",
+            "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
             "documentation": "else",

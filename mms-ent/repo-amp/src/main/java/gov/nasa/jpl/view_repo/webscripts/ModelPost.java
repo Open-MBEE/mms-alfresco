@@ -100,6 +100,8 @@ public class ModelPost extends AbstractJavaWebScript {
     protected WorkspaceNode workspace = null;
     protected Path pngPath = null;
 
+    private final String NEWELEMENTS = "newElements";
+
     public static boolean timeEvents = false;
 
     public ModelPost() {
@@ -145,7 +147,6 @@ public class ModelPost extends AbstractJavaWebScript {
         JSONObject newElementsObject = new JSONObject();
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
-        WorkspaceNode myWorkspace = getWorkspace(req, user);
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
@@ -158,7 +159,7 @@ public class ModelPost extends AbstractJavaWebScript {
             JSONObject postJson = new JSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
-            JSONObject results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), myWorkspace, user, oldElasticIds);
+            JSONObject results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds);
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
             if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews)) {
@@ -168,13 +169,13 @@ public class ModelPost extends AbstractJavaWebScript {
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
 
                 if (withChildViews) {
-                    for (int i = 0; i < results.getJSONArray("newElements").length(); i++) {
-                        results.getJSONArray("newElements")
-                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray("newElements").getJSONObject(i)));
+                    for (int i = 0; i < results.getJSONArray(NEWELEMENTS).length(); i++) {
+                        results.getJSONArray(NEWELEMENTS)
+                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i)));
                     }
                 }
 
-                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray("newElements"), req)) : filterByPermission(results.getJSONArray("newElements"), req));
+                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray(NEWELEMENTS), req)) : filterByPermission(results.getJSONArray(NEWELEMENTS), req));
                 newElementsObject.put(Sjm.COMMITID, commitId);
                 newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
                 newElementsObject.put(Sjm.CREATOR, user);

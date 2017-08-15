@@ -5,7 +5,7 @@
     <description>
         get refs
     </description>
-    <url>/projects/{projectId}/refs</url>
+    <url>/projects/{projectId}/refs/{refId}</url>
     <format default="json">argument</format>
       <authentication>user</authentication>
       <transaction>required</transaction>
