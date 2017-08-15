@@ -38,13 +38,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.view_repo.util.*;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
-import org.alfresco.repo.copy.CopyServiceImpl;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
@@ -150,8 +146,9 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         JSONObject jsonObject, String user, Status status) throws JSONException {
         status.setCode(HttpServletResponse.SC_OK);
         if (Debug.isOn()) {
-            Debug.outln("createWorkSpace(sourceWorkId=" + sourceWorkId + ", newWorkName=" + newWorkName + ", commitId="
-                + commitId + ", jsonObject=" + jsonObject + ", user=" + user + ", status=" + status + ")");
+            Debug.outln(
+                "createWorkSpace(sourceWorkId=" + sourceWorkId + ", newWorkName=" + newWorkName + ", commitId=" + commitId
+                    + ", jsonObject=" + jsonObject + ", user=" + user + ", status=" + status + ")");
         }
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, sourceWorkId == null ? NO_WORKSPACE_ID : sourceWorkId);
@@ -203,10 +200,12 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         }
 
         // Only create the workspace if the workspace id was not supplied:
-        EmsScriptNode existingRef = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
+        EmsScriptNode existingRef =
+            orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
         if (newWorkspaceId == null || existingRef == null) {
 
-            EmsScriptNode srcWs = orgNode.childByNamePath("/" + projectId + "/refs/" + sourceWorkspaceId);
+            EmsScriptNode srcWs =
+                orgNode.childByNamePath("/" + projectId + "/refs/" + sourceWorkspaceId);
 
             if (newWorkspaceId == null) {
                 newWorkspaceId =
@@ -223,33 +222,61 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.put("status", "creating");
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
 
-
             if (!NO_WORKSPACE_ID.equals(sourceWorkspaceId) && srcWs.getId() == null) {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Source workspace not found.");
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);
                 return null;
             } else {
                 EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs");
-                FileFolderService fileService = services.getFileFolderService();
-                // Copy the images from the parent folder
-                try {
-                    fileService.copy(srcWs.getNodeRef(), refContainerNode.getNodeRef(), newWorkspaceId);
-                    finalWorkspace = orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
+                EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId);
+
+                if (dstWs != null) {
+                    // keep history of the branch
+                    String srcId = srcWs.getName().equals(NO_WORKSPACE_ID) ? NO_WORKSPACE_ID : srcWs.getId();
+                    dstWs.setProperty("cm:title", dstWs.getId() + "_" + srcId);
+                    dstWs.setProperty("cm:name", dstWs.getName());
+
+                    dstWs.addAspect("ems:HasWorkspace");
+                    dstWs.setProperty("ems:workspace", dstWs.getNodeRef());
+
+                    dstWs.addAspect("ems:Workspace");
+                    dstWs.setProperty("ems:workspace_name", newWorkspaceId);
+
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
                         jsonObject != null ? jsonObject.optString("source") : null, commitId);
-                } catch (FileNotFoundException e) {
-                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+
+                    finalWorkspace = dstWs;
                 }
             }
         } else {
             // Workspace was found, so update it:
             if (existingRef.getId() != null) {
+
+                if (existingRef.isDeleted()) {
+
+                    existingRef.removeAspect("ems:Deleted");
+                    log(Level.INFO, HttpServletResponse.SC_OK, "Workspace undeleted and modified");
+
+                } else {
+                    log(Level.INFO, "Workspace is modified", HttpServletResponse.SC_OK);
+                }
+
+                // Update the name/description:
+                // Note: allowing duplicate workspace names, so no need to check for other
+                //       refs with the same name
+                if (workspaceName != null) {
+                    existingRef.createOrUpdateProperty("ems:workspace_name", workspaceName);
+                }
+                if (desc != null) {
+                    existingRef.createOrUpdateProperty("ems:description", desc);
+                }
                 finalWorkspace = existingRef;
             } else {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Workspace not found.");
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);
                 return null;
             }
+
             wsJson.put(Sjm.MODIFIED, date);
             wsJson.put(Sjm.MODIFIER, user);
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
@@ -264,9 +291,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             } else {
                 finalWorkspace.setPermission("SiteConsumer", "GROUP_EVERYONE");
             }
+            finalWorkspace.createOrUpdateProperty("ems:permission", permission);
         }
 
         return wsJson;
     }
-}
 
+}

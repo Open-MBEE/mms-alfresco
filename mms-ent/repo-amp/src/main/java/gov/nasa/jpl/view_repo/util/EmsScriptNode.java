@@ -28,19 +28,14 @@ package gov.nasa.jpl.view_repo.util;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Random;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.mbee.util.*;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.ScriptNode;
@@ -57,13 +52,9 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
+import org.hibernate.tuple.VersionProperty;
 import org.springframework.extensions.webscripts.Status;
 
-import gov.nasa.jpl.mbee.util.ClassUtils;
-import gov.nasa.jpl.mbee.util.Debug;
-import gov.nasa.jpl.mbee.util.HasId;
-import gov.nasa.jpl.mbee.util.HasName;
-import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript;
 
@@ -71,10 +62,9 @@ import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript;
  * Extension of ScriptNode to support EMS needs
  *
  * @author cinyoung
- *
  */
 public class EmsScriptNode extends ScriptNode
-                implements Comparator<EmsScriptNode>, Comparable<EmsScriptNode>, HasName<String>, HasId<String> {
+    implements Comparator<EmsScriptNode>, Comparable<EmsScriptNode>, HasName<String>, HasId<String> {
     private static final long serialVersionUID = 9132455162871185541L;
 
     private PostgresHelper pgh;
@@ -99,6 +89,7 @@ public class EmsScriptNode extends ScriptNode
      */
     public static TreeSet<String> workspaceMetaProperties = new TreeSet<String>() {
         private static final long serialVersionUID = -327817873667229953L;
+
         {
             add("ems:workspace");
             add("ems:source");
@@ -108,6 +99,7 @@ public class EmsScriptNode extends ScriptNode
             add("ems:mergeSource");
         }
     };
+
 
     public static class EmsVersion implements Comparator<EmsVersion>, Comparable<EmsVersion> {
         public NodeRef nodeRef = null;
@@ -182,8 +174,7 @@ public class EmsScriptNode extends ScriptNode
             this.date = date;
         }
 
-        @Override
-        public int compareTo(EmsVersion v2) {
+        @Override public int compareTo(EmsVersion v2) {
             EmsVersion v1 = this;
             if (v1 == v2)
                 return 0;
@@ -206,8 +197,7 @@ public class EmsScriptNode extends ScriptNode
             return v1.getEmsNode().compareTo(v2.getEmsNode());
         }
 
-        @Override
-        public int compare(EmsVersion v1, EmsVersion v2) {
+        @Override public int compare(EmsVersion v1, EmsVersion v2) {
             if (v1 == v2)
                 return 0;
             if (v1 == null)
@@ -217,6 +207,7 @@ public class EmsScriptNode extends ScriptNode
             return v1.compareTo(v2);
         }
     }
+
 
     // Flag to indicate whether we checked the nodeRef version for this script
     // node,
@@ -303,15 +294,40 @@ public class EmsScriptNode extends ScriptNode
     }
 
     /**
+     * Gets the version history
+     *
+     * This is needed b/c the ScriptNode getVersionHistory() generates a NPE
+     *
+     * @return version history
+     */
+    public NavigableMap<Long, Version> getVersionPropertyHistory() {
+
+        if (getIsVersioned()) {
+            VersionHistory history = this.services.getVersionService().getVersionHistory(this.nodeRef);
+            if (history != null) {
+                // This is ordered by the label or version number
+                Collection<Version> allVersions = history.getAllVersions();
+                NavigableMap<Long, Version> versions = new TreeMap<>();
+                for (Version version : allVersions) {
+                    versions.put(version.getFrozenModifiedDate().getTime(), version);
+                }
+
+                return versions;
+            }
+        }
+        return null;
+    }
+
+
+
+    /**
      * Create a version of this document. Note: this will add the cm:versionable aspect.
      *
-     * @param history Version history note
+     * @param history      Version history note
      * @param majorVersion True to save as a major version increment, false for minor version.
-     *
      * @return ScriptVersion object representing the newly added version node
      */
-    @Override
-    public ScriptVersion createVersion(String history, boolean majorVersion) {
+    @Override public ScriptVersion createVersion(String history, boolean majorVersion) {
         this.myVersions = null;
         // makeSureNodeRefIsNotFrozen();
         transactionCheck();
@@ -323,24 +339,20 @@ public class EmsScriptNode extends ScriptNode
      * original node, this will include any content updated in the working node. Note that this
      * method can only be called on a working copy Node.
      *
-     * @param history Version history note
+     * @param history      Version history note
      * @param majorVersion True to save as a major version increment, false for minor version.
-     *
      * @return the original Node that was checked out.
      */
-    @Override
-    public ScriptNode checkin(String history, boolean majorVersion) {
+    @Override public ScriptNode checkin(String history, boolean majorVersion) {
         this.myVersions = null;
         transactionCheck();
         return super.checkin(history, majorVersion);
     }
 
     /**
-     *
      * @see org.alfresco.repo.jscript.ScriptNode#childByNamePath(java.lang.String)
      */
-    @Override
-    public EmsScriptNode childByNamePath(String path) {
+    @Override public EmsScriptNode childByNamePath(String path) {
         String runAsUser = AuthenticationUtil.getRunAsUser();
         boolean changeUser = !ADMIN_USER_NAME.equals(runAsUser);
         if (changeUser) {
@@ -363,8 +375,7 @@ public class EmsScriptNode extends ScriptNode
         return childNode;
     }
 
-    @Override
-    public EmsScriptNode createFile(String name) {
+    @Override public EmsScriptNode createFile(String name) {
         makeSureNodeRefIsNotFrozen();
         transactionCheck();
         EmsScriptNode fileNode = new EmsScriptNode(super.createFile(name).getNodeRef(), services, response, status);
@@ -380,13 +391,11 @@ public class EmsScriptNode extends ScriptNode
     // //if ( )
     // }
 
-    @Override
-    public EmsScriptNode createFolder(String name) {
+    @Override public EmsScriptNode createFolder(String name) {
         return createFolder(name, null);
     }
 
-    @Override
-    public EmsScriptNode createFolder(String name, String type) {
+    @Override public EmsScriptNode createFolder(String name, String type) {
         return createFolder(name, type, null);
     }
 
@@ -424,7 +433,7 @@ public class EmsScriptNode extends ScriptNode
      * it's done in ModelPost.java)
      *
      * @param acmType Short name for the Alfresco Content Model type
-     * @param value Value to set property to
+     * @param value   Value to set property to
      * @return true if property updated, false otherwise (e.g., value did not change)
      */
     public <T extends Serializable> boolean createOrUpdateProperty(String acmType, T value) {
@@ -457,8 +466,8 @@ public class EmsScriptNode extends ScriptNode
                 setProperty(Acm.ACM_LAST_MODIFIED, new Date(), false, 0);
             }
             if (!changed) {
-                logger.warn("Failed to set property for new value in createOrUpdateProperty(" + acmType + ", " + value
-                                + ")");
+                logger.warn(
+                    "Failed to set property for new value in createOrUpdateProperty(" + acmType + ", " + value + ")");
             }
             return changed;
         }
@@ -499,8 +508,7 @@ public class EmsScriptNode extends ScriptNode
      * @param type Alfresco Content Model type of node to create
      * @return created child EmsScriptNode
      */
-    @Override
-    public EmsScriptNode createNode(String name, String type) {
+    @Override public EmsScriptNode createNode(String name, String type) {
 
 
         EmsScriptNode result = null;
@@ -520,16 +528,15 @@ public class EmsScriptNode extends ScriptNode
                 try {
                     makeSureNodeRefIsNotFrozen();
                     transactionCheck();
-                    ChildAssociationRef assoc =
-                                    services.getNodeService().createNode(nodeRef, ContentModel.ASSOC_CONTAINS,
-                                                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                                                    QName.createValidLocalName(name)),
-                                                    createQName(type), props);
+                    ChildAssociationRef assoc = services.getNodeService()
+                        .createNode(nodeRef, ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(name)),
+                            createQName(type), props);
                     result = new EmsScriptNode(assoc.getChildRef(), services, response);
                 } catch (Exception e) {
-                    logger.error("Got exception in " + "createNode(name=" + name + ", type=" + type
-                                    + ") for EmsScriptNode(" + this + ") calling createNode(nodeRef=" + nodeRef
-                                    + ", . . .)");
+                    logger.error(
+                        "Got exception in " + "createNode(name=" + name + ", type=" + type + ") for EmsScriptNode("
+                            + this + ") calling createNode(nodeRef=" + nodeRef + ", . . .)");
                     e.printStackTrace();
                 }
 
@@ -553,19 +560,19 @@ public class EmsScriptNode extends ScriptNode
             EmsScriptNode liveNode = new EmsScriptNode(liveNodeRef, getServices());
             if (isAVersion()) {
                 logger.error("Trying to create a node under a frozen node ref (" + nodeRef + ", v " + getVersionLabel()
-                                + ")! Replacing nodeRef with (v " + liveNode.getVersionLabel() + ") live node ref ("
-                                + liveNodeRef + "), which may not point to the right version! " + this);
+                    + ")! Replacing nodeRef with (v " + liveNode.getVersionLabel() + ") live node ref (" + liveNodeRef
+                    + "), which may not point to the right version! " + this);
                 Debug.error(true, "Stacktrace for frozen node replacement:");
                 nodeRef = liveNodeRef;
             } else {
-                logger.error("Live node " + liveNode.getVersionLabel() + " is different from current "
-                                + getVersionLabel() + " node ref!" + this);
+                logger.error(
+                    "Live node " + liveNode.getVersionLabel() + " is different from current " + getVersionLabel()
+                        + " node ref!" + this);
             }
         }
     }
 
-    @Override
-    public String getName() {
+    @Override public String getName() {
         super.getName();
         return (String) getProperty(Acm.CM_NAME);
     }
@@ -578,8 +585,7 @@ public class EmsScriptNode extends ScriptNode
         return id;
     }
 
-    @Override
-    public EmsScriptNode getParent() {
+    @Override public EmsScriptNode getParent() {
         ScriptNode myParent = super.getParent();
         if (myParent == null)
             return null;
@@ -597,7 +603,7 @@ public class EmsScriptNode extends ScriptNode
      * @return
      */
     public EmsScriptNode getParent(Date dateTime, WorkspaceNode ws, boolean skipNodeRefCheck,
-                    boolean checkVersionedNode) {
+        boolean checkVersionedNode) {
 
         // We are not using getParent() because elementNode may be from the
         // version
@@ -681,8 +687,8 @@ public class EmsScriptNode extends ScriptNode
                 } catch (Throwable t2) {
                     logger.error("1. Got exception in getCurrentVersion(): " + t1.getLocalizedMessage());
                     t1.printStackTrace();
-                    logger.error("2. Tried again and got another exception in getCurrentVersion(): "
-                                    + t2.getLocalizedMessage());
+                    logger.error(
+                        "2. Tried again and got another exception in getCurrentVersion(): " + t2.getLocalizedMessage());
                     t2.printStackTrace();
                 }
             }
@@ -729,8 +735,8 @@ public class EmsScriptNode extends ScriptNode
             } else {
                 cachedVersion = new EmsVersion(nodeRef, null, getHeadVersion());
                 NodeUtil.versionCache.put(id, cachedVersion);
-                String msg = "3: initializing version cache with node, " + this + " version: "
-                                + cachedVersion.getLabel();
+                String msg =
+                    "3: initializing version cache with node, " + this + " version: " + cachedVersion.getLabel();
                 if (logger.isInfoEnabled())
                     logger.info(msg);
                 if (versionCacheDebugPrint)
@@ -743,7 +749,7 @@ public class EmsScriptNode extends ScriptNode
         }
         if (thisEmsVersion == null) {
             String msg = "6: Warning! Alfresco Heisenbug failing to return current version of node " + this.getNodeRef()
-                            + ".  Replacing node with unmodifiable frozen node, " + cachedVersion.getLabel() + ".";
+                + ".  Replacing node with unmodifiable frozen node, " + cachedVersion.getLabel() + ".";
             logger.error(msg);
             // Debug.error( true, msg );
             // sendNotificationEvent( "Heisenbug Occurence!", "" );
@@ -767,8 +773,8 @@ public class EmsScriptNode extends ScriptNode
             logger.error("haveBeenOutsideTransaction = " + NodeUtil.isInsideTransactionNow());
             // Cache is correct -- fix esn's nodeRef
             String msg = "4: Warning! Alfresco Heisenbug returning wrong current version of node, " + this + " ("
-                            + thisEmsVersion.getLabel() + ").  Replacing node with unmodifiable frozen node, " + getId()
-                            + " (" + cachedVersion.getLabel() + ").";
+                + thisEmsVersion.getLabel() + ").  Replacing node with unmodifiable frozen node, " + getId() + " ("
+                + cachedVersion.getLabel() + ").";
             logger.error(msg);
             Debug.error(true, msg);
             // NodeUtil.sendNotificationEvent( "Heisenbug Occurrence!", "" );
@@ -781,8 +787,8 @@ public class EmsScriptNode extends ScriptNode
         } else { // comp > 0
             // Cache is incorrect -- update cache
             NodeUtil.versionCache.put(id, thisEmsVersion);
-            String msg = "5: Updating version cache with new version of node, " + this + " version: "
-                            + thisEmsVersion.getLabel();
+            String msg = "5: Updating version cache with new version of node, " + this + " version: " + thisEmsVersion
+                .getLabel();
             if (logger.isInfoEnabled())
                 logger.info(msg);
             if (versionCacheDebugPrint)
@@ -807,15 +813,15 @@ public class EmsScriptNode extends ScriptNode
      * @return
      */
     public Object getNodeRefProperty(String acmType, boolean ignoreWorkspace, Date dateTime, boolean findDeleted,
-                    boolean skipNodeRefCheck, WorkspaceNode ws) {
+        boolean skipNodeRefCheck, WorkspaceNode ws) {
         // Make sure we have the right node ref before getting a property from
         // it.
 
         Object result = getPropertyImpl(acmType, true); // TODO -- This should
-                                                        // be passing in
-                                                        // cacheOkay from the
-                                                        // caller instead of
-                                                        // true!
+        // be passing in
+        // cacheOkay from the
+        // caller instead of
+        // true!
 
 
 
@@ -826,7 +832,7 @@ public class EmsScriptNode extends ScriptNode
      * Get the property of the specified type for non-noderef properties. Throws unsupported
      * operation exception otherwise (go and fix the code if that happens).
      *
-     * @param acmType Short name of property to get
+     * @param acmType   Short name of property to get
      * @param cacheOkay
      * @return
      */
@@ -838,7 +844,7 @@ public class EmsScriptNode extends ScriptNode
      * Get the property of the specified type for non-noderef properties. Throws unsupported
      * operation exception otherwise (go and fix the code if that happens).
      *
-     * @param acmType Short name of property to get
+     * @param acmType   Short name of property to get
      * @param cacheOkay
      * @return
      */
@@ -876,8 +882,7 @@ public class EmsScriptNode extends ScriptNode
      * @param acmType Short name of property to get
      * @return
      */
-    @Override
-    public Map<String, Object> getProperties() {
+    @Override public Map<String, Object> getProperties() {
 
         if (useFoundationalApi) {
             return Utils.toMap(services.getNodeService().getProperties(nodeRef), String.class, Object.class);
@@ -909,16 +914,16 @@ public class EmsScriptNode extends ScriptNode
      * Genericized function to set property for non-collection types
      *
      * @param acmType Property short name for alfresco content model type
-     * @param value Value to set property to
+     * @param value   Value to set property to
      */
     public <T extends Serializable> boolean setProperty(String acmType, T value) {
         return setProperty(acmType, value, true, 0);
     }
 
     public <T extends Serializable> boolean setProperty(String acmType, T value, boolean cacheOkay,
-                    // count prevents inf
-                    // loop
-                    int count) {
+        // count prevents inf
+        // loop
+        int count) {
         if (logger.isDebugEnabled())
             logger.debug("setProperty(acmType=" + acmType + ", value=" + value + ")");
         boolean success = true;
@@ -942,10 +947,10 @@ public class EmsScriptNode extends ScriptNode
                 NodeRef liveRef = nodeRef;
                 if (isAVersion()) {
                     success = true;
-                    logger.error("Tried to set property of a version nodeRef in " + "setProperty(acmType=" + acmType
-                                    + ", value=" + value + ") for EmsScriptNode " + this
-                                    + " calling NodeService.setProperty(nodeRef=" + nodeRef + ", " + acmType + ", "
-                                    + value + ")");
+                    logger.error(
+                        "Tried to set property of a version nodeRef in " + "setProperty(acmType=" + acmType + ", value="
+                            + value + ") for EmsScriptNode " + this + " calling NodeService.setProperty(nodeRef="
+                            + nodeRef + ", " + acmType + ", " + value + ")");
                     if (count > 0) {
                         this.log("ERROR! Potential infinite recursion!");
                         return false;
@@ -956,20 +961,18 @@ public class EmsScriptNode extends ScriptNode
                         int comp = NodeUtil.compareVersions(nodeRef, liveRef);
                         if (comp > 0) {
                             logger.error("ERROR! Live version " + liveRef + "" + " is earlier than versioned ref "
-                                            + "when trying to set property of a version nodeRef in "
-                                            + "setProperty(acmType=" + acmType + ", value=" + value
-                                            + ") for EmsScriptNode " + this
-                                            + " calling NodeService.setProperty(nodeRef=" + nodeRef + ", " + acmType
-                                            + ", " + value + ")");
+                                + "when trying to set property of a version nodeRef in " + "setProperty(acmType="
+                                + acmType + ", value=" + value + ") for EmsScriptNode " + this
+                                + " calling NodeService.setProperty(nodeRef=" + nodeRef + ", " + acmType + ", " + value
+                                + ")");
                             success = false;
                         } else if (comp < 0) {
                             logger.error("WARNING! Versioned node ref is not most current "
-                                            + "when trying to set property of a version nodeRef in "
-                                            + "setProperty(acmType=" + acmType + ", value=" + value
-                                            + ") for EmsScriptNode " + this
-                                            + " calling NodeService.setProperty(nodeRef=" + nodeRef + ", " + acmType
-                                            + ", " + value + ")" + ".\nWARNING! Setting property using live node ref "
-                                            + liveRef + "last modified at " + NodeUtil.getLastModified(liveRef));
+                                + "when trying to set property of a version nodeRef in " + "setProperty(acmType="
+                                + acmType + ", value=" + value + ") for EmsScriptNode " + this
+                                + " calling NodeService.setProperty(nodeRef=" + nodeRef + ", " + acmType + ", " + value
+                                + ")" + ".\nWARNING! Setting property using live node ref " + liveRef
+                                + "last modified at " + NodeUtil.getLastModified(liveRef));
                         }
                         nodeRef = liveRef; // this is
                         if (comp <= 0) {
@@ -983,8 +986,8 @@ public class EmsScriptNode extends ScriptNode
                 }
                 if (nodeRef.equals(liveRef)) {
                     logger.error("Got exception in " + "setProperty(acmType=" + acmType + ", value=" + value
-                                    + ") for EmsScriptNode " + this + " calling NodeService.setProperty(nodeRef="
-                                    + nodeRef + ", " + acmType + ", " + value + ")");
+                        + ") for EmsScriptNode " + this + " calling NodeService.setProperty(nodeRef=" + nodeRef + ", "
+                        + acmType + ", " + value + ")");
                     e.printStackTrace();
                     // StackTraceElement[] trace = e.getStackTrace();
                     // StackTraceElement s = trace[0];
@@ -1060,7 +1063,7 @@ public class EmsScriptNode extends ScriptNode
                 // Log warning for missing permissions.
                 if (property != null) {
                     String msg = String.format("Warning! No %s privileges to sysmlid: %s.", permissions.toUpperCase(),
-                                    property.toString());
+                        property.toString());
                     response.append(msg);
                     if (status != null) {
                         status.setCode(HttpServletResponse.SC_FORBIDDEN, msg);
@@ -1077,13 +1080,10 @@ public class EmsScriptNode extends ScriptNode
      * node and logs results and status as appropriate.
      *
      * @param permission the permission to check
-     *
      * @return whether the user has the permission for this node
-     *
      * @see org.alfresco.repo.jscript.ScriptNode#hasPermission(java.lang.String)
      */
-    @Override
-    public boolean hasPermission(String permission) {
+    @Override public boolean hasPermission(String permission) {
         String realUser = AuthenticationUtil.getFullyAuthenticatedUser();
         String runAsUser = AuthenticationUtil.getRunAsUser();
         boolean changeUser = !realUser.equals(runAsUser);
@@ -1102,17 +1102,16 @@ public class EmsScriptNode extends ScriptNode
      *
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    @Override
-    public boolean equals(Object obj) {
+    @Override public boolean equals(Object obj) {
         return equals(obj, true);
     }
 
     /**
      * @return the head or current version of the node ref if it exists; otherwise return the
-     *         existing node ref
+     * existing node ref
      */
     public NodeRef normalizedNodeRef() {// NodeRef ref, ServiceRegistry services
-                                        // ) {
+        // ) {
         VersionService vs = getServices().getVersionService();
         Version thisHeadVersion = this.getHeadVersion();
         NodeRef thisCurrent = thisHeadVersion == null ? null : thisHeadVersion.getVersionedNodeRef();
@@ -1162,8 +1161,7 @@ public class EmsScriptNode extends ScriptNode
      *
      * @see org.alfresco.repo.jscript.ScriptNode#exists()
      */
-    @Override
-    public boolean exists() {
+    @Override public boolean exists() {
         return exists(false);
     }
 
@@ -1192,8 +1190,7 @@ public class EmsScriptNode extends ScriptNode
         return false;
     }
 
-    @Override
-    public int compare(EmsScriptNode arg0, EmsScriptNode arg1) {
+    @Override public int compare(EmsScriptNode arg0, EmsScriptNode arg1) {
         if (arg0 == arg1)
             return 0;
         if (arg0 == null)
@@ -1203,8 +1200,7 @@ public class EmsScriptNode extends ScriptNode
         return arg0.getNodeRef().getId().compareTo(arg1.getNodeRef().getId());
     }
 
-    @Override
-    public int compareTo(EmsScriptNode o) {
+    @Override public int compareTo(EmsScriptNode o) {
         return this.compare(this, o);
     }
 
@@ -1216,8 +1212,7 @@ public class EmsScriptNode extends ScriptNode
         super(nodeRef, services);
     }
 
-    @Override
-    public Set<QName> getAspectsSet() {
+    @Override public Set<QName> getAspectsSet() {
         String runAsUser = AuthenticationUtil.getRunAsUser();
         boolean changeUser = !ADMIN_USER_NAME.equals(runAsUser);
         if (changeUser) {
@@ -1245,8 +1240,7 @@ public class EmsScriptNode extends ScriptNode
         return headVersion;
     }
 
-    @Override
-    public boolean removeAspect(String type) {
+    @Override public boolean removeAspect(String type) {
         if (hasAspect(type)) {
             makeSureNodeRefIsNotFrozen();
             transactionCheck();
