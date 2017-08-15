@@ -1682,8 +1682,9 @@ public class EmsNodeUtil {
         long latest = 0;
 
         try {
+            elementIdSet = eh.getCommitHistoryIds(sysmlId);
             // Get history of the element based on SysML ID
-            JSONArray elementCommitHistory = eh.getCommitHistory(sysmlId);
+            /*JSONArray elementCommitHistory = eh.getCommitHistory(sysmlId);
 
             for (int i = 0; i < elementCommitHistory.length(); ++i) {
                 jsonObject = elementCommitHistory.getJSONObject(i);
@@ -1691,7 +1692,7 @@ public class EmsNodeUtil {
                     logger.debug(jsonObject.toString());
                 }
                 elementIdSet.add(jsonObject.getString("id"));
-            }
+            }*/
 
             Map<String, Object> commit = pgh.getCommit(commitId);
             if (commit != null) {
