@@ -1,16 +1,9 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +13,7 @@ import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.TimeUtils;
+import org.alfresco.service.cmr.version.Version;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
 import gov.nasa.jpl.view_repo.db.Node;
@@ -503,6 +497,7 @@ public class EmsNodeUtil {
     public JSONArray getDocJson(String sysmlId, String commitId, boolean extended) {
         return getDocJson(sysmlId, commitId, extended, 10000);
     }
+
     /**
      * Get the documents that exist in a site at a specified time
      *
@@ -1131,6 +1126,10 @@ public class EmsNodeUtil {
         return pgh.getCommitAndTimestamp("elasticId", elasticid);
     }
 
+    public Long getTimestampFromElasticId(String elasticid) {
+        return pgh.getTimestamp("elasticId", elasticid);
+    }
+
     public JSONObject getElementByElasticID(String elasticId) {
         try {
             return eh.getElementByElasticId(elasticId);
@@ -1263,6 +1262,22 @@ public class EmsNodeUtil {
         result.put(Sjm.SITECHARACTERIZATIONID, siteCharacterizationId);
 
         return result;
+    }
+
+    public Version imageVersionBeforeTimestamp(NavigableMap<Long, Version> versions, Long timestamp) {
+        // finds entry with the greatest key less than or equal to key, or null if it does not exist
+        Map.Entry<Long, Version> nearestDate = versions.floorEntry(timestamp);
+        if (nearestDate != null) {
+            return nearestDate.getValue();
+        }
+        //        ClassCastException - if the specified key cannot be compared with the keys currently in the map
+        //        NullPointerException - if the specified key is null and this map does not permit null keys
+        return null;
+    }
+
+    public Pair<String, Long> getDirectParentRef(String refId){
+        return pgh.getParentRef(refId);
+        //:TODO merge is a problem
     }
 
     public boolean isDeleted(String sysmlid) {
@@ -1603,8 +1618,8 @@ public class EmsNodeUtil {
                 // updating a node, so the time is the current time (which is
                 // null).
                 EmsScriptNode artNode = NodeUtil
-                    .updateOrCreateArtifact(name, extension, content, null, siteName, projectId, this.workspaceName, null, null, null,
-                        false);
+                    .updateOrCreateArtifact(name, extension, content, null, siteName, projectId, this.workspaceName,
+                        null, null, null, false);
                 if (artNode == null || !artNode.exists()) {
                     logger.debug("Failed to pull out image data for value! " + value);
                     break;

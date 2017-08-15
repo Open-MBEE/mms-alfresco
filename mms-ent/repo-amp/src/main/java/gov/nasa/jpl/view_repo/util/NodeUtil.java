@@ -1175,10 +1175,10 @@ public class NodeUtil {
 
 		Object[] versionHistory = pngNode.getEmsVersionHistory();
 
-        if ( versionHistory == null || versionHistory.length <= 1 ) {
-            pngNode.makeSureNodeRefIsNotFrozen();
-            pngNode.createVersion( "creating the version history", false );
-        }
+//        if ( versionHistory == null || versionHistory.length <= 1 ) {
+//            pngNode.makeSureNodeRefIsNotFrozen();
+//            pngNode.createVersion( "creating the version history", false );
+//        }
 
 		pngNode.getOrSetCachedVersion();
 
