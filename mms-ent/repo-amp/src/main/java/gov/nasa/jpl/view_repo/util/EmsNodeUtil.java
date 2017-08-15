@@ -297,7 +297,7 @@ public class EmsNodeUtil {
             JSONObject commit = new JSONObject();
             commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
             commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
-            commit.put(Sjm.TIMESTAMP, refCommit.get(Sjm.TIMESTAMP));
+            commit.put(Sjm.CREATED, refCommit.get(Sjm.CREATED));
             result.put(commit);
         }
 
