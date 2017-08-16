@@ -99,7 +99,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 String projectId = getProjectId(req);
                 String sourceWorkspaceParam = reqJson.getJSONArray("refs").getJSONObject(0).optString("parentRefId");
                 String newName = reqJson.getJSONArray("refs").getJSONObject(0).optString("name");
-                String type = reqJson.getJSONArray("refs").getJSONObject(0).optString("type");
                 String commitId =
                     reqJson.getJSONArray("refs").getJSONObject(0).optString("parentCommitId", null) != null ?
                         reqJson.getJSONArray("refs").getJSONObject(0).optString("parentCommitId") :
