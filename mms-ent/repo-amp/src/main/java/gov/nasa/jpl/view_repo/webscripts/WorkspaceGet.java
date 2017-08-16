@@ -49,6 +49,8 @@ public class WorkspaceGet extends AbstractJavaWebScript{
         Map<String, Object> model = new HashMap<>();
         JSONObject object = null;
         String projectId = getProjectId(req);
+        String[] accepts = req.getHeaderValues("Accept");
+        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
         try{
             if(validateRequest(req, status)){
@@ -67,8 +69,14 @@ public class WorkspaceGet extends AbstractJavaWebScript{
             model.put("res", createResponseJson());
         } else {
             try{
-                if (!Utils.isNullOrEmpty(response.toString())) object.put("message", response.toString());
-                model.put("res", NodeUtil.jsonToString( object, 4 ));
+                if (!Utils.isNullOrEmpty(response.toString())) {
+                    object.put("message", response.toString());
+                }
+                if (prettyPrint || accept.contains("webp")) {
+                    model.put("res", object.toString(4));
+                } else {
+                    model.put("res", object);
+                }
             } catch (JSONException e){
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 model.put("res", createResponseJson());

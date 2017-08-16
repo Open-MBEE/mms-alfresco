@@ -132,7 +132,7 @@ public class JmsConnection implements ConnectionInterface {
             // don't do null check since null is applicable and want to reset
             this.refId = refId;
             this.projectId = projectId;
-            result = publishMessage(NodeUtil.jsonToString(json, 2), eventType);
+            result = publishMessage(json.toString(), eventType);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -143,7 +143,7 @@ public class JmsConnection implements ConnectionInterface {
     protected static ConnectionInfo initConnectionInfo(String eventType) {
         ConnectionInfo ci = new ConnectionInfo();
         if (connectionMap == null) {
-            connectionMap = new HashMap<String, JmsConnection.ConnectionInfo>();
+            connectionMap = new HashMap<>();
         }
         connectionMap.put(eventType, ci);
         return ci;

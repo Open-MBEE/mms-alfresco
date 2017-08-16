@@ -981,20 +981,11 @@ public class PostgresHelper {
         try {
             connect();
             PreparedStatement query = this.conn
-                .prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = " + true + " WHERE sysmlid = ?");
-            query.setString(1, sysmlId);
+                .prepareStatement("UPDATE ? SET deleted = ? WHERE sysmlid = ?");
+            query.setString(1, "nodes" + workspaceId);
+            query.setBoolean(2, true);
+            query.setString(3, sysmlId);
             query.execute();
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-    }
-
-    public void resurrectNode(String sysmlId) {
-        try {
-            execUpdate(
-                "UPDATE \"nodes" + workspaceId + "\" SET deleted = " + false + " WHERE sysmlid = '" + sysmlId + "'");
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
