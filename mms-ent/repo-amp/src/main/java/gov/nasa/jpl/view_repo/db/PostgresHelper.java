@@ -259,7 +259,9 @@ public class PostgresHelper {
         try {
             this.conn.createStatement().executeUpdate(query);
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
     }
 
@@ -271,7 +273,9 @@ public class PostgresHelper {
         try {
             count = this.conn.createStatement().executeUpdate(query);
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
 
         return count;
@@ -284,7 +288,9 @@ public class PostgresHelper {
         try {
             rs = this.conn.createStatement().executeQuery(query);
         } catch (SQLException e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            if (logger.isDebugEnabled()) {
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
         return rs;
     }
@@ -981,10 +987,9 @@ public class PostgresHelper {
         try {
             connect();
             PreparedStatement query = this.conn
-                .prepareStatement("UPDATE ? SET deleted = ? WHERE sysmlid = ?");
-            query.setString(1, "nodes" + workspaceId);
-            query.setBoolean(2, true);
-            query.setString(3, sysmlId);
+                .prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = ? WHERE sysmlid = ?");
+            query.setBoolean(1, true);
+            query.setString(2, sysmlId);
             query.execute();
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
