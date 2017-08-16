@@ -73,7 +73,7 @@ PostNewBranchForImage
 GetImageFromParent
 	[Documentation]		"Get image from parent branch (image get url should use child branch's ref and it should return the image from parent ref)"
 	[Tags]				images		critical		0407
-	${result} =			Get		url=${ROOT}/projects/imageBranch/refs/master/elements/mounts		headers=&{PNG_GET_HEADER}
+	${result} =			Get		url=${ROOT}/projects/PA/refs/imageBranch/elements/mounts		headers=&{PNG_GET_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${image_child_url} =		Get Image Url		${result.json()}
 	Set Global Variable	  ${image_child_url}
@@ -82,6 +82,7 @@ GetImageFromParent
 	Should Be Equal	  ${image_child_url}    ${image_versioned_url}
 
 #Get image from parent branch (image get url should use child branch's ref and it should return the image from parent ref)
+#:TODO I think I need to get images from before the latest version in branches....
 #PostNewMount
 #	[Documentation]		"Create a project (ID: PB) under the organization with (ID: initorg).  Symbolically PB."
 #	[Tags]				mounts		critical		0201
