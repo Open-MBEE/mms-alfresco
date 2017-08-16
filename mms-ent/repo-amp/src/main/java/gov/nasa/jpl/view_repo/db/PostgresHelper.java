@@ -918,11 +918,11 @@ public class PostgresHelper {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.select"));
         String query = String.format("INSERT INTO \"edges%s\" (parent, child, edgeType) VALUES ", workspaceId);
         List<String> values = new ArrayList<>();
-        edges.forEach((edge) -> {
+        for (Map<String, String> edge : edges) {
             values.add("((SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("parent")
                 + "'), (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("child") + "'), "
                 + edge.get("edgetype") + ")");
-        });
+        }
         query += StringUtils.join(values, ",") + ";";
         return query;
     }

@@ -286,7 +286,9 @@ public class ElasticHelper {
                 sub.add(ids.get(count));
             }
             JSONArray elasticids = new JSONArray();
-            sub.forEach(elasticids::put);
+            for (String elasticid : sub) {
+                elasticids.put(elasticid);
+            }
 
             JSONObject queryJson = new JSONObject().put("size", resultLimit)
                 .put("query", new JSONObject().put("terms", new JSONObject().put("_id", elasticids))).put("sort",
@@ -421,9 +423,9 @@ public class ElasticHelper {
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
-                    result.getFailedItems().forEach((item) -> {
+                    for (BulkResult.BulkResultItem item : result.getFailedItems()) {
                         logger.error(String.format("Failed item: %s", item.error));
-                    });
+                    }
                     return false;
                 }
                 actions.clear();
@@ -447,10 +449,9 @@ public class ElasticHelper {
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Update Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
-                    result.getFailedItems().forEach((item) -> {
+                    for (BulkResult.BulkResultItem item : result.getFailedItems()) {
                         logger.error(String.format("Failed item: %s", item.error));
-                    });
-                    //return false;
+                    }
                 }
                 actions.clear();
             }
