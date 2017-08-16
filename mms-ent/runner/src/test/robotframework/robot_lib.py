@@ -528,11 +528,8 @@ def binary_data(filename):
     data = open(filename, 'rb')
     return data
 
-# def encode_data(filename):
-#     img_file = robot_dir + filename
-#     with open(img_file, "rb") as image_file:
-#         encoded = base64.b64encode(image_file.read())
-#     return encoded
+def get_image_url(jsonObject):
+    return jsonObject["artifacts"][0]["url"]
 
 # Main Application when running from the commandline
 if __name__ == "__main__":
