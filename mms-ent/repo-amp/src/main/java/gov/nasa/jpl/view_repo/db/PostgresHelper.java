@@ -1,7 +1,5 @@
 package gov.nasa.jpl.view_repo.db;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -920,11 +918,11 @@ public class PostgresHelper {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.select"));
         String query = String.format("INSERT INTO \"edges%s\" (parent, child, edgeType) VALUES ", workspaceId);
         List<String> values = new ArrayList<>();
-        edges.forEach((edge) -> {
+        for (Map<String, String> edge : edges) {
             values.add("((SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("parent")
                 + "'), (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("child") + "'), "
                 + edge.get("edgetype") + ")");
-        });
+        }
         query += StringUtils.join(values, ",") + ";";
         return query;
     }
@@ -1963,6 +1961,7 @@ public class PostgresHelper {
     }
 
     public List<Map<String, Object>> getRefsCommits(String refId, int commitId) {
+
         List<Map<String, Object>> result = new ArrayList<>();
         try {
             String refIdString = refId.replace("-", "_").replaceAll("\\s+", "");
@@ -1987,7 +1986,7 @@ public class PostgresHelper {
                 Map<String, Object> commit = new HashMap<>();
                 commit.put(Sjm.SYSMLID, rs.getString(1));
                 commit.put(Sjm.CREATOR, rs.getString(2));
-                commit.put(Sjm.TIMESTAMP, rs.getTimestamp(3));
+                commit.put(Sjm.CREATED, rs.getTimestamp(3));
                 commit.put("refId", rs.getString(4));
                 commit.put("commitType", rs.getString(5));
                 result.add(commit);

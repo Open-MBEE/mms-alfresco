@@ -1012,7 +1012,6 @@ public class CommitUtil {
         }
     }
 
-
     public static void processInstanceSpecificationSpecificationJson(String sysmlId, JSONObject iss,
         List<Pair<String, String>> documentEdges) {
         if (iss != null) {
@@ -1032,8 +1031,6 @@ public class CommitUtil {
             }
         }
     }
-
-
 
     public static Set<Object> findKeyValueInJsonObject(JSONObject json, String keyMatch) {
         Set<Object> result = new HashSet<>();
