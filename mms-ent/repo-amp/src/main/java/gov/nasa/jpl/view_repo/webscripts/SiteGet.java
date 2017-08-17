@@ -37,6 +37,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -153,8 +154,12 @@ public class SiteGet extends AbstractJavaWebScript {
         try {
             List<Node> siteNodes = pgh.getSites();
             List<Node> alfSites = pgh.getSites(true, false);
-            siteNodes.forEach(n -> ids.add(n.getElasticId()));
-            alfSites.forEach(a -> alfs.add(a.getSysmlId()));
+            for (Node n : siteNodes) {
+                ids.add(n.getElasticId());
+            }
+            for (Node n : alfSites) {
+                alfs.add(n.getSysmlId());
+            }
             JSONArray elements = eh.getElementsFromElasticIds(ids);
 
             if (logger.isDebugEnabled())
@@ -172,7 +177,7 @@ public class SiteGet extends AbstractJavaWebScript {
 
                 newo.put("_" + Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
 
-                siteNodes.forEach(n -> {
+                for (Node n : siteNodes) {
                     if (n.getSysmlId().equals(o.getString(Sjm.SYSMLID))) {
                         if (n.getNodeType() == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                             String path = "path|/Sites/" + orgId + "/documentLibrary/" + projectId + "/" + n.getSysmlId();
@@ -181,14 +186,14 @@ public class SiteGet extends AbstractJavaWebScript {
                             sites.add(DbNodeTypes.SITE);
                             sites.add(DbNodeTypes.SITEANDPACKAGE);
                             String parent = emsNodeUtil.getImmediateParentOfTypes(n.getSysmlId(),
-                                            DbEdgeTypes.CONTAINMENT, sites);
+                                DbEdgeTypes.CONTAINMENT, sites);
                             newo.put("_parentId", parent);
                             newo.put("_link", siteUrl);
                         } else {
                             newo.put("_parentId", "null");
                         }
                     }
-                });
+                }
 
                 if (!alfs.contains(newo.getString("_" + Sjm.SYSMLID))) {
                     json.put(newo);

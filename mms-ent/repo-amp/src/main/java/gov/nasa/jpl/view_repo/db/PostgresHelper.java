@@ -1,7 +1,5 @@
 package gov.nasa.jpl.view_repo.db;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -261,7 +259,9 @@ public class PostgresHelper {
         try {
             this.conn.createStatement().executeUpdate(query);
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
     }
 
@@ -273,7 +273,9 @@ public class PostgresHelper {
         try {
             count = this.conn.createStatement().executeUpdate(query);
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
 
         return count;
@@ -286,7 +288,9 @@ public class PostgresHelper {
         try {
             rs = this.conn.createStatement().executeQuery(query);
         } catch (SQLException e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            if (logger.isDebugEnabled()) {
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
         return rs;
     }
@@ -920,11 +924,11 @@ public class PostgresHelper {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.select"));
         String query = String.format("INSERT INTO \"edges%s\" (parent, child, edgeType) VALUES ", workspaceId);
         List<String> values = new ArrayList<>();
-        edges.forEach((edge) -> {
+        for (Map<String, String> edge : edges) {
             values.add("((SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("parent")
                 + "'), (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("child") + "'), "
                 + edge.get("edgetype") + ")");
-        });
+        }
         query += StringUtils.join(values, ",") + ";";
         return query;
     }
@@ -983,20 +987,10 @@ public class PostgresHelper {
         try {
             connect();
             PreparedStatement query = this.conn
-                .prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = " + true + " WHERE sysmlid = ?");
-            query.setString(1, sysmlId);
+                .prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = ? WHERE sysmlid = ?");
+            query.setBoolean(1, true);
+            query.setString(2, sysmlId);
             query.execute();
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-    }
-
-    public void resurrectNode(String sysmlId) {
-        try {
-            execUpdate(
-                "UPDATE \"nodes" + workspaceId + "\" SET deleted = " + false + " WHERE sysmlid = '" + sysmlId + "'");
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1963,6 +1957,7 @@ public class PostgresHelper {
     }
 
     public List<Map<String, Object>> getRefsCommits(String refId, int commitId) {
+
         List<Map<String, Object>> result = new ArrayList<>();
         try {
             String refIdString = refId.replace("-", "_").replaceAll("\\s+", "");
@@ -1987,7 +1982,7 @@ public class PostgresHelper {
                 Map<String, Object> commit = new HashMap<>();
                 commit.put(Sjm.SYSMLID, rs.getString(1));
                 commit.put(Sjm.CREATOR, rs.getString(2));
-                commit.put(Sjm.TIMESTAMP, rs.getTimestamp(3));
+                commit.put(Sjm.CREATED, rs.getTimestamp(3));
                 commit.put("refId", rs.getString(4));
                 commit.put("commitType", rs.getString(5));
                 result.add(commit);
