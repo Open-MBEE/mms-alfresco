@@ -118,7 +118,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         if (json == null) {
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
         } else {
             try {
                 if (!Utils.isNullOrEmpty(response.toString())) {
@@ -128,10 +128,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 JSONArray refsList = new JSONArray();
                 refsList.put(json);
                 resultRefs.put("refs", refsList);
-                model.put("res", resultRefs);
+                model.put(Sjm.RES, resultRefs);
             } catch (JSONException e) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
             }
         }
         status.setCode(statusCode);

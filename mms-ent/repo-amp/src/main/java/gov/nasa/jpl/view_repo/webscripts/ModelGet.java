@@ -164,9 +164,9 @@ public class ModelGet extends AbstractJavaWebScript {
             status.setCode(responseStatus.getCode());
         }
         if (prettyPrint || accept.contains("webp")) {
-            model.put("res", top.toString(4));
+            model.put(Sjm.RES, top.toString(4));
         } else {
-            model.put("res", top);
+            model.put(Sjm.RES, top);
         }
 
         return model;
@@ -208,7 +208,7 @@ public class ModelGet extends AbstractJavaWebScript {
                             new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename,
                             commitTimestamp);
                         if (result != null) {
-                            model.put("res", new JSONObject().put("artifacts", new JSONArray().put(result)));
+                            model.put(Sjm.RES, new JSONObject().put("artifacts", new JSONArray().put(result)));
                         } else {
                             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
                         }
@@ -226,8 +226,8 @@ public class ModelGet extends AbstractJavaWebScript {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid request!\n");
         }
         status.setCode(responseStatus.getCode());
-        if (!model.containsKey("res")) {
-            model.put("res", createResponseJson());
+        if (!model.containsKey(Sjm.RES)) {
+            model.put(Sjm.RES, createResponseJson());
         }
         return model;
     }

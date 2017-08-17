@@ -176,8 +176,8 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     }
 
                     // render response according to requested format
-                    if (templateModel.containsKey("res") && templateModel.get("res") != null) {
-                        res.getWriter().write(templateModel.get("res").toString());
+                    if (templateModel.containsKey(Sjm.RES) && templateModel.get(Sjm.RES) != null) {
+                        res.getWriter().write(templateModel.get(Sjm.RES).toString());
                     }
 
                     if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null) {

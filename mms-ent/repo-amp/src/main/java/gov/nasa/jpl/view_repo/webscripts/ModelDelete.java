@@ -65,10 +65,10 @@ public class ModelDelete extends AbstractJavaWebScript {
         try {
             result = handleRequest(req, status, user);
             if (result != null) {
-                model.put("res", result);
+                model.put(Sjm.RES, result);
             } else {
                 status.setCode(responseStatus.getCode());
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
             }
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));

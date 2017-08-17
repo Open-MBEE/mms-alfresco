@@ -181,15 +181,15 @@ public class ModelPost extends AbstractJavaWebScript {
                 newElementsObject.put(Sjm.CREATOR, user);
 
                 if (prettyPrint) {
-                    model.put("res", newElementsObject.toString(4));
+                    model.put(Sjm.RES, newElementsObject.toString(4));
                 } else {
-                    model.put("res", newElementsObject);
+                    model.put(Sjm.RES, newElementsObject);
                 }
 
                 status.setCode(responseStatus.getCode());
             } else {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
             }
 
         } catch (Exception e) {
@@ -267,7 +267,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
                             if (svgArtifact == null) {
                                 logger.error("Was not able to create the artifact!\n");
-                                model.put("res", createResponseJson());
+                                model.put(Sjm.RES, createResponseJson());
                             } else {
                                 resultJson.put("upload", svgArtifact);
                                 svgArtifact.getOrSetCachedVersion();
@@ -304,31 +304,31 @@ public class ModelPost extends AbstractJavaWebScript {
                             }
                         } else {
                             logger.error("Invalid artifactId or no content!\n");
-                            model.put("res", createResponseJson());
+                            model.put(Sjm.RES, createResponseJson());
                         }
                     } else {
                         logger.error("Invalid artifactId!\\n");
-                        model.put("res", createResponseJson());
+                        model.put(Sjm.RES, createResponseJson());
                     }
 
                 } else {
                     logger.error("artifactId not supplied!\\n");
-                    model.put("res", createResponseJson());
+                    model.put(Sjm.RES, createResponseJson());
                 }
 
             } catch (JSONException e) {
                 logger.error("Issues creating return JSON\\n");
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
             }
         } else {
             logger.error("Invalid request, no sitename specified or no content provided!\\n");
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
         }
 
         status.setCode(responseStatus.getCode());
-        if (!model.containsKey("res")) {
-            model.put("res", resultJson != null ? resultJson : createResponseJson());
+        if (!model.containsKey(Sjm.RES)) {
+            model.put(Sjm.RES, resultJson != null ? resultJson : createResponseJson());
         }
 
         return model;

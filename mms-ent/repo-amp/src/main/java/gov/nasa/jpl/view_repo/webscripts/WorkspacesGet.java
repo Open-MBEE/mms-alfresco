@@ -77,20 +77,20 @@ public class WorkspacesGet extends AbstractJavaWebScript{
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         if (object == null) {
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
         } else {
             try {
                 if (!Utils.isNullOrEmpty(response.toString())) {
                     object.put("message", response.toString());
                 }
                 if (prettyPrint || accept.contains("webp")) {
-                    model.put("res", object.toString(4));
+                    model.put(Sjm.RES, object.toString(4));
                 } else {
-                    model.put("res", object);
+                    model.put(Sjm.RES, object);
                 }
             } catch ( JSONException e ) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
             }
         }
         status.setCode(responseStatus.getCode());
