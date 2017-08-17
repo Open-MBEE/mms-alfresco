@@ -12,10 +12,15 @@ ${SERVER}       localhost:8080
 ${ROOT}         http://${AUTH}@${SERVER}/alfresco/service
 #Notice the & instead of $, it represents a dictionary object
 &{REQ_HEADER}       content-type=application/json
+&{PNG_HEADER}       content-type=image/png
+&{JPG_HEADER}       content-type=image/jpg
+&{SVG_HEADER}       content-type=image/svg
+&{PNG_GET_HEADER}       Accept=image/png
+&{JPG_GET_HEADER}       Accept=image/jpg
+&{SVG_GET_HEADER}       Accept=image/svg
 # GLOBAL DELAYS TO ALLOW FOR INDEXING IN SOLR
 ${POST_DELAY_INDEXING}      2s
 ${DELETE_DELAY_INDEXING}    10s
-${BRANCH_DELAY_INDEXING}    15s
 
 # UNCOMMENT TO TEST KEYWORDS -- This will make all other tests fail!
 #*** Test Cases ***
