@@ -73,7 +73,7 @@ PostNewBranchForImage
 GetImageFromParent
 	[Documentation]		"Get image from parent branch (image get url should use child branch's ref and it should return the image from parent ref)"
 	[Tags]				images		critical		0407
-	${result} =			Get		url=${ROOT}/projects/PA/refs/imageBranch/elements/mounts		headers=&{PNG_GET_HEADER}
+	${result} =			Get		url=${ROOT}/projects/PA/refs/imagebranch/elements/mounts		headers=&{PNG_GET_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${image_child_url} =		Get Image Url		${result.json()}
 	Set Global Variable	  ${image_child_url}
@@ -81,16 +81,48 @@ GetImageFromParent
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Should Be Equal	  ${image_child_url}    ${image_versioned_url}
 
-#Get image from parent branch (image get url should use child branch's ref and it should return the image from parent ref)
-#:TODO I think I need to get images from before the latest version in branches....
-#PostNewMount
-#	[Documentation]		"Create a project (ID: PB) under the organization with (ID: initorg).  Symbolically PB."
-#	[Tags]				mounts		critical		0201
-#	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreationForMountsPB.json
-#	${result} =			Post		url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
-#	Should Be Equal		${result.status_code}		${200}
-#	${filter} =			Create List	 _commitId
-#	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-#	Sleep				${POST_DELAY_INDEXING}
-#	${compare_result} =		Compare JSON		${TEST_NAME}
-#	Should Match Baseline		${compare_result}
+PostAnotherVersionOfParentImage
+	[Documentation]		"post new image to parent ref so parent ref has new version of image"
+	[Tags]				images		critical		0408
+    ${image_file} =     Binary Data    ${CURDIR}${/}../../assets/mounts.png
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements/mounts		data=${image_file}		headers=&{PNG_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+GetChildImageUrl
+	[Documentation]		"get image from child branch again, should be the same as getImageFromParent (should not give back latest version of image in parent ref)"
+	[Tags]				images		critical		0409
+	${result} =			Get		url=${ROOT}/projects/PA/refs/imagebranch/elements/mounts		headers=&{PNG_GET_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${image_child_versioned_url} =		Get Image Url		${result.json()}
+	Set Global Variable	  ${image_url}
+	Should Be Equal	  ${image_child_url}    ${image_child_versioned_url}
+
+PostImageToMountedProject
+	[Documentation]		"post new image to mount to find from PA"
+	[Tags]				images		critical		0410
+    ${image_file} =     Binary Data    ${CURDIR}${/}../../assets/imagemount.png
+	${result} =			Post		url=${ROOT}/projects/PB/refs/master/elements/imagemounts		data=${image_file}		headers=&{PNG_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+GetImageInMountedProject
+	[Documentation]		"Get Image that is in a Mount related to the current project"
+	[Tags]				images		critical		0411
+	${result} =			Get		url=${ROOT}/projects/PA/refs/imagebranch/elements/imagemounts		headers=&{PNG_GET_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+

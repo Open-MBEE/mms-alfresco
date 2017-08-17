@@ -3,7 +3,7 @@
         {
             "_creator": "admin",
             "_modifier": "admin",
-            "id": "imageBranch",
+            "id": "imagebranch",
             "name": "imageBranch",
             "parentRefId": "master",
             "status": "creating",
