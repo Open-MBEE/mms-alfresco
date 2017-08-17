@@ -101,6 +101,7 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript{
         String timestamp = req.getParameter("maxTimestamp");
 
         if (timestamp != null && !timestamp.isEmpty()) {
+            commits = new JSONArray();
             for (int i = 0; i < commits.length(); i++) {
                 JSONObject current = commits.getJSONObject(i);
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
@@ -110,7 +111,7 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript{
                     requestedTime = df.parse(timestamp);
                     currentTime = df.parse(current.getString(Sjm.CREATED));
                     if (requestedTime.getTime() >= currentTime.getTime()) {
-                        commits = new JSONArray().put(current);
+                        commits.put(current);
                         break;
                     }
                 } catch (Exception e) {
