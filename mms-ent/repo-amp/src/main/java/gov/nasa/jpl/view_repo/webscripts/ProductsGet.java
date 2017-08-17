@@ -54,7 +54,7 @@ public class ProductsGet extends AbstractJavaWebScript {
         // Checks mms versions
         if (checkMmsVersions) {
             if (compareMmsVersions(req, getResponse(), getResponseStatus())) {
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
                 return model;
             }
         }

@@ -13,6 +13,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.view_repo.connections.ConnectionInterface;
 import gov.nasa.jpl.view_repo.connections.JmsConnection;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 public class ConnectionGet extends DeclarativeWebScript {
     @Override
@@ -35,7 +36,7 @@ public class ConnectionGet extends DeclarativeWebScript {
             status.setCode( HttpServletResponse.SC_OK );
         }
 
-        model.put("res", json.toString(2));
+        model.put(Sjm.RES, json.toString(2));
         return model;
     }
 

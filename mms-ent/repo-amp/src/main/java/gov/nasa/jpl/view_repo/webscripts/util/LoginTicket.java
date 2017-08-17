@@ -20,12 +20,9 @@ package gov.nasa.jpl.view_repo.webscripts.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.TicketComponent;
@@ -36,10 +33,9 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import static gov.nasa.jpl.view_repo.util.NodeUtil.services;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
  * Login Ticket copied from org.alfresco.repo.web.scripts.bean.LoginTicket
@@ -97,7 +93,7 @@ public class LoginTicket extends DeclarativeWebScript
             result.put("message", "Ticket not found");
         }
 
-        model.put( "res", result.toString() );
+        model.put(Sjm.RES, result.toString() );
         return model;
     }
 

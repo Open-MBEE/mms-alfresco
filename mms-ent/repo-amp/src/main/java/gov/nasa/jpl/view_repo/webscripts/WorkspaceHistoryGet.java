@@ -70,7 +70,7 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript{
         }
 
         if(object == null){
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
         } else {
             try{
                 if (!Utils.isNullOrEmpty(response.toString())) {

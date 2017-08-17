@@ -133,7 +133,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
 
         if (checkMmsVersions) {
             if (compareMmsVersions(req, getResponse(), status)) {
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
                 return model;
             }
         }
@@ -146,8 +146,8 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
                 }
             }
         };
-        if (!model.containsKey("res") && response != null && response.toString().length() > 0) {
-            model.put("res", response.toString());
+        if (!model.containsKey(Sjm.RES) && response != null && response.toString().length() > 0) {
+            model.put(Sjm.RES, response.toString());
 
         }
         // need to check if the transaction resulted in rollback, if so change the status code

@@ -77,7 +77,7 @@ public class OrgGet extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
         if (checkMmsVersions && compareMmsVersions(req, getResponse(), getResponseStatus())) {
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
             return model;
         }
         JSONObject json = null;
@@ -135,12 +135,12 @@ public class OrgGet extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         if (json == null) {
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
         } else {
             if (prettyPrint || accept.contains("webp")) {
-                model.put("res", json.toString(4));
+                model.put(Sjm.RES, json.toString(4));
             } else {
-                model.put("res", json);
+                model.put(Sjm.RES, json);
             }
         }
 

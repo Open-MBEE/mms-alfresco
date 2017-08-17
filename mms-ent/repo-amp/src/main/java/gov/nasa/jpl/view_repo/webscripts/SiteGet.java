@@ -92,7 +92,7 @@ public class SiteGet extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
         if (checkMmsVersions) {
             if (compareMmsVersions(req, getResponse(), getResponseStatus())) {
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
                 return model;
             }
         }
@@ -118,9 +118,9 @@ public class SiteGet extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         if (json == null) {
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
         } else {
-            model.put("res", json);
+            model.put(Sjm.RES, json);
         }
 
         status.setCode(responseStatus.getCode());
