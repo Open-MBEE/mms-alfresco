@@ -58,6 +58,7 @@ import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import sun.rmi.runtime.Log;
 
 /**
  * Base class for all EMS Java backed webscripts. Provides helper functions and
@@ -216,6 +217,16 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         }
     }
 
+    // If no need for string formatting (calls with no string concatenation)
+    protected void log(Level level, int code, Exception e) {
+        String levelMessage = addLevelInfoToMsg(level, LogUtil.getStackTrace(e));
+        updateResponse(code, levelMessage);
+        if (level.toInt() >= logger.getLevel().toInt()) {
+            // print to response stream if >= existing log level
+            log(level, levelMessage);
+        }
+    }
+
     // only logging loglevel and a message (no code)
     protected void log(Level level, String msg, Object... params) {
         if (level.toInt() >= logger.getLevel().toInt()) {
@@ -248,6 +259,10 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         response.append(msg + "\n");
         //TODO: add to responseStatus too (below)?
         //responseStatus.setMessage(msg);
+    }
+
+    protected static void log(Level level, Exception e) {
+        log(level, LogUtil.getStackTrace(e));
     }
 
     protected static void log(Level level, String msg) {
@@ -330,16 +345,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     protected boolean checkPermissions(EmsScriptNode node, String permissions) {
         return node != null && node.checkPermissions(permissions, response, responseStatus);
     }
-
-
-    protected static final String REF_ID = "refId";
-    protected static final String PROJECT_ID = "projectId";
-    protected static final String ORG_ID = "orgId";
-
-    public static final String NO_WORKSPACE_ID = "master"; // default is master if unspecified
-    public static final String NO_PROJECT_ID = "no_project";
-    public static final String NO_SITE_ID = "no_site";
-
 
     public ServiceRegistry getServices() {
         if (services == null) {

@@ -80,7 +80,6 @@ public class ProjectPost extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        int statusCode = HttpServletResponse.SC_OK;
 
         try {
             if (validateRequest(req, status)) {
@@ -108,31 +107,27 @@ public class ProjectPost extends AbstractJavaWebScript {
                         CommitUtil.sendProjectDelta(projJson, orgId, user);
 
                         if (projectId != null && !projectId.equals(NO_SITE_ID)) {
-                            statusCode = updateOrCreateProject(projJson, projectId, orgId);
+                            responseStatus.setCode(updateOrCreateProject(projJson, projectId, orgId));
                         } else {
-                            statusCode = updateOrCreateProject(projJson, projectId);
+                            responseStatus.setCode(updateOrCreateProject(projJson, projectId));
                         }
                     } else {
                         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
                         // This should not happen, since the Organization should be created before a Project is posted
                         if (emsNodeUtil.orgExists(orgId)) {
-                            statusCode = HttpServletResponse.SC_FORBIDDEN;
+                            log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied");
                         } else {
-                            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Organization does not exist\n");
-                            statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+                            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Organization does not exist");
                         }
                     }
                 } else {
-                    statusCode = HttpServletResponse.SC_BAD_REQUEST;
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, String.format("Invalid Project Id '%s' from client",
                         projectId));
                 }
 
-            } else {
-                statusCode = responseStatus.getCode();
             }
         } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created");
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace:\n %s \n",
@@ -140,8 +135,8 @@ public class ProjectPost extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        status.setCode(statusCode);
-        model.put("res", createResponseJson());
+        status.setCode(responseStatus.getCode());
+        model.put(Sjm.RES, createResponseJson());
 
         printFooter(user, logger, timer);
 

@@ -48,7 +48,7 @@ public class MmsVersion extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
-        JSONObject mmsVersion = new JSONObject();
+        JSONObject mmsVersion;
 
         if (logger.isDebugEnabled()) {
         	logger.debug("Checking MMS Versions");
