@@ -96,7 +96,7 @@ public class ModelSearch extends ModelPost {
 
         try {
             JSONObject top = new JSONObject();
-            JSONArray elementsJson = executeSearchRequest(req, top);
+            JSONArray elementsJson = executeSearchRequest(req);
             top.put("elements", elementsJson);
 
             if (!Utils.isNullOrEmpty(response.toString())) {
@@ -116,7 +116,7 @@ public class ModelSearch extends ModelPost {
         return model;
     }
 
-    private JSONArray executeSearchRequest(WebScriptRequest req, JSONObject top) throws JSONException, IOException {
+    private JSONArray executeSearchRequest(WebScriptRequest req) throws JSONException, IOException {
 
         JSONArray elements = new JSONArray();
 

@@ -129,7 +129,7 @@ public class ModelPost extends AbstractJavaWebScript {
         printHeader(user, logger, req, true);
         Timer timer = new Timer();
 
-        Map<String, Object> result = null;
+        Map<String, Object> result;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
 
         if (contentType.contains("image") || contentType.contains("x-www-form-urlencoded")) {
@@ -189,13 +189,14 @@ public class ModelPost extends AbstractJavaWebScript {
                 status.setCode(responseStatus.getCode());
             } else {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
-                status.setCode(HttpServletResponse.SC_BAD_REQUEST);
                 model.put("res", createResponseJson());
             }
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
+
+        status.setCode(responseStatus.getCode());
 
         return model;
     }

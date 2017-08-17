@@ -115,9 +115,8 @@ public class ModelDelete extends AbstractJavaWebScript {
                     }
                 }
             } catch (Exception e) {
-                logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
                 response.append("Could not parse request body");
-                responseStatus.setCode(HttpServletResponse.SC_BAD_REQUEST);
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, String.format("%s", LogUtil.getStackTrace(e)));
                 return null;
             }
         }
@@ -135,7 +134,7 @@ public class ModelDelete extends AbstractJavaWebScript {
                         commitDeleted.put(obj);
                         elasticIds.add(node.getString(Sjm.ELASTICID));
                     }
-                    logger.debug(String.format("Node: %s", node));
+                    log(Level.DEBUG, String.format("Node: %s", node));
                 }
             }
         }
@@ -159,7 +158,6 @@ public class ModelDelete extends AbstractJavaWebScript {
                 res.put(Sjm.COMMITID, commitId);
             } else {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
-                status.setCode(HttpServletResponse.SC_BAD_REQUEST);
                 return null;
             }
         }

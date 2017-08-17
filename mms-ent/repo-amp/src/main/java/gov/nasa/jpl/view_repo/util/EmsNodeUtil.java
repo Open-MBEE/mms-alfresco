@@ -1696,7 +1696,7 @@ public class EmsNodeUtil {
 
     public JSONObject getElementAtCommit(String sysmlId, String commitId, List<Map<String, Object>> refsCommits) {
         // Used for intersecting the different elasticIds
-        Set<String> elementIdSet = new HashSet<>();
+        Set<String> elementIdSet;
         String latestId = null;
         JSONObject element = new JSONObject();
         JSONObject jsonObject;
@@ -1704,17 +1704,6 @@ public class EmsNodeUtil {
 
         try {
             elementIdSet = eh.getCommitHistoryIds(sysmlId);
-            // Get history of the element based on SysML ID
-            /*JSONArray elementCommitHistory = eh.getCommitHistory(sysmlId);
-
-            for (int i = 0; i < elementCommitHistory.length(); ++i) {
-                jsonObject = elementCommitHistory.getJSONObject(i);
-                if (logger.isDebugEnabled()) {
-                    logger.debug(jsonObject.toString());
-                }
-                elementIdSet.add(jsonObject.getString("id"));
-            }*/
-
             Map<String, Object> commit = pgh.getCommit(commitId);
             if (commit != null) {
                 String refId = commit.get(Sjm.REFID).toString();

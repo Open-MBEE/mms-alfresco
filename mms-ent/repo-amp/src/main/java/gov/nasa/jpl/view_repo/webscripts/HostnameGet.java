@@ -16,6 +16,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 public class HostnameGet extends AbstractJavaWebScript {
 	static Logger logger = Logger.getLogger(HostnameGet.class);
@@ -36,7 +37,7 @@ public class HostnameGet extends AbstractJavaWebScript {
         printHeader(user, logger, req);
         Timer timer = new Timer();
 
-		Map< String, Object > model = new HashMap< String, Object >();
+		Map< String, Object > model = new HashMap<>();
 		JSONObject jsonObj = new JSONObject();
 		SysAdminParams sysAdminParams = this.services.getSysAdminParams();
 
@@ -54,7 +55,7 @@ public class HostnameGet extends AbstractJavaWebScript {
 			jsonObj.put("alfresco", alfrescoJson);
 			jsonObj.put("share", shareJson);
 
-            model.put("res", jsonObj.toString(4));
+            model.put(Sjm.RES, jsonObj.toString(4));
         }
 		catch(JSONException js)
 		{
