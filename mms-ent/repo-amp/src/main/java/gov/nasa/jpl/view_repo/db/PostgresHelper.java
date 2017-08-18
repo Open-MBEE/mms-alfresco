@@ -1819,7 +1819,7 @@ public class PostgresHelper {
             if (isTag) {
                 execUpdate(String
                     .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s",
-                        workspaceId, EmsConfig.get("pg.user")));
+                        childWorkspaceNameSanitized, EmsConfig.get("pg.user")));
             }
 
         } catch (SQLException e) {
