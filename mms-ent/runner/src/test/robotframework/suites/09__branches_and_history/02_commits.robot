@@ -106,26 +106,27 @@ BranchFromBranchAndCheckCommits
 	Should be true		${result}
 
 BranchFromThePastAndCheckCommits
-	[Documentation]		"Create branch1, create branch 2 immediately from branch 1, getting branch history from branch 1 and branch 2 should be the same."
+	[Documentation]		"Create branch from branch in the past then check if the number of commits stayed the same."
 	[Tags]				branches		critical		090210
 	${branch_1_history} =	Get		 url=${ROOT}/projects/PA/refs/pa_branch_1/history
+	${commit_num} =     Get Number Of commits   PA
 	${commitId} =       Set Variable        ${branch_1_history.json()["commits"][4]["id"]}
 	${post_json} =		Get File		${CURDIR}/../../JsonData/PostBranchFromPast.json
 	${branch_1_json} =	Post		url=${ROOT}/projects/PA/refs?commitId=${commitId}		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${branch_1_json.status_code}		${200}
-	Sleep				${POST_DELAY_INDEXING}
-	${branch_history} =	Get		 url=${ROOT}/projects/PA/refs/pa_branch_past/history
-	${filter} =			Create List		_created		id
-	Generate JSON		${TEST_NAME}		${branch_history.json()}		${filter}
-	${compare_result} =	Compare JSON		${TEST_NAME}
-	Should Match Baseline		${compare_result}
+	Sleep				${BRANCH_DELAY_INDEXING}
+	${branch_history} =	    Get number of commits      PA
+	Should Be Equal     ${branch_history}       ${commit_num}
 
 GetCommitObject
     [Documentation]     "Get a commit object"
     [Tags]              commits         critical        090211
     ${branch_1_history} =	Get		 url=${ROOT}/projects/PA/refs/master/history
-    ${num_commits} =    
-    ${commitId} =       Set Variable        ${branch_1_history.json()["commits"][4]["id"]}
+    ${num_commits} =        Get Number of Commits       PA
+    ${commitId} =       Set Variable        ${branch_1_history.json()["commits"][${num_commits} - 1]["id"]}
     ${result} =         Get     url=${ROOT}/projects/PA/commits/${commitId}
     Should Be Equal     ${result.status_code}           ${200}
-
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 id
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+    ${compare_result} =	Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
