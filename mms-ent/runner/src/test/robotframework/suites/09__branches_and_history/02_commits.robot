@@ -119,3 +119,13 @@ BranchFromThePastAndCheckCommits
 	Generate JSON		${TEST_NAME}		${branch_history.json()}		${filter}
 	${compare_result} =	Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+
+GetCommitObject
+    [Documentation]     "Get a commit object"
+    [Tags]              commits         critical        090211
+    ${branch_1_history} =	Get		 url=${ROOT}/projects/PA/refs/master/history
+    ${num_commits} =    
+    ${commitId} =       Set Variable        ${branch_1_history.json()["commits"][4]["id"]}
+    ${result} =         Get     url=${ROOT}/projects/PA/commits/${commitId}
+    Should Be Equal     ${result.status_code}           ${200}
+

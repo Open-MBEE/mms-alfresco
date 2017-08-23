@@ -2,6 +2,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import org.alfresco.repo.model.Repository;
@@ -17,22 +18,25 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static gov.nasa.jpl.view_repo.util.Sjm.COMMITID;
 
 
 /**
  * @author dank
  *
  */
-public class CommitGet extends ModelGet {
+public class CommitsGet extends AbstractJavaWebScript {
 
     static Logger logger = Logger.getLogger(HistoryGet.class);
 
     /**
      *
      */
-    public CommitGet() {
+    public CommitsGet() {
         super();
     }
 
@@ -41,13 +45,13 @@ public class CommitGet extends ModelGet {
      * @param repositoryHelper
      * @param registry
      */
-    public CommitGet(Repository repositoryHelper, ServiceRegistry registry) {
+    public CommitsGet(Repository repositoryHelper, ServiceRegistry registry) {
         super(repositoryHelper, registry);
     }
 
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
-        HistoryGet instance = new HistoryGet(repository, getServices());
+        CommitsGet instance = new CommitsGet(repository, getServices());
         return instance.executeImplImpl(req, status, cache);
     }
 
@@ -65,25 +69,23 @@ public class CommitGet extends ModelGet {
         }
 
         JSONObject top = new JSONObject();
-        JSONArray elementsJson = handleRequest(req);
+        JSONArray elementJson = handleRequest(req);
 
 
+        try {
+            if (elementJson.length() > 0) {
+                top.put("commits", elementJson);
+            } else {
+                responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+            }
 
+            if (!Utils.isNullOrEmpty(response.toString()))
+                top.put("message", response.toString());
 
-//        try {
-//            if (elementsJson.length() > 0) {
-//                top.put("commits", elementsJson);
-//            } else {
-//                responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
-//            }
-//
-//            if (!Utils.isNullOrEmpty(response.toString()))
-//                top.put("message", response.toString());
-//
-//        } catch (JSONException e) {
-//            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSONObject");
-//            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-//        }
+        } catch (JSONException e) {
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSONObject");
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
 
         status.setCode(responseStatus.getCode());
         model.put("res", top.toString(4));
@@ -99,41 +101,30 @@ public class CommitGet extends ModelGet {
     }
 
     /**
-     * Wrapper for handling a request and getting the appropriate JSONArray of
-     * elements
+     * Wrapper for handling a request and getting the appropriate Commit JSONObject
      *
      * @param req
      * @return
      */
     private JSONArray handleRequest(WebScriptRequest req) {
-        // REVIEW -- Why check for errors here if validate has already been
-        // called? Is the error checking code different? Why?
 
-        // Creates an empty JSONArray
-//        JSONArray jsonHist = null;
-//        try {
-//            String[] idKeys = { "modelid", "elementid", "elementId" };
-//            String modelId = null;
-//            for (String idKey : idKeys) {
-//                modelId = req.getServiceMatch().getTemplateVars().get(idKey);
-//                if (modelId != null) {
-//                    break;
-//                }
-//            }
-//
-//            if (modelId == null) {
-//                logger.error("Model ID Null...");
-//                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element");
-//                return new JSONArray();
-//            }
-//
-//            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), getRefId(req));
-//            jsonHist = emsNodeUtil.getNodeHistory(modelId);
-//        } catch (Exception e) {
-//            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-//        }
+        JSONArray commitJson = new JSONArray();
+        String commitId = req.getServiceMatch().getTemplateVars().get(COMMIT_ID);
 
-        return null;
+        if (commitId == null){
+            logger.error("Did not find commit");
+            return commitJson;
+        }
+        logger.info("Commit ID " + commitId + " found");
+
+        try {
+            ElasticHelper eh = new ElasticHelper();
+            commitJson.put(eh.getCommitByElasticId(commitId));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return commitJson;
     }
 }
 
