@@ -1,19 +1,17 @@
 {
+    "_creator": "admin",
     "elements": [
         {
             "_creator": "admin",
-            "_inRefIds": [
-                "master",
-                "imagebranch"
-            ],
+            "_editable": true,
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "else",
-            "id": "301",
+            "documentation": "Searching for an image after update",
+            "id": "ImageAfterUpdate",
             "isDerived": false,
-            "name": "this name is also updated",
-            "ownerId": "300",
+            "name": "test image version",
+            "ownerId": "PA",
             "type": "Property",
             "value": [
                 {

@@ -36,6 +36,14 @@ import java.util.Map;
  */
 
 public class Sjm {
+    public static final String RES = "res";
+    public static final String ELEMENTS = "elements";
+    public static final String PRODUCTS = "products";
+    public static final String PROJECTS = "projects";
+    public static final String ORGS = "orgs";
+    public static final String DOCUMENTS = "documents";
+    public static final String COMMITS = "commits";
+
     public static final String AGGREGATION = "aggregation";
     public static final String APPLIEDSTEREOTYPEINSTANCEID = "appliedStereotypeInstanceId";
     public static final String ASSOCIATIONENDID = "associationEndId";
@@ -50,7 +58,6 @@ public class Sjm {
     public static final String DESCRIPTION = "description";
     public static final String DOCUMENTATION = "documentation";
     public static final String ELEMENTIMPORTIDS = "elementImportIds";
-    public static final String ELEMENTS = "elements";
     public static final String ENDAPATHIDS = "endAPathIds";
     public static final String ENDBPATHIDS = "endBPathIds";
     public static final String ENDIDS = "endIds";

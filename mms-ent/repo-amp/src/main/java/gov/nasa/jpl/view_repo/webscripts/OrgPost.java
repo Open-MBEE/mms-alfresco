@@ -121,7 +121,7 @@ public class OrgPost extends AbstractJavaWebScript {
         }
 
         status.setCode(statusCode);
-        model.put("res", createResponseJson());
+        model.put(Sjm.RES, createResponseJson());
 
         printFooter(user, logger, timer);
 

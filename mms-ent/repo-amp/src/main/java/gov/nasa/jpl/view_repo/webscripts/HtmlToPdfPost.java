@@ -58,7 +58,6 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.actions.ActionUtil;
@@ -66,6 +65,7 @@ import gov.nasa.jpl.view_repo.actions.HtmlToPdfActionExecuter;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 public class HtmlToPdfPost extends AbstractJavaWebScript {
 	static Logger logger = Logger.getLogger(HtmlToPdfPost.class);
@@ -139,13 +139,13 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 
 		status.setCode(responseStatus.getCode());
 		if (result == null) {
-			model.put("res", createResponseJson());
+			model.put(Sjm.RES, createResponseJson());
 		} else {
 			try {
 				if (!Utils.isNullOrEmpty(response.toString())) {
 					result.put("message", response.toString());
 				}
-				model.put("res", result);
+				model.put(Sjm.RES, result);
 			} catch (JSONException e) {
 				logger.error(String.format("%s", LogUtil.getStackTrace(e)));
 			}
@@ -469,9 +469,8 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 			File file = new File(filePath.toString());
 			BufferedWriter bw = new BufferedWriter(new FileWriter(file));
 			bw.write(stringContent);
-			bw.close();
-		}
-		catch(Throwable ex){
+            bw.close();
+		} catch(Throwable ex){
 			throw new Throwable(String.format("Failed to save %s to filesystem! %s", filePath.toString(), ex.getMessage()));
 		}
 	}
@@ -941,11 +940,11 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 			if (!runProcess) {
 				msg = String
 						.format("Failed to transform HTML file '%s' to PDF slides. Exit value: %d",
-								htmlPath, execResult);
+								htmlPath, execResult.getExitValue());
 			} else {
 				msg = String
 						.format("Failed to transform HTML file '%s' to PDF slides. Exit value: %d",
-								htmlPath, process.exitValue());
+								htmlPath, process != null ? process.exitValue() : 1);
 			}
 			log(msg);
 			throw new Throwable(msg);
@@ -1373,9 +1372,9 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 			filename = filename.substring(0, 100);
 		}
 		File outputFile = new File(Paths.get(this.fsWorkingDir, filename + ".csv").toString());
+        FileWriter fw = new FileWriter(outputFile);
+        BufferedWriter writer = new BufferedWriter(fw);
 		try {
-			FileWriter fw = new FileWriter(outputFile);
-			BufferedWriter writer = new BufferedWriter(fw);
 			int rowIndex = 1;
 			boolean hasMoreRows;
 			for (List<String> row : csv) {
@@ -1408,15 +1407,16 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 				writer.write(System.lineSeparator());
 				rowIndex++;
 			}
-			writer.close();
-			fw.close();
 		} catch (IOException e) {
 			String msg = String.format("Failed to save table to CSV to file system for %s. %s",
 							outputFile.getAbsoluteFile(), e.getMessage());
 			log(Level.ERROR, msg);
 			logger.error(String.format("%s", LogUtil.getStackTrace(e)));
 			throw new Exception(msg);
-		}
+		} finally {
+            writer.close();
+            fw.close();
+        }
 	}
 
 }

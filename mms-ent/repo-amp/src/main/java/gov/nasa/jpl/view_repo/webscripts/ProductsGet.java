@@ -20,6 +20,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 public class ProductsGet extends AbstractJavaWebScript {
 	static Logger logger = Logger.getLogger(ProductsGet.class);
@@ -53,7 +54,7 @@ public class ProductsGet extends AbstractJavaWebScript {
         // Checks mms versions
         if (checkMmsVersions) {
             if (compareMmsVersions(req, getResponse(), getResponseStatus())) {
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
                 return model;
             }
         }
@@ -61,10 +62,10 @@ public class ProductsGet extends AbstractJavaWebScript {
         JSONObject jsonObject = new JSONObject();
 
         try {
-            jsonObject.put("documents", filterByPermission(handleProducts(req), req));
-            model.put("res", jsonObject.toString());
+            jsonObject.put(Sjm.DOCUMENTS, filterByPermission(handleProducts(req), req));
+            model.put(Sjm.RES, jsonObject.toString());
         } catch (Exception e) {
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
             if (e instanceof JSONException) {
                 log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON creation error");
             } else {

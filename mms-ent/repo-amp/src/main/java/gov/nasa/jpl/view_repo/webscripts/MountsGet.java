@@ -73,7 +73,7 @@ public class MountsGet extends AbstractJavaWebScript {
         printHeader(user, logger, req);
         Timer timer = new Timer();
 
-        Map<String, Object> model = new HashMap<>();
+        Map<String, Object> model;
 
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
@@ -99,7 +99,7 @@ public class MountsGet extends AbstractJavaWebScript {
             JSONArray mountsArray = new JSONArray().put(mountsJson);
 
             if (mountsJson.length() > 0) {
-                top.put("projects", filterByPermission(mountsArray, req));
+                top.put(Sjm.PROJECTS, filterByPermission(mountsArray, req));
             }
             if (top.length() == 0) {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
@@ -118,9 +118,9 @@ public class MountsGet extends AbstractJavaWebScript {
         status.setCode(responseStatus.getCode());
 
         if (prettyPrint || accept.contains("webp")) {
-            model.put("res", top.toString(4));
+            model.put(Sjm.RES, top.toString(4));
         } else {
-            model.put("res", top);
+            model.put(Sjm.RES, top);
         }
 
         return model;
