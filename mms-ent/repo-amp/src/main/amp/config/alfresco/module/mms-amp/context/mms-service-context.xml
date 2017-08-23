@@ -188,4 +188,11 @@
         <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.NodeUtil.setRepository" />
         <property name="arguments" ref="repositoryHelper"/>
     </bean>
+
+    <bean id="webscript.gov.nasa.jpl.mms.commit.get"
+          class="gov.nasa.jpl.view_repo.webscripts.CommitGet" parent="webscript"
+          singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper"/>
+        <property name="services" ref="ServiceRegistry"/>
+    </bean>
 </beans>
