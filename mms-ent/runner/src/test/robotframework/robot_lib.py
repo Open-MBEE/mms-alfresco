@@ -510,6 +510,9 @@ def get_all_project_commits(projectId, index="mms", elasticHost="localhost"):
             commitObjectList.append(hit["_source"]["_commitId"])
     return commitObjectList
 
+def get_number_of_commits(project_id, host="localhost", ref="master", user="admin", password="admin"):
+    return len((requests.get("http://{}:{}@{}:8080/alfresco/service/projects/{}/refs/{}/history"
+                             .format(user, password, host, project_id, ref)).json())["commits"])
 
 def get_last_commit():
     commits = get_all_commits()

@@ -103,6 +103,7 @@ UpdateElements
 	[Tags]			  crud		critical		0110
 	${post_json} =		Get File		${CURDIR}/../../JsonData/UpdateElements.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
+    Sleep               ${POST_DELAY_INDEXING}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
