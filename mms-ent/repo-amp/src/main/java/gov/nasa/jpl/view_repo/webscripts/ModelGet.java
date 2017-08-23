@@ -133,20 +133,26 @@ public class ModelGet extends AbstractJavaWebScript {
                     JSONArray commitJsonToArray = new JSONArray();
                     JSONObject commitJson = handleCommitRequest(req);
                     commitJsonToArray.put(commitJson);
+                    if (commitJson.length() == 0) {
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
+                    }
                     if (commitJson != null && commitJson.length() > 0) {
                         top.put(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
                     }
+                    if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+                        log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
+                    }
                 } else {
                     JSONArray elementsJson = handleRequest(req);
+                    if (elementsJson.length() == 0) {
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
+                    }
                     if (elementsJson.length() > 0) {
                         top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
                     }
-                }
-                if (top.length() == 0) {
-                    responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
-                }
-                if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
-                    responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
+                    if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+                        log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
+                    }
                 }
                 if (!Utils.isNullOrEmpty(response.toString()))
                     top.put("message", response.toString());
@@ -158,9 +164,9 @@ public class ModelGet extends AbstractJavaWebScript {
             status.setCode(responseStatus.getCode());
         }
         if (prettyPrint || accept.contains("webp")) {
-            model.put("res", top.toString(4));
+            model.put(Sjm.RES, top.toString(4));
         } else {
-            model.put("res", top);
+            model.put(Sjm.RES, top);
         }
 
         return model;
@@ -202,7 +208,7 @@ public class ModelGet extends AbstractJavaWebScript {
                             new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename,
                             commitTimestamp);
                         if (result != null) {
-                            model.put("res", new JSONObject().put("artifacts", new JSONArray().put(result)));
+                            model.put(Sjm.RES, new JSONObject().put("artifacts", new JSONArray().put(result)));
                         } else {
                             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
                         }
@@ -220,8 +226,8 @@ public class ModelGet extends AbstractJavaWebScript {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid request!\n");
         }
         status.setCode(responseStatus.getCode());
-        if (!model.containsKey("res")) {
-            model.put("res", createResponseJson());
+        if (!model.containsKey(Sjm.RES)) {
+            model.put(Sjm.RES, createResponseJson());
         }
         return model;
     }

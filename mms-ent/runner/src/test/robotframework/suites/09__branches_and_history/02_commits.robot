@@ -113,9 +113,9 @@ BranchFromThePastAndCheckCommits
 	${post_json} =		Get File		${CURDIR}/../../JsonData/PostBranchFromPast.json
 	${branch_1_json} =	Post		url=${ROOT}/projects/PA/refs?commitId=${commitId}		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${branch_1_json.status_code}		${200}
-	Sleep				${BRANCH_DELAY_INDEXING}
+	Sleep				${POST_DELAY_INDEXING}
 	${branch_history} =	Get		 url=${ROOT}/projects/PA/refs/pa_branch_past/history
-	${filter} =			Create List		_timestamp		id
+	${filter} =			Create List		_created		id
 	Generate JSON		${TEST_NAME}		${branch_history.json()}		${filter}
 	${compare_result} =	Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}

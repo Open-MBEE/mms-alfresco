@@ -96,16 +96,16 @@ public class ModelSearch extends ModelPost {
 
         try {
             JSONObject top = new JSONObject();
-            JSONArray elementsJson = executeSearchRequest(req, top);
+            JSONArray elementsJson = executeSearchRequest(req);
             top.put("elements", elementsJson);
 
             if (!Utils.isNullOrEmpty(response.toString())) {
                 top.put("message", response.toString());
             }
-            model.put("res", top.toString());
+            model.put(Sjm.RES, top.toString());
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not create the JSON response");
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
@@ -116,7 +116,7 @@ public class ModelSearch extends ModelPost {
         return model;
     }
 
-    private JSONArray executeSearchRequest(WebScriptRequest req, JSONObject top) throws JSONException, IOException {
+    private JSONArray executeSearchRequest(WebScriptRequest req) throws JSONException, IOException {
 
         JSONArray elements = new JSONArray();
 

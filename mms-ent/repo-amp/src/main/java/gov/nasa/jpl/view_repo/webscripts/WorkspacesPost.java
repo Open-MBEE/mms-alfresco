@@ -99,7 +99,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 String projectId = getProjectId(req);
                 String sourceWorkspaceParam = reqJson.getJSONArray("refs").getJSONObject(0).optString("parentRefId");
                 String newName = reqJson.getJSONArray("refs").getJSONObject(0).optString("name");
-                String type = reqJson.getJSONArray("refs").getJSONObject(0).optString("type");
                 String commitId =
                     reqJson.getJSONArray("refs").getJSONObject(0).optString("parentCommitId", null) != null ?
                         reqJson.getJSONArray("refs").getJSONObject(0).optString("parentCommitId") :
@@ -119,7 +118,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         if (json == null) {
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
         } else {
             try {
                 if (!Utils.isNullOrEmpty(response.toString())) {
@@ -129,10 +128,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 JSONArray refsList = new JSONArray();
                 refsList.put(json);
                 resultRefs.put("refs", refsList);
-                model.put("res", resultRefs);
+                model.put(Sjm.RES, resultRefs);
             } catch (JSONException e) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
             }
         }
         status.setCode(statusCode);
