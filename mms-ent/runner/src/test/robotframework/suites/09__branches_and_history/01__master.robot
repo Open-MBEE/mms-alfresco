@@ -97,7 +97,7 @@ PostUpdateToElementBranchInPA
 	Sleep				${BRANCH_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
-    ${commit_num_post} =     Get Number Of commits   PA
+    ${commit_num_post} =		Get Number Of commits	PA	ref="newbranch"
     Should Not be Equal         ${commit_num_pre}       ${commit_num_post}
 
 GetElementHistoryFromPAOnMaster
