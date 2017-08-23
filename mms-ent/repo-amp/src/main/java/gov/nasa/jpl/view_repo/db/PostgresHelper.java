@@ -2020,11 +2020,17 @@ public class PostgresHelper {
 
     public void insertRef(String newWorkspaceId, String newWorkspaceName, int headCommit, String elasticId,
         boolean isTag) {
+        String parent;
+        if(workspaceId.equals("") && !newWorkspaceId.equals("master")){
+            parent = "master";
+        }else{
+            parent = workspaceId;
+        }
         try {
             Map<String, String> map = new HashMap<>();
             map.put("refId", newWorkspaceId);
             map.put("refName", newWorkspaceName);
-            map.put("parent", workspaceId);
+            map.put("parent", parent);
             map.put("parentCommit", Integer.toString(headCommit));
             map.put("elasticId", elasticId);
             map.put("tag", Boolean.toString(isTag));
