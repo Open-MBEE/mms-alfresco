@@ -280,9 +280,9 @@ public class ModelPost extends AbstractJavaWebScript {
 
                                             @Override public void run() throws Exception {
                                                 try {
-                                                    pngArtifact = NodeUtil.updateOrCreateArtifactPng(svgArtifact,
-                                                        pngPath, siteName, projectId, refId, null, response,
-                                                        null, false);
+                                                    pngArtifact = NodeUtil
+                                                        .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName,
+                                                            projectId, refId, null, response, null, false);
                                                 } catch (Throwable ex) {
                                                     throw new Exception("Failed to convert SVG to PNG!\n");
                                                 }
@@ -297,6 +297,10 @@ public class ModelPost extends AbstractJavaWebScript {
                                         }
                                         Files.deleteIfExists(svgPath);
                                         Files.deleteIfExists(pngPath);
+                                    } catch (IOException e) {
+                                        if (logger.isDebugEnabled()) {
+                                            logger.debug("Failed to convert image", e);
+                                        }
                                     } catch (Throwable ex) {
                                         logger.error("Failed to convert SVG to PNG!\n");
                                     }
