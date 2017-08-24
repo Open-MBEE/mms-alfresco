@@ -17,8 +17,8 @@
         <!-- The following are default values for data location, Alfresco Community
             version, and Records Management Module version. Uncomment if you need to
             change (Note. current default version for Enterprise edition is 5.0.1) -->
-        <alfresco.version>5.0.d</alfresco.version>
-        <alfresco.rm.version>2.3</alfresco.rm.version>
+        <alfresco.version>5.1.g</alfresco.version>
+        <alfresco.rm.version>2.4.b</alfresco.rm.version>
         <!-- <alfresco.data.location>alf_data_dev</alfresco.data.location> -->
 
         <!-- This control the root logging level for all apps uncomment and change,
@@ -38,7 +38,7 @@
     <parent>
         <groupId>org.alfresco.maven</groupId>
         <artifactId>alfresco-sdk-parent</artifactId>
-        <version>2.1.1</version>
+        <version>2.2.0</version>
     </parent>
 
     <!-- Here we realize the connection with the Alfresco selected platform
@@ -57,6 +57,21 @@
                 <version>${alfresco.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- If we are running tests then make the H2 Scripts available.
+                 Note. tests are skipped when you are running -Prun -->
+            <dependency>
+                <groupId>${alfresco.groupId}</groupId>
+                <artifactId>alfresco-repository</artifactId>
+                <version>${alfresco.version}</version>
+                <classifier>h2scripts</classifier>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

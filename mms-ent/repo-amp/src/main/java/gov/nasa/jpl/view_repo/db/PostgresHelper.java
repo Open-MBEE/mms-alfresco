@@ -1961,9 +1961,7 @@ public class PostgresHelper {
         List<Map<String, Object>> result = new ArrayList<>();
         try {
             String refIdString = refId.replace("-", "_").replaceAll("\\s+", "");
-            if (refId.equals("master")) {
-                refId = "";
-            }
+
             if (refIdString.equals("")) {
                 refIdString = "master";
             }
