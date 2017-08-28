@@ -580,7 +580,7 @@ public class ElasticHelper {
      */
     public JSONObject getElementLessThanOrEqualTimestamp(ArrayList<String> sysmlIds, String timestamp) {
 
-        JSONObject jsonResult = null;
+        JSONObject jsonResult = new JSONObject();
         JSONObject searchJson = new JSONObject();
         JSONObject bool =
             new JSONObject().put("must", new JSONObject().put("terms", new JSONObject().put("id", sysmlIds)));
