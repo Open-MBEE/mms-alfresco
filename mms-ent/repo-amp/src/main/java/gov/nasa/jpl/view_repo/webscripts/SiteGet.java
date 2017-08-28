@@ -155,7 +155,7 @@ public class SiteGet extends AbstractJavaWebScript {
             List<Node> alfSites = pgh.getSites(true, false);
             siteNodes.forEach(n -> ids.add(n.getElasticId()));
             alfSites.forEach(a -> alfs.add(a.getSysmlId()));
-            JSONArray elements = eh.getElementsFromElasticIds(ids);
+            JSONArray elements = eh.getElementsFromElasticIds(ids, projectId);
 
             if (logger.isDebugEnabled())
                 logger.debug("handleSite: " + elements);

@@ -166,10 +166,10 @@ public class CommitUtil {
         return element.has(Sjm.ISSITE) && element.getBoolean(Sjm.ISSITE);
     }
 
-    private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh) {
+    private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh, String index) {
         if (elements.length() > 0) {
             try {
-                boolean bulkEntry = eh.bulkIndexElements(elements, operation, refresh);
+                boolean bulkEntry = eh.bulkIndexElements(elements, operation, refresh, index);
                 if (!bulkEntry) {
                     return false;
                 }
@@ -224,7 +224,7 @@ public class CommitUtil {
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
 
-        if (bulkElasticEntry(added, "added", withChildViews) && bulkElasticEntry(updated, "updated", withChildViews)) {
+        if (bulkElasticEntry(added, "added", withChildViews, projectId) && bulkElasticEntry(updated, "updated", withChildViews, projectId)) {
 
             try {
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
@@ -445,7 +445,7 @@ public class CommitUtil {
                     pgh.close();
                 }
                 try {
-                    eh.indexElement(delta); //initial commit may fail to read back but does get indexed
+                    eh.indexElement(delta, projectId); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
@@ -610,7 +610,7 @@ public class CommitUtil {
             String owner = "holding_bin_" + projectId;
             JSONObject query = new JSONObject();
             query.put("doc", new JSONObject().put("ownerId", owner));
-            eh.bulkUpdateElements(updateSet, query.toString());
+            eh.bulkUpdateElements(updateSet, query.toString(), projectId);
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             return false;
@@ -764,13 +764,16 @@ public class CommitUtil {
 
         try {
             ElasticHelper eh = new ElasticHelper();
-            eSite = eh.indexElement(site);
-            eProject = eh.indexElement(project);
+            eh.createIndex(projectName);
+            // :TODO goes into MMS index
+            eSite = eh.indexElement(site, "mms");
+            eProject = eh.indexElement(project, projectSysmlid);
             eh.refreshIndex();
 
             // only insert if the site does not exist already
             if (pgh.getNodeFromSysmlId(orgId) == null) {
-                eSiteHoldingBin = eh.indexElement(siteHoldingBin);
+                // :TODO goes into MMS index
+                eSiteHoldingBin = eh.indexElement(siteHoldingBin, "mms");
                 eh.refreshIndex();
 
                 pgh.insertNode(eSite.elasticId, orgId, DbNodeTypes.SITE);
@@ -784,8 +787,8 @@ public class CommitUtil {
 
             // only insert if the project does not exist already
             if (pgh.getNodeFromSysmlId(projectSysmlid) == null) {
-                eProjectHoldingBin = eh.indexElement(projectHoldingBin);
-                eViewInstanceBin = eh.indexElement(viewInstanceBin);
+                eProjectHoldingBin = eh.indexElement(projectHoldingBin, projectSysmlid);
+                eViewInstanceBin = eh.indexElement(viewInstanceBin, projectSysmlid);
                 eh.refreshIndex();
 
                 pgh.insertNode(eProject.elasticId, eProject.sysmlid, DbNodeTypes.PROJECT);
@@ -882,7 +885,7 @@ public class CommitUtil {
                     "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
                         + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
                     .put("params", new JSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
-                eh.bulkUpdateElements(elementsToUpdate, payload);
+                eh.bulkUpdateElements(elementsToUpdate, payload, projectId);
                 created.put("status", "created");
 
             } catch (Exception e) {

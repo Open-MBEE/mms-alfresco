@@ -67,7 +67,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
                 ArrayList<String> commitList = getCommitElasticIDs(projectId);
 
                 // Search and delete for all elements in elasticsearch with project id
-                deleteCommitsInElastic(commitList);
+                deleteCommitsInElastic(commitList, projectId);
                 deleteElasticElements(projectId);
 
                 // DROP DB
@@ -127,12 +127,12 @@ public class ProjectDelete extends AbstractJavaWebScript {
      * @param commitIds
      * @return
      */
-    protected void deleteCommitsInElastic(ArrayList<String> commitIds) {
+    protected void deleteCommitsInElastic(ArrayList<String> commitIds, String projectId) {
         logger.debug("Deleting commits in Elastic");
 
         try {
             ElasticHelper elasticHelper = new ElasticHelper();
-            elasticHelper.bulkDeleteByType("commit", commitIds);
+            elasticHelper.bulkDeleteByType("commit", commitIds, projectId);
         } catch (IOException e) {
             logger.error(e.getMessage());
         } catch (Exception e) {
