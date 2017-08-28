@@ -570,4 +570,45 @@ public class ElasticHelper {
         }
         return new JSONObject(result.getJsonString());
     }
+
+    /**
+     * Search elasticsearch for an element based on the sysmlids provided and timestamp. Elasticsearch will find all elements matching
+     * the sysmlid then filter and sort by timestamp. If the element doesn't exist at the timestamp it will return null.
+     * @param sysmlIds
+     * @param timestamp
+     * @return
+     */
+    public JSONObject getElementLessThanOrEqualTimestamp(ArrayList<String> sysmlIds, String timestamp) {
+
+        JSONObject jsonResult = null;
+        JSONObject searchJson = new JSONObject();
+        JSONObject bool =
+            new JSONObject().put("must", new JSONObject().put("terms", new JSONObject().put("id", sysmlIds)));
+        JSONObject filter =
+            new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp)));
+        JSONArray sort = new JSONArray();
+        JSONObject modifiedSortOpt = new JSONObject();
+        modifiedSortOpt.put("order", "desc");
+        modifiedSortOpt.put("mode", "max");
+        sort.put(new JSONObject().put("_modified", modifiedSortOpt));
+        bool.put("filter", filter);
+        searchJson.put("sort", sort);
+        searchJson.put("size","1");
+        searchJson.put("query", new JSONObject().put("bool", bool));
+
+        Search search = new Search.Builder(searchJson.toString()).addIndex(elementIndex).build();
+        SearchResult result;
+        try {
+            result = client.execute(search);
+
+            if (result.getTotal() > 0) {
+                JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+                jsonResult = new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return jsonResult;
+    }
 }

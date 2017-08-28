@@ -32,6 +32,8 @@ public class PostgresHelper {
     private Map<String, String> projectProperties = new HashMap<>();
     private String workspaceId;
     private Savepoint savePoint;
+    public static final String LASTCOMMIT = "lastCommit";
+    public static final String INITIALCOMMIT = "initialCommit";
 
 
     public enum DbEdgeTypes {
@@ -585,6 +587,43 @@ public class PostgresHelper {
             ResultSet rs = query.executeQuery();
             while (rs.next()) {
                 result.add(resultSetToNode(rs));
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a modified version of all the nodes the database along with the timestamp of the last commit.
+     * @return List of Maps
+     */
+    public List<Map<String, Object>> getAllNodesWithLastCommitTimestamp() {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        try {
+            connect();
+            PreparedStatement query = this.conn.prepareStatement(
+                "SELECT \"nodes" + workspaceId + "\".id, \"nodes" + workspaceId + "\".elasticid, "
+                    + "\"nodes" + workspaceId + "\".nodetype, \"nodes" + workspaceId + "\".sysmlid, "
+                    + "\"nodes" + workspaceId + "\".lastcommit, \"nodes" + workspaceId + "\".initialcommit, "
+                    + "\"nodes" + workspaceId + "\".deleted, commits.timestamp "
+                    + "FROM \"nodes" + workspaceId + "\" "
+                    + "JOIN commits ON \"nodes" + workspaceId+ "\".lastcommit = commits.elasticid "
+                    + "WHERE initialcommit IS NOT NULL ORDER BY commits.timestamp;");
+
+            ResultSet rs = query.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> node = new HashMap<>();
+                node.put(Sjm.ELASTICID, rs.getString(2));
+                node.put(Sjm.SYSMLID, rs.getString(4));
+                node.put(LASTCOMMIT, rs.getString(5));
+                node.put(INITIALCOMMIT, rs.getString(6));
+                node.put(Sjm.TIMESTAMP, rs.getString(7));
+                result.add(node);
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
