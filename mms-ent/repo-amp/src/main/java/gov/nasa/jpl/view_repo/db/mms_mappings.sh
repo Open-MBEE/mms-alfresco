@@ -2,12 +2,12 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # delete if previously exists and then create
 echo -n "deleting db: "
-curl -XDELETE 'http://localhost:9200/mms/'
+curl -XDELETE 'http://localhost:9200/_all/'
 echo
 
-echo -n "creating shard mappings: "
-curl -XPUT 'http://localhost:9200/mms/' -d @$DIR/mms_shard_mappings.json
-echo
+#echo -n "creating shard mappings: "
+#curl -XPUT 'http://localhost:9200/mms/' -d @$DIR/mms_shard_mappings.json
+#echo
 
 # create element type
 #"_id" : { "path" : "sysmlid", "store" : true, "index" : "not_analyzed"},

@@ -1,5 +1,10 @@
 {
     "template" : "*",
+    "settings" : {
+        "index" : {
+            "number_of_shards" : 3
+        }
+    },
     "mappings" : {
         "commit": {
             "properties": {
@@ -77,6 +82,64 @@
             }
         },
         "element": {
+            "dynamic_templates": [
+                {
+                    "id_as_keywords": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": ".*(Id|Ids)",
+                        "mapping": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+                {
+                    "id_and_type": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": "(id|ids|type|uri|URI)",
+                        "mapping": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+                {
+                    "boolean": {
+                        "match_mapping_type": "*",
+                        "match_pattern": "regex",
+                        "match": "is[A-Z].*",
+                        "mapping": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                {
+                    "text": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": "(body|documentation)",
+                        "mapping": {
+                            "type": "text"
+                        }
+                    }
+                },
+                {
+                    "value": {
+                        "match_mapping_type": "*",
+                        "path_unmatch": "value",
+                        "match": "value",
+                        "mapping": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        }
+                    }
+                }
+            ],
             "properties": {
                 "aggregation": {
                     "type": "keyword"

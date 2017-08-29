@@ -1420,6 +1420,14 @@ public class EmsNodeUtil {
         }
     }
 
+    public void insertProjectIndex(String projectId) {
+        try {
+            eh.createIndex(projectId);
+        } catch (IOException e) {
+            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+    }
+
     public String insertSingleElastic(JSONObject o) {
         try {
             ElasticResult r = eh.indexElement(o, projectId);

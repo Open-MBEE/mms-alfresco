@@ -765,15 +765,14 @@ public class CommitUtil {
         try {
             ElasticHelper eh = new ElasticHelper();
             eh.createIndex(projectName);
-            // :TODO goes into MMS index
-            eSite = eh.indexElement(site, "mms");
+            eSite = eh.indexElement(site);
+            eh.createIndex(projectSysmlid);
             eProject = eh.indexElement(project, projectSysmlid);
             eh.refreshIndex();
 
             // only insert if the site does not exist already
             if (pgh.getNodeFromSysmlId(orgId) == null) {
-                // :TODO goes into MMS index
-                eSiteHoldingBin = eh.indexElement(siteHoldingBin, "mms");
+                eSiteHoldingBin = eh.indexElement(siteHoldingBin);
                 eh.refreshIndex();
 
                 pgh.insertNode(eSite.elasticId, orgId, DbNodeTypes.SITE);
@@ -896,7 +895,7 @@ public class CommitUtil {
             }
 
             try {
-                eh.updateElement(elasticId, new JSONObject().put("doc", created));
+                eh.updateElement(elasticId, new JSONObject().put("doc", created), projectId);
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(String.format("%s", LogUtil.getStackTrace(e)));

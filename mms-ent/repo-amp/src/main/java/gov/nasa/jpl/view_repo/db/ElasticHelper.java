@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import io.searchbox.indices.mapping.PutMapping;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,8 +35,6 @@ import io.searchbox.indices.Refresh;
 import io.searchbox.params.Parameters;
 import io.searchbox.core.DeleteByQuery;
 import io.searchbox.core.Delete;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 
 /**
@@ -93,9 +90,8 @@ public class ElasticHelper {
     public void createIndex(String index) throws IOException {
         boolean indexExists = client.execute(new IndicesExists.Builder(index).build()).isSucceeded();
         if (!indexExists) {
-            client.execute(new CreateIndex.Builder(index).build());
+            client.execute(new CreateIndex.Builder(index.toLowerCase().replaceAll("\\s+","")).build());
         }
-        System.out.println("holdup");
         //initial organization project
     }
 
@@ -265,6 +261,15 @@ public class ElasticHelper {
         return elements;
 
     }
+    /**
+     * Index single JSON document by type                         (1)
+     *
+     * @param j JSON document to index          (2)
+     * @return ElasticResult result
+     */
+    public ElasticResult indexElement(JSONObject j) throws IOException {
+        return indexElement(j, elementIndex);
+    }
 
     /**
      * Index single JSON document by type                         (1)
@@ -292,7 +297,7 @@ public class ElasticHelper {
         }
         if (k.has(Sjm.ELASTICID)) {
             result.elasticId = client.execute(
-                new Index.Builder(k.toString()).id(k.getString(Sjm.ELASTICID)).index(index).type(eType).build())
+                new Index.Builder(k.toString()).id(k.getString(Sjm.ELASTICID)).index(index.toLowerCase().replaceAll("\\s+","")).type(eType).build())
                 .getId();
         } else {
             result.elasticId =
@@ -396,7 +401,7 @@ public class ElasticHelper {
      * @return returns result of bulk index
      */
     private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh, String index) throws JSONException, IOException {
-        Bulk bulk = new Bulk.Builder().defaultIndex(index.toLowerCase().replaceAll("\\s+","")).defaultType("element").addAction(actions).setParameter(Parameters.REFRESH, refresh).build();
+        Bulk bulk = new Bulk.Builder().defaultIndex(index).defaultType("element").addAction(actions).setParameter(Parameters.REFRESH, refresh).build();
         return client.execute(bulk);
     }
     // :TODO has to be set to accept multiple indexes as well.  Will need VE changes
