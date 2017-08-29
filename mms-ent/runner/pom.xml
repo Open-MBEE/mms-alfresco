@@ -175,7 +175,7 @@
                 <dependency>
                     <groupId>org.openmbee.testrail</groupId>
                     <artifactId>testrail-cli</artifactId>
-                    <version>1.0.0</version>
+                    <version>1.0.2</version>
                 </dependency>
                 <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
                 <dependency>
