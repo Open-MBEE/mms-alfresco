@@ -108,7 +108,10 @@ public class ModelGet extends AbstractJavaWebScript {
 
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
-        logger.error("Accept: " + accept);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Accept: %s", accept));
+        }
 
         if (accept.contains("image") && !accept.contains("webp")) {
             model = handleArtifactGet(req, status, accept);
