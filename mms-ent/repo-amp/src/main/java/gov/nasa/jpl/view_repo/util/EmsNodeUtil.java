@@ -2,8 +2,6 @@ package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -15,7 +13,6 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.UUID;
-import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
