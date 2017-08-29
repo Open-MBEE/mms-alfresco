@@ -12,12 +12,12 @@ echo
 # create element type
 #"_id" : { "path" : "sysmlid", "store" : true, "index" : "not_analyzed"},
 echo -n "creating element mappings: "
-curl -XPUT http://localhost:9200/mms/_mapping/element -d @$DIR/mms_element_mappings.json
+curl -XPUT http://localhost:9200/_template/template -d @$DIR/mapping_template.json
 echo
 
-echo -n "creating commit mappings: "
-curl -XPUT http://localhost:9200/mms/_mapping/commit -d @$DIR/mms_commit_mappings.json
-echo
+#echo -n "creating commit mappings: "
+#curl -XPUT http://localhost:9200/mms/_mapping/commit -d @$DIR/mms_commit_mappings.json
+#echo
 
 #$ curl -XPUT 'http://localhost:9200/my_index/my_type/_mapping' -d '
 # curl -XPUT 'http://localhost:9200/mms'

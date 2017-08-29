@@ -1,0 +1,143 @@
+{
+    "template" : "*",
+    "mappings" : {
+        "commit": {
+            "properties": {
+                "added": {
+                    "type": "nested",
+                    "properties" : {
+                        "id":{
+                            "type": "keyword"
+                        },
+                        "elasticId":{
+                            "type": "keyword"
+                        }
+                    }
+                },
+                "moved": {
+                    "type": "nested",
+                    "properties" : {
+                        "id":{
+                            "type": "keyword"
+                        },
+                        "previousOwner":{
+                            "properties" : {
+                                "id":{
+                                    "type": "keyword"
+                                },
+                                "elasticId":{
+                                    "type": "keyword"
+                                }
+                            }
+                        },
+                        "owner":{
+                            "properties" : {
+                                "id":{
+                                    "type": "keyword"
+                                },
+                                "elasticId":{
+                                    "type": "keyword"
+                                }
+                            }
+                        }
+                    }
+                },
+                "updated": {
+                    "type": "nested",
+                    "properties" : {
+                        "id":{
+                            "type": "keyword"
+                        },
+                        "elasticId":{
+                            "type": "keyword"
+                        },
+                        "previousElasticId":{
+                            "type": "keyword"
+                        }
+                    }
+                },
+                "deleted": {
+                    "type": "nested",
+                    "properties" : {
+                        "id":{
+                            "type": "keyword"
+                        },
+                        "previousElasticId":{
+                            "type": "keyword"
+                        }
+                    }
+                },
+                "_creator": {
+                    "type": "keyword"
+                },
+                "_created": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                }
+            }
+        },
+        "element": {
+            "properties": {
+                "aggregation": {
+                    "type": "keyword"
+                },
+                "visibility": {
+                    "type": "keyword"
+                },
+                "direction": {
+                    "type": "keyword"
+                },
+                "ordering": {
+                    "type": "keyword"
+                },
+                "concurrency": {
+                    "type": "keyword"
+                },
+                "kind": {
+                    "type": "keyword"
+                },
+                "mode": {
+                    "type": "keyword"
+                },
+                "interactionOperator": {
+                    "type": "keyword"
+                },
+                "messageKind": {
+                    "type": "keyword"
+                },
+                "messageSort": {
+                    "type": "keyword"
+                },
+                "effect": {
+                    "type": "keyword"
+                },
+                "mustIsolate": {
+                    "type": "boolean"
+                },
+                "_creator": {
+                    "type": "keyword"
+                },
+                "_modifier": {
+                    "type": "keyword"
+                },
+                "_qualifiedName": {
+                    "type": "keyword"
+                },
+                "_qualifiedId": {
+                    "type": "keyword"
+                },
+                "_created": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                },
+                "_modified": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                },
+                "_elasticId":{
+                    "type": "keyword"
+                }
+            }
+        }
+    }
+}
