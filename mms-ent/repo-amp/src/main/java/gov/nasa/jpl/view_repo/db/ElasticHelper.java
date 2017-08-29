@@ -578,10 +578,10 @@ public class ElasticHelper {
      * @param timestamp
      * @return
      */
-    public JSONObject getElementLessThanOrEqualTimestamp(ArrayList<String> sysmlIds, String timestamp) {
+    public JSONArray getElementsLessThanOrEqualTimestamp(ArrayList<String> sysmlIds, String timestamp) {
 
-        JSONObject jsonResult = new JSONObject();
         JSONObject searchJson = new JSONObject();
+        JSONArray elements = new JSONArray();
         JSONObject bool =
             new JSONObject().put("must", new JSONObject().put("terms", new JSONObject().put("id", sysmlIds)));
         JSONObject filter =
@@ -603,12 +603,15 @@ public class ElasticHelper {
 
             if (result.getTotal() > 0) {
                 JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-                jsonResult = new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
+                int hitNum = hits.size();
+                for(int i = 0; i < hitNum; ++i){
+                    elements.put(new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString()));
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return jsonResult;
+        return elements;
     }
 }

@@ -1707,7 +1707,14 @@ public class EmsNodeUtil {
             Date date = (Date) commit.get(Sjm.TIMESTAMP);
             String timestamp = TimeUtils.toTimestamp(date.getTime());
 
-            element = eh.getElementLessThanOrEqualTimestamp(sysmlIdList, timestamp);
+            JSONArray results = eh.getElementsLessThanOrEqualTimestamp(sysmlIdList, timestamp);
+            if(results.length() > 0){
+                element = results.getJSONObject(0);
+            } else {
+                if(logger.isDebugEnabled()){
+                    logger.debug("0 Elements were found for " + sysmlIdList.get(0) + " at or before " + timestamp);
+                }
+            }
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
