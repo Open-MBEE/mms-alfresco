@@ -100,6 +100,8 @@ public class ModelPost extends AbstractJavaWebScript {
     protected WorkspaceNode workspace = null;
     protected Path pngPath = null;
 
+    private final String NEWELEMENTS = "newElements";
+
     public static boolean timeEvents = false;
 
     public ModelPost() {
@@ -127,7 +129,7 @@ public class ModelPost extends AbstractJavaWebScript {
         printHeader(user, logger, req, true);
         Timer timer = new Timer();
 
-        Map<String, Object> result = null;
+        Map<String, Object> result;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
 
         if (contentType.contains("image") || contentType.contains("x-www-form-urlencoded")) {
@@ -145,7 +147,6 @@ public class ModelPost extends AbstractJavaWebScript {
         JSONObject newElementsObject = new JSONObject();
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
-        WorkspaceNode myWorkspace = getWorkspace(req, user);
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
@@ -157,46 +158,45 @@ public class ModelPost extends AbstractJavaWebScript {
 
             JSONObject postJson = new JSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
-            //logger.debug(String.format("ModelPost processing %d elements.", elements.length()));
             Set<String> oldElasticIds = new HashSet<>();
-            JSONObject results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), myWorkspace, user, oldElasticIds);
+            JSONObject results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds);
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
             if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews)) {
                 if (!oldElasticIds.isEmpty()) {
-                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);//can be backgrounded if need be
+                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
                 }
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
 
                 if (withChildViews) {
-                    for (int i = 0; i < results.getJSONArray("newElements").length(); i++) {
-                        results.getJSONArray("newElements")
-                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray("newElements").getJSONObject(i)));
+                    for (int i = 0; i < results.getJSONArray(NEWELEMENTS).length(); i++) {
+                        results.getJSONArray(NEWELEMENTS)
+                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i)));
                     }
                 }
 
-                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray("newElements"), req)) : filterByPermission(results.getJSONArray("newElements"), req));
+                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray(NEWELEMENTS), req)) : filterByPermission(results.getJSONArray(NEWELEMENTS), req));
                 newElementsObject.put(Sjm.COMMITID, commitId);
                 newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
                 newElementsObject.put(Sjm.CREATOR, user);
-                // Timestamp needs to be ISO format
 
                 if (prettyPrint) {
-                    model.put("res", newElementsObject.toString(4));
+                    model.put(Sjm.RES, newElementsObject.toString(4));
                 } else {
-                    model.put("res", newElementsObject);
+                    model.put(Sjm.RES, newElementsObject);
                 }
 
                 status.setCode(responseStatus.getCode());
             } else {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
-                status.setCode(HttpServletResponse.SC_BAD_REQUEST);
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
             }
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
+
+        status.setCode(responseStatus.getCode());
 
         return model;
     }
@@ -213,8 +213,6 @@ public class ModelPost extends AbstractJavaWebScript {
             extension = "." + extension;
         }
 
-        //workspace = getWorkspace(req, AuthenticationUtil.getRunAsUser());
-
         try {
             Object binaryContent = req.getContent().getContent();
             content = binaryContent.toString();
@@ -222,7 +220,6 @@ public class ModelPost extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        // Get the site name from the request:
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
@@ -270,7 +267,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
                             if (svgArtifact == null) {
                                 logger.error("Was not able to create the artifact!\n");
-                                model.put("res", createResponseJson());
+                                model.put(Sjm.RES, createResponseJson());
                             } else {
                                 resultJson.put("upload", svgArtifact);
                                 svgArtifact.getOrSetCachedVersion();
@@ -307,31 +304,31 @@ public class ModelPost extends AbstractJavaWebScript {
                             }
                         } else {
                             logger.error("Invalid artifactId or no content!\n");
-                            model.put("res", createResponseJson());
+                            model.put(Sjm.RES, createResponseJson());
                         }
                     } else {
                         logger.error("Invalid artifactId!\\n");
-                        model.put("res", createResponseJson());
+                        model.put(Sjm.RES, createResponseJson());
                     }
 
                 } else {
                     logger.error("artifactId not supplied!\\n");
-                    model.put("res", createResponseJson());
+                    model.put(Sjm.RES, createResponseJson());
                 }
 
             } catch (JSONException e) {
                 logger.error("Issues creating return JSON\\n");
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
             }
         } else {
             logger.error("Invalid request, no sitename specified or no content provided!\\n");
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
         }
 
         status.setCode(responseStatus.getCode());
-        if (!model.containsKey("res")) {
-            model.put("res", resultJson != null ? resultJson : createResponseJson());
+        if (!model.containsKey(Sjm.RES)) {
+            model.put(Sjm.RES, resultJson != null ? resultJson : createResponseJson());
         }
 
         return model;
@@ -390,11 +387,8 @@ public class ModelPost extends AbstractJavaWebScript {
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         String elementId = req.getServiceMatch().getTemplateVars().get("elementid");
-        if (elementId != null) {
-            // TODO - move this to ViewModelPost - really non hierarchical post
-            if (!checkRequestVariable(elementId, "elementid")) {
-                return false;
-            }
+        if (elementId != null && !checkRequestVariable(elementId, "elementid")) {
+            return false;
         }
 
         return checkRequestContent(req);

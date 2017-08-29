@@ -89,16 +89,14 @@ public class OrgPost extends AbstractJavaWebScript {
                 String orgId = projJson.getString(Sjm.SYSMLID);
                 String orgName = projJson.getString(Sjm.NAME);
 
-                System.out.println("ORGID: " + orgId);
-
                 SiteInfo siteInfo = services.getSiteService().getSite(orgId);
                 if (siteInfo == null) {
                     String sitePreset = "site-dashboard";
                     String siteTitle = (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;
                     String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
                     if (!ShareUtils.constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
-                        // TODO: Add some logging for failed site creation
                         log(Level.INFO, HttpServletResponse.SC_OK, "Failed to create site.\n");
+                        logger.error(String.format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
                         statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
                     } else {
                         log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site created.\n");
@@ -123,7 +121,7 @@ public class OrgPost extends AbstractJavaWebScript {
         }
 
         status.setCode(statusCode);
-        model.put("res", createResponseJson());
+        model.put(Sjm.RES, createResponseJson());
 
         printFooter(user, logger, timer);
 

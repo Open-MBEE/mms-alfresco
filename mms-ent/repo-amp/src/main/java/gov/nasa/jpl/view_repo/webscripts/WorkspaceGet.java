@@ -5,10 +5,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.LogUtil;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -20,9 +20,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 public class WorkspaceGet extends AbstractJavaWebScript{
 	static Logger logger = Logger.getLogger(WorkspaceGet.class);
@@ -50,41 +49,37 @@ public class WorkspaceGet extends AbstractJavaWebScript{
         Map<String, Object> model = new HashMap<>();
         JSONObject object = null;
         String projectId = getProjectId(req);
+        String[] accepts = req.getHeaderValues("Accept");
+        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
         try{
             if(validateRequest(req, status)){
                 String wsID = req.getServiceMatch().getTemplateVars().get(REF_ID);
-                /*
-                String userName = AuthenticationUtil.getRunAsUser();
-                String wsID = req.getServiceMatch().getTemplateVars().get(REF_ID);
-                WorkspaceNode workspace =
-                        WorkspaceNode.getWorkspaceFromId( wsID,
-                                                                  getServices(),
-                                                                  getResponse(),
-                                                                  status,
-                                                                  //false,
-                                                                  userName );
-                object = getWorkspace(workspace, wsID);
-                */
                 object = getRef(projectId, wsID);
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON object could not be created \n");
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace \n");
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         if(object == null){
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
         } else {
             try{
-                if (!Utils.isNullOrEmpty(response.toString())) object.put("message", response.toString());
-                model.put("res", NodeUtil.jsonToString( object, 4 ));
+                if (!Utils.isNullOrEmpty(response.toString())) {
+                    object.put("message", response.toString());
+                }
+                if (prettyPrint || accept.contains("webp")) {
+                    model.put(Sjm.RES, object.toString(4));
+                } else {
+                    model.put(Sjm.RES, object);
+                }
             } catch (JSONException e){
-                e.printStackTrace();
-                model.put("res", createResponseJson());
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                model.put(Sjm.RES, createResponseJson());
             }
         }
         status.setCode(responseStatus.getCode());
@@ -98,7 +93,7 @@ public class WorkspaceGet extends AbstractJavaWebScript{
     protected JSONObject getRef(String projectId, String refId) {
         JSONObject json = new JSONObject();
         JSONArray jsonArray = new JSONArray();
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
         JSONObject ref = emsNodeUtil.getRefJson(refId);
         jsonArray.put(ref);
         json.put("refs" , jsonArray);

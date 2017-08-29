@@ -1,7 +1,6 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,10 +40,8 @@ import org.springframework.extensions.webscripts.WebScriptStatus;
  * limitations under the License.
  */
 
-import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission.Permission;
-
 
 /**
  * Modified from Alfresco's DeclarativeWebScript so we can have one place to modify the cache
@@ -58,27 +55,23 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     // Logger
     private static final Log logger = LogFactory.getLog(DeclarativeJavaWebScript.class);
 
-    protected static final String REF_ID = "refId";
-    protected static final String PROJECT_ID = "projectId";
-    protected static final String ARTIFACT_ID = "artifactId";
-    protected static final String SITE_NAME = "siteName";
-    protected static final String SITE_NAME2 = "siteId";
-    protected static final String WORKSPACE1 = "workspace1";
-    protected static final String WORKSPACE2 = "workspace2";
-    protected static final String TIMESTAMP1 = "timestamp1";
-    protected static final String TIMESTAMP2 = "timestamp2";
+    static boolean cacheSnapshotsFlag = false;
+    protected boolean editable = false;
+
+    public static final String REF_ID = "refId";
+    public static final String PROJECT_ID = "projectId";
+    public static final String ORG_ID = "orgId";
+    public static final String ARTIFACT_ID = "artifactId";
+    public static final String COMMIT_ID = "commitId";
 
     public static final String NO_WORKSPACE_ID = "master"; // default is master if unspecified
     public static final String NO_PROJECT_ID = "no_project";
     public static final String NO_SITE_ID = "no_site";
 
-    static boolean cacheSnapshotsFlag = false;
-    protected boolean editable = false;
-
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
-    @Override final public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException {
+    @Override public final void execute(WebScriptRequest req, WebScriptResponse res) throws IOException {
 
         // retrieve requested format
         String format = req.getFormat();
@@ -97,7 +90,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
 
             Map<String, Object> model;
 
-            String projectId = req.getServiceMatch().getTemplateVars().get("projectId");
+            String projectId = req.getServiceMatch().getTemplateVars().get(PROJECT_ID);
             Boolean perm = hasPermission(req, res);
             if (projectId == null || (perm != null && perm)) {
                 model = executeImpl(req, status, cache);
@@ -184,8 +177,8 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     }
 
                     // render response according to requested format
-                    if (templateModel.containsKey("res") && templateModel.get("res") != null) {
-                        res.getWriter().write(templateModel.get("res").toString());
+                    if (templateModel.containsKey(Sjm.RES) && templateModel.get(Sjm.RES) != null) {
+                        res.getWriter().write(templateModel.get(Sjm.RES).toString());
                     }
 
                     if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null) {
@@ -226,7 +219,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             if (cacheSnapshotsFlag) {
                 String url = req.getURL();
                 if (url.contains("configurations")) {
-                    if (url.contains("snapshots") || url.contains("products")) {
+                    if (url.contains("snapshots") || url.contains(Sjm.PRODUCTS)) {
                         cacheUpdated = updateCache(cache);
                     }
                 }
@@ -314,15 +307,13 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
      * @param model  model
      */
     private void executeFinallyImpl(WebScriptRequest req, Status status, Cache cache, Map<String, Object> model) {
+        // This method left intentionally empty
     }
 
     private Boolean hasPermission(WebScriptRequest req, WebScriptResponse res) {
         String descriptionPath = getDescription().getDescPath();
         String methodType = getMethod(descriptionPath);
         Permission permissionType = getPermissionType(methodType);
-
-        //if (isAllowablePath(descriptionPath))
-          //  return true;
 
         String refId = AbstractJavaWebScript.getRefId(req);
         String projectId = AbstractJavaWebScript.getProjectId(req);

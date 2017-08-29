@@ -94,6 +94,13 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
+    <bean id="webscript.gov.nasa.jpl.mms.ref.get"
+          class="gov.nasa.jpl.view_repo.webscripts.WorkspaceGet" parent="webscript"
+          singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
+
     <bean id="webscript.gov.nasa.jpl.mms.refs.get"
         class="gov.nasa.jpl.view_repo.webscripts.WorkspacesGet" parent="webscript"
         singleton="false">
@@ -180,5 +187,12 @@
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.NodeUtil.setRepository" />
         <property name="arguments" ref="repositoryHelper"/>
+    </bean>
+
+    <bean id="webscript.gov.nasa.jpl.mms.commits.get"
+          class="gov.nasa.jpl.view_repo.webscripts.CommitsGet" parent="webscript"
+          singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper"/>
+        <property name="services" ref="ServiceRegistry"/>
     </bean>
 </beans>

@@ -20,29 +20,30 @@
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY~
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
 package gov.nasa.jpl.view_repo.webscripts;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.util.*;
+import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.jscript.ScriptVersion;
+import org.alfresco.service.cmr.version.Version;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -54,8 +55,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.mbee.util.TimeUtils;
-import gov.nasa.jpl.view_repo.util.NodeUtil.SearchType;
 
 /**
  * Descriptor in /view-repo/src/main/amp/config/alfresco/extension/templates/webscripts
@@ -67,6 +66,9 @@ public class ModelGet extends AbstractJavaWebScript {
 
     static Logger logger = Logger.getLogger(ModelGet.class);
 
+    private static final String ELEMENTID = "elementId";
+    private static final String COMMITID = "commitId";
+
     public ModelGet() {
         super();
     }
@@ -76,19 +78,17 @@ public class ModelGet extends AbstractJavaWebScript {
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-            String refId = getRefId(req);
-            String projectId = getProjectId(req);
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        String refId = getRefId(req);
+        String projectId = getProjectId(req);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-            if (refId != null && refId.equalsIgnoreCase("master")) {
-                return true;
-            }
-            else if (refId != null && !emsNodeUtil.refExists(refId)) {
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
-                    refId);
-                return false;
-            }
+        if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
             return true;
+        } else if (refId != null && !emsNodeUtil.refExists(refId)) {
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found", refId);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -104,7 +104,7 @@ public class ModelGet extends AbstractJavaWebScript {
         printHeader(user, logger, req);
         Timer timer = new Timer();
 
-        Map<String, Object> model = new HashMap<>();
+        Map<String, Object> model;
 
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
@@ -127,26 +127,32 @@ public class ModelGet extends AbstractJavaWebScript {
         JSONObject top = new JSONObject();
 
         if (validateRequest(req, status)) {
-            Boolean isCommit = req.getParameter("commitId") != null;
+            Boolean isCommit = req.getParameter(COMMITID) != null;
             try {
                 if (isCommit) {
                     JSONArray commitJsonToArray = new JSONArray();
-                    JSONObject commitJson = handleCommitRequest(req, top);
+                    JSONObject commitJson = handleCommitRequest(req);
                     commitJsonToArray.put(commitJson);
-                    if (commitJson.length() > 0) {
+                    if (commitJson.length() == 0) {
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
+                    }
+                    if (commitJson != null && commitJson.length() > 0) {
                         top.put(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
                     }
+                    if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+                        log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
+                    }
                 } else {
-                    JSONArray elementsJson = handleRequest(req, top, NodeUtil.doGraphDb);
+                    JSONArray elementsJson = handleRequest(req);
+                    if (elementsJson.length() == 0) {
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
+                    }
                     if (elementsJson.length() > 0) {
                         top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
                     }
-                }
-                if (top.length() == 0) {
-                    responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
-                }
-                if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
-                    responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
+                    if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+                        log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
+                    }
                 }
                 if (!Utils.isNullOrEmpty(response.toString()))
                     top.put("message", response.toString());
@@ -158,9 +164,9 @@ public class ModelGet extends AbstractJavaWebScript {
             status.setCode(responseStatus.getCode());
         }
         if (prettyPrint || accept.contains("webp")) {
-            model.put("res", top.toString(4));
+            model.put(Sjm.RES, top.toString(4));
         } else {
-            model.put("res", top);
+            model.put(Sjm.RES, top);
         }
 
         return model;
@@ -177,7 +183,8 @@ public class ModelGet extends AbstractJavaWebScript {
         }
 
         String extension = !extensionArg.equals("*") ? extensionArg : ".svg";  // Assume .svg if no extension provided
-        String commitId = req.getParameter("commitId"); //need to support this
+        // Case One: Search on or before the commitId you branched from
+        // Case Two: Search by CommitId
 
         if (!Utils.isNullOrEmpty(extension) && !extension.startsWith(".")) {
             extension = "." + extension;
@@ -186,17 +193,22 @@ public class ModelGet extends AbstractJavaWebScript {
         if (validateRequest(req, status)) {
 
             try {
-                String artifactId = req.getServiceMatch().getTemplateVars().get("elementId");
+                String artifactId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
+                EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
                 if (artifactId != null) {
-                    int lastIndex = artifactId.lastIndexOf("/");
+                    int lastIndex = artifactId.lastIndexOf('/');
                     if (artifactId.length() > (lastIndex + 1)) {
                         artifactId = lastIndex != -1 ? artifactId.substring(lastIndex + 1) : artifactId;
                         String filename = artifactId + extension;
-                        JSONObject result = handleArtifactMountSearch(new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename);
+                        String commitId = (req.getParameter(COMMITID) != null) ? req.getParameter(COMMITID) : null;
+                        Long commitTimestamp = emsNodeUtil.getTimestampFromElasticId(commitId);
+                        JSONObject result = handleArtifactMountSearch(
+                            new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename,
+                            commitTimestamp);
                         if (result != null) {
-                            model.put("res", new JSONObject().put("artifacts", new JSONArray().put(result)));
+                            model.put(Sjm.RES, new JSONObject().put("artifacts", new JSONArray().put(result)));
                         } else {
                             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
                         }
@@ -208,14 +220,14 @@ public class ModelGet extends AbstractJavaWebScript {
                 }
             } catch (JSONException e) {
                 log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Issues creating return JSON\n");
-                e.printStackTrace();
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             }
         } else {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid request!\n");
         }
         status.setCode(responseStatus.getCode());
-        if (!model.containsKey("res")) {
-            model.put("res", createResponseJson());
+        if (!model.containsKey(Sjm.RES)) {
+            model.put(Sjm.RES, createResponseJson());
         }
         return model;
     }
@@ -223,16 +235,14 @@ public class ModelGet extends AbstractJavaWebScript {
     /**
      * Wrapper for handling a request and getting the appropriate JSONArray of elements
      *
-     * @param req   WebScriptRequest object
-     * @param top   JSONObject for top level result
-     * @param useDb Flag to use database
+     * @param req WebScriptRequest object
      * @return JSONArray of elements
      */
-    private JSONArray handleRequest(WebScriptRequest req, final JSONObject top, boolean useDb) {
+    private JSONArray handleRequest(WebScriptRequest req) {
         // REVIEW -- Why check for errors here if validate has already been
         // called? Is the error checking code different? Why?
         try {
-            String modelId = req.getServiceMatch().getTemplateVars().get("elementId");
+            String modelId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
             String projectId = getProjectId(req);
             String refId = getRefId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
@@ -245,31 +255,31 @@ public class ModelGet extends AbstractJavaWebScript {
             }
             return handleElementHierarchy(modelId, req);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         return new JSONArray();
     }
 
-    private JSONObject handleCommitRequest(WebScriptRequest req, JSONObject top) {
+    private JSONObject handleCommitRequest(WebScriptRequest req) {
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         JSONObject element;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-        String elementId = req.getServiceMatch().getTemplateVars().get("elementId");
+        String elementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
         String currentElement = emsNodeUtil.getById(elementId).getElasticId();
 
         // This is the commit of the version of the element we want
-        String commitId = (req.getParameter("commitId").isEmpty()) ?
+        String commitId = (req.getParameter(COMMITID).isEmpty()) ?
             emsNodeUtil.getById(elementId).getLastCommit() :
-            req.getParameter("commitId");
+            req.getParameter(COMMITID);
 
         // This is the lastest commit for the element
         String lastestCommitId = emsNodeUtil.getById(elementId).getLastCommit();
         Boolean checkInProjectAndRef = false;
         try {
             checkInProjectAndRef = emsNodeUtil.commitContainsElement(elementId, commitId);
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.warn(e.getMessage());
         }
 
@@ -326,27 +336,62 @@ public class ModelGet extends AbstractJavaWebScript {
         return depth;
     }
 
-    protected JSONObject handleArtifactMountSearch(JSONObject mountsJson, String filename) {
+    protected JSONObject getVersionedArtifactFromParent(EmsScriptNode siteNode, String projectId, String refId,
+        String filename, Long timestamp, EmsNodeUtil emsNodeUtil) {
+        EmsScriptNode artifactNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
+        Pair<String, Long> parentRef = emsNodeUtil.getDirectParentRef(refId);
+        Version nearest = null;
+        if (artifactNode != null) {
+            if (timestamp != null) {
+                // Gets the url with the nearest timestamp to the given commit
+                NavigableMap<Long, Version> versions = artifactNode.getVersionPropertyHistory();
+                nearest = emsNodeUtil.imageVersionBeforeTimestamp(versions, timestamp);
+                if (nearest != null) {
+                    return new JSONObject().put("id", artifactNode.getSysmlId()).put("url",
+                        "/service/api/node/content/versionStore/version2Store/" + String
+                            .valueOf(nearest.getVersionProperty("node-uuid") + "/" + filename));
+                }
+            } else {
+                // Gets the latest in the current Ref
+                String url = artifactNode.getUrl();
+                if (url != null) {
+                    return new JSONObject().put("id", artifactNode.getSysmlId())
+                        .put("url", url.replace("/d/d/", "/service/api/node/content/"));
+                }
+            }
+        }
+        if (parentRef != null && nearest == null) {
+            // check for the earliest timestamp
+            Long earliestCommit =
+                (timestamp != null && parentRef.second.compareTo(timestamp) == 1) ? timestamp : parentRef.second;
+            // recursive step
+            return getVersionedArtifactFromParent(siteNode, projectId, parentRef.first, filename, earliestCommit,
+                emsNodeUtil);
+        }
+
+        return null;
+    }
+
+    protected JSONObject handleArtifactMountSearch(JSONObject mountsJson, String filename, Long commitId) {
         String projectId = mountsJson.getString(Sjm.SYSMLID);
         String refId = mountsJson.getString(Sjm.REFID);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         EmsScriptNode siteNode = EmsScriptNode.getSiteNode(orgId);
         if (siteNode != null) {
-            EmsScriptNode artifactNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
-            if (artifactNode != null) {
-                String url = artifactNode.getUrl();
-                if (url != null) {
-                    return new JSONObject().put("id", artifactNode.getSysmlId()).put("url", url.replace("/d/d/", "/service/api/node/content/"));
-                }
+            JSONObject parentImage =
+                getVersionedArtifactFromParent(siteNode, projectId, refId, filename, commitId, emsNodeUtil);
+            if (parentImage != null) {
+                return parentImage;
             }
         }
         if (!mountsJson.has(Sjm.MOUNTS)) {
-            mountsJson = emsNodeUtil.getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
+            mountsJson = emsNodeUtil
+                .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
         }
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
         for (int i = 0; i < mountsArray.length(); i++) {
-            JSONObject result = handleArtifactMountSearch(mountsArray.getJSONObject(i), filename);
+            JSONObject result = handleArtifactMountSearch(mountsArray.getJSONObject(i), filename, commitId);
             if (result != null) {
                 return result;
             }
@@ -360,13 +405,12 @@ public class ModelGet extends AbstractJavaWebScript {
      * @param rootSysmlid Root view to find elements for
      * @param req         WebScriptRequest
      * @return JSONArray of elements
-     * @throws JSONException JSON element creation error
-     * @throws SQLException  SQL error
-     * @throws IOException   IO error
+     * @throws SQLException SQL error
+     * @throws IOException  IO error
      */
 
     protected JSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
-        throws JSONException, SQLException, IOException {
+        throws SQLException, IOException {
         // get timestamp if specified
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -376,19 +420,19 @@ public class ModelGet extends AbstractJavaWebScript {
 
         JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
 
-        JSONArray elasticElements = handleMountSearch(mountsJson, extended, rootSysmlid, depth);
-        return elasticElements;
+        return handleMountSearch(mountsJson, extended, rootSysmlid, depth);
     }
 
     protected JSONArray handleMountSearch(JSONObject mountsJson, boolean extended, String rootSysmlid, Long depth)
-        throws JSONException, SQLException, IOException {
+        throws SQLException, IOException {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
         JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
         if (tmpElements.length() > 0) {
             return extended ? emsNodeUtil.addExtendedInformation(tmpElements) : tmpElements;
         }
         if (!mountsJson.has(Sjm.MOUNTS)) {
-            mountsJson = emsNodeUtil.getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
+            mountsJson = emsNodeUtil
+                .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
         }
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 

@@ -1,0 +1,26 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_inRefIds": [
+                "master",
+                "imagebranch"
+            ],
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "else",
+            "id": "301",
+            "isDerived": false,
+            "name": "this name is also updated",
+            "ownerId": "300",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}

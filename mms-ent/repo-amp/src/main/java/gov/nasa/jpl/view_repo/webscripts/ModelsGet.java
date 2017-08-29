@@ -77,7 +77,7 @@ public class ModelsGet extends ModelGet {
             String refId = getRefId(req);
             String projectId = getProjectId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            if (refId != null && refId.equalsIgnoreCase("master")) {
+            if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
                 return true;
             } else if (refId != null && !emsNodeUtil.refExists(refId)) {
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
@@ -112,25 +112,30 @@ public class ModelsGet extends ModelGet {
                     elementsJson = handleRequest(req, depth);
                 } catch (JSONException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request");
-                    e.printStackTrace();
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
             }
 
             JSONObject top = new JSONObject();
             if (elementsJson.length() > 0) {
-                top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
+                JSONArray elements = filterByPermission(elementsJson, req);
+                if (elements.length() == 0) {
+                    log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
+                }
+                top.put(Sjm.ELEMENTS, elements);
                 String[] accepts = req.getHeaderValues("Accept");
                 String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
                 if (!Utils.isNullOrEmpty(response.toString()))
                     top.put("message", response.toString());
                 if (prettyPrint || accept.contains("webp")) {
-                    model.put("res", top.toString(4));
+                    model.put(Sjm.RES, top.toString(4));
                 } else {
-                    model.put("res", top);
+                    model.put(Sjm.RES, top);
                 }
             } else {
-                log(Level.WARN, HttpServletResponse.SC_OK, "No elements found");
-                model.put("res", createResponseJson());
+                log(Level.INFO, HttpServletResponse.SC_OK, "No elements found");
+                top.put(Sjm.ELEMENTS, new JSONArray());
+                model.put(Sjm.RES, top);
             }
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));

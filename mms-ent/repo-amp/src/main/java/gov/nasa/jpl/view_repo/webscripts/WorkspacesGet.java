@@ -60,12 +60,14 @@ public class WorkspacesGet extends AbstractJavaWebScript{
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject json = null;
+        JSONObject object = null;
         String projectId = getProjectId(req);
+        String[] accepts = req.getHeaderValues("Accept");
+        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
         try {
             if (validateRequest(req, status)) {
-                json = handleWorkspace (projectId, req.getParameter( "deleted" ) != null);
+                object = handleWorkspace (projectId, req.getParameter( "deleted" ) != null);
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
@@ -74,15 +76,21 @@ public class WorkspacesGet extends AbstractJavaWebScript{
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace:\n %s \n", e.getLocalizedMessage());
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        if (json == null) {
-            model.put("res", createResponseJson());
+        if (object == null) {
+            model.put(Sjm.RES, createResponseJson());
         } else {
             try {
-                if (!Utils.isNullOrEmpty(response.toString())) json.put("message", response.toString());
-                model.put("res", NodeUtil.jsonToString( json, 4 ));
+                if (!Utils.isNullOrEmpty(response.toString())) {
+                    object.put("message", response.toString());
+                }
+                if (prettyPrint || accept.contains("webp")) {
+                    model.put(Sjm.RES, object.toString(4));
+                } else {
+                    model.put(Sjm.RES, object);
+                }
             } catch ( JSONException e ) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
             }
         }
         status.setCode(responseStatus.getCode());
@@ -95,7 +103,7 @@ public class WorkspacesGet extends AbstractJavaWebScript{
     protected JSONObject handleWorkspace (String projectId, boolean findDeleted) throws JSONException{
         JSONObject json = new JSONObject();
         JSONArray jArray = null;
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
         jArray = emsNodeUtil.getRefsJson();
         json.put("refs", jArray);
         return json;

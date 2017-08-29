@@ -3,11 +3,14 @@
  */
 package gov.nasa.jpl.view_repo.webscripts;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -73,7 +76,7 @@ public class HistoryGet extends ModelGet {
 
         try {
             if (elementsJson.length() > 0) {
-                top.put("commits", elementsJson);
+                top.put(Sjm.COMMITS, elementsJson);
             } else {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -87,7 +90,7 @@ public class HistoryGet extends ModelGet {
         }
 
         status.setCode(responseStatus.getCode());
-        model.put("res", top.toString(4));
+        model.put(Sjm.RES, top.toString(4));
 
         printFooter(user, logger, timer);
         return model;
@@ -129,12 +132,7 @@ public class HistoryGet extends ModelGet {
             }
 
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), getRefId(req));
-            Long depth = 0L;
-
             jsonHist = emsNodeUtil.getNodeHistory(modelId);
-
-
-
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }

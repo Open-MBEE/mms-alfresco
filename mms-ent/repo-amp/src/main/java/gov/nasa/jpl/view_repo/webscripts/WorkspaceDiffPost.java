@@ -29,7 +29,6 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,7 +37,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-//import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript.LogLevel;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
@@ -47,14 +45,10 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.util.CommitUtil;
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 public class WorkspaceDiffPost extends ModelPost {
 	static Logger logger = Logger.getLogger(WorkspaceDiffPost.class);
@@ -92,17 +86,17 @@ public class WorkspaceDiffPost extends ModelPost {
             top = handleDiff(req, json, status);
         } catch ( Exception e ) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error: %s", e.getMessage());
-            e.printStackTrace();
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
             try {
                 if (!Utils.isNullOrEmpty(response.toString())) {
                     top.put("message", response.toString());
                 }
-                model.put("res", top.toString(4));
+                model.put(Sjm.RES, top.toString(4));
             } catch ( JSONException e ) {
                 log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON parse exception: %s", e.getMessage());
-                if (!model.containsKey( "res" )) {
-                    model.put( "res", createResponseJson() );
+                if (!model.containsKey(Sjm.RES)) {
+                    model.put(Sjm.RES, createResponseJson() );
                 }
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             }

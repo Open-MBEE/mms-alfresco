@@ -28,7 +28,6 @@
  ******************************************************************************/
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,12 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteVisibility;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
@@ -57,19 +51,14 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import gov.nasa.jpl.mbee.util.Debug;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.actions.ActionUtil;
-import gov.nasa.jpl.view_repo.util.Acm;
-import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.EmsTransaction;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil.SearchType;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
-
+import sun.rmi.runtime.Log;
 
 /**
  * Base class for all EMS Java backed webscripts. Provides helper functions and
@@ -77,49 +66,48 @@ import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
  * that were in utils.js
  *
  * @author cinyoung
- *
  */
 public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     private static Logger logger = Logger.getLogger(AbstractJavaWebScript.class);
 
-    public static boolean checkMmsVersions = false;
+    static boolean checkMmsVersions = false;
     private JSONObject privateRequestJSON = null;
 
     // injected members
     protected ServiceRegistry services;        // get any of the Alfresco services
     protected Repository repository;        // used for lucene search
 
-    protected ScriptNode companyhome;
+    private ScriptNode companyhome;
 
     // response to HTTP request, made as class variable so all methods can update
     protected StringBuffer response = new StringBuffer();
     protected Status responseStatus = new Status();
 
     // keeps track of who made the call to the service
-    protected String requestSourceApplication = null;
+    String requestSourceApplication = null;
 
-    protected boolean prettyPrint = false;
+    boolean prettyPrint = false;
 
     protected void initMemberVariables(String siteName) {
         companyhome = new ScriptNode(repository.getCompanyHome(), services);
     }
 
     public void setRepositoryHelper(Repository repositoryHelper) {
-        if ( repositoryHelper == null ) return;
+        if (repositoryHelper == null)
+            return;
         this.repository = repositoryHelper;
     }
 
     public void setServices(ServiceRegistry registry) {
-        if ( registry == null ) return;
+        if (registry == null)
+            return;
         this.services = registry;
     }
 
-    public AbstractJavaWebScript( Repository repository,
-                                  ServiceRegistry services,
-                                  StringBuffer response ) {
-        this.setRepositoryHelper( repository );
-        this.setServices( services );
-        this.response = response ;
+    public AbstractJavaWebScript(Repository repository, ServiceRegistry services, StringBuffer response) {
+        this.setRepositoryHelper(repository);
+        this.setServices(services);
+        this.response = response;
     }
 
     public AbstractJavaWebScript(Repository repositoryHelper, ServiceRegistry registry) {
@@ -133,45 +121,39 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     }
 
 
-    abstract protected Map< String, Object > executeImplImpl( final WebScriptRequest req,
-                                                              final Status status,
-                                                              final Cache cache );
+    abstract protected Map<String, Object> executeImplImpl(final WebScriptRequest req, final Status status,
+        final Cache cache);
 
 
     // Don't use this - we don't need to handle transactions any more
-    @Deprecated
-    protected Map< String, Object > executeImplImpl( final WebScriptRequest req,
-                                                     final Status status, final Cache cache,
-                                                     boolean withoutTransactions ) {
+    @Deprecated protected Map<String, Object> executeImplImpl(final WebScriptRequest req, final Status status,
+        final Cache cache, boolean withoutTransactions) {
 
-        final Map< String, Object > model = new HashMap<>();
+        final Map<String, Object> model = new HashMap<>();
 
-        if(checkMmsVersions)
-        {
-            if(compareMmsVersions(req, getResponse(), status))
-            {
-                model.put("res", createResponseJson());
+        if (checkMmsVersions) {
+            if (compareMmsVersions(req, getResponse(), status)) {
+                model.put(Sjm.RES, createResponseJson());
                 return model;
             }
         }
 
-        new EmsTransaction( getServices(), getResponse(), getResponseStatus(), withoutTransactions ) {
-            @Override
-            public void run() throws Exception {
-                Map< String, Object > m = executeImplImpl( req, status, cache );
-                if ( m != null ) {
-                    model.putAll( m );
+        new EmsTransaction(getServices(), getResponse(), getResponseStatus(), withoutTransactions) {
+            @Override public void run() throws Exception {
+                Map<String, Object> m = executeImplImpl(req, status, cache);
+                if (m != null) {
+                    model.putAll(m);
                 }
             }
         };
-        if ( !model.containsKey( "res" ) && response != null && response.toString().length() > 0 ) {
-            model.put( "res", response.toString() );
+        if (!model.containsKey(Sjm.RES) && response != null && response.toString().length() > 0) {
+            model.put(Sjm.RES, response.toString());
 
         }
         // need to check if the transaction resulted in rollback, if so change the status code
         // TODO: figure out how to get the response message in (response is always empty)
         if (getResponseStatus().getCode() != HttpServletResponse.SC_ACCEPTED) {
-            status.setCode( getResponseStatus().getCode() );
+            status.setCode(getResponseStatus().getCode());
         }
 
         return model;
@@ -181,9 +163,10 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     /**
      * Parse the request and do validation checks on request
      * TODO: Investigate whether or not to deprecate and/or remove
-     * @param req        Request to be parsed
-     * @param status    The status to be returned for the request
-     * @return            true if request valid and parsed, false otherwise
+     *
+     * @param req    Request to be parsed
+     * @param status The status to be returned for the request
+     * @return true if request valid and parsed, false otherwise
      */
     abstract protected boolean validateRequest(WebScriptRequest req, Status status);
 
@@ -200,14 +183,14 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      * @param forWorkspace
      * @return
      */
-    private EmsScriptNode getSiteNodeImpl(String siteName, String refId,
-                                            String commitId, boolean forWorkspace, boolean errorOnNull) {
+    private EmsScriptNode getSiteNodeImpl(String siteName, String refId, String commitId, boolean forWorkspace,
+        boolean errorOnNull) {
 
         EmsScriptNode siteNode = null;
 
         if (siteName == null) {
             //log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "No sitename provided" );
-        	// FIXME: do nothing for now as updates on elements are running afoul here
+            // FIXME: do nothing for now as updates on elements are running afoul here
         } else {
             siteNode = EmsScriptNode.getSiteNode(siteName);
         }
@@ -216,47 +199,57 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
 
     // Updated log methods with log4j methods (still works with old log calls)
     // String concatenation replaced with C formatting; only for calls with parameters
-    protected void log (Level level, int code, String msg, Object...params) {
+    protected void log(Level level, int code, String msg, Object... params) {
         if (level.toInt() >= logger.getLevel().toInt()) {
-            String formattedMsg = formatMessage(msg,params);
+            String formattedMsg = formatMessage(msg, params);
             //String formattedMsg = formatter.format (msg,params).toString();
-            log (level,code,formattedMsg);
+            log(level, code, formattedMsg);
         }
     }
 
     // If no need for string formatting (calls with no string concatenation)
     protected void log(Level level, int code, String msg) {
-        String levelMessage = addLevelInfoToMsg (level,msg);
+        String levelMessage = addLevelInfoToMsg(level, msg);
         updateResponse(code, levelMessage);
         if (level.toInt() >= logger.getLevel().toInt()) {
             // print to response stream if >= existing log level
-            log (level, levelMessage);
+            log(level, levelMessage);
+        }
+    }
+
+    // If no need for string formatting (calls with no string concatenation)
+    protected void log(Level level, int code, Exception e) {
+        String levelMessage = addLevelInfoToMsg(level, LogUtil.getStackTrace(e));
+        updateResponse(code, levelMessage);
+        if (level.toInt() >= logger.getLevel().toInt()) {
+            // print to response stream if >= existing log level
+            log(level, levelMessage);
         }
     }
 
     // only logging loglevel and a message (no code)
-    protected void log(Level level, String msg, Object...params) {
+    protected void log(Level level, String msg, Object... params) {
         if (level.toInt() >= logger.getLevel().toInt()) {
-            String formattedMsg = formatMessage(msg,params); //formatter.format (msg,params).toString();
-            String levelMessage = addLevelInfoToMsg (level,formattedMsg);
+            String formattedMsg = formatMessage(msg, params); //formatter.format (msg,params).toString();
+            String levelMessage = addLevelInfoToMsg(level, formattedMsg);
             //TODO: unsure if need to call responseStatus.setMessage(...) since there is no code
             response.append(levelMessage);
-            log (level, levelMessage);
+            log(level, levelMessage);
         }
     }
 
     // only logging code and a message (no loglevel, and thus, no check for log level status)
-    protected void log(int code, String msg, Object...params) {
-        String formattedMsg = formatMessage(msg,params); //formatter.format (msg,params).toString();
-        updateResponse (code,formattedMsg);
+    protected void log(int code, String msg, Object... params) {
+        String formattedMsg = formatMessage(msg, params); //formatter.format (msg,params).toString();
+        updateResponse(code, formattedMsg);
     }
 
-    protected void log(String msg, Object...params) {
-        String formattedMsg = formatMessage(msg,params); //formatter.format (msg,params).toString();
-        log (formattedMsg);
+    protected void log(String msg, Object... params) {
+        String formattedMsg = formatMessage(msg, params); //formatter.format (msg,params).toString();
+        log(formattedMsg);
     }
 
-    protected void updateResponse ( int code, String msg) {
+    protected void updateResponse(int code, String msg) {
         response.append(msg);
         responseStatus.setCode(code);
         responseStatus.setMessage(msg);
@@ -268,66 +261,75 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         //responseStatus.setMessage(msg);
     }
 
+    protected static void log(Level level, Exception e) {
+        log(level, LogUtil.getStackTrace(e));
+    }
+
     protected static void log(Level level, String msg) {
-        switch(level.toInt()) {
+        switch (level.toInt()) {
             case Level.FATAL_INT:
                 logger.fatal(msg);
                 break;
             case Level.ERROR_INT:
-                logger.error( msg );
+                logger.error(msg);
                 break;
             case Level.WARN_INT:
                 logger.warn(msg);
                 break;
             case Level.INFO_INT:
-                logger.info( msg );
+                logger.info(msg);
                 break;
             case Level.DEBUG_INT:
-                if (Debug.isOn()){ logger.debug( msg );}
+                if (Debug.isOn()) {
+                    logger.debug(msg);
+                }
                 break;
             default:
                 // TODO: investigate if this the default thing to do
-                if (Debug.isOn()){ logger.debug( msg ); }
+                if (Debug.isOn()) {
+                    logger.debug(msg);
+                }
                 break;
         }
     }
 
-    protected String addLevelInfoToMsg (Level level, String msg){
-        if (level.toInt() != Level.WARN_INT){
-            return String.format("[%s]: %s\n",level.toString(),msg);
-        }
-        else{
-            return String.format("[WARNING]: %s\n",msg);
+    protected String addLevelInfoToMsg(Level level, String msg) {
+        if (level.toInt() != Level.WARN_INT) {
+            return String.format("[%s]: %s%n", level.toString(), msg);
+        } else {
+            return String.format("[WARNING]: %s%n", msg);
         }
 
     }
 
     // formatMessage function is used to catch certain objects that must be dealt with individually
     // formatter.format() is avoided because it applies toString() directly to objects which provide unreadable outputs
-    protected String formatMessage (String initMsg,Object...params){
+    protected String formatMessage(String initMsg, Object... params) {
         String formattedMsg = initMsg;
         Pattern p = Pattern.compile("(%s)");
         Matcher m = p.matcher(formattedMsg);
 
-        for (Object obj: params){
-            if (obj != null && obj.getClass().isArray()){
+        for (Object obj : params) {
+            if (obj != null && obj.getClass().isArray()) {
                 String arrString = "";
-                if (obj instanceof int []) { arrString = Arrays.toString((int [])obj);}
-                else if (obj instanceof double []) { arrString = Arrays.toString((double [])obj);}
-                else if (obj instanceof float []) { arrString = Arrays.toString((float [])obj);}
-                else if (obj instanceof boolean []) { arrString = Arrays.toString((boolean [])obj);}
-                else if (obj instanceof char []) { arrString = Arrays.toString((char [])obj);}
-                else {arrString = Arrays.toString((Object[])obj);}
+                if (obj instanceof int[]) {
+                    arrString = Arrays.toString((int[]) obj);
+                } else if (obj instanceof double[]) {
+                    arrString = Arrays.toString((double[]) obj);
+                } else if (obj instanceof float[]) {
+                    arrString = Arrays.toString((float[]) obj);
+                } else if (obj instanceof boolean[]) {
+                    arrString = Arrays.toString((boolean[]) obj);
+                } else if (obj instanceof char[]) {
+                    arrString = Arrays.toString((char[]) obj);
+                } else {
+                    arrString = Arrays.toString((Object[]) obj);
+                }
                 formattedMsg = m.replaceFirst(arrString);
-            }
-            else { // captures Timer, EmsScriptNode, Date, primitive types, NodeRef, JSONObject type objects; applies toString() on all
+            } else { // captures Timer, EmsScriptNode, Date, primitive types, NodeRef, JSONObject type objects; applies toString() on all
                 formattedMsg = m.replaceFirst(obj == null ? "null" : obj.toString());
             }
             m = p.matcher(formattedMsg);
-//            if (obj.getClass().isArray()){
-//                Arrays.toString(obj);
-//                String formattedString = m.replaceFirst(o)
-//            }
 
         }
         return formattedMsg;
@@ -335,26 +337,17 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
 
     /**
      * Checks whether user has permissions to the node and logs results and status as appropriate
-     * @param node         EmsScriptNode to check permissions on
-     * @param permissions  Permissions to check
-     * @return             true if user has specified permissions to node, false otherwise
+     *
+     * @param node        EmsScriptNode to check permissions on
+     * @param permissions Permissions to check
+     * @return true if user has specified permissions to node, false otherwise
      */
     protected boolean checkPermissions(EmsScriptNode node, String permissions) {
-        return node != null && node.checkPermissions( permissions, response, responseStatus );
+        return node != null && node.checkPermissions(permissions, response, responseStatus);
     }
 
-
-    protected static final String REF_ID = "refId";
-    protected static final String PROJECT_ID = "projectId";
-    protected static final String ORG_ID = "orgId";
-
-    public static final String NO_WORKSPACE_ID = "master"; // default is master if unspecified
-    public static final String NO_PROJECT_ID = "no_project";
-    public static final String NO_SITE_ID = "no_site";
-
-
     public ServiceRegistry getServices() {
-        if ( services == null ) {
+        if (services == null) {
             services = NodeUtil.getServices();
         }
         return services;
@@ -362,7 +355,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
 
     protected boolean checkRequestContent(WebScriptRequest req) {
         if (req.getContent() == null) {
-            log(Level.ERROR,  HttpServletResponse.SC_BAD_REQUEST, "No content provided.\n");
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "No content provided.\n");
             return false;
         }
         return true;
@@ -370,7 +363,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
 
     protected boolean checkRequestVariable(Object value, String type) {
         if (value == null) {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "%s not found.\n",type);
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "%s not found.\n", type);
             return false;
         }
         return true;
@@ -379,25 +372,23 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     /**
      * Helper utility to get the value of a Boolean request parameter
      *
-     * @param req
-     *            WebScriptRequest with parameter to be checked
-     * @param name
-     *            String of the request parameter name to check
-     * @param defaultValue
-     *            default value if there is no parameter with the given name
+     * @param req          WebScriptRequest with parameter to be checked
+     * @param name         String of the request parameter name to check
+     * @param defaultValue default value if there is no parameter with the given name
      * @return true if the parameter is assigned no value, if it is assigned
-     *         "true" (ignoring case), or if it's default is true and it is not
-     *         assigned "false" (ignoring case).
+     * "true" (ignoring case), or if it's default is true and it is not
+     * assigned "false" (ignoring case).
      */
-    public static boolean getBooleanArg(WebScriptRequest req, String name,
-                                        boolean defaultValue) {
-        if ( !Utils.toSet( req.getParameterNames() ).contains( name ) ) {
+    public static boolean getBooleanArg(WebScriptRequest req, String name, boolean defaultValue) {
+        if (!Utils.toSet(req.getParameterNames()).contains(name)) {
             return defaultValue;
         }
         String paramVal = req.getParameter(name);
-        if ( Utils.isNullOrEmpty( paramVal ) ) return true;
-        Boolean b = Utils.isTrue( paramVal, false );
-        if ( b != null ) return b;
+        if (Utils.isNullOrEmpty(paramVal))
+            return true;
+        Boolean b = Utils.isTrue(paramVal, false);
+        if (b != null)
+            return b;
         return defaultValue;
     }
 
@@ -413,6 +404,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     /**
      * Should create the new instances with the response in constructor, so
      * this can be removed every where
+     *
      * @param instance
      */
     public void appendResponseStatusInfo(AbstractJavaWebScript instance) {
@@ -424,11 +416,11 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         logger.info(String.format("%s %s", user, timer));
     }
 
-    protected void printHeader( String user, Logger logger, WebScriptRequest req ) {
+    protected void printHeader(String user, Logger logger, WebScriptRequest req) {
         printHeader(user, logger, req, false);
     }
 
-    protected void printHeader( String user, Logger logger, WebScriptRequest req, boolean skipReq ) {
+    protected void printHeader(String user, Logger logger, WebScriptRequest req, boolean skipReq) {
         logger.info(String.format("%s %s", user, req.getURL()));
         try {
             if (!skipReq && req.parseContent() != null) {
@@ -439,7 +431,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         }
     }
 
-    public static String getOrgId( WebScriptRequest req ) {
+    public static String getOrgId(WebScriptRequest req) {
         String orgId = req.getServiceMatch().getTemplateVars().get(ORG_ID);
         if (orgId != null) {
             return orgId;
@@ -447,7 +439,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         return null;
     }
 
-    public static String getProjectId( WebScriptRequest req ) {
+    public static String getProjectId(WebScriptRequest req) {
         String projectId = req.getServiceMatch().getTemplateVars().get(PROJECT_ID);
         if (projectId != null) {
             return projectId;
@@ -455,9 +447,9 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         return null;
     }
 
-    public static String getProjectId( WebScriptRequest req, String siteName ) {
+    public static String getProjectId(WebScriptRequest req, String siteName) {
         String projectId = req.getServiceMatch().getTemplateVars().get(PROJECT_ID);
-        if ( projectId == null || projectId.length() <= 0 ) {
+        if (projectId == null || projectId.length() <= 0) {
             if (siteName == null) {
                 siteName = NO_SITE_ID;
             }
@@ -466,68 +458,70 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         return projectId;
     }
 
-    public static String getRefId( WebScriptRequest req ) {
+    public static String getRefId(WebScriptRequest req) {
         String refId = req.getServiceMatch().getTemplateVars().get(REF_ID);
-        if ( refId == null || refId.length() <= 0 ) {
+        if (refId == null || refId.length() <= 0) {
             refId = NO_WORKSPACE_ID;
         }
         return refId;
     }
 
-    public WorkspaceNode getWorkspace( WebScriptRequest req ) {
-        return getWorkspace( req, //false,
-                        null );
+    public WorkspaceNode getWorkspace(WebScriptRequest req) {
+        return getWorkspace(req, //false,
+            null);
     }
 
-    public WorkspaceNode getWorkspace( WebScriptRequest req,
-                    //                                       boolean createIfNotFound,
-                    String userName ) {
-        return getWorkspace( req, services, response, responseStatus, //createIfNotFound,
-                        userName );
+    public WorkspaceNode getWorkspace(WebScriptRequest req,
+        //                                       boolean createIfNotFound,
+        String userName) {
+        return getWorkspace(req, services, response, responseStatus, //createIfNotFound,
+            userName);
     }
 
-    public static WorkspaceNode getWorkspace( WebScriptRequest req,
-                    ServiceRegistry services,
-                    StringBuffer response,
-                    Status responseStatus,
-                    //boolean createIfNotFound,
-                    String userName ) {
-        String refId = getRefId( req );
+    public static WorkspaceNode getWorkspace(WebScriptRequest req, ServiceRegistry services, StringBuffer response,
+        Status responseStatus,
+        //boolean createIfNotFound,
+        String userName) {
+        String refId = getRefId(req);
         String projectId = getProjectId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         EmsScriptNode node = EmsScriptNode.getSiteNode(orgId);
-        node = node.childByNamePath("/" + projectId +  "/refs/" + refId);
+        node = node.childByNamePath("/" + projectId + "/refs/" + refId);
         if (node != null)
             return new WorkspaceNode(node.getNodeRef(), services);
         return null;
     }
 
-    protected static boolean urlEndsWith( String url, String suffix ) {
-        if ( url == null ) return false;
+    protected static boolean urlEndsWith(String url, String suffix) {
+        if (url == null)
+            return false;
         url = url.toLowerCase().trim();
         suffix = suffix.toLowerCase().trim();
-        if ( suffix.startsWith( "/" ) ) suffix = suffix.substring( 1 );
-        int pos = url.lastIndexOf( '/' );
+        if (suffix.startsWith("/"))
+            suffix = suffix.substring(1);
+        int pos = url.lastIndexOf('/');
         return url.substring(pos + 1).startsWith(suffix);
     }
 
 
-    protected static boolean isDisplayedElementRequest( WebScriptRequest req ) {
-        if ( req == null ) return false;
+    protected static boolean isDisplayedElementRequest(WebScriptRequest req) {
+        if (req == null)
+            return false;
         String url = req.getURL();
-        boolean gotSuffix = urlEndsWith( url, Sjm.ELEMENTS );
+        boolean gotSuffix = urlEndsWith(url, Sjm.ELEMENTS);
         return gotSuffix;
     }
 
     /**
      * This needs to be called with the incoming JSON request to populate the local source
      * variable that is used in the sendDeltas call.
+     *
      * @param postJson
      * @throws JSONException
      */
     protected void populateSourceApplicationFromJson(JSONObject postJson) throws JSONException {
-        requestSourceApplication = postJson.optString( "source" );
+        requestSourceApplication = postJson.optString("source");
     }
 
     /**
@@ -537,8 +531,8 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      */
     public String createResponseJson() {
         String resToString = response.toString();
-        String resStr = !Utils.isNullOrEmpty( resToString ) ? resToString.replaceAll( "\n", "" ) : "";
-        return !Utils.isNullOrEmpty( resStr ) ? String.format("{\"message\":\"%s\"}", resStr) : "{}";
+        String resStr = !Utils.isNullOrEmpty(resToString) ? resToString.replaceAll("\n", "") : "";
+        return !Utils.isNullOrEmpty(resStr) ? String.format("{\"message\":\"%s\"}", resStr) : "{}";
     }
 
 
@@ -559,14 +553,14 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      *  will try to grab the mmsVersion from where ever it may lie within the JSONObject.
      *  <br/><b>3. </b>
      * </pre>
-     * @param req WebScriptRequest
+     *
+     * @param req      WebScriptRequest
      * @param response StringBuffer response
-     * @param status Status of the request
-     * @author EDK
+     * @param status   Status of the request
      * @return boolean false if versions match, true if they do not match or if is an incorrect request.
+     * @author EDK
      */
-    public boolean compareMmsVersions(WebScriptRequest req,
-            StringBuffer response, Status status) {
+    public boolean compareMmsVersions(WebScriptRequest req, StringBuffer response, Status status) {
         // Calls getBooleanArg to check if they have request for mms version
         // TODO: Possibly remove this and implement as an aspect?
         boolean incorrectVersion = true;
@@ -583,15 +577,14 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         // Checks data member requestJSON to see if it is not null and if
         // paramVal is none
 
-//     // Check if input is K or JSON
-        String contentType = req.getContentType() == null ? ""
-                : req.getContentType().toLowerCase();
+        //     // Check if input is K or JSON
+        String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
 
         boolean jsonNotK = !contentType.contains("application/k");
 
 
         if (!jsonNotK && paramVal.equals("none")) {
-                jsonRequest = getRequestJSON(req);
+            jsonRequest = getRequestJSON(req);
 
             if (jsonRequest != null) {
                 paramVal = jsonRequest.optString("mmsVersion");
@@ -620,25 +613,24 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
             logCase = '4';
         }
         switch (logCase) {
-            case '1' :
+            case '1':
                 log(Level.INFO, HttpServletResponse.SC_OK, "Correct Versions");
                 break;
-            case '2' :
+            case '2':
                 log(Level.WARN, HttpServletResponse.SC_CONFLICT,
-                        "Versions do not match! Expected Version " + mmsVersion
-                                + ". Instead received " + paramVal);
+                    "Versions do not match! Expected Version " + mmsVersion + ". Instead received " + paramVal);
                 break;
-            case '3' :
+            case '3':
                 log(Level.ERROR, HttpServletResponse.SC_CONFLICT,
-                        "Missing MMS Version or invalid parameter. Received parameter:" + paramArg + " and argument:" + mmsVersion + ". Request was: " + jsonRequest);
+                    "Missing MMS Version or invalid parameter. Received parameter:" + paramArg + " and argument:"
+                        + mmsVersion + ". Request was: " + jsonRequest);
                 break;
             // TODO: This should be removed but for the moment I am leaving this
             // in as a contingency if anything else may break this.
-            case '4' :
+            case '4':
                 log(Level.ERROR, HttpServletResponse.SC_CONFLICT,
-                        "Wrong MMS Version or invalid input. Expected mmsVersion="
-                                + mmsVersion + ". Instead received "
-                                + paramVal);
+                    "Wrong MMS Version or invalid input. Expected mmsVersion=" + mmsVersion + ". Instead received "
+                        + paramVal);
                 break;
         }
         // Returns true if it is either the wrong version or if it failed to
@@ -672,19 +664,15 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      * getParameterNames from the WebScriptRequest object to compare the
      * parameter name passed in that is desired from the header.
      *
-     * @param req
-     *            WebScriptRequest with parameter to be checked
-     * @param name
-     *            String of the request parameter name to check
-     * @param defaultValue
-     *            default value if there is no parameter with the given name
-     * @author dank
+     * @param req          WebScriptRequest with parameter to be checked
+     * @param name         String of the request parameter name to check
+     * @param defaultValue default value if there is no parameter with the given name
      * @return 'empty' if the parameter is assigned no value, if it is assigned
-     *         "parameter value" (ignoring case), or if it's default is default
-     *         value and it is not assigned "empty" (ignoring case).
+     * "parameter value" (ignoring case), or if it's default is default
+     * value and it is not assigned "empty" (ignoring case).
+     * @author dank
      */
-    public static String getStringArg(WebScriptRequest req, String name,
-            String defaultValue) {
+    public static String getStringArg(WebScriptRequest req, String name, String defaultValue) {
         if (!Utils.toSet(req.getParameterNames()).contains(name)) {
             return defaultValue;
         }
@@ -697,24 +685,23 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      * make the parsedContent JSONObject remain within the scope of the
      * AbstractJavaWebScript. {@link}
      *
-     * @param req
-     *            WebScriptRequest
+     * @param req WebScriptRequest
      */
-    public void setRequestJSON(WebScriptRequest req) {
+    private void setRequestJSON(WebScriptRequest req) {
 
         try {
-//            privateRequestJSON = new JSONObject();
             privateRequestJSON = (JSONObject) req.parseContent();
         } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Could not retrieve JSON");
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not retrieve JSON");
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
 
-    public JSONObject getRequestJSON(WebScriptRequest req) {
+    private JSONObject getRequestJSON(WebScriptRequest req) {
         // Returns immediately if requestJSON has already been set before checking MMS Versions
-        if(privateRequestJSON == null) return privateRequestJSON;
+        if (privateRequestJSON == null) {
+            return null;
+        }
         // Sets privateRequestJSON
         setRequestJSON(req);
         return privateRequestJSON;

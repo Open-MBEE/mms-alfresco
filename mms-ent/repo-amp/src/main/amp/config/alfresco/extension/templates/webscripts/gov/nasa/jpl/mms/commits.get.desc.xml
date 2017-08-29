@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE webscript>
+<webscript>
+    <shortname>Get Commit</shortname>
+    <description>
+        Gets the commit object
+    </description>
+    <url>/projects/{projectId}/commits/{commitId}</url>
+    <format default="json">argument</format>
+    <authentication>user</authentication>
+    <transaction>required</transaction>
+    <family>MMS REST API</family>
+</webscript>

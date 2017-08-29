@@ -20,7 +20,7 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 
 public class WorkspaceDelete extends AbstractJavaWebScript {
@@ -50,22 +50,25 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject result = null;
+        JSONObject object = null;
+        String[] accepts = req.getHeaderValues("Accept");
+        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
+
         try {
             if (validateRequest(req, status)) {
                 String wsId = getRefId(req);
                 String projectId = getProjectId(req);
 
                 // can't delete master
-                if (wsId.equals("master")) {
+                if (wsId.equals(NO_WORKSPACE_ID)) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Cannot delete master workspace");
                     status.setCode(HttpServletResponse.SC_BAD_REQUEST);
                 } else {
-                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), wsId);
+                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, wsId);
                     emsNodeUtil.deleteRef(wsId);
                     WorkspaceNode target = getWorkspace(req);
                     if (target != null) {
-                        result = printObject(target);
+                        object = printObject(target);
                         target.delete(); //this didn't actually delete the alfresco folder just added deleted aspect
                         status.setCode(HttpServletResponse.SC_OK);
                     } else {
@@ -84,13 +87,18 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        if (result == null) {
-            model.put("res", createResponseJson());
+        if (object == null) {
+            model.put(Sjm.RES, createResponseJson());
         } else {
             try {
-                if (!Utils.isNullOrEmpty(response.toString()))
-                    result.put("message", response.toString());
-                model.put("res", NodeUtil.jsonToString(result, 4));
+                if (!Utils.isNullOrEmpty(response.toString())) {
+                    object.put("message", response.toString());
+                }
+                if (prettyPrint || accept.contains("webp")) {
+                    model.put(Sjm.RES, object.toString(4));
+                } else {
+                    model.put(Sjm.RES, object);
+                }
             } catch (JSONException e) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             }

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 
 import com.google.gson.JsonElement;
 import org.apache.log4j.Logger;
@@ -184,6 +185,33 @@ public class ElasticHelper {
         return new JSONArray();
     }
 
+    public Set<String> getCommitHistoryIds(String sysmlid) throws IOException {
+        JSONArray should = new JSONArray();
+        should.put(new JSONObject().put("nested", new JSONObject().put("path", "added").put("query",
+            new JSONObject().put("term", new JSONObject().put("added.id", new JSONObject().put("value", sysmlid))))));
+        should.put(new JSONObject().put("nested", new JSONObject().put("path", "updated").put("query",
+            new JSONObject().put("term", new JSONObject().put("updated.id", new JSONObject().put("value", sysmlid))))));
+        should.put(new JSONObject().put("nested", new JSONObject().put("path", "deleted").put("query",
+            new JSONObject().put("term", new JSONObject().put("deleted.id", new JSONObject().put("value", sysmlid))))));
+        JSONObject query = new JSONObject().put("size", resultLimit)
+            .put("query", new JSONObject().put("bool", new JSONObject().put("should", should)))
+            .put("_source", false);
+            //.put("sort", new JSONArray().put(new JSONObject().put(Sjm.CREATED, new JSONObject().put("order", "desc"))));
+
+        Search search = new Search.Builder(query.toString()).addIndex(elementIndex).addType("commit").build();
+        SearchResult result = client.execute(search);
+
+        Set<String> set = new HashSet<>();
+
+        if (result.getTotal() > 0) {
+            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+            for (int i = 0; i < hits.size(); i++) {
+                set.add(hits.get(i).getAsJsonObject().get("_id").getAsString());
+            }
+        }
+        return set;
+    }
+
     public Boolean checkForElasticIdInCommit(String sysmlid, String commitId) throws IOException {
         JSONArray should = new JSONArray();
         should.put(new JSONObject().put("nested", new JSONObject().put("path", "added").put("query",
@@ -258,7 +286,9 @@ public class ElasticHelper {
                 sub.add(ids.get(count));
             }
             JSONArray elasticids = new JSONArray();
-            sub.forEach(elasticids::put);
+            for (String elasticid : sub) {
+                elasticids.put(elasticid);
+            }
 
             JSONObject queryJson = new JSONObject().put("size", resultLimit)
                 .put("query", new JSONObject().put("terms", new JSONObject().put("_id", elasticids))).put("sort",
@@ -393,9 +423,9 @@ public class ElasticHelper {
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
-                    result.getFailedItems().forEach((item) -> {
+                    for (BulkResult.BulkResultItem item : result.getFailedItems()) {
                         logger.error(String.format("Failed item: %s", item.error));
-                    });
+                    }
                     return false;
                 }
                 actions.clear();
@@ -419,10 +449,9 @@ public class ElasticHelper {
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Update Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
-                    result.getFailedItems().forEach((item) -> {
+                    for (BulkResult.BulkResultItem item : result.getFailedItems()) {
                         logger.error(String.format("Failed item: %s", item.error));
-                    });
-                    //return false;
+                    }
                 }
                 actions.clear();
             }
@@ -532,7 +561,7 @@ public class ElasticHelper {
         try {
             result = client.execute(deleteByQuery);
             if (!result.isSucceeded()) {
-                logger.error("Delete Failed!");
+                logger.error("Deleting Elastic Elements Failed!");
                 logger.error(result.getErrorMessage());
             }
         } catch (Exception e) {
