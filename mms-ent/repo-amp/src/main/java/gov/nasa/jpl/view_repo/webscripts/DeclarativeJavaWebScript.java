@@ -62,6 +62,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     public static final String PROJECT_ID = "projectId";
     public static final String ORG_ID = "orgId";
     public static final String ARTIFACT_ID = "artifactId";
+    public static final String COMMIT_ID = "commitId";
 
     public static final String NO_WORKSPACE_ID = "master"; // default is master if unspecified
     public static final String NO_PROJECT_ID = "no_project";
