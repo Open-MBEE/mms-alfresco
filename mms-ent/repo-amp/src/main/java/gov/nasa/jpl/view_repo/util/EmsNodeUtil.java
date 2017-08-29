@@ -2,10 +2,20 @@ package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.UUID;
+import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1708,10 +1718,10 @@ public class EmsNodeUtil {
             String timestamp = TimeUtils.toTimestamp(date.getTime());
 
             JSONArray results = eh.getElementsLessThanOrEqualTimestamp(sysmlIdList, timestamp);
-            if(results.length() > 0){
+            if (results.length() > 0) {
                 element = results.getJSONObject(0);
             } else {
-                if(logger.isDebugEnabled()){
+                if (logger.isDebugEnabled()) {
                     logger.debug("0 Elements were found for " + sysmlIdList.get(0) + " at or before " + timestamp);
                 }
             }

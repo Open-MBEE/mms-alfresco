@@ -588,12 +588,13 @@ public class ElasticHelper {
             new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp)));
         JSONArray sort = new JSONArray();
         JSONObject modifiedSortOpt = new JSONObject();
+
         modifiedSortOpt.put("order", "desc");
         modifiedSortOpt.put("mode", "max");
         sort.put(new JSONObject().put("_modified", modifiedSortOpt));
         bool.put("filter", filter);
         searchJson.put("sort", sort);
-        searchJson.put("size","1");
+        searchJson.put("size", "1");
         searchJson.put("query", new JSONObject().put("bool", bool));
 
         Search search = new Search.Builder(searchJson.toString()).addIndex(elementIndex).build();
@@ -604,7 +605,7 @@ public class ElasticHelper {
             if (result.getTotal() > 0) {
                 JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
                 int hitNum = hits.size();
-                for(int i = 0; i < hitNum; ++i){
+                for (int i = 0; i < hitNum; ++i) {
                     elements.put(new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString()));
                 }
             }
