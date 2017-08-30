@@ -45,6 +45,25 @@
                                     </resources>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>copy-mms-resources</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <overwrite>true</overwrite>
+                                    <outputDirectory>${project.build.directory}/conf</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/../</directory>
+                                            <includes>
+                                                <include>mms.properties</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
 
@@ -113,6 +132,8 @@
                                  This also fixes issues with the Google Guava Library, which this tomcat plugin uses
                                  version 10.0.1 of but Solr uses 14.0.1 -->
                             <delegate>false</delegate>
+                            <!-- Encode url in UTF-8 for proper character handling -->
+                            <uriEncoding>UTF-8</uriEncoding>
                             <webapps>
                                 <webapp>
                                     <groupId>${project.groupId}</groupId>
@@ -143,6 +164,14 @@
                                     <contextPath>/solr4</contextPath>
                                     <contextFile>${project.build.directory}/contexts/context-solr.xml</contextFile>
                                 </webapp>
+                                <webapp>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>api-explorer</artifactId>
+                                    <version>${maven.alfresco.api.explorer.version}</version>
+                                    <contextPath>/api-explorer</contextPath>
+                                    <type>war</type>
+                                    <asWebapp>true</asWebapp>
+                                </webapp>
                             </webapps>
                         </configuration>
                     </plugin>
@@ -163,6 +192,8 @@
                         <artifactId>robotframework-maven-plugin</artifactId>
                         <version>1.4.7</version>
                         <configuration>
+                            <libdoc>http://github.com/Open-MBEE/mms</libdoc>
+                            <testdoc>http://github.com/Open-MBEE/mms</testdoc>
                             <extraPathDirectories>
                                 <extraPathDirectory>${project.basedir}/src/test/robotframework/libraries</extraPathDirectory>
                             </extraPathDirectories>

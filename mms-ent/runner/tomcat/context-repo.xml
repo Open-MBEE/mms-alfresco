@@ -31,7 +31,8 @@
             searchVirtualFirst="true"
             virtualClasspath="${project.parent.basedir}/repo-amp/target/classes;
                 ${project.parent.basedir}/repo-amp/target/amp/config;
-                ${project.parent.basedir}/repo-amp/target/test-classes"
+                ${project.parent.basedir}/repo-amp/target/test-classes;
+                ${project.parent.basedir}/runner/target/conf"
     />
     <!-- Load from all directories, not just when the META-INF directory is found in exploded JAR -->
     <JarScanner scanAllDirectories="true" />
