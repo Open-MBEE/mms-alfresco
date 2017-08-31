@@ -2,20 +2,11 @@ package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alfresco.schedule.ScheduledJobLockExecuter;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -1663,6 +1654,7 @@ public class EmsNodeUtil {
     public JSONObject getModelAtCommit(String commitId) {
         JSONObject result = new JSONObject();
         JSONArray elements = new JSONArray();
+        ArrayList<String> refsCommitsIds = new ArrayList<>();
         // Construct a query for elasticsearch that will get the reference id of the commitId.
 
         Map<String, Object> commit = pgh.getCommit(commitId);
@@ -1670,17 +1662,19 @@ public class EmsNodeUtil {
             String refId = commit.get(Sjm.REFID).toString();
 
             List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
-            for (Map<String, Object>n : pgh.getAllNodesWithLastCommitTimestamp()) {
+            for(Map<String, Object> ref : refsCommits){
+                refsCommitsIds.add((String)ref.get(Sjm.SYSMLID));
+            }
+            for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
 
-                if(((Date)n.get(Sjm.TIMESTAMP)).getTime() <= ((Date)commit.get(Sjm.TIMESTAMP)).getTime()) {
+                if (((Date) n.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
                     try {
-                        elements.put(eh.getElementByCommitId((String) n.get(pgh.LASTCOMMIT), (String) n.get(Sjm.SYSMLID)));
+                        elements.put(eh.getElementByCommitId((String) n.get(PostgresHelper.LASTCOMMIT), (String) n.get(Sjm.SYSMLID)));
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        logger.error(e.getMessage());
                     }
-                }
-                else {
-                    JSONObject pastElement = getElementAtCommit((String) n.get(Sjm.SYSMLID), commitId);
+                } else {
+                    JSONObject pastElement = getElementAtCommit((String) n.get(Sjm.SYSMLID), commitId, refsCommitsIds);
                     if (pastElement.has(Sjm.SYSMLID)) {
                         elements.put(pastElement);
                     }
@@ -1701,31 +1695,52 @@ public class EmsNodeUtil {
      * @return Element JSON
      */
     public JSONObject getElementAtCommit(String sysmlId, String commitId) {
-        ArrayList<String> sysmlIdList = new ArrayList<>();
-        sysmlIdList.add(sysmlId);
-        return getElementsAtCommit(sysmlIdList, commitId);
-    }
+        JSONObject pastElement = new JSONObject();
+        Map<String, Object> commit = pgh.getCommit(commitId);
+        ArrayList<String> refsCommitsIds = new ArrayList<>();
+        if (commit != null) {
+            String refId = commit.get(Sjm.REFID).toString();
+            List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
 
-    public JSONObject getElementsAtCommit(ArrayList<String> sysmlIdList, String commitId) {
-        JSONObject element = new JSONObject();
+            for (Map<String, Object> ref : refsCommits) {
+                System.out.println("Ref " + ref.toString());
+                refsCommitsIds.add((String)ref.get(Sjm.SYSMLID));
+            }
+            pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
+        }
+
+        return pastElement;
+    }
+    public JSONObject getElementAtCommit(String sysmlId, String commitId, ArrayList<String> refIds) {
+        JSONArray results = new JSONArray();
+        JSONObject json = new JSONObject();
+        String timestampFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
         try {
+            // Get commit object and retrieve the refs commits
             Map<String, Object> commit = pgh.getCommit(commitId);
-            Date date = (Date) commit.get(Sjm.TIMESTAMP);
-            String timestamp = TimeUtils.toTimestamp(date.getTime());
 
-            JSONArray results = eh.getElementsLessThanOrEqualTimestamp(sysmlIdList, timestamp);
-            if (results.length() > 0) {
-                element = results.getJSONObject(0);
-            } else {
+            Date date = (Date) commit.get(Sjm.TIMESTAMP);
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis( date.getTime());
+            cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+            String timestamp = new SimpleDateFormat(timestampFormat).format(cal.getTime());
+
+            // Search for element at commit
+            results = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds);
+            if (results.length() < 1) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("0 Elements were found for " + sysmlIdList.get(0) + " at or before " + timestamp);
+                    logger.debug("0 Elements were found for " + sysmlId + " at or before " + timestamp);
                 }
+            } else {
+                // This assumes that the results JSONArray is sorted by timestamp and the first one in the array is the
+                //  closest to the timestamp of the commit.
+                json = results.getJSONObject(0);
             }
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return element;
+        return json;
     }
 }

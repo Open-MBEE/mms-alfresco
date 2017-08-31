@@ -606,8 +606,7 @@ public class PostgresHelper {
 
         try {
             connect();
-            PreparedStatement query = this.conn.prepareStatement(
-                "SELECT \"nodes" + workspaceId + "\".id, \"nodes" + workspaceId + "\".elasticid, "
+            ResultSet rs = execQuery( "SELECT \"nodes" + workspaceId + "\".id, \"nodes" + workspaceId + "\".elasticid, "
                     + "\"nodes" + workspaceId + "\".nodetype, \"nodes" + workspaceId + "\".sysmlid, "
                     + "\"nodes" + workspaceId + "\".lastcommit, \"nodes" + workspaceId + "\".initialcommit, "
                     + "\"nodes" + workspaceId + "\".deleted, commits.timestamp "
@@ -615,7 +614,6 @@ public class PostgresHelper {
                     + "JOIN commits ON \"nodes" + workspaceId+ "\".lastcommit = commits.elasticid "
                     + "WHERE initialcommit IS NOT NULL ORDER BY commits.timestamp;");
 
-            ResultSet rs = query.executeQuery();
             while (rs.next()) {
                 Map<String, Object> node = new HashMap<>();
                 node.put(Sjm.ELASTICID, rs.getString(2));
