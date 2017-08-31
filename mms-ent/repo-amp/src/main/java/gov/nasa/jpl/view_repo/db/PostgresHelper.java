@@ -606,13 +606,11 @@ public class PostgresHelper {
 
         try {
             connect();
-            ResultSet rs = execQuery( "SELECT \"nodes" + workspaceId + "\".id, \"nodes" + workspaceId + "\".elasticid, "
-                    + "\"nodes" + workspaceId + "\".nodetype, \"nodes" + workspaceId + "\".sysmlid, "
-                    + "\"nodes" + workspaceId + "\".lastcommit, \"nodes" + workspaceId + "\".initialcommit, "
-                    + "\"nodes" + workspaceId + "\".deleted, commits.timestamp "
-                    + "FROM \"nodes" + workspaceId + "\" "
-                    + "JOIN commits ON \"nodes" + workspaceId+ "\".lastcommit = commits.elasticid "
-                    + "WHERE initialcommit IS NOT NULL ORDER BY commits.timestamp;");
+            ResultSet rs = execQuery(
+                String.format("SELECT nodes%s.id, nodes%s.elasticid, nodes%s.nodetype, nodes%s.sysmlid, "
+                    + "nodes%s.lastcommit, nodes%s.initialcommit, nodes%s.deleted, commits.timestamp "
+                    + "FROM nodes%s JOIN commits ON nodes%s.lastcommit = commits.elasticid "
+                    + "WHERE initialcommit IS NOT NULL ORDER BY commits.timestamp;", workspaceId));
 
             while (rs.next()) {
                 Map<String, Object> node = new HashMap<>();
