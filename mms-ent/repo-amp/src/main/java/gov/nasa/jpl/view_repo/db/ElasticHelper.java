@@ -570,4 +570,52 @@ public class ElasticHelper {
         }
         return new JSONObject(result.getJsonString());
     }
+
+    /**
+     * Search elasticsearch for an element based on the sysmlids provided and timestamp. Elasticsearch will find all elements matching
+     * the sysmlid then filter and sort by timestamp. If the element doesn't exist at the timestamp it will return null.
+     * @param sysmlId
+     * @param timestamp
+     * @return
+     */
+    public JSONArray getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds) {
+        JSONObject searchJson = new JSONObject();
+        JSONArray elements = new JSONArray();
+        JSONObject bool = new JSONObject().put("must", new JSONObject().put("term", new JSONObject().put("id", sysmlId)));
+        // Create search filter
+        JSONArray boolArray = new JSONArray();
+        JSONObject range = new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp)));
+        JSONObject filterTerms = new JSONObject().put("terms", new JSONObject().put(Sjm.COMMITID, refsCommitIds));
+        boolArray.put(range);
+        boolArray.put(filterTerms);
+        JSONObject filter =new JSONObject().put("bool", new JSONObject().put("must", boolArray));
+
+        // Create Sort option
+        JSONArray sort = new JSONArray();
+        JSONObject modifiedSortOpt = new JSONObject();
+        modifiedSortOpt.put("order", "desc");
+        modifiedSortOpt.put("mode", "max");
+        sort.put(new JSONObject().put("_modified", modifiedSortOpt));
+        bool.put("filter", filter);
+        searchJson.put("sort", sort);
+        searchJson.put("query", new JSONObject().put("bool", bool));
+
+        Search search = new Search.Builder(searchJson.toString()).addIndex(elementIndex).build();
+        SearchResult result;
+        try {
+            result = client.execute(search);
+
+            if (result.getTotal() > 0) {
+                JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+                int hitNum = hits.size();
+                for (int i = 0; i < hitNum; ++i) {
+                    elements.put(new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString()));
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+
+        return elements;
+    }
 }
