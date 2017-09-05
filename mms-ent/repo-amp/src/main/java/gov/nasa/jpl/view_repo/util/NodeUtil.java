@@ -653,15 +653,11 @@ public class NodeUtil {
         if (!artifactNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
             artifactNode.addAspect(Acm.ACM_IDENTIFIABLE);
         }
-        if (!artifactNode.hasAspect("view:Checksummable")) {
-            artifactNode.addAspect("view:Checksummable");
-        }
 
         artifactNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
         artifactNode.createOrUpdateProperty("cm:isIndexed", true);
         artifactNode.createOrUpdateProperty("cm:isContentIndexed", false);
         artifactNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
-        artifactNode.createOrUpdateProperty("view:cs", cs);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Creating artifact with indexing: " + artifactNode.getProperty("cm:isIndexed"));
@@ -778,15 +774,11 @@ public class NodeUtil {
 		if (!pngNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
 			pngNode.addAspect(Acm.ACM_IDENTIFIABLE);
 		}
-		if (!pngNode.hasAspect("view:Checksummable")) {
-			pngNode.addAspect("view:Checksummable");
-		}
 
 		pngNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
 		pngNode.createOrUpdateProperty("cm:isIndexed", true);
 		pngNode.createOrUpdateProperty("cm:isContentIndexed", false);
 		pngNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
-		pngNode.createOrUpdateProperty("view:cs", cs);
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("Creating PNG artifact with indexing: "
