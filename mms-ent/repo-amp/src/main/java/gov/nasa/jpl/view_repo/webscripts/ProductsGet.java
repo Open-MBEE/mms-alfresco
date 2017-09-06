@@ -23,7 +23,7 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
 public class ProductsGet extends AbstractJavaWebScript {
-	static Logger logger = Logger.getLogger(ProductsGet.class);
+    static Logger logger = Logger.getLogger(ProductsGet.class);
 
     public ProductsGet() {
         super();
@@ -91,6 +91,21 @@ public class ProductsGet extends AbstractJavaWebScript {
         String groupId = req.getServiceMatch().getTemplateVars().get("groupId");
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : projectId, commitId, extended != null && extended.equals("true"), groupId != null ?  depth != null ? Integer.parseInt(depth) : 1 : 10000 );
+
+        int trueDepth = groupId != null ? (depth != null ? getInt(depth) : 1) : 10000;
+
+        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : projectId, commitId,
+            extended != null && extended.equals("true"), trueDepth);
+    }
+
+    private int getInt(String num) {
+        try {
+            return Integer.parseInt(num);
+        } catch (NumberFormatException nfe) {
+            if(logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(nfe)));
+            }
+        }
+        return 1;
     }
 }
