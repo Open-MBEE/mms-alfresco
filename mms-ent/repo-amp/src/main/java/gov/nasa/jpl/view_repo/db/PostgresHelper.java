@@ -1733,9 +1733,6 @@ public class PostgresHelper {
             execUpdate("INSERT INTO edgeTypes(id, name) VALUES (3, 'transclusion');");
             execUpdate("INSERT INTO edgeTypes(id, name) VALUES (4, 'childview');");
 
-            execUpdate(
-                "INSERT INTO nodes(elasticId, nodeType, sysmlId) VALUES ('holding_bin', (select nodeTypes.id from nodeTypes where name = 'holdingbin'), 'holding_bin');");
-
             execUpdate("INSERT INTO commitType(id, name) VALUES (1, 'commit');");
             execUpdate("INSERT INTO commitType(id, name) VALUES (2, 'branch');");
             execUpdate("INSERT INTO commitType(id, name) VALUES (3, 'merge');");
