@@ -102,10 +102,8 @@ public class SiteGet extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
-                String timestamp = req.getParameter("timestamp");
-                Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
 
-                JSONArray jsonArray = handleSite(projectId, refId, dateTime, req);
+                JSONArray jsonArray = handleSite(projectId, refId);
                 json = new JSONObject();
                 json.put("groups", jsonArray);
             }
@@ -133,27 +131,24 @@ public class SiteGet extends AbstractJavaWebScript {
     /**
      * Get all the sites that are contained in the workspace, and create json with that info in it.
      *
-     * @param dateTime  The time to base the site retrieval, or null
+     *
      * @return json to return
      *
      * @throws IOException
      */
-    private JSONArray handleSite(String projectId, String refId, Date dateTime, WebScriptRequest req)
+    private JSONArray handleSite(String projectId, String refId)
                     throws IOException {
 
         JSONArray json = new JSONArray();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        PostgresHelper pgh = new PostgresHelper();
-        pgh.setProject(projectId);
-        pgh.setWorkspace(refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         ElasticHelper eh = new ElasticHelper();
         List<String> ids = new ArrayList<>();
         List<String> alfs = new ArrayList<>();
 
         try {
-            List<Node> siteNodes = pgh.getSites();
-            List<Node> alfSites = pgh.getSites(true, false);
+            List<Node> siteNodes = emsNodeUtil.getSites(true, true);
+            List<Node> alfSites = emsNodeUtil.getSites(true, false);
 
             for (Node n : siteNodes) {
                 ids.add(n.getElasticId());

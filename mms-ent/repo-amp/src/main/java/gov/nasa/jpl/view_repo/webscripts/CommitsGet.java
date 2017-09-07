@@ -63,14 +63,29 @@ public class CommitsGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
+        JSONObject top = new JSONObject();
+        JSONArray elementJson = null;
 
         if (logger.isDebugEnabled()) {
             logger.debug(user + " " + req.getURL());
         }
 
-        JSONObject top = new JSONObject();
-        JSONArray elementJson = handleRequest(req);
+        try {
+            if (validateRequest(req, status)) {
+                String projectId = getProjectId(req);
+                String refId = getRefId(req);
 
+                elementJson = handleRequest(req, projectId, refId);
+
+            }
+        } catch (JSONException e) {
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        } catch (Exception e) {
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace:\n %s \n",
+                e.getLocalizedMessage());
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
 
         try {
             if (elementJson.length() > 0) {
@@ -94,10 +109,12 @@ public class CommitsGet extends AbstractJavaWebScript {
         return model;
     }
 
-    @Override
-    protected boolean validateRequest(WebScriptRequest req, Status status) {
-        // TODO Auto-generated method stub
-        return true;
+    /**
+     * Validate the request and check some permissions
+     */
+    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
+        String id = req.getServiceMatch().getTemplateVars().get(REF_ID);
+        return checkRequestContent(req) && checkRequestVariable(id, REF_ID);
     }
 
     /**
@@ -106,8 +123,9 @@ public class CommitsGet extends AbstractJavaWebScript {
      * @param req
      * @return
      */
-    private JSONArray handleRequest(WebScriptRequest req) {
+    private JSONArray handleRequest(WebScriptRequest req, String projectId, String refId) {
 
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         JSONArray commitJson = new JSONArray();
         String commitId = req.getServiceMatch().getTemplateVars().get(COMMIT_ID);
 
@@ -119,9 +137,10 @@ public class CommitsGet extends AbstractJavaWebScript {
 
         try {
             ElasticHelper eh = new ElasticHelper();
-            commitJson.put(eh.getCommitByElasticId(commitId));
+            commitJson.put(emsNodeUtil.getCommitObject(commitId));
         } catch (IOException e) {
-            e.printStackTrace();
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not insert into ElasticSearch");
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         return commitJson;

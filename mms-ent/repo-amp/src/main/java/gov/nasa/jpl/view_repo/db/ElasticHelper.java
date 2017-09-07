@@ -215,6 +215,26 @@ public class ElasticHelper {
 
     }
 
+    /**
+     * Gets the JSON document of commit type using a elastic _id (1)
+     *
+     * @param id _id elasticsearch property          (2)
+     * @return JSONObject o or null
+     */
+    public JSONObject getCommitByElasticId(String id, String index) throws IOException {
+        Get get = new Get.Builder(index, id).type("commit").build();
+
+        JestResult result = client.execute(get);
+
+        if (result.isSucceeded()) {
+            JSONObject o = new JSONObject(result.getJsonObject().get("_source").toString());
+            o.put(Sjm.ELASTICID, result.getJsonObject().get("_id").getAsString());
+            return o;
+        }
+
+        return null;
+    }
+
     public JSONObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException {
         JSONArray filter = new JSONArray();
         filter.put(new JSONObject().put("term", new JSONObject().put("_commitId", elasticId)));

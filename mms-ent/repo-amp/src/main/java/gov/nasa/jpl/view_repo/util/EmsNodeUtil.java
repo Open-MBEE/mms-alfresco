@@ -1447,6 +1447,19 @@ public class EmsNodeUtil {
         }
     }
 
+    public List<Node> getSites(boolean sites, boolean sitepackages) {
+        return pgh.getSites(sites, sitepackages);
+    }
+
+    public JSONObject getCommitObject(String commitId){
+        try {
+            return eh.getCommitByElasticId(commitId, projectId );
+        } catch (IOException e) {
+            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return null;
+    }
+
     public void insertProjectIndex(String projectId) {
         try {
             eh.createIndex(projectId);

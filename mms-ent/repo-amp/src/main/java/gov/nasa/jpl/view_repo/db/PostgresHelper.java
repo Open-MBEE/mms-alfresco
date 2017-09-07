@@ -459,10 +459,6 @@ public class PostgresHelper {
         return null;
     }
 
-    public List<Node> getSites() {
-        return getSites(true, true);
-    }
-
     public List<Node> getSites(boolean sites, boolean sitepackages) {
         List<Node> result = new ArrayList<>();
 
