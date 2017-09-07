@@ -216,7 +216,7 @@
         <profile>
             <id>testrail</id>
             <properties>
-                <skipTests>false</skipTests>
+                <skipTests>true</skipTests>
             </properties>
             <repositories>
                 <repository>
