@@ -1,16 +1,15 @@
 {
     "groups": [
         {
+            "_id": "group1",
+            "_link": "/share/page/repository#filter=path|/Sites/initorg/documentLibrary/PA/group1",
+            "_name": "group1"
+        },
+        {
             "_id": "group2",
             "_link": "/share/page/repository#filter=path|/Sites/initorg/documentLibrary/PA/group2",
             "_name": "group2",
             "_parentId": "group1"
-        },
-        {
-            "_id": "group1",
-            "_link": "/share/page/repository#filter=path|/Sites/initorg/documentLibrary/PA/group1",
-            "_name": "group1",
-            "_parentId": "initorg"
         }
     ]
 }
