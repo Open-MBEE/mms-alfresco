@@ -1,7 +1,5 @@
 package gov.nasa.jpl.view_repo.db;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,6 +32,8 @@ public class PostgresHelper {
     private Map<String, String> projectProperties = new HashMap<>();
     private String workspaceId;
     private Savepoint savePoint;
+    public static final String LASTCOMMIT = "lastCommit";
+    public static final String INITIALCOMMIT = "initialCommit";
 
 
     public enum DbEdgeTypes {
@@ -261,7 +261,9 @@ public class PostgresHelper {
         try {
             this.conn.createStatement().executeUpdate(query);
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
     }
 
@@ -273,7 +275,9 @@ public class PostgresHelper {
         try {
             count = this.conn.createStatement().executeUpdate(query);
         } catch (SQLException e) {
-            e.printStackTrace();
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
 
         return count;
@@ -286,7 +290,9 @@ public class PostgresHelper {
         try {
             rs = this.conn.createStatement().executeQuery(query);
         } catch (SQLException e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            if (logger.isDebugEnabled()) {
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
         return rs;
     }
@@ -581,6 +587,39 @@ public class PostgresHelper {
             ResultSet rs = query.executeQuery();
             while (rs.next()) {
                 result.add(resultSetToNode(rs));
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a modified version of all the nodes the database along with the timestamp of the last commit.
+     * @return List of Maps
+     */
+    public List<Map<String, Object>> getAllNodesWithLastCommitTimestamp() {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        try {
+            connect();
+            ResultSet rs = execQuery(
+                String.format("SELECT nodes%1$s.id, nodes%1$s.elasticid, nodes%1$s.nodetype, nodes%1$s.sysmlid, "
+                    + "nodes%1$s.lastcommit, nodes%1$s.initialcommit, nodes%1$s.deleted, commits.timestamp "
+                    + "FROM nodes%1$s JOIN commits ON nodes%1$s.lastcommit = commits.elasticid "
+                    + "WHERE initialcommit IS NOT NULL ORDER BY commits.timestamp;", workspaceId));
+
+            while (rs.next()) {
+                Map<String, Object> node = new HashMap<>();
+                node.put(Sjm.ELASTICID, rs.getString(2));
+                node.put(Sjm.SYSMLID, rs.getString(4));
+                node.put(LASTCOMMIT, rs.getString(5));
+                node.put(INITIALCOMMIT, rs.getString(6));
+                node.put(Sjm.TIMESTAMP, rs.getString(7));
+                result.add(node);
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -920,11 +959,11 @@ public class PostgresHelper {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.select"));
         String query = String.format("INSERT INTO \"edges%s\" (parent, child, edgeType) VALUES ", workspaceId);
         List<String> values = new ArrayList<>();
-        edges.forEach((edge) -> {
+        for (Map<String, String> edge : edges) {
             values.add("((SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("parent")
                 + "'), (SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = '" + edge.get("child") + "'), "
                 + edge.get("edgetype") + ")");
-        });
+        }
         query += StringUtils.join(values, ",") + ";";
         return query;
     }
@@ -983,20 +1022,10 @@ public class PostgresHelper {
         try {
             connect();
             PreparedStatement query = this.conn
-                .prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = " + true + " WHERE sysmlid = ?");
-            query.setString(1, sysmlId);
+                .prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = ? WHERE sysmlid = ?");
+            query.setBoolean(1, true);
+            query.setString(2, sysmlId);
             query.execute();
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-    }
-
-    public void resurrectNode(String sysmlId) {
-        try {
-            execUpdate(
-                "UPDATE \"nodes" + workspaceId + "\" SET deleted = " + false + " WHERE sysmlid = '" + sysmlId + "'");
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1822,7 +1851,7 @@ public class PostgresHelper {
             if (isTag) {
                 execUpdate(String
                     .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s",
-                        workspaceId, EmsConfig.get("pg.user")));
+                        childWorkspaceNameSanitized, EmsConfig.get("pg.user")));
             }
 
         } catch (SQLException e) {
@@ -1960,6 +1989,7 @@ public class PostgresHelper {
     }
 
     public List<Map<String, Object>> getRefsCommits(String refId, int commitId) {
+
         List<Map<String, Object>> result = new ArrayList<>();
         try {
             String refIdString = refId.replace("-", "_").replaceAll("\\s+", "");
@@ -1984,7 +2014,7 @@ public class PostgresHelper {
                 Map<String, Object> commit = new HashMap<>();
                 commit.put(Sjm.SYSMLID, rs.getString(1));
                 commit.put(Sjm.CREATOR, rs.getString(2));
-                commit.put(Sjm.TIMESTAMP, rs.getTimestamp(3));
+                commit.put(Sjm.CREATED, rs.getTimestamp(3));
                 commit.put("refId", rs.getString(4));
                 commit.put("commitType", rs.getString(5));
                 result.add(commit);
@@ -2022,11 +2052,17 @@ public class PostgresHelper {
 
     public void insertRef(String newWorkspaceId, String newWorkspaceName, int headCommit, String elasticId,
         boolean isTag) {
+        String parent;
+        if(workspaceId.equals("") && !newWorkspaceId.equals("master")){
+            parent = "master";
+        }else{
+            parent = workspaceId;
+        }
         try {
             Map<String, String> map = new HashMap<>();
             map.put("refId", newWorkspaceId);
             map.put("refName", newWorkspaceName);
-            map.put("parent", workspaceId);
+            map.put("parent", parent);
             map.put("parentCommit", Integer.toString(headCommit));
             map.put("elasticId", elasticId);
             map.put("tag", Boolean.toString(isTag));

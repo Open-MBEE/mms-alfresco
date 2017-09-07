@@ -223,7 +223,7 @@ curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin -X
 ### Robotframework test suite
 Robot tests can be run with the following maven profiles in the mms-ent directory:
 ```
-./mvnw install -Prun,robot-tests
+./mvnw install -Ddependency.surf.version=6.3 -Prun,robot-tests
 ```
 Please note that tests should be run on a clean instance, therefore, it may be helpful to run clean.sh before running the tests
 

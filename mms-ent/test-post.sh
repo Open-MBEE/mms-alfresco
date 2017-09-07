@@ -11,5 +11,4 @@ export TESTRAIL_PASS=$3
 export TESTRAIL_SUITE_ID=$4
 export TESTRAIL_PLAN_ID=$5
 
-#mvn -Prun,robotframework,testrail install
-mvn -Ptestrail install
+./mvnw -Ptestrail install

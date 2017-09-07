@@ -21,7 +21,7 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.view_repo.util.NodeUtil;
-//import gov.nasa.jpl.view_repo.webscripts.WebScriptUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript;
 
 public class ModuleInfoGet extends DeclarativeWebScript {
@@ -48,7 +48,7 @@ public class ModuleInfoGet extends DeclarativeWebScript {
         json.put( "modules", modulesJson );
         status.setCode( HttpServletResponse.SC_OK );
 
-        model.put("res", json.toString(2));
+        model.put(Sjm.RES, json.toString(2));
         return model;
     }
 

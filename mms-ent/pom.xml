@@ -4,11 +4,17 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>gov.nasa.jpl.mbee</groupId>
     <artifactId>mms-ent</artifactId>
-    <version>3.1.0-SNAPSHOT</version>
+    <version>3.2.0-SNAPSHOT</version>
     <name>Alfresco Repository and Share Quickstart with database and an embedded Tomcat runner.</name>
     <description>This All-in-One project allows to manage all the components involved in Alfresco development (Repo, Share, Solr4, AMPs) in one project
     </description>
     <packaging>pom</packaging>
+
+    <parent>
+        <groupId>org.alfresco.maven</groupId>
+        <artifactId>alfresco-sdk-parent</artifactId>
+        <version>2.2.0</version>
+    </parent>
 
     <!-- SDK properties have sensible defaults in the SDK parent, but you can
         override the properties below to use another version. For more available
@@ -17,8 +23,8 @@
         <!-- The following are default values for data location, Alfresco Community
             version, and Records Management Module version. Uncomment if you need to
             change (Note. current default version for Enterprise edition is 5.0.1) -->
-        <alfresco.version>5.0.d</alfresco.version>
-        <alfresco.rm.version>2.3</alfresco.rm.version>
+        <alfresco.version>5.1.g</alfresco.version>
+        <alfresco.rm.version>2.4.b</alfresco.rm.version>
         <!-- <alfresco.data.location>alf_data_dev</alfresco.data.location> -->
 
         <!-- This control the root logging level for all apps uncomment and change,
@@ -35,22 +41,32 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
-    <parent>
-        <groupId>org.alfresco.maven</groupId>
-        <artifactId>alfresco-sdk-parent</artifactId>
-        <version>2.1.1</version>
-    </parent>
+    <dependencies>
+        <!-- If we are running tests then make the H2 Scripts available.
+             Note. tests are skipped when you are running -Prun -->
+        <dependency>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-repository</artifactId>
+            <version>${alfresco.version}</version>
+            <classifier>h2scripts</classifier>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
 
-    <!-- Here we realize the connection with the Alfresco selected platform
-        (e.g.version and edition) -->
+    <!-- Here we realize the connection with the Alfresco selected platform (e.g.version and edition) -->
     <dependencyManagement>
         <dependencies>
-            <!-- This will import the dependencyManagement for all artifacts in the
-                selected Alfresco platform (see http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Importing_Dependencies)
-                NOTE: You still need to define dependencies in your POM, but you can omit
-                version as it's enforced by this dependencyManagement. NOTE: It defaults
-                to the latest version this SDK pom has been tested with, but alfresco version
-                can/should be overridden in your project's pom -->
+            <!-- This will import the dependencyManagement for all artifacts in the selected Alfresco plaftorm
+                 (see http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Importing_Dependencies)
+                 NOTE: You still need to define dependencies in your POM, but you can omit version as it's enforced by this dependencyManagement.
+                 NOTE: It defaults to the latest version this SDK pom has been tested with, but alfresco version can/should be overridden in your project's pom
+             -->
             <dependency>
                 <groupId>${alfresco.groupId}</groupId>
                 <artifactId>alfresco-platform-distribution</artifactId>
@@ -60,6 +76,65 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <!-- Compress JavaScript files and store as *-min.js -->
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>yuicompressor-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.alfresco.maven.plugin</groupId>
+                <artifactId>alfresco-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <!-- Invoke your build with -Prun to run the multimodule project and enable rapid dev mode in your IDE.
+                 See 'run' profile in the sub modules pom.xml for further behavioral details.
+             -->
+            <id>run</id>
+            <properties>
+                <!-- While running in rapid dev mode with -Prun, we don't want amp web resources
+                    to be added to the war, so we can load them directly from the AMP project (see
+                    runner/tomcat/context-*.xml for more details) -->
+                <maven.alfresco.includeWebResources>false</maven.alfresco.includeWebResources>
+            </properties>
+        </profile>
+
+        <!-- if we're on a unix machine, chmod run.sh to be executable -->
+        <profile>
+            <id>chmod</id>
+            <activation><os><family>unix</family></os></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>chmod</id>
+                                <phase>validate</phase>
+                                <goals><goal>exec</goal></goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <executable>chmod</executable>
+                            <arguments>
+                                <argument>+x</argument>
+                                <argument>${basedir}/run.sh</argument>
+                            </arguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <distributionManagement>
         <!-- use mvn -U deploy -DgeneratePom=true -Dpackaging=jar -->
@@ -75,82 +150,6 @@
         </snapshotRepository>
     </distributionManagement>
 
-    <repositories>
-        <repository>
-            <id>alfresco-public</id>
-            <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-        </repository>
-        <repository>
-            <id>alfresco-public-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/groups/public-snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>daily</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <build>
-        <plugins>
-            <!-- Compress JavaScript files and store as *-min.js -->
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>yuicompressor-maven-plugin</artifactId>
-                <configuration>
-                    <jswarn>false</jswarn>
-                    <encoding>UTF-8</encoding>
-                    <!-- <includes> <include>**/*.js</include> </includes> -->
-                    <!-- We don't need to re-minify YUI or 3rd party libs -->
-                    <excludes>
-                        <exclude>**/*.js</exclude>
-                        <exclude>**/WEB-INF/**</exclude>
-                        <exclude>**/tiny_mce/**</exclude>
-                        <exclude>**/yui/**</exclude>
-                        <exclude>js/lib/dojo*/**</exclude>
-                        <exclude>**/log4javascript*.js</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>versions-maven-plugin</artifactId>
-                <version>2.3</version>
-            </plugin>
-            <plugin>
-                <groupId>org.alfresco.maven.plugin</groupId>
-                <artifactId>alfresco-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <configuration>
-                    <nonFilteredFileExtensions>
-                        <nonFilteredFileExtension>js</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>css</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>jar</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>ico</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>eot</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>ttf</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>woff</nonFilteredFileExtension>
-                    </nonFilteredFileExtensions>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <!-- Invoke your build with -Prun to run the multimodule project and enable
-                rapid dev mode in your IDE. See 'run' profile in the sub modules pom.xml
-                for further behavioral details. -->
-            <id>run</id>
-            <properties>
-                <!-- While running in rapid dev mode with -Prun, we don't want amp web
-                    resources to be added to the war, so we can load them directly from the AMP
-                    project (see runner/tomcat/context-*.xml for more details) -->
-                <maven.alfresco.includeWebResources>false</maven.alfresco.includeWebResources>
-            </properties>
-        </profile>
-    </profiles>
     <modules>
         <module>repo-amp</module>
         <module>share-amp</module>

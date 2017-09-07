@@ -46,15 +46,13 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
  * @author han
  */
 public class OrgGet extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(OrgGet.class);
-
-    public static final String PROJECTS = "projects";
-    public static final String ORGS = "orgs";
 
     public OrgGet() {
         super();
@@ -79,7 +77,7 @@ public class OrgGet extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
         if (checkMmsVersions && compareMmsVersions(req, getResponse(), getResponseStatus())) {
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
             return model;
         }
         JSONObject json = null;
@@ -89,7 +87,7 @@ public class OrgGet extends AbstractJavaWebScript {
         try {
             if (validateRequest(req, status)) {
                 String orgId = getOrgId(req);
-                Boolean projects = req.getPathInfo().contains(PROJECTS);
+                Boolean projects = req.getPathInfo().contains(Sjm.PROJECTS);
                 JSONArray jsonArray;
 
                 if (projects) {
@@ -98,7 +96,7 @@ public class OrgGet extends AbstractJavaWebScript {
                     if (projectId != null) {
                         jsonArray = handleProject(projectId);
                         json = new JSONObject();
-                        json.put(PROJECTS, filterProjectByPermission(jsonArray));
+                        json.put(Sjm.PROJECTS, filterProjectByPermission(jsonArray));
                         if (jsonArray.length() == 0) {
                             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Project does not exist\n");
                             responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
@@ -108,21 +106,21 @@ public class OrgGet extends AbstractJavaWebScript {
                     } else if (orgId != null) {
                         jsonArray = handleOrgProjects(orgId);
                         json = new JSONObject();
-                        json.put(PROJECTS, filterProjectByPermission(jsonArray));
+                        json.put(Sjm.PROJECTS, filterProjectByPermission(jsonArray));
                     } else {
                         jsonArray = handleProjects();
                         json = new JSONObject();
-                        json.put(PROJECTS, filterProjectByPermission(jsonArray));
+                        json.put(Sjm.PROJECTS, filterProjectByPermission(jsonArray));
                     }
 
                 } else {
                     jsonArray = handleOrg(orgId);
                     json = new JSONObject();
-                    json.put(ORGS, filterOrgsByPermission(jsonArray));
+                    json.put(Sjm.ORGS, filterOrgsByPermission(jsonArray));
                     if (orgId != null) {
                         if (jsonArray.length() == 0) {
                             responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
-                        } else if (json.getJSONArray(ORGS).length() == 0) {
+                        } else if (json.getJSONArray(Sjm.ORGS).length() == 0) {
                             responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
                         }
                     }
@@ -137,12 +135,12 @@ public class OrgGet extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         if (json == null) {
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
         } else {
             if (prettyPrint || accept.contains("webp")) {
-                model.put("res", json.toString(4));
+                model.put(Sjm.RES, json.toString(4));
             } else {
-                model.put("res", json);
+                model.put(Sjm.RES, json);
             }
         }
 

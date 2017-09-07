@@ -1,100 +1,65 @@
 package gov.nasa.jpl.view_repo.util;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.transaction.UserTransaction;
 import javax.xml.bind.DatatypeConverter;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.jscript.ScriptVersion;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.LimitBy;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.NullArgumentException;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.ClassUtils;
 import gov.nasa.jpl.mbee.util.CompareUtils;
-import gov.nasa.jpl.mbee.util.CompareUtils.GenericComparator;
 import gov.nasa.jpl.mbee.util.Debug;
 import gov.nasa.jpl.mbee.util.MethodCall;
 import gov.nasa.jpl.mbee.util.Pair;
-import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.actions.ActionUtil;
-import gov.nasa.jpl.view_repo.db.Node;
-import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode.EmsVersion;
-import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript;
+import sun.rmi.runtime.Log;
 
 public class NodeUtil {
 
@@ -116,9 +81,8 @@ public class NodeUtil {
 
     /* static flags and constants */
 
-    protected static String txMutex = "";
     protected static boolean beenInsideTransaction = false;
-    protected static Map<Long, Boolean> beenInsideTransactionMap = new LinkedHashMap<Long, Boolean>();
+    protected static Map<Long, Boolean> beenInsideTransactionMap = new LinkedHashMap<>();
 
     public static synchronized boolean hasBeenInsideTransaction() {
         Boolean b = beenInsideTransactionMap.get(Thread.currentThread().getId());
@@ -133,7 +97,7 @@ public class NodeUtil {
     }
 
     protected static boolean beenOutsideTransaction = false;
-    protected static Map<Long, Boolean> beenOutsideTransactionMap = new LinkedHashMap<Long, Boolean>();
+    protected static Map<Long, Boolean> beenOutsideTransactionMap = new LinkedHashMap<>();
 
     public static synchronized boolean hasBeenOutsideTransaction() {
         Boolean b = beenOutsideTransactionMap.get(Thread.currentThread().getId());
@@ -148,7 +112,7 @@ public class NodeUtil {
     }
 
     protected static boolean insideTransactionNow = false;
-    protected static Map<Long, Boolean> insideTransactionNowMap = new LinkedHashMap<Long, Boolean>();
+    protected static Map<Long, Boolean> insideTransactionNowMap = new LinkedHashMap<>();
     protected static Map<Long, UserTransaction> transactionMap =
                     Collections.synchronizedMap(new LinkedHashMap<Long, UserTransaction>());
 
@@ -193,7 +157,6 @@ public class NodeUtil {
     public static boolean doNodeAtTimeCaching = true;
     public static boolean doHeisenCheck = true;
     public static boolean doVersionCaching = false;
-    public static boolean activeVersionCaching = true;
     public static boolean doVersionHistoryCaching = true;
     public static boolean doJsonCaching = false;
     public static boolean doJsonDeepCaching = false;
@@ -203,10 +166,6 @@ public class NodeUtil {
     public static boolean doPostProcessQualified = false;
     public static boolean doAutoBuildGraphDb = false;
     public static boolean skipQualified = false;
-
-    public static boolean addEmptyEntriesToFullCache = false; // this was broken
-                                                              // last tried
-    public static boolean skipGetNodeRefAtTime = true;
     public static boolean skipSvgToPng = false;
     public static boolean skipWorkspacePermissionCheck = false;
     public static boolean doOptimisticJustFirst = true;
@@ -278,16 +237,9 @@ public class NodeUtil {
     // timers
     // below
     public static boolean timeEvents = false;
-    private static Timer timer = null;
-    private static Timer timerByType = null;
-    private static Timer timerLucene = null;
 
     public static ServiceRegistry services = null;
     public static Repository repository = null;
-
-    // needed for Lucene search
-    public static StoreRef SEARCH_STORE = null;
-    // new StoreRef( StoreRef.PROTOCOL_WORKSPACE, "SpacesStore" );
 
     public static Object NULL_OBJECT = new Object() {
         @Override
@@ -331,287 +283,8 @@ public class NodeUtil {
         return null;
     }
 
-    public static JSONObject stripJsonMetadata(JSONObject json) {
-        if (json == null)
-            return null;
-        if (Debug.isOn())
-            logger.debug("stripJsonMetadata -> " + json);
-        json.remove("jsonString");
-        json.remove("jsonString4");
-        if (Debug.isOn())
-            logger.debug("stripJsonMetadata -> " + json);
-        return json;
-    }
-
-    protected static List<String> dontFilterList = Utils.newList("read", Acm.JSON_ID, "id", "creator",
-                    Acm.JSON_LAST_MODIFIED, Acm.JSON_SPECIALIZATION);
-    protected static Set<String> dontFilterOut = Collections.synchronizedSet(new HashSet<String>(dontFilterList));
-
-    /**
-     * Use the cached json string if appropriate; else call json.toString().
-     *
-     * @param json
-     * @param numSpacesToIndent
-     * @return
-     * @throws JSONException
-     */
-    public static String jsonToString(JSONObject json, int numSpacesToIndent) throws JSONException {
-        if (json == null)
-            return null;
-        String s = null;
-        // If we aren't string caching, or if the string(s) are not cached in
-        // the json, then call toString() the old-fashioned way.
-        if (!doJsonStringCaching || !json.has("jsonString4")) {
-            stripJsonMetadata(json);
-            if (numSpacesToIndent < 0) {
-                s = json.toString();
-                if (Debug.isOn())
-                    logger.debug("jsonToString( json, " + numSpacesToIndent + " ) = json.toString() = " + s);
-                return s;
-            }
-            s = json.toString(numSpacesToIndent);
-            if (Debug.isOn())
-                logger.debug("jsonToString( json, " + numSpacesToIndent + " ) = json.toString( " + numSpacesToIndent
-                                + " ) = " + s);
-            return s;
-        }
-        // Get the cached json string with no newlines.
-        if (numSpacesToIndent < 0) {
-            if (json.has("jsonString")) {
-                s = json.getString("jsonString");
-                if (Debug.isOn())
-                    logger.debug("jsonToString( json, " + numSpacesToIndent
-                                    + " ) = json.getSString( \"jsonString\" ) = " + s);
-                return s;
-            }
-            // TODO -- Warning! shouldn't get here!
-            json = stripJsonMetadata(clone(json));
-            s = json.toString();
-            logger.warn("BAD! jsonToString( json, " + numSpacesToIndent + " ) = json.toString() = " + s);
-            return s;
-        }
-        // Get the cached json string with newlines and indentation of four
-        // spaces, and replace the indentation with the specified
-        // numSpacesToIndent.
-        if (json.has("jsonString4")) {
-            String jsonString4 = json.getString("jsonString4");
-            if (numSpacesToIndent == 4) {
-                if (Debug.isOn())
-                    logger.debug("jsonToString( json, " + numSpacesToIndent + " ) = jsonString4 = " + jsonString4);
-                return jsonString4;
-            }
-            s = jsonString4.replaceAll("    ", Utils.repeat(" ", numSpacesToIndent));
-            if (Debug.isOn())
-                logger.debug("jsonToString( json, " + numSpacesToIndent
-                                + " ) = jsonString4.replaceAll(\"    \", Utils.repeat( \" \", " + numSpacesToIndent
-                                + " ) ) = " + s);
-            return s;
-        }
-        // TODO -- Warning! shouldn't get here!
-        json = stripJsonMetadata(clone(json));
-        s = json.toString(numSpacesToIndent);
-        logger.warn("BAD! jsonToString( json, " + numSpacesToIndent + " ) = json.toString( " + numSpacesToIndent
-                        + " ) = " + s);
-        return s;
-    }
-
-    public static class CachedJsonObject extends JSONObject {
-        static String replacement = "$%%$";
-        static String replacementWithQuotes = "\"$%%$\"";
-        static int replacementWithQuotesLength = replacementWithQuotes.length();
-
-        protected boolean plain = false;
-
-        public CachedJsonObject() {
-            super();
-        }
-
-        public CachedJsonObject(String s) throws JSONException {
-            super(s);
-        }
-
-        @Override
-        public String toString() {
-            try {
-                if (has("jsonString")) {
-                    if (Debug.isOn())
-                        logger.debug("has jsonString: " + getString("jsonString"));
-                    return getString("jsonString");
-                }
-                if (Debug.isOn())
-                    logger.debug("no jsonString: " + super.toString());
-
-                return nonCachedToString(-1);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        public String toString(int n) {
-            try {
-                if (has("jsonString4")) {
-                    if (Debug.isOn())
-                        logger.debug("has jsonString4: " + jsonToString(this, n));
-                    // need to replace spaces for proper indentation
-                    return jsonToString(this, n);
-                }
-                if (Debug.isOn())
-                    logger.debug("no jsonString4: " + super.toString(n));
-
-                return nonCachedToString(n);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        /**
-         * Create json string for non-elements whose json is not cached but whose children may
-         * include cached elements.
-         *
-         * @param numSpaces
-         * @return
-         */
-        private String nonCachedToString(int numSpaces) {
-            // Look for entries with CachedObjects or arrays of
-            // CachedJsonObjects.
-            LinkedHashMap<String, String> newEntries = new LinkedHashMap<>();
-            JSONObject oldEntries = newJsonObject();
-            // Temporarily replace CachedJsonObjects with fixed strings in order
-            // to generate a minimal json string and later substitute back the
-            // cached strings.
-            for (Object k : keySet().toArray()) {
-                if (!(k instanceof String))
-                    continue;
-                String key = (String) k;
-                replaceJsonArrays(key, numSpaces, newEntries, oldEntries);
-            }
-
-            // Generate the json string with temporary replacements.
-            String s = null;
-            if (numSpaces < 0)
-                s = super.toString();
-            else
-                s = super.toString(numSpaces);
-
-            // Now substitute back in the cached json strings using a
-            // StringBuffer.
-            int len = newEntries.size();
-            if (len > 0) {
-                StringBuffer sb = new StringBuffer(s);
-                String[] keysNew = new String[len];
-                newEntries.keySet().toArray(keysNew);
-                int pos = s.length() - replacementWithQuotesLength;
-
-                // Loop through replacements.
-                for (int i = len - 1; i >= 0; --i) {
-                    String keyn = keysNew[i];
-                    int pos1 = s.lastIndexOf(replacementWithQuotes, pos);
-                    pos = s.lastIndexOf("\"" + keyn + "\"", pos1);
-                    if (pos >= 0 && pos1 > 0) {
-                        sb.replace(pos1, pos1 + replacementWithQuotesLength, newEntries.get(keyn));
-                    }
-                }
-                s = sb.toString();
-
-                // Put replaced json elements back.
-                for (Object k : oldEntries.keySet().toArray()) {
-                    if (!(k instanceof String))
-                        continue;
-                    String key = (String) k;
-                    put(key, oldEntries.get(key));
-                }
-            }
-            return s;
-        }
-
-        /**
-         * Temporarily replace CachedJsonObjects with fixed strings in order to generate a minimal
-         * json string and later substitute back the cached strings.
-         *
-         * @param key
-         * @param numSpaces
-         * @param newEntries
-         * @param oldEntries
-         */
-        public void replaceJsonArrays(String key, int numSpaces, LinkedHashMap<String, String> newEntries,
-                        JSONObject oldEntries) {
-            JSONArray jarr = optJSONArray(key);
-            if (jarr != null && jarr.length() > 0) {
-                Object val = jarr.get(0);
-                if (val instanceof CachedJsonObject) {
-                    // Replace and build array string.
-                    StringBuffer sb = new StringBuffer("[");
-                    for (int i = 0; i < jarr.length(); ++i) {
-                        val = jarr.get(i);
-                        if (i > 0)
-                            sb.append(", ");
-                        if (numSpaces < 0) {
-                            sb.append(val.toString());
-                        } else {
-                            if (val instanceof JSONObject) {
-                                sb.append(((JSONObject) val).toString(numSpaces));
-                            } else if (val instanceof JSONArray) {
-                                sb.append(((JSONArray) val).toString(numSpaces));
-                            } else {
-                                sb.append(val.toString());
-                            }
-                        }
-                    }
-                    sb.append("]");
-                    newEntries.put(key, sb.toString());
-                    oldEntries.put(key, jarr);
-                    put(key, replacement);
-                }
-            } else {
-                Object o = get(key);
-                if (o instanceof CachedJsonObject) {
-                    CachedJsonObject cjo = (CachedJsonObject) o;
-                    newEntries.put(key, cjo.toString(numSpaces));
-                    oldEntries.put(key, cjo);
-                    put(key, replacement);
-                }
-            }
-        }
-    }
-
-    public static JSONObject newJsonObject() {
-        if (!doJsonStringCaching)
-            return new JSONObject();
-        JSONObject newJson = new CachedJsonObject();
-        return newJson;
-    }
-
-    public static JSONObject clone(JSONObject json) {
-        if (json == null)
-            return null;
-        JSONObject newJson = newJsonObject();
-
-        Iterator keys = json.keys();
-        while (keys.hasNext()) {
-            String key = (String) keys.next();
-            Object value;
-            try {
-                value = json.get(key);
-                if (key.equals(Acm.JSON_SPECIALIZATION) && value instanceof JSONObject) {
-                    value = clone((JSONObject) value);
-                }
-                newJson.put(key, value);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        return newJson;
-    }
-
     public static Repository getRepository() {
         return repository;
-        // return (Repository)getApplicationContext().getBean(
-        // "repositoryHelper" );
     }
 
     public static void setRepository(Repository repositoryHelper) {
@@ -628,11 +301,6 @@ public class NodeUtil {
 
     public static ServiceRegistry getServiceRegistry() {
         return services;
-        // if ( services == null ) {
-        // services = (ServiceRegistry)getApplicationContext().getBean(
-        // "ServiceRegistry" );
-        // }
-        // return services;
     }
 
     public static int compare(Version v1, Version v2) {
@@ -684,8 +352,6 @@ public class NodeUtil {
         if (s.indexOf("{") != -1) {
             qname = QName.createQName(s);
         } else {
-            if (services == null)
-                services = getServices();
             qname = QName.createQName(s, getServices().getNamespaceService());
         }
         return qname;
@@ -697,10 +363,11 @@ public class NodeUtil {
         if (services == null)
             services = getServiceRegistry();
         if (services == null || services.getNodeLocatorService() == null) {
-            if (Debug.isOn())
-                System.out.println("getCompanyHome() failed, no services or no nodeLocatorService: " + services);
+            if (Debug.isOn()) {
+                logger.debug("getCompanyHome() failed, no services or no nodeLocatorService: " + services);
+            }
         }
-        NodeRef companyHomeNodeRef = services.getNodeLocatorService().getNode("companyhome", null, null);
+        NodeRef companyHomeNodeRef = services != null ? services.getNodeLocatorService().getNode("companyhome", null, null): null;
         if (companyHomeNodeRef != null) {
             companyHome = new EmsScriptNode(companyHomeNodeRef, services);
         }
@@ -711,24 +378,13 @@ public class NodeUtil {
         Date d1 = getLastModified(ref1);
         Date d2 = getLastModified(ref2);
         return CompareUtils.compare(d1, d2);
-        // VersionService vs = getServices().getVersionService();
-        // if ( vs == null ) {
-        // //TODO -- BAD!
-        // }
-        // NodeService ns = getServices().getNodeService();
-        // ns.getProperty( ref1, QName.createQName( "cm:lastModified" ) );
-        // //vs.createVersion( nodeRef, versionProperties, versionChildren );
     }
 
     public static Date getLastModified(NodeRef ref) {
         try {
-            // QName typeQName = createQName( Acm.ACM_LAST_MODIFIED );
-            Date date = (Date) // services.getNodeService().getProperty( ref,
-                               // typeQName );
-            NodeUtil.getNodeProperty(ref, Acm.ACM_LAST_MODIFIED, services, true, false);
-            return date;
+            return (Date) NodeUtil.getNodeProperty(ref, Acm.ACM_LAST_MODIFIED, services, true, false);
         } catch (Throwable t) {
-            t.printStackTrace();
+            logger.warn(String.format("%s", LogUtil.getStackTrace(t)));
         }
         return null;
     }
@@ -818,20 +474,9 @@ public class NodeUtil {
         return result;
     }
 
-    /**
-     * Append onto the response for logging purposes
-     *
-     * @param msg Message to be appened to response TODO: fix logger for EmsScriptNode
-     */
-    public static void log(String msg, StringBuffer response) {
-        // if (response != null) {
-        // response.append(msg + "\n");
-        // }
-    }
-
     public static NodeRef getNodeRefFromNodeId(String store, String id) {
         List<NodeRef> nodeRefs = NodeRef.getNodeRefs(store + id);
-        if (nodeRefs.size() > 0) {
+        if (!nodeRefs.isEmpty()) {
             NodeRef ref = nodeRefs.get(0);
             if (ref != null) {
                 EmsScriptNode node = new EmsScriptNode(ref, services);
@@ -865,15 +510,13 @@ public class NodeUtil {
     }
 
     public static String getUserName() {
-        String userName = AuthenticationUtil.getRunAsUser();
-        return userName;
+        return AuthenticationUtil.getRunAsUser();
     }
 
     public static EmsScriptNode getUserHomeFolder(String userName, boolean createIfNotFound) {
-        NodeRef homeFolderNode = null;
+        NodeRef homeFolderNode;
         EmsScriptNode homeFolderScriptNode = null;
         PersonService personService = getServices().getPersonService();
-        NodeService nodeService = getServices().getNodeService();
         NodeRef personNode = personService.getPerson(userName);
         homeFolderNode = (NodeRef) getNodeProperty(personNode, ContentModel.PROP_HOMEFOLDER, getServices(), true,
                             true);
@@ -921,13 +564,6 @@ public class NodeUtil {
         }
 
         return authorityNames;
-    }
-
-    public static String getName(NodeRef ref) {
-        if (ref == null)
-            return null;
-        EmsScriptNode node = new EmsScriptNode(ref, getServices());
-        return node.getName();
     }
 
     /**
@@ -1017,15 +653,11 @@ public class NodeUtil {
         if (!artifactNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
             artifactNode.addAspect(Acm.ACM_IDENTIFIABLE);
         }
-        if (!artifactNode.hasAspect("view:Checksummable")) {
-            artifactNode.addAspect("view:Checksummable");
-        }
 
         artifactNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
         artifactNode.createOrUpdateProperty("cm:isIndexed", true);
         artifactNode.createOrUpdateProperty("cm:isContentIndexed", false);
         artifactNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
-        artifactNode.createOrUpdateProperty("view:cs", cs);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Creating artifact with indexing: " + artifactNode.getProperty("cm:isIndexed"));
@@ -1142,15 +774,11 @@ public class NodeUtil {
 		if (!pngNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
 			pngNode.addAspect(Acm.ACM_IDENTIFIABLE);
 		}
-		if (!pngNode.hasAspect("view:Checksummable")) {
-			pngNode.addAspect("view:Checksummable");
-		}
 
 		pngNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
 		pngNode.createOrUpdateProperty("cm:isIndexed", true);
 		pngNode.createOrUpdateProperty("cm:isContentIndexed", false);
 		pngNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
-		pngNode.createOrUpdateProperty("view:cs", cs);
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("Creating PNG artifact with indexing: "
@@ -1189,27 +817,18 @@ public class NodeUtil {
     // {
     public static void clearAlfrescoNodeCache() {
         try {
-            // org.alfresco.repo.cache.TransactionalCache< X, V > c;
-            // getServiceRegistry().getTransactionService().
-            // ((DbNodeServiceImpl)getServiceRegistry().getNodeService()).nodeDAO.clear();
-            // ((DbNodeServiceImpl)((Version2ServiceImpl)getServiceRegistry().getVersionService()).dbNodeService).nodeDAO.clear();
             DbNodeServiceImpl dbNodeService = (DbNodeServiceImpl) getServiceRegistry().getNodeService();
             Object[] emptyArray = new Object[] {};
             Method method = ClassUtils.getMethodForArgs(NodeDAO.class, "clear", emptyArray);
-            // Field f = ClassUtils.getField( DbNodeServiceImpl.class,
-            // "nodeDAO", true );
-            // NodeDAO nodeDao = (NodeDAO)f.get( dbNodeService );
             NodeDAO nodeDao = (NodeDAO) ClassUtils.getFieldValue(dbNodeService, "nodeDAO", false);
             MethodCall mc = new MethodCall(nodeDao, method, emptyArray);
             mc.invoke(false);
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
 
     public static void transactionCheck(Logger logger, EmsScriptNode node) {
-        // logger.error( "inTransaction = " + NodeUtil.isInsideTransactionNow()
-        // );
         if (NodeUtil.isInsideTransactionNow()) {
             if (NodeUtil.hasBeenOutsideTransaction()) {
                 /*
@@ -1281,89 +900,6 @@ public class NodeUtil {
         return node;
     }
 
-    private static Pattern pattern = Pattern.compile("<mms-cf.*mms-element-id=\"([^\"]*)\"");
-    public static void processDocumentEdges(String sysmlid, String doc, List<Pair<String, String>> documentEdges) {
-        if (doc != null) {
-            Matcher matcher = pattern.matcher(doc);
-
-            while (matcher.find()) {
-                String mmseid = matcher.group(1).replace("\"", "");
-                if (mmseid != null)
-                    documentEdges.add(new Pair<>(sysmlid, mmseid));
-            }
-        }
-    }
-
-    public static void processContentsJson(String sysmlId, JSONObject contents,
-                    List<Pair<String, String>> documentEdges) {
-        if (contents != null) {
-            if (contents.has("operand")) {
-                JSONArray operand = contents.getJSONArray("operand");
-                for (int ii = 0; ii < operand.length(); ii++) {
-                    JSONObject value = operand.optJSONObject(ii);
-                    if (value != null && value.has("instanceId")) {
-                        documentEdges.add(new Pair<>(sysmlId, value.getString("instanceId")));
-                    }
-                }
-            }
-        }
-    }
-
-
-    public static void processInstanceSpecificationSpecificationJson(String sysmlId, JSONObject iss,
-                    List<Pair<String, String>> documentEdges) {
-        if (iss != null) {
-            if (iss.has("value") && iss.has("type") && iss.getString("type").equals("LiteralString")) {
-                String string = iss.getString("value");
-                try {
-                    JSONObject json = new JSONObject(string);
-                    Set<Object> sources = findKeyValueInJsonObject(json, "source");
-                    for (Object source : sources) {
-                        if (source instanceof String) {
-                            documentEdges.add(new Pair<>(sysmlId, (String) source));
-                        }
-                    }
-                } catch (JSONException ex) {
-                    //case if value string isn't actually a serialized jsonobject
-                }
-            }
-        }
-    }
-
-
-
-    public static Set<Object> findKeyValueInJsonObject(JSONObject json, String keyMatch) {
-        Set<Object> result = new HashSet<>();
-        Iterator<?> keys = json.keys();
-        while (keys.hasNext()) {
-            String key = (String) keys.next();
-            Object value = json.get(key);
-            if (key.equals(keyMatch)) {
-                result.add(value);
-            } else if (value instanceof JSONObject) {
-                result.addAll(findKeyValueInJsonObject((JSONObject) value, keyMatch));
-            } else if (value instanceof JSONArray) {
-                result.addAll(findKeyValueInJsonArray((JSONArray) value, keyMatch));
-            }
-        }
-        return result;
-    }
-
-    public static Set<Object> findKeyValueInJsonArray(JSONArray jsonArray, String keyMatch) {
-        Set<Object> result = new HashSet<>();
-
-        for (int ii = 0; ii < jsonArray.length(); ii++) {
-            if (jsonArray.get(ii) instanceof JSONObject) {
-                result.addAll(findKeyValueInJsonObject((JSONObject) jsonArray.get(ii), keyMatch));
-            } else if (jsonArray.get(ii) instanceof JSONArray) {
-                result.addAll(findKeyValueInJsonArray((JSONArray) jsonArray.get(ii), keyMatch));
-            }
-        }
-
-        return result;
-    }
-
-
     /**
      * getModuleService Retrieves the ModuleService of the ServiceRegistry passed in
      *
@@ -1426,8 +962,8 @@ public class NodeUtil {
             jsonModule.put("mmsEditions", module.getEditions());
             jsonModule.put("mmsId", module.getId());
             jsonModule.put("mmsProperties", module.getProperties());
-        } catch (Exception exception) {
-            exception.printStackTrace();
+        } catch (Exception e) {
+            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
         }
         return jsonModule;
     }

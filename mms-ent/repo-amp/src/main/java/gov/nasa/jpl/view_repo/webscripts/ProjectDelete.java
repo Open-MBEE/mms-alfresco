@@ -24,6 +24,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
  * Created by dank on 6/26/17.
@@ -83,7 +84,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        model.put("res", createResponseJson());
+        model.put(Sjm.RES, createResponseJson());
         status.setCode(responseStatus.getCode());
 
         printFooter(user, logger, timer);

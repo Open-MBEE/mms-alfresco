@@ -76,7 +76,7 @@ public class HistoryGet extends ModelGet {
 
         try {
             if (elementsJson.length() > 0) {
-                top.put("commits", elementsJson);
+                top.put(Sjm.COMMITS, elementsJson);
             } else {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -90,7 +90,7 @@ public class HistoryGet extends ModelGet {
         }
 
         status.setCode(responseStatus.getCode());
-        model.put("res", top.toString(4));
+        model.put(Sjm.RES, top.toString(4));
 
         printFooter(user, logger, timer);
         return model;

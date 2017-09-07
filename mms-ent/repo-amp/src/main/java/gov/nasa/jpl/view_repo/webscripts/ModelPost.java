@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -42,11 +41,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import javax.servlet.http.HttpServletResponse;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
@@ -67,7 +61,6 @@ import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
@@ -129,7 +122,7 @@ public class ModelPost extends AbstractJavaWebScript {
         printHeader(user, logger, req, true);
         Timer timer = new Timer();
 
-        Map<String, Object> result = null;
+        Map<String, Object> result;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
 
         if (contentType.contains("image") || contentType.contains("x-www-form-urlencoded")) {
@@ -181,21 +174,22 @@ public class ModelPost extends AbstractJavaWebScript {
                 newElementsObject.put(Sjm.CREATOR, user);
 
                 if (prettyPrint) {
-                    model.put("res", newElementsObject.toString(4));
+                    model.put(Sjm.RES, newElementsObject.toString(4));
                 } else {
-                    model.put("res", newElementsObject);
+                    model.put(Sjm.RES, newElementsObject);
                 }
 
                 status.setCode(responseStatus.getCode());
             } else {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
-                status.setCode(HttpServletResponse.SC_BAD_REQUEST);
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
             }
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
+
+        status.setCode(responseStatus.getCode());
 
         return model;
     }
@@ -266,7 +260,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
                             if (svgArtifact == null) {
                                 logger.error("Was not able to create the artifact!\n");
-                                model.put("res", createResponseJson());
+                                model.put(Sjm.RES, createResponseJson());
                             } else {
                                 resultJson.put("upload", svgArtifact);
                                 svgArtifact.getOrSetCachedVersion();
@@ -279,9 +273,9 @@ public class ModelPost extends AbstractJavaWebScript {
 
                                             @Override public void run() throws Exception {
                                                 try {
-                                                    pngArtifact = NodeUtil.updateOrCreateArtifactPng(svgArtifact,
-                                                        pngPath, siteName, projectId, refId, null, response,
-                                                        null, false);
+                                                    pngArtifact = NodeUtil
+                                                        .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName,
+                                                            projectId, refId, null, response, null, false);
                                                 } catch (Throwable ex) {
                                                     throw new Exception("Failed to convert SVG to PNG!\n");
                                                 }
@@ -296,6 +290,10 @@ public class ModelPost extends AbstractJavaWebScript {
                                         }
                                         Files.deleteIfExists(svgPath);
                                         Files.deleteIfExists(pngPath);
+                                    } catch (IOException e) {
+                                        if (logger.isDebugEnabled()) {
+                                            logger.debug("Failed to convert image", e);
+                                        }
                                     } catch (Throwable ex) {
                                         logger.error("Failed to convert SVG to PNG!\n");
                                     }
@@ -303,31 +301,31 @@ public class ModelPost extends AbstractJavaWebScript {
                             }
                         } else {
                             logger.error("Invalid artifactId or no content!\n");
-                            model.put("res", createResponseJson());
+                            model.put(Sjm.RES, createResponseJson());
                         }
                     } else {
                         logger.error("Invalid artifactId!\\n");
-                        model.put("res", createResponseJson());
+                        model.put(Sjm.RES, createResponseJson());
                     }
 
                 } else {
                     logger.error("artifactId not supplied!\\n");
-                    model.put("res", createResponseJson());
+                    model.put(Sjm.RES, createResponseJson());
                 }
 
             } catch (JSONException e) {
                 logger.error("Issues creating return JSON\\n");
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                model.put("res", createResponseJson());
+                model.put(Sjm.RES, createResponseJson());
             }
         } else {
             logger.error("Invalid request, no sitename specified or no content provided!\\n");
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
         }
 
         status.setCode(responseStatus.getCode());
-        if (!model.containsKey("res")) {
-            model.put("res", resultJson != null ? resultJson : createResponseJson());
+        if (!model.containsKey(Sjm.RES)) {
+            model.put(Sjm.RES, resultJson != null ? resultJson : createResponseJson());
         }
 
         return model;
@@ -349,6 +347,9 @@ public class ModelPost extends AbstractJavaWebScript {
     }
 
     protected static Path svgToPng(Path svgPath) throws Throwable {
+        if (svgPath.toString().contains(".png")) {
+            return svgPath;
+        }
         Path pngPath = Paths.get(svgPath.toString().replace(".svg", ".png"));
         try (OutputStream png_ostream = new FileOutputStream(pngPath.toString())) {
             String svg_URI_input = svgPath.toUri().toURL().toString();

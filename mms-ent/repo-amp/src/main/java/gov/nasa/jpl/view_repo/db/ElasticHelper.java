@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -162,6 +163,33 @@ public class ElasticHelper {
         return new JSONArray();
     }
 
+    public Set<String> getCommitHistoryIds(String sysmlid) throws IOException {
+        JSONArray should = new JSONArray();
+        should.put(new JSONObject().put("nested", new JSONObject().put("path", "added").put("query",
+            new JSONObject().put("term", new JSONObject().put("added.id", new JSONObject().put("value", sysmlid))))));
+        should.put(new JSONObject().put("nested", new JSONObject().put("path", "updated").put("query",
+            new JSONObject().put("term", new JSONObject().put("updated.id", new JSONObject().put("value", sysmlid))))));
+        should.put(new JSONObject().put("nested", new JSONObject().put("path", "deleted").put("query",
+            new JSONObject().put("term", new JSONObject().put("deleted.id", new JSONObject().put("value", sysmlid))))));
+        JSONObject query = new JSONObject().put("size", resultLimit)
+            .put("query", new JSONObject().put("bool", new JSONObject().put("should", should)))
+            .put("_source", false);
+            //.put("sort", new JSONArray().put(new JSONObject().put(Sjm.CREATED, new JSONObject().put("order", "desc"))));
+
+        Search search = new Search.Builder(query.toString()).addIndex(elementIndex).addType("commit").build();
+        SearchResult result = client.execute(search);
+
+        Set<String> set = new HashSet<>();
+
+        if (result.getTotal() > 0) {
+            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+            for (int i = 0; i < hits.size(); i++) {
+                set.add(hits.get(i).getAsJsonObject().get("_id").getAsString());
+            }
+        }
+        return set;
+    }
+
     public Boolean checkForElasticIdInCommit(String sysmlid, String commitId, String index) throws IOException {
         JSONArray should = new JSONArray();
         should.put(new JSONObject().put("nested", new JSONObject().put("path", "added").put("query",
@@ -236,7 +264,9 @@ public class ElasticHelper {
                 sub.add(ids.get(count));
             }
             JSONArray elasticids = new JSONArray();
-            sub.forEach(elasticids::put);
+            for (String elasticid : sub) {
+                elasticids.put(elasticid);
+            }
 
             JSONObject queryJson = new JSONObject().put("size", resultLimit)
                 .put("query", new JSONObject().put("terms", new JSONObject().put("_id", elasticids))).put("sort",
@@ -356,9 +386,9 @@ public class ElasticHelper {
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
-                    result.getFailedItems().forEach((item) -> {
+                    for (BulkResult.BulkResultItem item : result.getFailedItems()) {
                         logger.error(String.format("Failed item: %s", item.error));
-                    });
+                    }
                     return false;
                 }
                 actions.clear();
@@ -382,10 +412,9 @@ public class ElasticHelper {
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Update Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
-                    result.getFailedItems().forEach((item) -> {
+                    for (BulkResult.BulkResultItem item : result.getFailedItems()) {
                         logger.error(String.format("Failed item: %s", item.error));
-                    });
-                    //return false;
+                    }
                 }
                 actions.clear();
             }
@@ -505,5 +534,53 @@ public class ElasticHelper {
 
         }
         return new JSONObject(result.getJsonString());
+    }
+
+    /**
+     * Search elasticsearch for an element based on the sysmlids provided and timestamp. Elasticsearch will find all elements matching
+     * the sysmlid then filter and sort by timestamp. If the element doesn't exist at the timestamp it will return null.
+     * @param sysmlId
+     * @param timestamp
+     * @return
+     */
+    public JSONArray getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds) {
+        JSONObject searchJson = new JSONObject();
+        JSONArray elements = new JSONArray();
+        JSONObject bool = new JSONObject().put("must", new JSONObject().put("term", new JSONObject().put("id", sysmlId)));
+        // Create search filter
+        JSONArray boolArray = new JSONArray();
+        JSONObject range = new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp)));
+        JSONObject filterTerms = new JSONObject().put("terms", new JSONObject().put(Sjm.COMMITID, refsCommitIds));
+        boolArray.put(range);
+        boolArray.put(filterTerms);
+        JSONObject filter =new JSONObject().put("bool", new JSONObject().put("must", boolArray));
+
+        // Create Sort option
+        JSONArray sort = new JSONArray();
+        JSONObject modifiedSortOpt = new JSONObject();
+        modifiedSortOpt.put("order", "desc");
+        modifiedSortOpt.put("mode", "max");
+        sort.put(new JSONObject().put("_modified", modifiedSortOpt));
+        bool.put("filter", filter);
+        searchJson.put("sort", sort);
+        searchJson.put("query", new JSONObject().put("bool", bool));
+
+        Search search = new Search.Builder(searchJson.toString()).addIndex(elementIndex).build();
+        SearchResult result;
+        try {
+            result = client.execute(search);
+
+            if (result.getTotal() > 0) {
+                JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+                int hitNum = hits.size();
+                for (int i = 0; i < hitNum; ++i) {
+                    elements.put(new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString()));
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+
+        return elements;
     }
 }

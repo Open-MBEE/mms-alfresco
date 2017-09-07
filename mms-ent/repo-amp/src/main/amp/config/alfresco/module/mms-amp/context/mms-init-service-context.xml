@@ -4,7 +4,6 @@
     <bean id="repo-amp_dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
         <property name="models">
             <list>
-                <value>alfresco/module/${project.artifactId}/model/viewModel.xml</value>
                 <value>alfresco/module/${project.artifactId}/model/sysmlModel.xml</value>
                 <value>alfresco/module/${project.artifactId}/model/emsModel.xml</value>
             </list>
