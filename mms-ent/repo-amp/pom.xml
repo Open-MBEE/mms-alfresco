@@ -13,6 +13,24 @@
         <version>3.2.0-SNAPSHOT</version>
     </parent>
     <repositories>
+        <repository>
+            <id>alfresco-public</id>
+            <url>https://artifacts.alfresco.com/nexus/content/groups/public
+            </url>
+        </repository>
+        <repository>
+            <id>alfresco-public-snapshots</id>
+            <url>https://artifacts.alfresco.com/nexus/content/groups/public-snapshots
+            </url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <!-- Activiti Enterprise Edition Artifacts, put username/pwd for server in settings.xml -->
+        <repository>
+            <id>activiti-private-repository</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/activiti-enterprise-releases</url>
+        </repository>
         <!-- jest elasticsearch client repository -->
         <repository>
             <id>sonatype</id>
