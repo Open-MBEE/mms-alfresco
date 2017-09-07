@@ -701,32 +701,6 @@ public class CommitUtil {
 
         project = createNode(projectSysmlid, user, date, o);
 
-//        site = createNode(orgId, user, date, siteElement);
-//
-//        siteHoldingBin = createNode("holding_bin_" + orgId, user, date, null);
-//        siteHoldingBin.put(Sjm.NAME, "Holding Bin");
-//        siteHoldingBin.put(Sjm.OWNERID, orgId);
-//        siteHoldingBin.put(Sjm.TYPE, "Package");
-//        siteHoldingBin.put("project", "");
-//        siteHoldingBin.put(Sjm.URI, JSONObject.NULL);
-//        siteHoldingBin.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
-//        siteHoldingBin.put(Sjm.ISSITE, false);
-//        siteHoldingBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
-//        siteHoldingBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
-//        siteHoldingBin.put(Sjm.DOCUMENTATION, "");
-//        siteHoldingBin.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
-//        siteHoldingBin.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
-//        siteHoldingBin.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
-//        siteHoldingBin.put(Sjm.PACKAGEIMPORTIDS, new JSONArray());
-//        siteHoldingBin.put(Sjm.PACKAGEMERGEIDS, new JSONArray());
-//        siteHoldingBin.put(Sjm.PROFILEAPPLICATIONIDS, new JSONArray());
-//        siteHoldingBin.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
-//        siteHoldingBin.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
-//        siteHoldingBin.put(Sjm.TEMPLATEBINDINGIDS, new JSONArray());
-//        siteHoldingBin.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
-//        siteHoldingBin.put(Sjm.VISIBILITY, "public");
-
-
         projectHoldingBin = createNode(HOLDING_BIN_PREFIX + projectSysmlid, user, date, null);
         projectHoldingBin.put(Sjm.NAME, "Holding Bin");
         projectHoldingBin.put(Sjm.OWNERID, projectSysmlid);
@@ -774,25 +748,9 @@ public class CommitUtil {
         try {
             ElasticHelper eh = new ElasticHelper();
             eh.createIndex(projectName);
-            //eSite = eh.indexElement(site);
             eh.createIndex(projectSysmlid);
             eProject = eh.indexElement(project, projectSysmlid);
             eh.refreshIndex();
-
-            // only insert if the site does not exist already
-            if (pgh.getNodeFromSysmlId(orgId) == null) {
-                //eSiteHoldingBin = eh.indexElement(siteHoldingBin);
-                eh.refreshIndex();
-
-                //pgh.insertNode(eSite.elasticId, orgId, DbNodeTypes.SITE);
-                //pgh.insertNode(eSiteHoldingBin.elasticId, "holding_bin_" + orgId, DbNodeTypes.HOLDINGBIN);
-                //pgh.insertEdge(orgId, eSiteHoldingBin.sysmlid, DbEdgeTypes.CONTAINMENT);
-
-            } else {
-                //Map<String, String> siteElastic = new HashMap<>();
-                //siteElastic.put("elasticid", eSite.elasticId);
-                //pgh.updateNode(orgId, siteElastic);
-            }
 
             // only insert if the project does not exist already
             if (pgh.getNodeFromSysmlId(projectSysmlid) == null) {
