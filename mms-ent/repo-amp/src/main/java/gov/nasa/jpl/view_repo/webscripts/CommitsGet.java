@@ -73,8 +73,9 @@ public class CommitsGet extends AbstractJavaWebScript {
         try {
             if (validateRequest(req, status)) {
                 String projectId = getProjectId(req);
+                String refId = getRefId(req);
 
-                elementJson = handleRequest(req, projectId);
+                elementJson = handleRequest(req, projectId, refId);
 
             }
         } catch (JSONException e) {
@@ -122,9 +123,9 @@ public class CommitsGet extends AbstractJavaWebScript {
      * @param req
      * @return
      */
-    private JSONArray handleRequest(WebScriptRequest req, String projectId) {
+    private JSONArray handleRequest(WebScriptRequest req, String projectId, String refId) {
 
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, "master");
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         JSONArray commitJson = new JSONArray();
         String commitId = req.getServiceMatch().getTemplateVars().get(COMMIT_ID);
 
