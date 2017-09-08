@@ -1762,7 +1762,7 @@ public class EmsNodeUtil {
             String timestamp = new SimpleDateFormat(timestampFormat).format(cal.getTime());
 
             // Search for element at commit
-            results = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds);
+            results = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds, projectId);
             if (results.length() < 1) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("0 Elements were found for " + sysmlId + " at or before " + timestamp);

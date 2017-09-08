@@ -563,7 +563,7 @@ public class ElasticHelper {
      * @param timestamp
      * @return
      */
-    public JSONArray getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds) {
+    public JSONArray getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds, String index) {
         JSONObject searchJson = new JSONObject();
         JSONArray elements = new JSONArray();
         JSONObject bool = new JSONObject().put("must", new JSONObject().put("term", new JSONObject().put("id", sysmlId)));
@@ -585,7 +585,7 @@ public class ElasticHelper {
         searchJson.put("sort", sort);
         searchJson.put("query", new JSONObject().put("bool", bool));
 
-        Search search = new Search.Builder(searchJson.toString()).addIndex(elementIndex).build();
+        Search search = new Search.Builder(searchJson.toString()).addIndex(index).build();
         SearchResult result;
         try {
             result = client.execute(search);
