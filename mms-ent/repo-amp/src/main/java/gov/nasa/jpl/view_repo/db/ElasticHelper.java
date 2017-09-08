@@ -584,7 +584,7 @@ public class ElasticHelper {
         bool.put("filter", filter);
         searchJson.put("sort", sort);
         searchJson.put("query", new JSONObject().put("bool", bool));
-
+        // :TODO this logic is not working correctly 
         Search search = new Search.Builder(searchJson.toString()).addIndex(index).build();
         SearchResult result;
         try {
