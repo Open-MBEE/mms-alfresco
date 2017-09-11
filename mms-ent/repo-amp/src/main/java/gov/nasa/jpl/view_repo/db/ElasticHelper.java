@@ -87,7 +87,7 @@ public class ElasticHelper {
      * @param index name of the index to create           (2)
      */
     public void createIndex(String index) throws IOException {
-        boolean indexExists = client.execute(new IndicesExists.Builder(index).build()).isSucceeded();
+        boolean indexExists = client.execute(new IndicesExists.Builder(index.toLowerCase().replaceAll("\\s+", "")).build()).isSucceeded();
         if (!indexExists) {
             client.execute(new CreateIndex.Builder(index.toLowerCase().replaceAll("\\s+","")).build());
         }
