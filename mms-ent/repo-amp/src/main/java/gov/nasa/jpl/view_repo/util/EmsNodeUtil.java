@@ -1715,7 +1715,6 @@ public class EmsNodeUtil {
             List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
 
             for (Map<String, Object> ref : refsCommits) {
-                System.out.println("Ref " + ref.toString());
                 refsCommitsIds.add((String)ref.get(Sjm.SYSMLID));
             }
             pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
