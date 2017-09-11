@@ -607,9 +607,9 @@ public class PostgresHelper {
         try {
             connect();
             ResultSet rs = execQuery(
-                String.format("SELECT nodes%s.id, nodes%s.elasticid, nodes%s.nodetype, nodes%s.sysmlid, "
-                    + "nodes%s.lastcommit, nodes%s.initialcommit, nodes%s.deleted, commits.timestamp "
-                    + "FROM nodes%s JOIN commits ON nodes%s.lastcommit = commits.elasticid "
+                String.format("SELECT nodes%1$s.id, nodes%1$s.elasticid, nodes%1$s.nodetype, nodes%1$s.sysmlid, "
+                    + "nodes%1$s.lastcommit, nodes%1$s.initialcommit, nodes%1$s.deleted, commits.timestamp "
+                    + "FROM nodes%1$s JOIN commits ON nodes%1$s.lastcommit = commits.elasticid "
                     + "WHERE initialcommit IS NOT NULL ORDER BY commits.timestamp;", workspaceId));
 
             while (rs.next()) {

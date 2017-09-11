@@ -1724,7 +1724,7 @@ public class EmsNodeUtil {
         return pastElement;
     }
     public JSONObject getElementAtCommit(String sysmlId, String commitId, ArrayList<String> refIds) {
-        JSONArray results = new JSONArray();
+        JSONObject result = new JSONObject();
         JSONObject json = new JSONObject();
         String timestampFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
@@ -1739,20 +1739,11 @@ public class EmsNodeUtil {
             String timestamp = new SimpleDateFormat(timestampFormat).format(cal.getTime());
 
             // Search for element at commit
-            results = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds);
-            if (results.length() < 1) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("0 Elements were found for " + sysmlId + " at or before " + timestamp);
-                }
-            } else {
-                // This assumes that the results JSONArray is sorted by timestamp and the first one in the array is the
-                //  closest to the timestamp of the commit.
-                json = results.getJSONObject(0);
-            }
+            result = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds);
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return json;
+        return result;
     }
 }

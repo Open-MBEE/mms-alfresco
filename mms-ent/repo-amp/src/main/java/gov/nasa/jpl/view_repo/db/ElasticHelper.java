@@ -578,7 +578,7 @@ public class ElasticHelper {
      * @param timestamp
      * @return
      */
-    public JSONArray getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds) {
+    public JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds) {
         JSONObject searchJson = new JSONObject();
         JSONArray elements = new JSONArray();
         JSONObject bool = new JSONObject().put("must", new JSONObject().put("term", new JSONObject().put("id", sysmlId)));
@@ -599,6 +599,7 @@ public class ElasticHelper {
         bool.put("filter", filter);
         searchJson.put("sort", sort);
         searchJson.put("query", new JSONObject().put("bool", bool));
+        searchJson.put("size", "1");
 
         Search search = new Search.Builder(searchJson.toString()).addIndex(elementIndex).build();
         SearchResult result;
@@ -607,15 +608,14 @@ public class ElasticHelper {
 
             if (result.getTotal() > 0) {
                 JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-                int hitNum = hits.size();
-                for (int i = 0; i < hitNum; ++i) {
-                    elements.put(new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString()));
+                if(hits.size() > 0){
+                    return new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
                 }
             }
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
 
-        return elements;
+        return new JSONObject();
     }
 }
