@@ -747,7 +747,6 @@ public class CommitUtil {
 
         try {
             ElasticHelper eh = new ElasticHelper();
-            eh.createIndex(projectName);
             eh.createIndex(projectSysmlid);
             eProject = eh.indexElement(project, projectSysmlid);
             eh.refreshIndex();
