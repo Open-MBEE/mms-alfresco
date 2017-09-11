@@ -79,8 +79,6 @@ public class ElasticHelper {
             logger.debug("Initializing Elastic client");
             init(EmsConfig.get("elastic.host"));
         }
-
-        //createIndex(elementIndex);
     }
 
     /**
