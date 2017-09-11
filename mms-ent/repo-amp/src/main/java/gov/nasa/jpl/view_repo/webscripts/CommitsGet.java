@@ -70,22 +70,8 @@ public class CommitsGet extends AbstractJavaWebScript {
             logger.debug(user + " " + req.getURL());
         }
 
-        try {
-            if (validateRequest(req, status)) {
-                String projectId = getProjectId(req);
-                String refId = getRefId(req);
-
-                elementJson = handleRequest(req, projectId, refId);
-
-            }
-        } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace:\n %s \n",
-                e.getLocalizedMessage());
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
+        String projectId = getProjectId(req);
+        elementJson = handleRequest(req, projectId, "master");
 
         try {
             if (elementJson.length() > 0) {
@@ -113,8 +99,7 @@ public class CommitsGet extends AbstractJavaWebScript {
      * Validate the request and check some permissions
      */
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        String id = req.getServiceMatch().getTemplateVars().get(REF_ID);
-        return checkRequestContent(req) && checkRequestVariable(id, REF_ID);
+        return true;
     }
 
     /**

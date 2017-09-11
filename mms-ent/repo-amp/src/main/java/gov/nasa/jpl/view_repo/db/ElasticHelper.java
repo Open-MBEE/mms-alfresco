@@ -222,7 +222,7 @@ public class ElasticHelper {
      * @return JSONObject o or null
      */
     public JSONObject getCommitByElasticId(String id, String index) throws IOException {
-        Get get = new Get.Builder(index, id).type("commit").build();
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+",""), id).type("commit").build();
 
         JestResult result = client.execute(get);
 
@@ -584,8 +584,8 @@ public class ElasticHelper {
         bool.put("filter", filter);
         searchJson.put("sort", sort);
         searchJson.put("query", new JSONObject().put("bool", bool));
-        // :TODO this logic is not working correctly 
-        Search search = new Search.Builder(searchJson.toString()).addIndex(index).build();
+        // :TODO this logic is not working correctly
+        Search search = new Search.Builder(searchJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).build();
         SearchResult result;
         try {
             result = client.execute(search);
