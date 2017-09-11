@@ -41,6 +41,9 @@ public class EmsNodeUtil {
     private String workspaceName = "master";
     private static Logger logger = Logger.getLogger(EmsNodeUtil.class);
 
+    private static final String ORG_ID = "orgId";
+    private static final String ORG_NAME = "orgName";
+
     public EmsNodeUtil() {
         try {
             eh = new ElasticHelper();
@@ -100,8 +103,8 @@ public class EmsNodeUtil {
         List<Map<String, String>> organizations = pgh.getOrganizations(orgId);
         for (Map<String, String> n : organizations) {
             JSONObject org = new JSONObject();
-            org.put(Sjm.SYSMLID, n.get("orgId"));
-            org.put(Sjm.NAME, n.get("orgName"));
+            org.put(Sjm.SYSMLID, n.get(ORG_ID));
+            org.put(Sjm.NAME, n.get(ORG_NAME));
             orgs.put(org);
         }
         return orgs;
@@ -117,7 +120,7 @@ public class EmsNodeUtil {
         for (Map<String, Object> n : orgProjects) {
             switchProject(n.get(Sjm.SYSMLID).toString());
             JSONObject project = getNodeBySysmlid(n.get(Sjm.SYSMLID).toString());
-            project.put("orgId", orgId);
+            project.put(ORG_ID, orgId);
             projects.put(project);
         }
         return projects;
@@ -128,7 +131,7 @@ public class EmsNodeUtil {
         for (Map<String, Object>project : pgh.getProjects()) {
             switchProject(project.get(Sjm.SYSMLID).toString());
             JSONObject proj = getNodeBySysmlid(project.get(Sjm.SYSMLID).toString());
-            proj.put("orgId", project.get("orgId").toString());
+            proj.put(ORG_ID, project.get(ORG_ID).toString());
             projects.put(proj);
         }
         return projects;
@@ -139,7 +142,7 @@ public class EmsNodeUtil {
         if (!project.isEmpty() && !project.get(Sjm.SYSMLID).toString().contains("no_project")) {
             switchProject(projectId);
             JSONObject proj = getNodeBySysmlid(projectId);
-            proj.put("orgId", project.get("orgId").toString());
+            proj.put(ORG_ID, project.get(ORG_ID).toString());
             return proj;
         }
         return null;
@@ -156,7 +159,7 @@ public class EmsNodeUtil {
             switchProject(projectId);
             switchWorkspace(refId);
             JSONObject projectJson = getNodeBySysmlid(projectId);
-            projectJson.put("orgId", project.get("orgId").toString());
+            projectJson.put(ORG_ID, project.get(ORG_ID).toString());
             realFound.add(projectId);
             JSONArray mountObject = getFullMounts(realFound);
             projectJson.put(Sjm.MOUNTS, mountObject);
@@ -1206,7 +1209,7 @@ public class EmsNodeUtil {
         List<Map<String, String>> organizations = pgh.getOrganizations(null);
         List<String> orgList = new ArrayList<>();
         for (Map<String, String> organization : organizations) {
-            orgList.add(organization.get("orgId"));
+            orgList.add(organization.get(ORG_ID));
         }
         ArrayList<String> qn = new ArrayList<>();
         ArrayList<String> qid = new ArrayList<>();

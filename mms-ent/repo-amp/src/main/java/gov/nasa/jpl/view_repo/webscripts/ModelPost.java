@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -42,11 +41,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import javax.servlet.http.HttpServletResponse;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
@@ -67,7 +61,6 @@ import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
@@ -280,9 +273,9 @@ public class ModelPost extends AbstractJavaWebScript {
 
                                             @Override public void run() throws Exception {
                                                 try {
-                                                    pngArtifact = NodeUtil.updateOrCreateArtifactPng(svgArtifact,
-                                                        pngPath, siteName, projectId, refId, null, response,
-                                                        null, false);
+                                                    pngArtifact = NodeUtil
+                                                        .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName,
+                                                            projectId, refId, null, response, null, false);
                                                 } catch (Throwable ex) {
                                                     throw new Exception("Failed to convert SVG to PNG!\n");
                                                 }
@@ -297,6 +290,10 @@ public class ModelPost extends AbstractJavaWebScript {
                                         }
                                         Files.deleteIfExists(svgPath);
                                         Files.deleteIfExists(pngPath);
+                                    } catch (IOException e) {
+                                        if (logger.isDebugEnabled()) {
+                                            logger.debug("Failed to convert image", e);
+                                        }
                                     } catch (Throwable ex) {
                                         logger.error("Failed to convert SVG to PNG!\n");
                                     }
@@ -350,6 +347,9 @@ public class ModelPost extends AbstractJavaWebScript {
     }
 
     protected static Path svgToPng(Path svgPath) throws Throwable {
+        if (svgPath.toString().contains(".png")) {
+            return svgPath;
+        }
         Path pngPath = Paths.get(svgPath.toString().replace(".svg", ".png"));
         try (OutputStream png_ostream = new FileOutputStream(pngPath.toString())) {
             String svg_URI_input = svgPath.toUri().toURL().toString();
