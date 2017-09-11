@@ -678,6 +678,7 @@ public class EmsNodeUtil {
         commit.put("deleted", commitDeleted);
         commit.put(Sjm.CREATOR, user);
         commit.put(Sjm.CREATED, date);
+        commit.put(Sjm.PROJECTID, projectId);
 
         result.put("commit", commit);
 

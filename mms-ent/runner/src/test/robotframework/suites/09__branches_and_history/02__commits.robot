@@ -126,7 +126,7 @@ GetCommitObject
     ${commitId} =       Set Variable        ${branch_1_history.json()["commits"][${num_commits} - 1]["id"]}
     ${result} =         Get     url=${ROOT}/projects/PA/commits/${commitId}
     Should Be Equal     ${result.status_code}           ${200}
-	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 id
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 id		 _projectId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
     ${compare_result} =	Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
