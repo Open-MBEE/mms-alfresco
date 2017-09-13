@@ -9,7 +9,6 @@
         "commit": {
             "properties": {
                 "added": {
-                    "type": "nested",
                     "properties" : {
                         "id":{
                             "type": "keyword"
@@ -19,36 +18,7 @@
                         }
                     }
                 },
-                "moved": {
-                    "type": "nested",
-                    "properties" : {
-                        "id":{
-                            "type": "keyword"
-                        },
-                        "previousOwner":{
-                            "properties" : {
-                                "id":{
-                                    "type": "keyword"
-                                },
-                                "elasticId":{
-                                    "type": "keyword"
-                                }
-                            }
-                        },
-                        "owner":{
-                            "properties" : {
-                                "id":{
-                                    "type": "keyword"
-                                },
-                                "elasticId":{
-                                    "type": "keyword"
-                                }
-                            }
-                        }
-                    }
-                },
                 "updated": {
-                    "type": "nested",
                     "properties" : {
                         "id":{
                             "type": "keyword"
@@ -62,7 +32,6 @@
                     }
                 },
                 "deleted": {
-                    "type": "nested",
                     "properties" : {
                         "id":{
                             "type": "keyword"
@@ -78,6 +47,9 @@
                 "_created": {
                     "type": "date",
                     "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                },
+                "_projectId": {
+                    "type": "keyword"
                 }
             }
         },
