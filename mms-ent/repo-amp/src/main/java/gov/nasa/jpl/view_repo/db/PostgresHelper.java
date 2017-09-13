@@ -469,7 +469,7 @@ public class PostgresHelper {
 
             if (sites) {
                 rs = execQuery("SELECT * FROM \"nodes" + workspaceId
-                    + "\" WHERE nodetype = (SELECT id FROM nodetypes WHERE deleted = false AND name = \'site\')");
+                    + "\" WHERE nodetype = (SELECT id FROM nodetypes WHERE name = \'site\') AND deleted = false");
 
                 while (rs.next()) {
                     result.add(resultSetToNode(rs));
@@ -477,7 +477,7 @@ public class PostgresHelper {
             }
             if (sitepackages) {
                 rs = execQuery("SELECT * FROM \"nodes" + workspaceId
-                    + "\" WHERE nodetype = (SELECT id FROM nodetypes WHERE deleted = false AND name = \'siteandpackage\')");
+                    + "\" WHERE nodetype = (SELECT id FROM nodetypes WHERE name = \'siteandpackage\') AND deleted = false");
 
                 while (rs.next()) {
                     result.add(resultSetToNode(rs));
