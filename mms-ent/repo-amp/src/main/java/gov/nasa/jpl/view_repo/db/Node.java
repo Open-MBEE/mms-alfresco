@@ -10,6 +10,7 @@ public class Node {
     private String sysmlId;
     private String lastCommit;
     private String initialCommit;
+    private boolean isDeleted;
 
     public String getSysmlId() {
         return sysmlId;
@@ -18,7 +19,7 @@ public class Node {
         this.sysmlId = sysmlId;
     }
 
-    public Node(int id, String elasticId, int nodeType, String sysmlId, String lastCommit, String initialCommit) {
+    public Node(int id, String elasticId, int nodeType, String sysmlId, String lastCommit, String initialCommit, boolean isDeleted) {
         super();
         this.id = id;
         this.elasticId = elasticId;
@@ -26,6 +27,7 @@ public class Node {
         this.sysmlId = sysmlId;
         this.lastCommit = lastCommit;
         this.initialCommit = initialCommit;
+        this.isDeleted = isDeleted;
     }
     public int getId() {
         return id;
@@ -50,6 +52,9 @@ public class Node {
     }
     public String getLastCommit() {
         return lastCommit;
+    }
+    public boolean isDeleted() {
+        return isDeleted;
     }
 
     public JSONObject toJson() {

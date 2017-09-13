@@ -1754,7 +1754,7 @@ public class EmsNodeUtil {
                         String deleteTsString = deletedElementIds.get(pastElement.getString(Sjm.ELASTICID));
                         deleteTimestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(deleteTsString);
                         elementTimestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(pastElement.getString(Sjm.MODIFIED));
-                        // If true, element has been resurrected else it's been deleted and should not been added
+                        // If true, element has been resurrected else it's been deleted and should not been added, return empty JSON
                         if (deleteTimestamp.getTime() > elementTimestamp.getTime()) {
                             pastElement = new JSONObject();
                         }
