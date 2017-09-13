@@ -618,4 +618,53 @@ public class ElasticHelper {
 
         return new JSONObject();
     }
+
+    public Map<String, String> getDeletedElementsFromCommits(ArrayList<String> commitIds) {
+
+        // Create nested query
+        JSONObject nestedJson = new JSONObject().put("path", "deleted");
+        nestedJson.put("query", new JSONObject().put("bool", new JSONObject()
+            .put("filter", new JSONObject().put("exists", new JSONObject().put("field", "deleted.id")))));
+        JSONObject commitIdTerms = new JSONObject().put("terms", new JSONObject().put(Sjm.ELASTICID, commitIds));
+
+        // Create outer filter
+        JSONArray outerFilter = new JSONArray();
+        outerFilter.put(new JSONObject().put("nested", nestedJson));
+        outerFilter.put(commitIdTerms);
+
+        // Create outer query json
+        JSONObject outerBool = new JSONObject().put("filter", outerFilter);
+        JSONObject outerQuery = new JSONObject().put("query", new JSONObject().put("bool", outerBool));
+
+        Search search = new Search.Builder(outerQuery.toString()).addIndex(elementIndex).build();
+
+        try {
+            SearchResult result = client.execute(search);
+
+            if (result.getTotal() > 0) {
+                JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+                Map<String, String> deletedElements = new HashMap<>();
+
+                int hitSize = hits.size();
+
+                for (int i = 0; i < hitSize; ++i) {
+
+                    JSONObject hitResult = new JSONObject(hits.get(i).getAsJsonObject().toString());
+                    JSONArray deletedArray = hitResult.getJSONObject("_source").getJSONArray("deleted");
+
+                    int numDeleted = deletedArray.length();
+
+                    for (int y = 0; y < numDeleted; ++y) {
+                        JSONObject deletedObject = deletedArray.getJSONObject(y);
+                        deletedElements.put(deletedObject.getString(Sjm.ELASTICID),
+                            hitResult.getJSONObject("_source").getString(Sjm.CREATED));
+                    }
+                }
+                return deletedElements;
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return new HashMap<>();
+    }
 }

@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1668,32 +1669,52 @@ public class EmsNodeUtil {
 
     public JSONObject getModelAtCommit(String commitId) {
         JSONObject result = new JSONObject();
+        JSONObject pastElement = null;
         JSONArray elements = new JSONArray();
         ArrayList<String> refsCommitsIds = new ArrayList<>();
-        // Construct a query for elasticsearch that will get the reference id of the commitId.
 
         Map<String, Object> commit = pgh.getCommit(commitId);
         if (commit != null) {
             String refId = commit.get(Sjm.REFID).toString();
 
-            List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
-            for(Map<String, Object> ref : refsCommits){
-                refsCommitsIds.add((String)ref.get(Sjm.SYSMLID));
+            List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId, (int) commit.get(Sjm.SYSMLID));
+            for (Map<String, Object> ref : refsCommits) {
+                refsCommitsIds.add((String) ref.get(Sjm.SYSMLID));
             }
+
+            Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds);
+
             for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
 
                 if (((Date) n.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
                     try {
-                        elements.put(eh.getElementByCommitId((String) n.get(PostgresHelper.LASTCOMMIT), (String) n.get(Sjm.SYSMLID)));
+                        pastElement = eh.getElementByCommitId((String) n.get(PostgresHelper.LASTCOMMIT),
+                            (String) n.get(Sjm.SYSMLID));
                     } catch (IOException e) {
                         logger.error(e.getMessage());
                     }
                 } else {
-                    JSONObject pastElement = getElementAtCommit((String) n.get(Sjm.SYSMLID), commitId, refsCommitsIds);
-                    if (pastElement.has(Sjm.SYSMLID)) {
+                    pastElement = getElementAtCommit((String) n.get(Sjm.SYSMLID), commitId, refsCommitsIds);
+                }
+
+                if (pastElement != null && pastElement.has(Sjm.SYSMLID)) {
+                    if (deletedElementIds.containsKey(pastElement.getString(Sjm.ELASTICID))) {
+                        Date deleteTimestamp = new Date(deletedElementIds.get(Sjm.ELASTICID));
+                        Date elementTimestamp = new Date(pastElement.getString(Sjm.TIMESTAMP));
+                        // If true, element has been resurrected else it's been deleted and should not been added
+                        if (deleteTimestamp.getTime() < elementTimestamp.getTime()) {
+                            System.out.println("---------------------------------------------");
+                            System.out.println("Element " + pastElement.toString());
+                            System.out.println("---------------------------------------------");
+                            elements.put(pastElement);
+                        }
+                    } else {
                         elements.put(pastElement);
                     }
                 }
+
+                // Reset to null so if there is an exception it doesn't add a duplicate
+                pastElement = null;
             }
             result.put(Sjm.ELEMENTS, elements);
         }
@@ -1715,19 +1736,40 @@ public class EmsNodeUtil {
         ArrayList<String> refsCommitsIds = new ArrayList<>();
         if (commit != null) {
             String refId = commit.get(Sjm.REFID).toString();
-            List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId);
+            List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId, (int) commit.get(Sjm.SYSMLID));
 
             for (Map<String, Object> ref : refsCommits) {
                 refsCommitsIds.add((String)ref.get(Sjm.SYSMLID));
             }
-            pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
-        }
 
+            Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds);
+
+            pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
+
+            if (pastElement != null && pastElement.has(Sjm.SYSMLID)) {
+                if (deletedElementIds.containsKey(pastElement.getString(Sjm.ELASTICID))) {
+                    Date deleteTimestamp = null;
+                    Date elementTimestamp = null;
+                    try {
+                        String deleteTsString = deletedElementIds.get(pastElement.getString(Sjm.ELASTICID));
+                        deleteTimestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(deleteTsString);
+                        elementTimestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(pastElement.getString(Sjm.MODIFIED));
+                        // If true, element has been resurrected else it's been deleted and should not been added
+                        if (deleteTimestamp.getTime() > elementTimestamp.getTime()) {
+                            pastElement = new JSONObject();
+                        }
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        pastElement = new JSONObject();
+                    }
+                }
+            }
+        }
         return pastElement;
     }
+
     public JSONObject getElementAtCommit(String sysmlId, String commitId, ArrayList<String> refIds) {
         JSONObject result = new JSONObject();
-        JSONObject json = new JSONObject();
         String timestampFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
         try {
