@@ -3,19 +3,20 @@
 
 Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
 ## Developer Setup
-### 1a. Import Project from git repo to Eclipse
-*  **Eclipse** > **File** > **Import** > **General** > **Existing Projects into Workspace**
-*  Set 'Root Directory' as the path to mms-all-in-one e.g. **Browse** to `$HOME/workspace/mms-all-in-one`
-*  In the 'Projects' list, you should see all poms. Click **Finish**
 
-### 1b. Import Maven Project into Eclipse
-* **Eclipse** > **File** > **Import** > **Maven** > **Existing Maven Projects**
-* Set 'Root Directory' as the path to mms-all-in-one e.g. **Browse** to `$HOME/workspace/mms-all-in-one/mms-ent`
-* In the 'Projects' list, you should see all poms. Click **Finish**
-
-### 1c. Using Intellij
+### 1a. Using Intellij
 * Open Project with root of 'mms-ent'
 * Import Maven Project
+
+### 1b. Import Project from git repo to Eclipse
+*  **Eclipse** > **File** > **Import** > **General** > **Existing Projects into Workspace**
+*  Set 'Root Directory' as the path to mms e.g. **Browse** to `$HOME/workspace/mms`
+*  In the 'Projects' list, you should see all poms. Click **Finish**
+
+### 1c. Import Maven Project into Eclipse
+* **Eclipse** > **File** > **Import** > **Maven** > **Existing Maven Projects**
+* Set 'Root Directory' as the path to mms e.g. **Browse** to `$HOME/workspace/mms/mms-ent`
+* In the 'Projects' list, you should see all poms. Click **Finish**
 
 ### 2. Configure Eclipse to use Maven 3.X.X
 *   **Eclipse** > **Window** > **Preferences** > **Maven** > **Installation**
@@ -32,7 +33,7 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 *   Select **mms-ent** project
 *   From menu bar, choose **Run** > **Run Configurations**
 *   Right-click **Maven Build** > **New**
-    *   Enter `mms-all-in-one` for Name textbox
+    *   Enter `mms` for Name textbox
     *   At **Main** tab
         *   Enter `${project_loc}` or `${workspace_loc}` for Base Directory textbox
         *   Enter `install` for Goals textbox
@@ -69,12 +70,12 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 ### 1a. Running Alfresco
 1. Select file menu **Run** > **Run Configurations**
 2. Expand **Maven Build**
-3. Select **mms-all-in-one**
+3. Select **mms**
     1. Click **Run** button
     * If you get error:-Dmaven.multiModuleProjectDirectory system property is not set. Check $M2_HOME environment variable and mvn script match. Goto **Window -> Preference -> Java -> Installed JREs -> Edit -> Default VM arguments**  _set -Dmaven.multiModuleProjectDirectory=$M2_HOME_
 
 ### 1b. Running Alfresco
-1. From mms-ent directory, either run `clean-run.sh`, `run.sh`, or `./mvnw install -Prun`
+1. From mms-ent directory, either run `clean-run.sh`, `run.sh`, or `./mvnw install -Prun -Ddependency.surf.version=6.3`
 
 ### 2. Testing Alfresco
 1. Enter http://localhost:8080/share/ at a browser's url address textbox.
