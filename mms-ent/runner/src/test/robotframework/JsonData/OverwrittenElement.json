@@ -1,0 +1,18 @@
+{
+    "elements": [
+        {
+            "documentation": "something",
+            "id": "ElementToOverwrite",
+            "name": "Element to overwrite",
+            "ownerId": "PA",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        }
+    ]
+}

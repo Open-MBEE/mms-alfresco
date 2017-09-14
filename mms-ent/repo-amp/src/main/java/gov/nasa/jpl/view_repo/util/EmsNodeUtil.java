@@ -570,8 +570,12 @@ public class EmsNodeUtil {
         return result;
     }
 
+    public JSONObject processPostJson(JSONArray elements, String user, Set<String> oldElasticIds) {
+        return processPostJson(elements, user, oldElasticIds, false);
+    }
+
     public JSONObject processPostJson(JSONArray elements, String user,
-        Set<String> oldElasticIds) {
+        Set<String> oldElasticIds, boolean overwriteJson) {
 
         JSONObject result = new JSONObject();
 
@@ -614,8 +618,18 @@ public class EmsNodeUtil {
             boolean added = !existingMap.containsKey(sysmlid);
             boolean updated = false;
             if (!added) {
-                diffUpdateJson(o, existingMap.get(sysmlid));
-                updated = isUpdated(o, existingMap.get(sysmlid));
+                if(!overwriteJson){
+//                    if (o.has(Sjm.SYSMLID)) {
+//                        if (existingMap.get(sysmlid).has(Sjm.SYSMLID)) {
+//                            if (existingMap.get(sysmlid) != null) {
+//                                o = existingMap.get(sysmlid);
+//                            }
+//                        }
+//                    }
+//                } else {
+                    diffUpdateJson(o, existingMap.get(sysmlid));
+                    updated = isUpdated(o, existingMap.get(sysmlid));
+                }
             }
 
             // pregenerate the elasticId

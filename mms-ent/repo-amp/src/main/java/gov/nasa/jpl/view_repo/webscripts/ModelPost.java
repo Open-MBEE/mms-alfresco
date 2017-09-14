@@ -138,8 +138,10 @@ public class ModelPost extends AbstractJavaWebScript {
 
     protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user, String contentType) {
         JSONObject newElementsObject = new JSONObject();
+        JSONObject results;
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
+        boolean overwriteJSon = Boolean.parseBoolean(req.getParameter("overwrite"));
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
@@ -152,7 +154,13 @@ public class ModelPost extends AbstractJavaWebScript {
             JSONObject postJson = new JSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
-            JSONObject results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds);
+
+            if(overwriteJSon){
+                results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, true);
+            } else {
+                results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds);
+            }
+
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
             if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews)) {
