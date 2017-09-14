@@ -1703,9 +1703,6 @@ public class EmsNodeUtil {
                         Date elementTimestamp = new Date(pastElement.getString(Sjm.TIMESTAMP));
                         // If true, element has been resurrected else it's been deleted and should not been added
                         if (deleteTimestamp.getTime() < elementTimestamp.getTime()) {
-                            System.out.println("---------------------------------------------");
-                            System.out.println("Element " + pastElement.toString());
-                            System.out.println("---------------------------------------------");
                             elements.put(pastElement);
                         }
                     } else {
