@@ -13,7 +13,7 @@
                         "id":{
                             "type": "keyword"
                         },
-                        "elasticId":{
+                        "_elasticId":{
                             "type": "keyword"
                         }
                     }
@@ -23,7 +23,7 @@
                         "id":{
                             "type": "keyword"
                         },
-                        "elasticId":{
+                        "_elasticId":{
                             "type": "keyword"
                         },
                         "previousElasticId":{
