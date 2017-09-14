@@ -169,3 +169,37 @@ RecreateDeletedProject
 	Should Match Baseline		${compare_result}
 	${result} =		 Delete	  url=${ROOT}/projects/DeleteProject
 	Should Be Equal	 ${result.status_code}	   ${200}
+
+DeleteElement
+    [Documentation]  "Test deleting an element"
+    [Tags]           crud       critical        0115
+    # Create element first
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/DeleteElement.json
+    ${result} =         Post            url=${ROOT}/projects/PA/refs/master/elements        data=${post_json}       headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+	# Delete element
+	${result} =         Delete          url=${ROOT}/projects/PA/refs/master/elements/DeleteElement          headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	# Try to get element
+	${result} =         Get         url=${ROOT}/projects/PA/refs/master/elements/DeleteElement          headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${404}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+ResurrectElement
+    [Documentation]     "Test resurrecting deleted element"
+    [Tags]              crud        critical        0116
+    # Resurrect Element by posting update to it
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/ResurrectElement.json
+    ${result} =         Post            url=${ROOT}/projects/PA/refs/master/elements        data=${post_json}       headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+	${result} =         Get             url=${ROOT}/projects/PA/refs/master/elements/DeleteElement        headers=&{REQ_HEADER}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
