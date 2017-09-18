@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +44,8 @@ public class EmsNodeUtil {
 
     private static final String ORG_ID = "orgId";
     private static final String ORG_NAME = "orgName";
+
+    private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     public EmsNodeUtil() {
         try {
@@ -303,7 +306,6 @@ public class EmsNodeUtil {
 
     public JSONArray getRefHistory(String refId) {
         JSONArray result = new JSONArray();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId);
         for (int i = 0; i < refCommits.size(); i++) {
             Map<String, Object> refCommit = refCommits.get(i);
@@ -589,6 +591,7 @@ public class EmsNodeUtil {
         JSONArray addedElements = new JSONArray();
         JSONArray updatedElements = new JSONArray();
         JSONArray deletedElements = new JSONArray();
+        JSONArray rejectedElements = new JSONArray();
         JSONArray newElements = new JSONArray();
 
         Map<String, JSONObject> elementMap = convertToMap(elements);
@@ -613,9 +616,12 @@ public class EmsNodeUtil {
 
             boolean added = !existingMap.containsKey(sysmlid);
             boolean updated = false;
-            if (!added) {
-                diffUpdateJson(o, existingMap.get(sysmlid));
+            if (!added && diffUpdateJson(o, existingMap.get(sysmlid))) {
                 updated = isUpdated(o, existingMap.get(sysmlid));
+            }
+
+            if (!added && !updated) {
+                rejectedElements.put(o);
             }
 
             // pregenerate the elasticId
@@ -662,7 +668,7 @@ public class EmsNodeUtil {
                 parent.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
                 commitUpdated.put(parent);
             } else {
-                logger.debug("ELEMENT UNCHANGED!");
+                logger.debug("ELEMENT CONFLICT!");
             }
 
             newElements.put(o);
@@ -672,6 +678,7 @@ public class EmsNodeUtil {
         result.put("updatedElements", updatedElements);
         result.put("newElements", newElements);
         result.put("deletedElements", deletedElements);
+        result.put("rejectedElements", rejectedElements);
 
         commit.put("added", commitAdded);
         commit.put("updated", commitUpdated);
@@ -1318,17 +1325,34 @@ public class EmsNodeUtil {
         return pgh.refExists(refId);
     }
 
-    private void diffUpdateJson(JSONObject json, JSONObject existing) {
-        if (json.has(Sjm.SYSMLID)) {
-            if (existing.has(Sjm.SYSMLID)) {
-                mergeJson(json, existing);
+    private boolean diffUpdateJson(JSONObject json, JSONObject existing) {
+        if (json.has(Sjm.SYSMLID) && existing.has(Sjm.SYSMLID)) {
+            String jsonModified = json.optString(Sjm.MODIFIED);
+            String existingModified = existing.optString(Sjm.MODIFIED);
+            if (!jsonModified.isEmpty()) {
+                try {
+                    Date jsonModDate = df.parse(jsonModified);
+                    Date existingModDate = df.parse(existingModified);
+                    if (jsonModDate.before(existingModDate)) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Conflict Detected");
+                        }
+                        return false;
+                    }
+                } catch (ParseException e) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+                    }
+                }
             }
+            return mergeJson(json, existing);
         }
+        return false;
     }
 
-    private void mergeJson(JSONObject partial, JSONObject original) {
+    private boolean mergeJson(JSONObject partial, JSONObject original) {
         if (original == null) {
-            return;
+            return false;
         }
 
         for (String attr : JSONObject.getNames(original)) {
@@ -1336,6 +1360,7 @@ public class EmsNodeUtil {
                 partial.put(attr, original.get(attr));
             }
         }
+        return true;
     }
 
     private boolean isUpdated(JSONObject json, JSONObject existing) {
@@ -1727,9 +1752,8 @@ public class EmsNodeUtil {
         return pastElement;
     }
     public JSONObject getElementAtCommit(String sysmlId, String commitId, ArrayList<String> refIds) {
-        JSONArray results = new JSONArray();
+        JSONArray results;
         JSONObject json = new JSONObject();
-        String timestampFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
         try {
             // Get commit object and retrieve the refs commits
@@ -1739,7 +1763,7 @@ public class EmsNodeUtil {
             Calendar cal = Calendar.getInstance();
             cal.setTimeInMillis( date.getTime());
             cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-            String timestamp = new SimpleDateFormat(timestampFormat).format(cal.getTime());
+            String timestamp = df.format(cal.getTime());
 
             // Search for element at commit
             results = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds);
