@@ -18,7 +18,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 public class MmsVersion extends AbstractJavaWebScript {
     private static Logger logger = Logger.getLogger(MmsVersion.class);
@@ -48,7 +48,7 @@ public class MmsVersion extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
-        JSONObject mmsVersion = new JSONObject();
+        JSONObject mmsVersion;
 
         if (logger.isDebugEnabled()) {
         	logger.debug("Checking MMS Versions");
@@ -57,13 +57,13 @@ public class MmsVersion extends AbstractJavaWebScript {
         try {
             mmsVersion = getMMSversion();
             if (prettyPrint) {
-                model.put("res", mmsVersion.toString(4));
+                model.put(Sjm.RES, mmsVersion.toString(4));
             } else {
-                model.put("res", mmsVersion);
+                model.put(Sjm.RES, mmsVersion);
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSONObject");
-            model.put("res", createResponseJson());
+            model.put(Sjm.RES, createResponseJson());
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 

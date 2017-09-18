@@ -7,6 +7,7 @@ import os
 import shutil
 import subprocess
 import requests
+import base64
 
 '''
 Example of GetSites JSON converted to Robot Framework
@@ -27,10 +28,8 @@ develop_baseline_dir = '../developBaselineDir/'
 debug_test = False
 ROOT_RETURN_ELEMENTS = ['elements', 'refs', 'configurations', 'products', 'sites', 'views', 'ownersNotFound',
                         'message', 'workspace1', 'workspace2', 'documents']
-if "/runner/src/test/robotframework" not in os.getcwd():
-    robot_dir = os.getcwd() + '/runner/src/test/robotframework'
-else:
-    robot_dir = os.getcwd()
+
+robot_dir = os.getcwd() + '/runner/src/test/robotframework'
 output_dir = os.listdir(robot_dir + '/output')
 if "baseline" not in output_dir:
     os.mkdir(robot_dir + '/output/baseline')
@@ -434,16 +433,16 @@ def get_elements_from_elasticsearch(sysmlId, index="mms", elasticHost="localhost
 
 
 def find_element_by_commit(sysmlId, commitId):
-        """
-        Returns an element at a specific commit.
-        :param sysmlid:
-        :param commitId:
-        :return:
-        """
-        elementList = get_elements_from_elasticsearch(sysmlId)
-        for element in elementList:
-            if element["_source"]["_commitId"] == commitId:
-                return element["_source"]
+    """
+    Returns an element at a specific commit.
+    :param sysmlid:
+    :param commitId:
+    :return:
+    """
+    elementList = get_elements_from_elasticsearch(sysmlId)
+    for element in elementList:
+        if element["_source"]["_commitId"] == commitId:
+            return element["_source"]
 
 def get_element_commit_ids(sysmlId):
     """
@@ -510,6 +509,9 @@ def get_all_project_commits(projectId, index="mms", elasticHost="localhost"):
             commitObjectList.append(hit["_source"]["_commitId"])
     return commitObjectList
 
+def get_number_of_commits(project_id, host="localhost", ref="master", user="admin", password="admin"):
+    return len((requests.get("http://{}:{}@{}:8080/alfresco/service/projects/{}/refs/{}/history"
+                             .format(user, password, host, project_id, ref)).json())["commits"])
 
 def get_last_commit():
     commits = get_all_commits()
@@ -524,6 +526,13 @@ def get_commit_in_between_latest_and_element(sysmlId, projectId):
     for c in sorted_list:
         if commits[c] not in element_commits and commits[c] in project_commits:
             return commits[c]
+
+def binary_data(filename):
+    data = open(filename, 'rb')
+    return data
+
+def get_image_url(jsonObject):
+    return jsonObject["artifacts"][0]["url"]
 
 # Main Application when running from the commandline
 if __name__ == "__main__":

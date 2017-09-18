@@ -1,4 +1,5 @@
 {
+    "authorizationStatus": null,
     "companyaddress1": null,
     "companyaddress2": null,
     "companyaddress3": null,
@@ -12,6 +13,8 @@
     "firstName": "Manager",
     "googleusername": null,
     "instantmsg": null,
+    "isAdminAuthority": false,
+    "isDeleted": false,
     "jobtitle": null,
     "lastName": "user",
     "location": null,

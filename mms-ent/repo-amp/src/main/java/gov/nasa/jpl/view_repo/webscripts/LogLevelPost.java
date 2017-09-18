@@ -16,19 +16,18 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
  * Utility service for setting log levels of specified classes on the fly
- * @author cinyoung
  *
+ * @author cinyoung
  */
 public class LogLevelPost extends DeclarativeJavaWebScript {
-    static Logger logger = Logger.getLogger( LogLevelPost.class );
+    static Logger logger = Logger.getLogger(LogLevelPost.class);
 
-    @Override
-    protected Map< String, Object > executeImpl( WebScriptRequest req,
-                                                 Status status, Cache cache ) {
-        Map< String, Object > result = new HashMap< String, Object >();
+    @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
+        Map<String, Object> result = new HashMap<String, Object>();
 
         StringBuffer msg = new StringBuffer();
 
@@ -36,38 +35,38 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
 
         JSONArray requestJson;
         try {
-            requestJson = (JSONArray)req.parseContent();
+            requestJson = (JSONArray) req.parseContent();
         } catch (JSONException e) {
-            status.setCode( HttpServletResponse.SC_BAD_REQUEST );
-            response.put( "msg", "JSON malformed" );
-            result.put( "res", response );
+            status.setCode(HttpServletResponse.SC_BAD_REQUEST);
+            response.put("msg", "JSON malformed");
+            result.put(Sjm.RES, response);
             return result;
         }
 
-        for ( int ii = 0; ii < requestJson.length(); ii++ ) {
+        for (int ii = 0; ii < requestJson.length(); ii++) {
             boolean failed = false;
-            JSONObject json = requestJson.getJSONObject( ii );
+            JSONObject json = requestJson.getJSONObject(ii);
 
-            String className = json.getString( "classname" );
-            String level = json.getString( "loglevel" );
+            String className = json.getString("classname");
+            String level = json.getString("loglevel");
 
             try {
-                Logger classLogger = (Logger) getStaticValue( className, "logger");
-                classLogger.setLevel( Level.toLevel( level ) );
-            } catch ( Exception e ) {
+                Logger classLogger = (Logger) getStaticValue(className, "logger");
+                classLogger.setLevel(Level.toLevel(level));
+            } catch (Exception e) {
                 logger.info(String.format("%s", LogUtil.getStackTrace(e)));
                 failed = true;
             }
 
-            if ( !failed ) {
-                if ( !response.has( "loglevels" ) ) {
-                    response.put( "loglevels", new JSONArray() );
+            if (!failed) {
+                if (!response.has("loglevels")) {
+                    response.put("loglevels", new JSONArray());
                 }
                 try {
                     JSONObject levelObject = new JSONObject();
-                    levelObject.put( "classname", className );
-                    levelObject.put( "loglevel", level );
-                    response.getJSONArray( "loglevels" ).put( levelObject );
+                    levelObject.put("classname", className);
+                    levelObject.put("loglevel", level);
+                    response.getJSONArray("loglevels").put(levelObject);
                 } catch (Exception e) {
                     logger.info(String.format("%s", LogUtil.getStackTrace(e)));
                     failed = true;
@@ -75,34 +74,27 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
             }
 
             if (failed) {
-                msg.append( String.format( "could not update: %s=%s",
-                                           className, level ) );
+                msg.append(String.format("could not update: %s=%s", className, level));
             }
         }
 
-        if (msg.length() > 0 ) {
-            response.put( "msg", msg.toString() );
+        if (msg.length() > 0) {
+            response.put("msg", msg.toString());
         }
-        result.put( "res", response.toString(4) );
-        status.setCode( HttpServletResponse.SC_OK );
+        result.put(Sjm.RES, response.toString(4));
+        status.setCode(HttpServletResponse.SC_OK);
 
         return result;
     }
 
-    public static
-            Object
-            getStaticValue( final String className, final String fieldName )
-                                                                            throws SecurityException,
-                                                                            NoSuchFieldException,
-                                                                            ClassNotFoundException,
-                                                                            IllegalArgumentException,
-                                                                            IllegalAccessException {
+    public static Object getStaticValue(final String className, final String fieldName)
+        throws SecurityException, NoSuchFieldException, ClassNotFoundException, IllegalArgumentException,
+        IllegalAccessException {
         // Get the private field
-        final Field field =
-                Class.forName( className ).getDeclaredField( fieldName );
+        final Field field = Class.forName(className).getDeclaredField(fieldName);
         // Allow modification on the field
-        field.setAccessible( true );
+        field.setAccessible(true);
         // Return the Obect corresponding to the field
-        return field.get( Class.forName( className ) );
+        return field.get(Class.forName(className));
     }
 }
