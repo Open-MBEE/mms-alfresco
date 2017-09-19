@@ -50,6 +50,9 @@
                 },
                 "_projectId": {
                     "type": "keyword"
+                },
+                "_elasticId": {
+                    "type": "keyword"
                 }
             }
         },
