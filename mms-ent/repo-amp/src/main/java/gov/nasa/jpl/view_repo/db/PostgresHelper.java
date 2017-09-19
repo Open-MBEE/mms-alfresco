@@ -618,7 +618,7 @@ public class PostgresHelper {
                 node.put(Sjm.SYSMLID, rs.getString(4));
                 node.put(LASTCOMMIT, rs.getString(5));
                 node.put(INITIALCOMMIT, rs.getString(6));
-                node.put(Sjm.TIMESTAMP, rs.getString(7));
+                node.put(Sjm.TIMESTAMP, rs.getTimestamp(8));
                 result.add(node);
             }
         } catch (Exception e) {

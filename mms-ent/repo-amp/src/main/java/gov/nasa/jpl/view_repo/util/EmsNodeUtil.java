@@ -1709,7 +1709,7 @@ public class EmsNodeUtil {
             Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds);
 
             for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
-                if (((Date) n.get(Sjm.TIMESTAMP.replace("_", ""))).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP.replace("_", ""))).getTime()) {
+                if (((Date) n.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
                     try {
                         if(!deletedElementIds.containsKey( (String) n.get(Sjm.ELASTICID))) {
                             pastElement = eh.getElementByCommitId((String) n.get(PostgresHelper.LASTCOMMIT),
@@ -1749,7 +1749,6 @@ public class EmsNodeUtil {
         ArrayList<String> refsCommitsIds = new ArrayList<>();
         if (commit != null) {
             String refId = commit.get(Sjm.REFID).toString();
-            Node node = pgh.getNodeFromSysmlId(sysmlId);
             List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId, Integer.parseInt(commit.get(Sjm.SYSMLID).toString()));
 
             for (Map<String, Object> ref : refsCommits) {
