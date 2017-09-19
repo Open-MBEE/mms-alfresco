@@ -306,6 +306,7 @@ public class EmsNodeUtil {
 
     public JSONArray getRefHistory(String refId) {
         JSONArray result = new JSONArray();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId);
         for (int i = 0; i < refCommits.size(); i++) {
             Map<String, Object> refCommit = refCommits.get(i);
@@ -573,7 +574,7 @@ public class EmsNodeUtil {
     }
 
     public JSONObject processPostJson(JSONArray elements, String user,
-        Set<String> oldElasticIds) {
+        Set<String> oldElasticIds, boolean overwriteJson) {
 
         JSONObject result = new JSONObject();
 
@@ -616,8 +617,13 @@ public class EmsNodeUtil {
 
             boolean added = !existingMap.containsKey(sysmlid);
             boolean updated = false;
-            if (!added && diffUpdateJson(o, existingMap.get(sysmlid))) {
-                updated = isUpdated(o, existingMap.get(sysmlid));
+            if (!added) {
+                if (!overwriteJson) {
+                    diffUpdateJson(o, existingMap.get(sysmlid));
+                    updated = isUpdated(o, existingMap.get(sysmlid));
+                } else {
+                    updated = true;
+                }
             }
 
             if (!added && !updated) {
@@ -1760,7 +1766,7 @@ public class EmsNodeUtil {
             pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
 
             if (pastElement != null && pastElement.has(Sjm.SYSMLID) && deletedElementIds.containsKey(pastElement.getString(Sjm.ELASTICID))) {
-                  pastElement = new JSONObject();
+                pastElement = new JSONObject();
             }
         }
         return pastElement == null ? new JSONObject() : pastElement;
