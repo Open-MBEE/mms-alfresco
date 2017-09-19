@@ -619,16 +619,10 @@ public class EmsNodeUtil {
             boolean updated = false;
             if (!added) {
                 if(!overwriteJson){
-//                    if (o.has(Sjm.SYSMLID)) {
-//                        if (existingMap.get(sysmlid).has(Sjm.SYSMLID)) {
-//                            if (existingMap.get(sysmlid) != null) {
-//                                o = existingMap.get(sysmlid);
-//                            }
-//                        }
-//                    }
-//                } else {
                     diffUpdateJson(o, existingMap.get(sysmlid));
                     updated = isUpdated(o, existingMap.get(sysmlid));
+                } else {
+                    updated = true;
                 }
             }
 
