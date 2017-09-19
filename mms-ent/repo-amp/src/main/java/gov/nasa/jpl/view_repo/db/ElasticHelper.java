@@ -255,9 +255,11 @@ public class ElasticHelper {
 
         if (result.isSucceeded()) {
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-            JSONObject o = new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
-            o.put(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id").getAsString());
-            return o;
+            if(hits.size() > 0){
+                JSONObject o = new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
+                o.put(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id").getAsString());
+                return o;
+            }
         }
         return null;
 
@@ -578,44 +580,91 @@ public class ElasticHelper {
      * @param timestamp
      * @return
      */
-    public JSONArray getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds) {
-        JSONObject searchJson = new JSONObject();
-        JSONArray elements = new JSONArray();
-        JSONObject bool = new JSONObject().put("must", new JSONObject().put("term", new JSONObject().put("id", sysmlId)));
-        // Create search filter
-        JSONArray boolArray = new JSONArray();
-        JSONObject range = new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp)));
-        JSONObject filterTerms = new JSONObject().put("terms", new JSONObject().put(Sjm.COMMITID, refsCommitIds));
-        boolArray.put(range);
-        boolArray.put(filterTerms);
-        JSONObject filter =new JSONObject().put("bool", new JSONObject().put("must", boolArray));
+    public JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds) {
+        // Create filter array
+        JSONArray filter = new JSONArray();
+        filter.put(new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp))));
+        filter.put(new JSONObject().put("terms", new JSONObject().put(Sjm.COMMITID, refsCommitIds)));
+        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.SYSMLID, sysmlId)));
 
-        // Create Sort option
+        // Create sort
         JSONArray sort = new JSONArray();
         JSONObject modifiedSortOpt = new JSONObject();
         modifiedSortOpt.put("order", "desc");
         modifiedSortOpt.put("mode", "max");
         sort.put(new JSONObject().put("_modified", modifiedSortOpt));
-        bool.put("filter", filter);
-        searchJson.put("sort", sort);
-        searchJson.put("query", new JSONObject().put("bool", bool));
 
-        Search search = new Search.Builder(searchJson.toString()).addIndex(elementIndex).build();
+        // Add filter to bool, then bool to query
+        JSONObject bool = new JSONObject().put("bool", new JSONObject().put("filter", filter));
+        JSONObject query = new JSONObject().put("query", bool);
+        query.put("sort", sort);
+        // Add size limit
+        query.put("size", "1");
+
+        Search search = new Search.Builder(query.toString()).addIndex(elementIndex).build();
         SearchResult result;
         try {
             result = client.execute(search);
 
             if (result.getTotal() > 0) {
                 JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-                int hitNum = hits.size();
-                for (int i = 0; i < hitNum; ++i) {
-                    elements.put(new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString()));
+                if(hits.size() > 0){
+                    return new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
                 }
             }
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
 
-        return elements;
+        return new JSONObject();
+    }
+
+    public Map<String, String> getDeletedElementsFromCommits(ArrayList<String> commitIds) {
+
+        // Create nested query
+        JSONObject nestedJson = new JSONObject().put("path", "deleted");
+        nestedJson.put("query", new JSONObject().put("bool", new JSONObject()
+            .put("filter", new JSONObject().put("exists", new JSONObject().put("field", "deleted.id")))));
+        JSONObject commitIdTerms = new JSONObject().put("terms", new JSONObject().put(Sjm.ELASTICID, commitIds));
+
+        // Create outer filter
+        JSONArray outerFilter = new JSONArray();
+        outerFilter.put(new JSONObject().put("nested", nestedJson));
+        outerFilter.put(commitIdTerms);
+
+        // Create outer query json
+        JSONObject outerBool = new JSONObject().put("filter", outerFilter);
+        JSONObject outerQuery = new JSONObject().put("query", new JSONObject().put("bool", outerBool));
+
+        Search search = new Search.Builder(outerQuery.toString()).addIndex(elementIndex).build();
+
+        try {
+            SearchResult result = client.execute(search);
+
+            if (result.getTotal() > 0) {
+                JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+                Map<String, String> deletedElements = new HashMap<>();
+
+                int hitSize = hits.size();
+
+                for (int i = 0; i < hitSize; ++i) {
+
+                    JSONObject hitResult = new JSONObject(hits.get(i).getAsJsonObject().toString());
+                    JSONArray deletedArray = hitResult.getJSONObject("_source").getJSONArray("deleted");
+
+                    int numDeleted = deletedArray.length();
+
+                    for (int y = 0; y < numDeleted; ++y) {
+                        JSONObject deletedObject = deletedArray.getJSONObject(y);
+                        deletedElements.put(deletedObject.getString(Sjm.ELASTICID),
+                            hitResult.getJSONObject("_source").getString(Sjm.CREATED));
+                    }
+                }
+                return deletedElements;
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        return new HashMap<>();
     }
 }

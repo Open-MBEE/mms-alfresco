@@ -410,7 +410,7 @@ public class PostgresHelper {
     }
 
     private Node resultSetToNode(ResultSet rs) throws SQLException {
-        return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5), rs.getString(6));
+        return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5), rs.getString(6), rs.getBoolean(7));
     }
 
     public List<Map<String, String>> getOrganizations(String orgId) {
@@ -618,7 +618,7 @@ public class PostgresHelper {
                 node.put(Sjm.SYSMLID, rs.getString(4));
                 node.put(LASTCOMMIT, rs.getString(5));
                 node.put(INITIALCOMMIT, rs.getString(6));
-                node.put(Sjm.TIMESTAMP, rs.getString(7));
+                node.put(Sjm.TIMESTAMP, rs.getTimestamp(8));
                 result.add(node);
             }
         } catch (Exception e) {
@@ -710,7 +710,7 @@ public class PostgresHelper {
 
             if (rs.next()) {
                 return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5),
-                    rs.getString(6));
+                    rs.getString(6), rs.getBoolean(7));
             } else
                 return null;
         } catch (SQLException e) {
@@ -755,7 +755,7 @@ public class PostgresHelper {
                 execQuery("SELECT * FROM \"nodes" + workspaceId + "\" WHERE id = " + id + " AND deleted = false");
             if (rs.next()) {
                 return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5),
-                    rs.getString(6));
+                    rs.getString(6), rs.getBoolean(7));
             } else
                 return null;
         } catch (SQLException e) {
@@ -786,7 +786,7 @@ public class PostgresHelper {
             ResultSet rs = query.executeQuery();
             if (rs.next()) {
                 return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5),
-                    rs.getString(6));
+                    rs.getString(6), rs.getBoolean(7));
             } else {
                 return null;
             }

@@ -1,0 +1,32 @@
+{
+    "elements": [
+        {
+            "documentation": "Element that will be deleted and resurrected within the same test",
+            "id": "DeleteResurrectElement",
+            "name": "Deleted Resurrect Element",
+            "ownerId": "PA",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "Random Element that will be updated during test to create new commit object",
+            "id": "RandomElement",
+            "name": "Random Element",
+            "ownerId": "PA",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        }
+    ]
+}

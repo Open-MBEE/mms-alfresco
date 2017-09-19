@@ -1,0 +1,16 @@
+{"elements":[
+    {
+        "documentation": "Element that was deleted and is resurrected",
+        "id": "DeleteResurrectElement",
+        "name": "Resurrect Deleted Resurrect Element",
+        "ownerId": "PA",
+        "type": "Property",
+        "isDerived": false,
+        "value": [
+            {
+                "type": "LiteralString",
+                "string": "dlam_string"
+            }
+        ]
+    }
+]}
