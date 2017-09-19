@@ -1757,7 +1757,7 @@ public class EmsNodeUtil {
 
             Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds);
 
-            if (!deletedElementIds.containsKey(Sjm.SYSMLID)) {
+            if (!deletedElementIds.containsKey(sysmlId)) {
                 pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
             }
 
