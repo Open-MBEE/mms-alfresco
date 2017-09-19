@@ -255,9 +255,11 @@ public class ElasticHelper {
 
         if (result.isSucceeded()) {
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-            JSONObject o = new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
-            o.put(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id").getAsString());
-            return o;
+            if(hits.size() > 0){
+                JSONObject o = new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
+                o.put(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id").getAsString());
+                return o;
+            }
         }
         return null;
 
@@ -579,29 +581,27 @@ public class ElasticHelper {
      * @return
      */
     public JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds) {
-        JSONObject searchJson = new JSONObject();
-        JSONArray elements = new JSONArray();
-        JSONObject bool = new JSONObject().put("must", new JSONObject().put("term", new JSONObject().put("id", sysmlId)));
-        // Create search filter
-        JSONArray boolArray = new JSONArray();
-        JSONObject range = new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp)));
-        JSONObject filterTerms = new JSONObject().put("terms", new JSONObject().put(Sjm.COMMITID, refsCommitIds));
-        boolArray.put(range);
-        boolArray.put(filterTerms);
-        JSONObject filter =new JSONObject().put("bool", new JSONObject().put("must", boolArray));
+        // Create filter array
+        JSONArray filter = new JSONArray();
+        filter.put(new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp))));
+        filter.put(new JSONObject().put("terms", new JSONObject().put(Sjm.COMMITID, refsCommitIds)));
+        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.SYSMLID, sysmlId)));
 
-        // Create Sort option
+        // Create sort
         JSONArray sort = new JSONArray();
         JSONObject modifiedSortOpt = new JSONObject();
         modifiedSortOpt.put("order", "desc");
         modifiedSortOpt.put("mode", "max");
         sort.put(new JSONObject().put("_modified", modifiedSortOpt));
-        bool.put("filter", filter);
-        searchJson.put("sort", sort);
-        searchJson.put("query", new JSONObject().put("bool", bool));
-        searchJson.put("size", "1");
 
-        Search search = new Search.Builder(searchJson.toString()).addIndex(elementIndex).build();
+        // Add filter to bool, then bool to query
+        JSONObject bool = new JSONObject().put("bool", new JSONObject().put("filter", filter));
+        JSONObject query = new JSONObject().put("query", bool);
+        query.put("sort", sort);
+        // Add size limit
+        query.put("size", "1");
+
+        Search search = new Search.Builder(query.toString()).addIndex(elementIndex).build();
         SearchResult result;
         try {
             result = client.execute(search);

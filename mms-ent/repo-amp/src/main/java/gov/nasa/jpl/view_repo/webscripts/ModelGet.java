@@ -280,6 +280,9 @@ public class ModelGet extends AbstractJavaWebScript {
 
         // This is the lastest commit for the element
         Node elementNode = emsNodeUtil.getById(elementId);
+        if(elementNode.isDeleted()){
+            return new JSONObject();
+        }
         String latestCommitId = elementNode.getLastCommit();
         Boolean checkInProjectAndRef = false;
         try {
@@ -289,7 +292,7 @@ public class ModelGet extends AbstractJavaWebScript {
         }
 
         // Check if the element commit is the latest and is not deleted at the commit
-        if (commitId.equals(latestCommitId) && !elementNode.isDeleted()) {
+        if (commitId.equals(latestCommitId) ) {
             return emsNodeUtil.getElementByElasticID(currentElement);
         } else if (checkInProjectAndRef) {
             return emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
