@@ -1749,6 +1749,7 @@ public class EmsNodeUtil {
         ArrayList<String> refsCommitsIds = new ArrayList<>();
         if (commit != null) {
             String refId = commit.get(Sjm.REFID).toString();
+            Node node = pgh.getNodeFromSysmlId(sysmlId);
             List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId, Integer.parseInt(commit.get(Sjm.SYSMLID).toString()));
 
             for (Map<String, Object> ref : refsCommits) {
@@ -1757,9 +1758,7 @@ public class EmsNodeUtil {
 
             Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds);
 
-            if (!deletedElementIds.containsKey(sysmlId)) {
-                pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
-            }
+            pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
 
             if (pastElement != null && pastElement.has(Sjm.SYSMLID) && deletedElementIds.containsKey(pastElement.getString(Sjm.ELASTICID))) {
                   pastElement = new JSONObject();
