@@ -48,7 +48,6 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mozilla.javascript.Scriptable;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -172,7 +171,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         Boolean isTag = false;
         String permission = "read";  // Default is public read permission
         EmsScriptNode finalWorkspace = null;
-        boolean updateWorkspace = false;
 
         // If the workspace is supplied in the json object then get all parameters from there
         // and ignore any URL parameters:
