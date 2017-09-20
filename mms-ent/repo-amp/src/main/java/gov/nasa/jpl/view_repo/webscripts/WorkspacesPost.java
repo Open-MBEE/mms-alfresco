@@ -191,13 +191,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             workspaceName = newWorkName;   // The name is given on the URL typically, not the ID
         }
 
-        if ((newWorkspaceId != null && newWorkspaceId.equals(NO_WORKSPACE_ID)) || (workspaceName != null
-            && workspaceName.equals(NO_WORKSPACE_ID))) {
-            log(Level.WARN, "Cannot change attributes of the master workspace.", HttpServletResponse.SC_BAD_REQUEST);
-            status.setCode(HttpServletResponse.SC_BAD_REQUEST);
-            return null;
-        }
-
         // Only create the workspace if the workspace id was not supplied:
         EmsScriptNode existingRef =
             orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
@@ -250,7 +243,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         } else {
             // Workspace was found, so update it:
             if (existingRef.getId() != null) {
-
                 if (existingRef.isDeleted()) {
 
                     existingRef.removeAspect("ems:Deleted");
@@ -288,7 +280,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             if (permission.equals("write")) {
                 finalWorkspace.setPermission("SiteCollaborator", "GROUP_EVERYONE");
             } else {
-                finalWorkspace.setPermission("SiteConsumer", "GROUP_EVERYONE");
+                finalWorkspace.setPermission("SiteConsumer", String.format("Site_%s_SiteConsumer",orgNode.getName()));
             }
             finalWorkspace.createOrUpdateProperty("ems:permission", permission);
         }
