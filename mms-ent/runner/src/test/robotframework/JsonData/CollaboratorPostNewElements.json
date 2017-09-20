@@ -1,0 +1,215 @@
+{
+    "elements": [
+        {
+            "documentation": "something",
+            "id": "Collab_project_300",
+            "name": "three hundred",
+            "ownerId": "PA",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "else",
+            "id": "Collab_project_301",
+            "name": "three hundred and one",
+            "ownerId": "300",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "to",
+            "id": "Collab_project_302",
+            "name": "three hundred and two",
+            "ownerId": "301",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "talk",
+            "id": "Collab_project_303",
+            "name": "three hundred and three",
+            "ownerId": "302",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "about",
+            "id": "Collab_project_304",
+            "name": "three hundred and four",
+            "ownerId": "303",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "no owner",
+            "id": "Collab_project_305",
+            "name": "three hundred and five",
+            "ownerId": null,
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "4something",
+            "id": "Collab_project_4000",
+            "name": "four hundred",
+            "ownerId": "PA",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "4else",
+            "id": "Collab_project_401",
+            "name": "four hundred and one",
+            "ownerId": "4000",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "4to",
+            "id": "Collab_project_402",
+            "name": "four hundred and two",
+            "ownerId": "401",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "4talk",
+            "id": "Collab_project_403",
+            "name": "four hundred and three",
+            "ownerId": "402",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "4about",
+            "id": "Collab_project_404",
+            "name": "four hundred and four",
+            "ownerId": "403",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "directed_relationship",
+            "id": "Collab_project_500",
+            "ownerId": "300",
+            "name": "five hundred",
+            "type": "DirectedRelationship",
+            "source": "302",
+            "target": "303"
+        },
+        {
+            "documentation": "element values",
+            "id": "Collab_project_600",
+            "ownerId": null,
+            "name": "600",
+            "type": "Property",
+            "value": [
+                {
+                    "type": "ElementValue",
+                    "element": "300"
+                },
+                {
+                    "type": "ElementValue",
+                    "element": "302"
+                }
+            ]
+        },
+        {
+            "documentation": "",
+            "id": "Collab_project_6666",
+            "ownerId": null,
+            "name": "6666_name",
+            "type": "Expression",
+            "operand": [
+                {
+                    "type": "ElementValue",
+                    "element": "300"
+                },
+                {
+                    "type": "ElementValue",
+                    "element": "302"
+                }
+            ]
+        },
+        {
+            "documentation": "something",
+            "id": "Collab_project_x",
+            "name": "xxx",
+            "ownerId": null,
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        }
+    ]
+}

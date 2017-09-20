@@ -48,6 +48,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mozilla.javascript.Scriptable;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -171,6 +172,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         Boolean isTag = false;
         String permission = "read";  // Default is public read permission
         EmsScriptNode finalWorkspace = null;
+        boolean updateWorkspace = false;
 
         // If the workspace is supplied in the json object then get all parameters from there
         // and ignore any URL parameters:
@@ -243,7 +245,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         } else {
             // Workspace was found, so update it:
             if (existingRef.getId() != null) {
-
                 if (existingRef.isDeleted()) {
 
                     existingRef.removeAspect("ems:Deleted");
@@ -281,7 +282,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             if (permission.equals("write")) {
                 finalWorkspace.setPermission("SiteCollaborator", "GROUP_EVERYONE");
             } else {
-                finalWorkspace.setPermission("SiteConsumer", "GROUP_EVERYONE");
+                finalWorkspace.setPermission("SiteConsumer", String.format("Site_%s_SiteConsumer",orgNode.getName()));
             }
             finalWorkspace.createOrUpdateProperty("ems:permission", permission);
         }

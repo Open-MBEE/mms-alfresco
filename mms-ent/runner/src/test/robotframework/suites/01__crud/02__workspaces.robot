@@ -6,6 +6,7 @@ Resource        ../resources.robot
 UpdateMasterBranchJson
     [Documentation]     "Send an update to master branch JSON"
     [Tags]              critical    workspaces      010201
+    log to console      merp
 	${post_json} =		Get File		${CURDIR}/../../JsonData/UpdateMasterBranchObject.json
     ${result} =         Post    url=${ROOT}/projects/PA/refs        data=${post_json}        headers=&{REQ_HEADER}
 	Sleep				${POST_DELAY_INDEXING}

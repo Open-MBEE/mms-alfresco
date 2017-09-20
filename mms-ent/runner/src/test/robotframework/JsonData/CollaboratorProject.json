@@ -1,0 +1,9 @@
+{
+    "projects": [
+        {
+            "id": "CollaboratorProject",
+            "name": "Collaborator Project",
+            "type": "Project"
+        }
+    ]
+}
