@@ -224,6 +224,8 @@ public class ProjectPost extends AbstractJavaWebScript {
                 JSONObject masterWs = new JSONObject();
                 masterWs.put("id", NO_WORKSPACE_ID);
                 masterWs.put("name", NO_WORKSPACE_ID);
+                // :TODO going to have to check that index doesn't exist if ES doesn't already do this
+                emsNodeUtil.insertProjectIndex(projectId);
                 String elasticId = emsNodeUtil.insertSingleElastic(masterWs);
                 emsNodeUtil.insertRef(NO_WORKSPACE_ID, NO_WORKSPACE_ID, elasticId, false);
             }

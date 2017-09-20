@@ -1,0 +1,181 @@
+{
+    "template" : "*",
+    "settings" : {
+        "index" : {
+            "number_of_shards" : 3
+        }
+    },
+    "mappings" : {
+        "commit": {
+            "properties": {
+                "added": {
+                    "properties" : {
+                        "id":{
+                            "type": "keyword"
+                        },
+                        "_elasticId":{
+                            "type": "keyword"
+                        }
+                    }
+                },
+                "updated": {
+                    "properties" : {
+                        "id":{
+                            "type": "keyword"
+                        },
+                        "_elasticId":{
+                            "type": "keyword"
+                        },
+                        "previousElasticId":{
+                            "type": "keyword"
+                        }
+                    }
+                },
+                "deleted": {
+                    "properties" : {
+                        "id":{
+                            "type": "keyword"
+                        },
+                        "previousElasticId":{
+                            "type": "keyword"
+                        }
+                    }
+                },
+                "_creator": {
+                    "type": "keyword"
+                },
+                "_created": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                },
+                "_projectId": {
+                    "type": "keyword"
+                },
+                "_elasticId": {
+                    "type": "keyword"
+                }
+            }
+        },
+        "element": {
+            "dynamic_templates": [
+                {
+                    "id_as_keywords": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": ".*(Id|Ids)",
+                        "mapping": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+                {
+                    "id_and_type": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": "(id|ids|type|uri|URI)",
+                        "mapping": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+                {
+                    "boolean": {
+                        "match_mapping_type": "*",
+                        "match_pattern": "regex",
+                        "match": "is[A-Z].*",
+                        "mapping": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                {
+                    "text": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": "(body|documentation)",
+                        "mapping": {
+                            "type": "text"
+                        }
+                    }
+                },
+                {
+                    "value": {
+                        "match_mapping_type": "*",
+                        "path_unmatch": "value",
+                        "match": "value",
+                        "mapping": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        }
+                    }
+                }
+            ],
+            "properties": {
+                "aggregation": {
+                    "type": "keyword"
+                },
+                "visibility": {
+                    "type": "keyword"
+                },
+                "direction": {
+                    "type": "keyword"
+                },
+                "ordering": {
+                    "type": "keyword"
+                },
+                "concurrency": {
+                    "type": "keyword"
+                },
+                "kind": {
+                    "type": "keyword"
+                },
+                "mode": {
+                    "type": "keyword"
+                },
+                "interactionOperator": {
+                    "type": "keyword"
+                },
+                "messageKind": {
+                    "type": "keyword"
+                },
+                "messageSort": {
+                    "type": "keyword"
+                },
+                "effect": {
+                    "type": "keyword"
+                },
+                "mustIsolate": {
+                    "type": "boolean"
+                },
+                "_creator": {
+                    "type": "keyword"
+                },
+                "_modifier": {
+                    "type": "keyword"
+                },
+                "_qualifiedName": {
+                    "type": "keyword"
+                },
+                "_qualifiedId": {
+                    "type": "keyword"
+                },
+                "_created": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                },
+                "_modified": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                },
+                "_elasticId":{
+                    "type": "keyword"
+                }
+            }
+        }
+    }
+}

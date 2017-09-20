@@ -204,7 +204,7 @@ public class EmsNodeUtil {
 
     public JSONObject getElementByElementAndCommitId(String commitId, String sysmlid) {
         try {
-            return eh.getElementByCommitId(commitId, sysmlid);
+            return eh.getElementByCommitId(commitId, sysmlid, projectId);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -217,7 +217,7 @@ public class EmsNodeUtil {
 
     public Boolean commitContainsElement(String elementId, String commitId) {
         try {
-            return eh.checkForElasticIdInCommit(elementId, commitId);
+            return eh.checkForElasticIdInCommit(elementId, commitId, projectId);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -257,7 +257,7 @@ public class EmsNodeUtil {
         String elasticId = pgh.getElasticIdFromSysmlId(sysmlid);
         if (elasticId != null) {
             try {
-                JSONObject result = eh.getElementByElasticId(elasticId);
+                JSONObject result = eh.getElementByElasticId(elasticId, projectId);
                 if (result != null) {
                     result.put(Sjm.PROJECTID, this.projectId);
                     result.put(Sjm.REFID, this.workspaceName);
@@ -279,7 +279,7 @@ public class EmsNodeUtil {
         List<String> elasticids = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids), withDeleted);
         JSONArray elementsFromElastic = new JSONArray();
         try {
-            elementsFromElastic = eh.getElementsFromElasticIds(elasticids);
+            elementsFromElastic = eh.getElementsFromElasticIds(elasticids, projectId);
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -297,7 +297,7 @@ public class EmsNodeUtil {
     public JSONArray getNodeHistory(String sysmlId) {
         JSONArray nodeHistory = new JSONArray();
         try {
-            nodeHistory = filterCommitsByRefs(eh.getCommitHistory(sysmlId));
+            nodeHistory = filterCommitsByRefs(eh.getCommitHistory(sysmlId, projectId));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -306,7 +306,6 @@ public class EmsNodeUtil {
 
     public JSONArray getRefHistory(String refId) {
         JSONArray result = new JSONArray();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId);
         for (int i = 0; i < refCommits.size(); i++) {
             Map<String, Object> refCommit = refCommits.get(i);
@@ -336,18 +335,6 @@ public class EmsNodeUtil {
         return filtered;
     }
 
-    public JSONObject getElasticElement(String elasticId) {
-        JSONObject jObj = null;
-
-        try {
-            jObj = eh.getElementByElasticId(elasticId);
-        } catch (IOException e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-
-        return jObj;
-    }
-
     public void insertRef(String refId, String refName, String elasticId, boolean isTag) {
         pgh.insertRef(refId, refName, 0, elasticId, isTag);
     }
@@ -361,7 +348,7 @@ public class EmsNodeUtil {
         Pair<String, String> refInfo = pgh.getRefElastic(refId);
         if (refInfo != null) {
             try {
-                jObj = eh.getElementByElasticId(refInfo.second);
+                jObj = eh.getElementByElasticId(refInfo.second, projectId);
             } catch (IOException e) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             }
@@ -377,7 +364,7 @@ public class EmsNodeUtil {
             elasticIds.add(ref.second);
         }
         try {
-            result = eh.getElementsFromElasticIds(elasticIds);
+            result = eh.getElementsFromElasticIds(elasticIds, projectId);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -407,7 +394,7 @@ public class EmsNodeUtil {
 
         try {
             List<String> childrenList = new ArrayList<>(children);
-            JSONArray childs = eh.getElementsFromElasticIds(childrenList);
+            JSONArray childs = eh.getElementsFromElasticIds(childrenList, projectId);
             JSONArray result = new JSONArray();
             for (int i = 0; i < childs.length(); i++) {
                 JSONObject current = childs.getJSONObject(i);
@@ -551,7 +538,7 @@ public class EmsNodeUtil {
 
         JSONArray docJson = new JSONArray();
         try {
-            docJson = eh.getElementsFromElasticIds(docElasticIds);
+            docJson = eh.getElementsFromElasticIds(docElasticIds, projectId);
         } catch (IOException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -691,6 +678,7 @@ public class EmsNodeUtil {
         commit.put("deleted", commitDeleted);
         commit.put(Sjm.CREATOR, user);
         commit.put(Sjm.CREATED, date);
+        commit.put(Sjm.PROJECTID, projectId);
 
         result.put("commit", commit);
 
@@ -703,7 +691,7 @@ public class EmsNodeUtil {
                 "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
                     + ".removeAll([params.refId])}").put("params", new JSONObject().put("refId", this.workspaceName)))
                 .toString();
-            eh.bulkUpdateElements(elasticIds, payload);
+            eh.bulkUpdateElements(elasticIds, payload, projectId);
         } catch (IOException ex) {
             // This catch left intentionally blank
         }
@@ -1169,7 +1157,7 @@ public class EmsNodeUtil {
 
     public JSONObject getElementByElasticID(String elasticId) {
         try {
-            return eh.getElementByElasticId(elasticId);
+            return eh.getElementByElasticId(elasticId, projectId);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -1266,7 +1254,7 @@ public class EmsNodeUtil {
         List<Pair<String, String>> containmentParents = pgh.getContainmentParents(o.optString(Sjm.SYSMLID), 1000);
         for (Pair<String, String> parent : containmentParents) {
             try {
-                JSONObject containmentNode = eh.getElementByElasticId(parent.second);
+                JSONObject containmentNode = eh.getElementByElasticId(parent.second, projectId);
                 if (containmentNode != null && !containmentNode.optString(Sjm.SYSMLID)
                     .equals(o.optString(Sjm.SYSMLID))) {
                     qn.add(containmentNode.optString(Sjm.NAME));
@@ -1478,9 +1466,30 @@ public class EmsNodeUtil {
         }
     }
 
+    public List<Node> getSites(boolean sites, boolean sitepackages) {
+        return pgh.getSites(sites, sitepackages);
+    }
+
+    public JSONObject getCommitObject(String commitId){
+        try {
+            return eh.getCommitByElasticId(commitId, projectId );
+        } catch (IOException e) {
+            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return null;
+    }
+
+    public void insertProjectIndex(String projectId) {
+        try {
+            eh.createIndex(projectId);
+        } catch (IOException e) {
+            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+    }
+
     public String insertSingleElastic(JSONObject o) {
         try {
-            ElasticResult r = eh.indexElement(o);
+            ElasticResult r = eh.indexElement(o, projectId);
             return r.elasticId;
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
@@ -1712,14 +1721,14 @@ public class EmsNodeUtil {
                 refsCommitsIds.add((String) ref.get(Sjm.SYSMLID));
             }
 
-            Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds);
+            Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds, projectId);
 
             for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
                 if (((Date) n.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
                     try {
                         if(!deletedElementIds.containsKey( (String) n.get(Sjm.ELASTICID))) {
                             pastElement = eh.getElementByCommitId((String) n.get(PostgresHelper.LASTCOMMIT),
-                                (String) n.get(Sjm.SYSMLID));
+                                (String) n.get(Sjm.SYSMLID), projectId);
                         }
                     } catch (IOException e) {
                         logger.error(e.getMessage());
@@ -1761,7 +1770,7 @@ public class EmsNodeUtil {
                 refsCommitsIds.add((String)ref.get(Sjm.SYSMLID));
             }
 
-            Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds);
+            Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds, projectId);
 
             pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
 
@@ -1786,7 +1795,7 @@ public class EmsNodeUtil {
             String timestamp = df.format(cal.getTime());
 
             // Search for element at commit
-            result = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds);
+            result = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds, projectId);
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));

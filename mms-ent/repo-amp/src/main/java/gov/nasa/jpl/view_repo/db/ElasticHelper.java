@@ -1,5 +1,6 @@
 package gov.nasa.jpl.view_repo.db;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -9,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 
-import com.google.gson.JsonElement;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -81,8 +81,6 @@ public class ElasticHelper {
             logger.debug("Initializing Elastic client");
             init(EmsConfig.get("elastic.host"));
         }
-
-        createIndex(elementIndex);
     }
 
     /**
@@ -91,11 +89,11 @@ public class ElasticHelper {
      * @param index name of the index to create           (2)
      */
     public void createIndex(String index) throws IOException {
-
-        boolean indexExists = client.execute(new IndicesExists.Builder(index).build()).isSucceeded();
+        boolean indexExists = client.execute(new IndicesExists.Builder(index.toLowerCase().replaceAll("\\s+", "")).build()).isSucceeded();
         if (!indexExists) {
-            client.execute(new CreateIndex.Builder(index).build());
+            client.execute(new CreateIndex.Builder(index.toLowerCase().replaceAll("\\s+","")).build());
         }
+        //initial organization project
     }
 
     /**
@@ -104,29 +102,9 @@ public class ElasticHelper {
      * @param id _id elasticsearch property          (2)
      * @return JSONObject o or null
      */
-    public JSONObject getElementByElasticId(String id) throws IOException {
+    public JSONObject getElementByElasticId(String id, String index) throws IOException {
         // Cannot use method for commit type
-        Get get = new Get.Builder(elementIndex, id).type("element").build();
-
-        JestResult result = client.execute(get);
-
-        if (result.isSucceeded()) {
-            JSONObject o = new JSONObject(result.getJsonObject().get("_source").toString());
-            o.put(Sjm.ELASTICID, result.getJsonObject().get("_id").getAsString());
-            return o;
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets the JSON document of commit type using a elastic _id (1)
-     *
-     * @param id _id elasticsearch property          (2)
-     * @return JSONObject o or null
-     */
-    public JSONObject getCommitByElasticId(String id) throws IOException {
-        Get get = new Get.Builder(elementIndex, id).type("commit").build();
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+",""), id).type("element").build();
 
         JestResult result = client.execute(get);
 
@@ -152,20 +130,17 @@ public class ElasticHelper {
      * @param sysmlid sysmlId     (3)
      * @return JSONArray array or empty json array
      */
-    public JSONArray getCommitHistory(String sysmlid) throws IOException {
+    public JSONArray getCommitHistory(String sysmlid, String index) throws IOException {
 
         JSONArray should = new JSONArray();
-        should.put(new JSONObject().put("nested", new JSONObject().put("path", "added").put("query",
-            new JSONObject().put("term", new JSONObject().put("added.id", new JSONObject().put("value", sysmlid))))));
-        should.put(new JSONObject().put("nested", new JSONObject().put("path", "updated").put("query",
-            new JSONObject().put("term", new JSONObject().put("updated.id", new JSONObject().put("value", sysmlid))))));
-        should.put(new JSONObject().put("nested", new JSONObject().put("path", "deleted").put("query",
-            new JSONObject().put("term", new JSONObject().put("deleted.id", new JSONObject().put("value", sysmlid))))));
+        should.put(new JSONObject().put("term", new JSONObject().put("added.id", sysmlid)));
+        should.put(new JSONObject().put("term", new JSONObject().put("updated.id", sysmlid)));
+        should.put(new JSONObject().put("term", new JSONObject().put("deleted.id", sysmlid)));
         JSONObject query = new JSONObject().put("size", resultLimit)
             .put("query", new JSONObject().put("bool", new JSONObject().put("should", should)))
             .put("sort", new JSONArray().put(new JSONObject().put(Sjm.CREATED, new JSONObject().put("order", "desc"))));
 
-        Search search = new Search.Builder(query.toString()).addIndex(elementIndex).addType("commit").build();
+        Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType("commit").build();
         SearchResult result = client.execute(search);
 
         JSONArray array = new JSONArray();
@@ -185,41 +160,12 @@ public class ElasticHelper {
         return new JSONArray();
     }
 
-    public Set<String> getCommitHistoryIds(String sysmlid) throws IOException {
+
+    public Boolean checkForElasticIdInCommit(String sysmlid, String commitId, String index) throws IOException {
         JSONArray should = new JSONArray();
-        should.put(new JSONObject().put("nested", new JSONObject().put("path", "added").put("query",
-            new JSONObject().put("term", new JSONObject().put("added.id", new JSONObject().put("value", sysmlid))))));
-        should.put(new JSONObject().put("nested", new JSONObject().put("path", "updated").put("query",
-            new JSONObject().put("term", new JSONObject().put("updated.id", new JSONObject().put("value", sysmlid))))));
-        should.put(new JSONObject().put("nested", new JSONObject().put("path", "deleted").put("query",
-            new JSONObject().put("term", new JSONObject().put("deleted.id", new JSONObject().put("value", sysmlid))))));
-        JSONObject query = new JSONObject().put("size", resultLimit)
-            .put("query", new JSONObject().put("bool", new JSONObject().put("should", should)))
-            .put("_source", false);
-            //.put("sort", new JSONArray().put(new JSONObject().put(Sjm.CREATED, new JSONObject().put("order", "desc"))));
-
-        Search search = new Search.Builder(query.toString()).addIndex(elementIndex).addType("commit").build();
-        SearchResult result = client.execute(search);
-
-        Set<String> set = new HashSet<>();
-
-        if (result.getTotal() > 0) {
-            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-            for (int i = 0; i < hits.size(); i++) {
-                set.add(hits.get(i).getAsJsonObject().get("_id").getAsString());
-            }
-        }
-        return set;
-    }
-
-    public Boolean checkForElasticIdInCommit(String sysmlid, String commitId) throws IOException {
-        JSONArray should = new JSONArray();
-        should.put(new JSONObject().put("nested", new JSONObject().put("path", "added").put("query",
-            new JSONObject().put("term", new JSONObject().put("added.id", new JSONObject().put("value", sysmlid))))));
-        should.put(new JSONObject().put("nested", new JSONObject().put("path", "updated").put("query",
-            new JSONObject().put("term", new JSONObject().put("updated.id", new JSONObject().put("value", sysmlid))))));
-        should.put(new JSONObject().put("nested", new JSONObject().put("path", "deleted").put("query",
-            new JSONObject().put("term", new JSONObject().put("deleted.id", new JSONObject().put("value", sysmlid))))));
+        should.put(new JSONObject().put("term", new JSONObject().put("added.id", sysmlid)));
+        should.put(new JSONObject().put("term", new JSONObject().put("updated.id", sysmlid)));
+        should.put(new JSONObject().put("term", new JSONObject().put("deleted.id", sysmlid)));
         JSONArray must = new JSONArray();
         must.put(new JSONObject().put("term", new JSONObject().put("_id", commitId)));
         JSONObject boolQueryMust = new JSONObject();
@@ -229,7 +175,7 @@ public class ElasticHelper {
         must.put(boolQueryShould);
         JSONObject query =
             new JSONObject().put("size", resultLimit).put("query", new JSONObject().put("bool", boolQueryMust));
-        Search search = new Search.Builder(query.toString()).addIndex(elementIndex).addType("commit").build();
+        Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType("commit").build();
         SearchResult result = client.execute(search);
 
         return result.getTotal() > 0;
@@ -237,7 +183,27 @@ public class ElasticHelper {
 
     }
 
-    public JSONObject getElementByCommitId(String elasticId, String sysmlid) throws IOException {
+    /**
+     * Gets the JSON document of commit type using a elastic _id (1)
+     *
+     * @param id _id elasticsearch property          (2)
+     * @return JSONObject o or null
+     */
+    public JSONObject getCommitByElasticId(String id, String index) throws IOException {
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+",""), id).type("commit").build();
+
+        JestResult result = client.execute(get);
+
+        if (result.isSucceeded()) {
+            JSONObject o = new JSONObject(result.getJsonObject().get("_source").toString());
+            o.put(Sjm.ELASTICID, result.getJsonObject().get("_id").getAsString());
+            return o;
+        }
+
+        return null;
+    }
+
+    public JSONObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException {
         JSONArray filter = new JSONArray();
         filter.put(new JSONObject().put("term", new JSONObject().put("_commitId", elasticId)));
         filter.put(new JSONObject().put("term", new JSONObject().put("id", sysmlid)));
@@ -250,7 +216,7 @@ public class ElasticHelper {
 
         logger.debug(String.format("Search Query %s", queryJson.toString()));
 
-        Search search = new Search.Builder(queryJson.toString()).addIndex(elementIndex).addType("element").build();
+        Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType("element").build();
         SearchResult result = client.execute(search);
 
         if (result.isSucceeded()) {
@@ -271,7 +237,7 @@ public class ElasticHelper {
      * @param ids list of elasticsearch _id(s) to find          (2)
      * @return JSONArray elements or empty array
      */
-    public JSONArray getElementsFromElasticIds(List<String> ids) throws IOException {
+    public JSONArray getElementsFromElasticIds(List<String> ids, String index) throws IOException {
         // :TODO can be cleaned up with the getAPI
         int count = 0;
         JSONArray elements = new JSONArray();
@@ -298,7 +264,7 @@ public class ElasticHelper {
 
             logger.debug(String.format("Search Query %s", queryJson.toString()));
 
-            Search search = new Search.Builder(queryJson.toString()).addIndex(elementIndex).build();
+            Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).build();
             SearchResult result = client.execute(search);
 
             if (result != null && result.getTotal() > 0) {
@@ -323,6 +289,16 @@ public class ElasticHelper {
      * @return ElasticResult result
      */
     public ElasticResult indexElement(JSONObject j) throws IOException {
+        return indexElement(j, elementIndex);
+    }
+
+    /**
+     * Index single JSON document by type                         (1)
+     *
+     * @param j JSON document to index          (2)
+     * @return ElasticResult result
+     */
+    public ElasticResult indexElement(JSONObject j, String index) throws IOException {
         // :TODO error handling
         ElasticResult result = new ElasticResult();
         String eType = j.has("commit") ? "commit" : "element";
@@ -342,11 +318,11 @@ public class ElasticHelper {
         }
         if (k.has(Sjm.ELASTICID)) {
             result.elasticId = client.execute(
-                new Index.Builder(k.toString()).id(k.getString(Sjm.ELASTICID)).index(elementIndex).type(eType).build())
+                new Index.Builder(k.toString()).id(k.getString(Sjm.ELASTICID)).index(index.toLowerCase().replaceAll("\\s+","")).type(eType).build())
                 .getId();
         } else {
             result.elasticId =
-                client.execute(new Index.Builder(k.toString()).index(elementIndex).type(eType).build()).getId();
+                client.execute(new Index.Builder(k.toString()).index(index.toLowerCase().replaceAll("\\s+","")).type(eType).build()).getId();
         }
         k.put(Sjm.ELASTICID, result.elasticId);
         result.current = k;
@@ -369,35 +345,11 @@ public class ElasticHelper {
 
     }
 
-    public boolean updateElement(String id, JSONObject payload) throws JSONException, IOException {
+    public boolean updateElement(String id, JSONObject payload, String index) throws JSONException, IOException {
 
-        client.execute(new Update.Builder(payload.toString()).id(id).index(elementIndex).type("element").build());
+        client.execute(new Update.Builder(payload.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+","")).type("element").build());
 
         return true;
-    }
-
-    /**
-     * Index multiple JSON documents by type                         (1)
-     *
-     * @param e array of JSON documents to index          (2)
-     * @return map of sysmlids and ElasticResult object
-     */
-    public Map<String, ElasticResult> indexElements(JSONArray e) throws JSONException, IOException {
-        // :TODO error handling
-        logger.debug(String.format("Starting to index %d elements.", e.length()));
-        Map<String, ElasticResult> sysmlId2ElasticId = new HashMap<>();
-        for (int i = 0; i < e.length(); i++) {
-            ElasticResult indexResult = indexElement(e.getJSONObject(i));
-            logger.debug(String.format("Result: %s", indexResult));
-
-            sysmlId2ElasticId.put(indexResult.current.getString(Sjm.SYSMLID), indexResult);
-        }
-
-        return sysmlId2ElasticId;
-    }
-
-    public boolean bulkIndexElements(JSONArray bulkElements, String operation) throws JSONException, IOException {
-        return bulkIndexElements(bulkElements, operation, false);
     }
 
     /**
@@ -407,7 +359,7 @@ public class ElasticHelper {
      * @param operation    checks for CRUD operation, does not delete documents
      * @return ElasticResult e
      */
-    public boolean bulkIndexElements(JSONArray bulkElements, String operation, boolean refresh) throws JSONException, IOException {
+    public boolean bulkIndexElements(JSONArray bulkElements, String operation, boolean refresh, String index) throws JSONException, IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         // BulkableAction is generic
         ArrayList<BulkableAction> actions = new ArrayList<>();
@@ -421,7 +373,7 @@ public class ElasticHelper {
                 currentList.put(curr);
             }
             if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.length() - 1)) {
-                BulkResult result = insertBulk(actions, refresh);
+                BulkResult result = insertBulk(actions, refresh, index.toLowerCase().replaceAll("\\s+",""));
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
@@ -436,7 +388,7 @@ public class ElasticHelper {
         return true;
     }
 
-    public boolean bulkUpdateElements(Set<String> elements, String payload) throws JSONException, IOException {
+    public boolean bulkUpdateElements(Set<String> elements, String payload, String index) throws JSONException, IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         ArrayList<BulkableAction> actions = new ArrayList<>();
         JSONArray currentList = new JSONArray();
@@ -447,7 +399,7 @@ public class ElasticHelper {
             currentList.put(id);
 
             if ((((i + 1) % limit) == 0 && i != 0) || i == (elements.size() - 1)) {
-                BulkResult result = insertBulk(actions, false);
+                BulkResult result = insertBulk(actions, false, index.toLowerCase().replaceAll("\\s+",""));
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Update Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
@@ -468,18 +420,18 @@ public class ElasticHelper {
      * @param actions (2)
      * @return returns result of bulk index
      */
-    private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh) throws JSONException, IOException {
-        Bulk bulk = new Bulk.Builder().defaultIndex(elementIndex).defaultType("element").addAction(actions).setParameter(Parameters.REFRESH, refresh).build();
+    private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh, String index) throws JSONException, IOException {
+        Bulk bulk = new Bulk.Builder().defaultIndex(index).defaultType("element").addAction(actions).setParameter(Parameters.REFRESH, refresh).build();
         return client.execute(bulk);
     }
-
+    // :TODO has to be set to accept multiple indexes as well.  Will need VE changes
     public JSONArray search(JSONObject queryJson) throws IOException {
         logger.debug(String.format("Search Query %s", queryJson.toString()));
 
         //JSONArray elements = new JSONArray();
         JSONArray elements = new JSONArray();
 
-        Search search = new Search.Builder(queryJson.toString()).addIndex(elementIndex).build();
+        Search search = new Search.Builder(queryJson.toString()).build();
         SearchResult result = client.execute(search);
 
         if (result.getTotal() > 0) {
@@ -523,15 +475,16 @@ public class ElasticHelper {
      * @param ids
      * @return JSONObject Result
      */
-    public JSONObject bulkDeleteByType(String type, ArrayList<String> ids){
+    public JSONObject bulkDeleteByType(String type, ArrayList<String> ids, String index){
         JestResult result = null;
         try {
             ArrayList<Delete> deleteList = new ArrayList<>();
 
             for(String commitId : ids){
-                deleteList.add(new Delete.Builder(commitId).type(type).index(elementIndex).build());
+                deleteList.add(new Delete.Builder(commitId).type(type).index(index.toLowerCase().replaceAll("\\s+","")).build());
             }
-            Bulk bulk = new Bulk.Builder().defaultIndex(elementIndex).defaultIndex(type).addAction(deleteList).build();
+            // :TODO why are we using default index?
+            Bulk bulk = new Bulk.Builder().defaultIndex(index.toLowerCase().replaceAll("\\s+","")).defaultIndex(type).addAction(deleteList).build();
 
             result = client.execute(bulk);
 
@@ -549,16 +502,17 @@ public class ElasticHelper {
     /**
      * Performs a delete by query on ElasticSearch using the given field and id.
      * @param field
-     * @param id
+     * @param projectId
      * @return JSON Response
      */
-    public JSONObject deleteElasticElements(String field, String id){
+    // :TODO do we need to search for the project now?
+    public JSONObject deleteElasticElements(String field, String projectId){
         JestResult result = null;
         JSONObject query = new JSONObject();
-        query.put("query", new JSONObject().put("term", new JSONObject().put(field, id)));
+        query.put("query", new JSONObject().put("term", new JSONObject().put(field, projectId.toLowerCase().replaceAll("\\s+",""))));
 
         // Verbose statement to make sure it uses the correct delete by query class from searchbox.
-        DeleteByQuery deleteByQuery = new DeleteByQuery.Builder(query.toString()).addIndex(elementIndex).build();
+        DeleteByQuery deleteByQuery = new DeleteByQuery.Builder(query.toString()).addIndex(projectId.toLowerCase().replaceAll("\\s+","")).build();
 
         try {
             result = client.execute(deleteByQuery);
@@ -580,7 +534,7 @@ public class ElasticHelper {
      * @param timestamp
      * @return
      */
-    public JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds) {
+    public JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds, String index) {
         // Create filter array
         JSONArray filter = new JSONArray();
         filter.put(new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp))));
@@ -591,7 +545,6 @@ public class ElasticHelper {
         JSONArray sort = new JSONArray();
         JSONObject modifiedSortOpt = new JSONObject();
         modifiedSortOpt.put("order", "desc");
-        modifiedSortOpt.put("mode", "max");
         sort.put(new JSONObject().put("_modified", modifiedSortOpt));
 
         // Add filter to bool, then bool to query
@@ -601,7 +554,7 @@ public class ElasticHelper {
         // Add size limit
         query.put("size", "1");
 
-        Search search = new Search.Builder(query.toString()).addIndex(elementIndex).build();
+        Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).build();
         SearchResult result;
         try {
             result = client.execute(search);
@@ -619,24 +572,18 @@ public class ElasticHelper {
         return new JSONObject();
     }
 
-    public Map<String, String> getDeletedElementsFromCommits(ArrayList<String> commitIds) {
+    public Map<String, String> getDeletedElementsFromCommits(ArrayList<String> commitIds, String index) {
 
         // Create nested query
-        JSONObject nestedJson = new JSONObject().put("path", "deleted");
-        nestedJson.put("query", new JSONObject().put("bool", new JSONObject()
-            .put("filter", new JSONObject().put("exists", new JSONObject().put("field", "deleted.id")))));
-        JSONObject commitIdTerms = new JSONObject().put("terms", new JSONObject().put(Sjm.ELASTICID, commitIds));
+        JSONObject queryWrapper = new JSONObject();
 
-        // Create outer filter
-        JSONArray outerFilter = new JSONArray();
-        outerFilter.put(new JSONObject().put("nested", nestedJson));
-        outerFilter.put(commitIdTerms);
+        JSONObject query = new JSONObject();
+        query.put("must", new JSONObject().put("exists", new JSONObject().put("field", "deleted.id")));
+        query.put("filter", new JSONObject().put("terms", new JSONObject().put(Sjm.ELASTICID, commitIds)));
 
-        // Create outer query json
-        JSONObject outerBool = new JSONObject().put("filter", outerFilter);
-        JSONObject outerQuery = new JSONObject().put("query", new JSONObject().put("bool", outerBool));
+        queryWrapper.put("query", new JSONObject().put("bool", query));
 
-        Search search = new Search.Builder(outerQuery.toString()).addIndex(elementIndex).build();
+        Search search = new Search.Builder(queryWrapper.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).build();
 
         try {
             SearchResult result = client.execute(search);
