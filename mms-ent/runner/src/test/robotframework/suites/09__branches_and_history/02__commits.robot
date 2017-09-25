@@ -126,7 +126,38 @@ GetCommitObject
     ${commitId} =       Set Variable        ${branch_1_history.json()["commits"][${num_commits} - 1]["id"]}
     ${result} =         Get     url=${ROOT}/projects/PA/commits/${commitId}
     Should Be Equal     ${result.status_code}           ${200}
+	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 id		 _projectId
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+    ${compare_result} =	Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+GetElementAtCommitBetweenDeletionAndResurrection
+    [Documentation]     "Get an element at a commit that is in between the element being deleted and resurrected."
+    [Tags]              commits         critical        090212
+    # Make sure the delete element exists, then delete it
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/DeleteResurrectElements.json
+    ${result} =         Post            url=${ROOT}/projects/PA/refs/master/elements        data=${post_json}       headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+	${result} =         Delete          url=${ROOT}/projects/PA/refs/master/elements/DeleteResurrectElement          headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	# Update another element to create new commit
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/UpdateRandomElement.json
+    ${result} =         Post            url=${ROOT}/projects/PA/refs/master/elements        data=${post_json}       headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+	# Get commit Id
+	${commit_id} =      Set Variable        ${result.json()["elements"][0]["_commitId"]}
+	# Resurrect the element
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/ResurrectDeleteElement.json
+    ${result} =         Post            url=${ROOT}/projects/PA/refs/master/elements        data=${post_json}       headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+	# Get element at the commit and it should be deleted
+	${result} =         Get             url=${ROOT}/projects/PA/refs/master/elements/DeleteResurrectElement?commitId=${commit_id}
+	Should Be Equal		${result.status_code}		${404}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 id
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
     ${compare_result} =	Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+

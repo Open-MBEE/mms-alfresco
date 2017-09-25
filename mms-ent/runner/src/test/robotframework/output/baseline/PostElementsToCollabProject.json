@@ -1,0 +1,291 @@
+{
+    "_creator": "Collaborator",
+    "elements": [
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "Collab_project_300",
+            "isDerived": false,
+            "name": "three hundred",
+            "ownerId": "PA",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "else",
+            "id": "Collab_project_301",
+            "isDerived": false,
+            "name": "three hundred and one",
+            "ownerId": "300",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "to",
+            "id": "Collab_project_302",
+            "isDerived": false,
+            "name": "three hundred and two",
+            "ownerId": "301",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "talk",
+            "id": "Collab_project_303",
+            "isDerived": false,
+            "name": "three hundred and three",
+            "ownerId": "302",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "about",
+            "id": "Collab_project_304",
+            "isDerived": false,
+            "name": "three hundred and four",
+            "ownerId": "303",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "no owner",
+            "id": "Collab_project_305",
+            "isDerived": false,
+            "name": "three hundred and five",
+            "ownerId": "holding_bin_CollaboratorProject",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "4something",
+            "id": "Collab_project_4000",
+            "isDerived": false,
+            "name": "four hundred",
+            "ownerId": "PA",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "4else",
+            "id": "Collab_project_401",
+            "isDerived": false,
+            "name": "four hundred and one",
+            "ownerId": "4000",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "4to",
+            "id": "Collab_project_402",
+            "isDerived": false,
+            "name": "four hundred and two",
+            "ownerId": "401",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "4talk",
+            "id": "Collab_project_403",
+            "isDerived": false,
+            "name": "four hundred and three",
+            "ownerId": "402",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "4about",
+            "id": "Collab_project_404",
+            "isDerived": false,
+            "name": "four hundred and four",
+            "ownerId": "403",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "directed_relationship",
+            "id": "Collab_project_500",
+            "name": "five hundred",
+            "ownerId": "300",
+            "source": "302",
+            "target": "303",
+            "type": "DirectedRelationship"
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "element values",
+            "id": "Collab_project_600",
+            "name": "600",
+            "ownerId": "holding_bin_CollaboratorProject",
+            "type": "Property",
+            "value": [
+                {
+                    "element": "300",
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "302",
+                    "type": "ElementValue"
+                }
+            ]
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "",
+            "id": "Collab_project_6666",
+            "name": "6666_name",
+            "operand": [
+                {
+                    "element": "300",
+                    "type": "ElementValue"
+                },
+                {
+                    "element": "302",
+                    "type": "ElementValue"
+                }
+            ],
+            "ownerId": "holding_bin_CollaboratorProject",
+            "type": "Expression"
+        },
+        {
+            "_creator": "Collaborator",
+            "_editable": true,
+            "_modifier": "Collaborator",
+            "_projectId": "CollaboratorProject",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "Collab_project_x",
+            "isDerived": false,
+            "name": "xxx",
+            "ownerId": "holding_bin_CollaboratorProject",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}

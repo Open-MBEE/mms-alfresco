@@ -55,6 +55,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.db.Node;
 
 /**
  * Descriptor in /view-repo/src/main/amp/config/alfresco/extension/templates/webscripts
@@ -278,7 +279,8 @@ public class ModelGet extends AbstractJavaWebScript {
             req.getParameter(COMMITID);
 
         // This is the lastest commit for the element
-        String lastestCommitId = emsNodeUtil.getById(elementId).getLastCommit();
+        Node elementNode = emsNodeUtil.getById(elementId);
+        String latestCommitId = elementNode.getLastCommit();
         Boolean checkInProjectAndRef = false;
         try {
             checkInProjectAndRef = emsNodeUtil.commitContainsElement(elementId, commitId);
@@ -286,7 +288,11 @@ public class ModelGet extends AbstractJavaWebScript {
             logger.warn(e.getMessage());
         }
 
-        if (commitId.equals(lastestCommitId)) {
+        // Check if the element commit is the latest and is not deleted at the commit
+        if (commitId.equals(latestCommitId) ) {
+            if(elementNode.isDeleted()){
+                return new JSONObject();
+            }
             return emsNodeUtil.getElementByElasticID(currentElement);
         } else if (checkInProjectAndRef) {
             return emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);

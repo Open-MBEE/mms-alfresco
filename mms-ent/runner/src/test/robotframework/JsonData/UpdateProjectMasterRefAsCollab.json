@@ -1,0 +1,8 @@
+{
+    "refs": [
+        {
+            "name": "newCollabMasterRefName",
+            "id": "master"
+        }
+    ]
+}

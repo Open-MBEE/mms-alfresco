@@ -1,0 +1,10 @@
+{
+    "refs": [
+        {
+            "_modifier": "Collaborator",
+            "id": "master",
+            "message": "[INFO]: Workspace is modified\n",
+            "name": "newCollabMasterRefName"
+        }
+    ]
+}
