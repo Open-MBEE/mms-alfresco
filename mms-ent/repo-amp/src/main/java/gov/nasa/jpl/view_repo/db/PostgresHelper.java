@@ -1996,8 +1996,8 @@ public class PostgresHelper {
                 refIdString = "master";
             }
             String query = String.format(
-                "SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE refId = '%s'",
-                refId);
+                "SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE refId = '%s' OR refId = '%s'",
+                refId, refIdString);
 
             if (commitId != 0) {
                 query += String.format(" AND timestamp <= (SELECT timestamp FROM commits WHERE id = %s)", commitId);
