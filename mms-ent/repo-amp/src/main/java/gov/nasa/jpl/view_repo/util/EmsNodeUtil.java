@@ -561,7 +561,7 @@ public class EmsNodeUtil {
     }
 
     public JSONObject processPostJson(JSONArray elements, String user,
-        Set<String> oldElasticIds, boolean overwriteJson) {
+        Set<String> oldElasticIds, boolean overwriteJson, String src) {
 
         JSONObject result = new JSONObject();
 
@@ -679,6 +679,8 @@ public class EmsNodeUtil {
         commit.put(Sjm.CREATOR, user);
         commit.put(Sjm.CREATED, date);
         commit.put(Sjm.PROJECTID, projectId);
+        commit.put(Sjm.SOURCE, src);
+
 
         result.put("commit", commit);
 
