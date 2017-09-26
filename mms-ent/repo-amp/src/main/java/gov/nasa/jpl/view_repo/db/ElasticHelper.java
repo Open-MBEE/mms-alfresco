@@ -288,16 +288,6 @@ public class ElasticHelper {
      * @param j JSON document to index          (2)
      * @return ElasticResult result
      */
-    public ElasticResult indexElement(JSONObject j) throws IOException {
-        return indexElement(j, elementIndex);
-    }
-
-    /**
-     * Index single JSON document by type                         (1)
-     *
-     * @param j JSON document to index          (2)
-     * @return ElasticResult result
-     */
     public ElasticResult indexElement(JSONObject j, String index) throws IOException {
         // :TODO error handling
         ElasticResult result = new ElasticResult();
@@ -334,6 +324,7 @@ public class ElasticHelper {
      *
      * @return Boolean isRefreshed
      */
+    //:TODO refactor with project indexes
     public Boolean refreshIndex() throws IOException {
         Refresh refresh = new Refresh.Builder().addIndex(elementIndex).build();
         JestResult result = client.execute(refresh);
