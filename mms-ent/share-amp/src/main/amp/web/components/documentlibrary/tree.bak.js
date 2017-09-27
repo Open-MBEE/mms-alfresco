@@ -121,9 +121,7 @@
           * @type boolean
           * @default false
           */
-         setDropTargets: false,
-
-         customFolderStyleConfig: null
+         setDropTargets: false
       },
 
       /**
@@ -252,8 +250,6 @@
                   * in the response object
                   */
                   oResponse.argument.fnLoadComplete();
-
-                  YAHOO.Bubbling.fire("docLibTreeLoadComplete");
                },
 
                // If the XHR call is not successful, fire the TreeView callback anyway
@@ -275,15 +271,8 @@
                         var docNode = rootNode.children[0];
                         docNode.isLoading = false;
                         docNode.isLeaf = true;
-                        if (oResponse.status == 403)
-                        {
-                           docNode.label = this.msg("message.refresh.failure.forbidden");
-                        }
-                        else
-                        {
-                           docNode.label = response.message;
-                           docNode.labelStyle = "ygtverror";
-                        }
+                        docNode.label = response.message;
+                        docNode.labelStyle = "ygtverror";
                         rootNode.refresh();
                      }
                      catch(e)
@@ -1112,40 +1101,20 @@
        * @param p_expanded {object} Optional expanded/collaped state flag
        * @return {YAHOO.widget.TextNode} The new tree node
        */
-      _buildTreeNode : function DLT__buildTreeNode(p_oData, p_oParent, p_expanded)
+      _buildTreeNode: function DLT__buildTreeNode(p_oData, p_oParent, p_expanded)
       {
           var label = p_oData.title;
-          if (!label || label === "" || label.includes(".ftl") === true || p_oData.path === "/Sites") {
-              label = p_oData.name
+          if (!label || label === "") {
+            label = p_oData.name
           }
-         var treeNode = new YAHOO.widget.TextNode(
+         var txtNode = new YAHOO.widget.TextNode(
          {
-            label : label,
-            path : p_oData.path,
-            nodeRef : p_oData.nodeRef,
-            description : p_oData.description
+            label: label,
+            path: p_oData.path,
+            nodeRef: p_oData.nodeRef,
+            description: p_oData.description
          }, p_oParent, p_expanded);
-         var customStyleClass = this._buildCustomStyleClass(p_oData);
-         treeNode.customCls = customStyleClass;
-         return treeNode;
-      },
-      /**
-       * Gets resource style specified in the {style} configuration that corresponds with matching filter
-       * from share-documentlibrary-config.xml [CommonComponentStyle][component-style], {browse.folder} component, or null if the filter does not match.
-       *
-       * The returned value is used to be set to the treeNode as customCls attribute, used for rendering custom icons in treeView.
-       * @param p_oData
-       */
-      _buildCustomStyleClass : function DLT__buildCustomStyleClass(p_oData)
-      {
-         var customStyleClass = null;
-         if (this.options.customFolderStyleConfig)
-         {
-            var filterChain = new Alfresco.CommonComponentStyleFilterChain(p_oData,
-                  this.options.customFolderStyleConfig.browse.folder);
-            customStyleClass = filterChain.createCustomStyle();
-         }
-         return customStyleClass;
+          return txtNode;
       },
 
       /**
