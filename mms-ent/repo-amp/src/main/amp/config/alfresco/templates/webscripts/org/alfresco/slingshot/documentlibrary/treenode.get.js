@@ -51,20 +51,17 @@ function getTreeNode()
       {
       	 numChildren++;
 
-      	 var someResult = search.query({
+      	 // Customized code. Searchs for a node with cm:title:name
+      	 var searchResult = search.query({
       	     query: "cm:title:" + item.name,
              store: "workspace://SpacesStore",
              language: "fts-alfresco"
          });
 
+      	 // Search through the response to get the title. There should only be 1 result.
       	 var title = "";
-      	 for each (res in someResult){
-
-      	     // logger.error('-------');
-      	     // logger.error("ITEM " + item.name);
+      	 for each (res in searchResult){
              var properties = res.getProperties();
-             // logger.error(properties);
-             // logger.error(properties["title"]);
              title = properties["title"];
          }
 
