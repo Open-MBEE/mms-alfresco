@@ -2016,7 +2016,7 @@ public class PostgresHelper {
                 result.add(commit);
             }
 
-            rs = execQuery(String.format("SELECT parent, parentCommit FROM refs WHERE refId = '%s'", refIdString));
+            rs = execQuery(String.format("SELECT parent, parentCommit FROM refs WHERE refId = '%s' OR refId = '%s'", refId, refIdString));
             if (rs.next() && rs.getInt(2) != 0) {
                 String nextRefId = rs.getString(1);
                 result.addAll(getRefsCommits(nextRefId, rs.getInt(2)));
