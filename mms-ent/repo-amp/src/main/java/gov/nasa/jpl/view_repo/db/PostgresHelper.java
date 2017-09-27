@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.postgresql.util.PSQLException;
 
 public class PostgresHelper {
@@ -86,7 +86,7 @@ public class PostgresHelper {
         setWorkspace("master");
     }
 
-    public PostgresHelper(WorkspaceNode ref) {
+    public PostgresHelper(EmsScriptNode ref) {
         setWorkspace(ref);
     }
 
@@ -158,7 +158,7 @@ public class PostgresHelper {
         }
     }
 
-    public void setWorkspace(WorkspaceNode workspace) {
+    public void setWorkspace(EmsScriptNode workspace) {
         String workspaceName = workspace == null ? "" : workspace.getId();
         setWorkspace(workspaceName);
     }
@@ -1996,8 +1996,8 @@ public class PostgresHelper {
                 refIdString = "master";
             }
             String query = String.format(
-                "SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE refId = '%s'",
-                refId);
+                "SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE refId = '%s' OR refId = '%s'",
+                refId, refIdString);
 
             if (commitId != 0) {
                 query += String.format(" AND timestamp <= (SELECT timestamp FROM commits WHERE id = %s)", commitId);
@@ -2016,7 +2016,7 @@ public class PostgresHelper {
                 result.add(commit);
             }
 
-            rs = execQuery(String.format("SELECT parent, parentCommit FROM refs WHERE refId = '%s'", refIdString));
+            rs = execQuery(String.format("SELECT parent, parentCommit FROM refs WHERE refId = '%s' OR refId = '%s'", refId, refIdString));
             if (rs.next() && rs.getInt(2) != 0) {
                 String nextRefId = rs.getString(1);
                 result.addAll(getRefsCommits(nextRefId, rs.getInt(2)));

@@ -57,7 +57,7 @@ public class EmsNodeUtil {
         }
     }
 
-    public EmsNodeUtil(String projectId, WorkspaceNode workspace) {
+    public EmsNodeUtil(String projectId, EmsScriptNode workspace) {
         try {
             eh = new ElasticHelper();
             pgh = new PostgresHelper();
@@ -79,7 +79,7 @@ public class EmsNodeUtil {
         }
     }
 
-    public void switchWorkspace(WorkspaceNode workspace) {
+    public void switchWorkspace(EmsScriptNode workspace) {
         String workspaceName = workspace == null ? "" : workspace.getId();
         switchWorkspace(workspaceName);
     }
@@ -561,7 +561,7 @@ public class EmsNodeUtil {
     }
 
     public JSONObject processPostJson(JSONArray elements, String user,
-        Set<String> oldElasticIds, boolean overwriteJson) {
+        Set<String> oldElasticIds, boolean overwriteJson, String src) {
 
         JSONObject result = new JSONObject();
 
@@ -679,6 +679,8 @@ public class EmsNodeUtil {
         commit.put(Sjm.CREATOR, user);
         commit.put(Sjm.CREATED, date);
         commit.put(Sjm.PROJECTID, projectId);
+        commit.put(Sjm.SOURCE, src);
+
 
         result.put("commit", commit);
 

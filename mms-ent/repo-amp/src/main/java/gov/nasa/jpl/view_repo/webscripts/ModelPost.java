@@ -46,7 +46,6 @@ import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.EmsTransaction;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
@@ -90,7 +89,7 @@ public class ModelPost extends AbstractJavaWebScript {
     protected String content = null;
     protected String siteName = null;
     protected String path = null;
-    protected WorkspaceNode workspace = null;
+    protected EmsScriptNode workspace = null;
     protected Path pngPath = null;
 
     private final String NEWELEMENTS = "newElements";
@@ -155,7 +154,7 @@ public class ModelPost extends AbstractJavaWebScript {
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
-            results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, overwriteJson);
+            results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, overwriteJson, this.requestSourceApplication);
 
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 

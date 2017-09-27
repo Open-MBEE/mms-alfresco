@@ -26,10 +26,7 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -37,13 +34,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.util.*;
-import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.jscript.ScriptVersion;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
