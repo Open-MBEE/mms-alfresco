@@ -51,20 +51,6 @@ function getTreeNode()
       {
       	 numChildren++;
 
-      	 // Customized code. Searchs for a node with cm:title:name
-      	 var searchResult = search.query({
-      	     query: "cm:title:" + item.name,
-             store: "workspace://SpacesStore",
-             language: "fts-alfresco"
-         });
-
-      	 // Search through the response to get the title. There should only be 1 result.
-      	 var title = "";
-      	 for each (res in searchResult){
-             var properties = res.getProperties();
-             title = properties["title"];
-         }
-
          if (numChildren == maxNumChildren)
          {
            	evalChildFolders = false;
@@ -76,10 +62,11 @@ function getTreeNode()
             hasSubfolders = childSubFolders.page.length > 0;
          }
 
+
          items.push(
          {
             node: item,
-            title: title,
+            title: item.properties.title? item.properties.title : "",
             hasSubfolders: hasSubfolders,
             aspects: item.aspectsShort
          });
