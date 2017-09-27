@@ -21,7 +21,7 @@ import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 
 public class WorkspaceDelete extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(WorkspaceDelete.class);
@@ -66,7 +66,7 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
                 } else {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, wsId);
                     emsNodeUtil.deleteRef(wsId);
-                    WorkspaceNode target = getWorkspace(req);
+                    EmsScriptNode target = getWorkspace(req);
                     if (target != null) {
                         object = printObject(target);
                         target.delete(); //this didn't actually delete the alfresco folder just added deleted aspect
@@ -109,7 +109,7 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
         return model;
     }
 
-    private JSONObject printObject(WorkspaceNode workspace) throws JSONException {
+    private JSONObject printObject(EmsScriptNode workspace) throws JSONException {
         return new JSONObject();
     }
 }

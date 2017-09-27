@@ -415,15 +415,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         return null;
     }
 
-
-    public static String getArtifactId(WebScriptRequest req) {
-        String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACT_ID);
-        if (artifactId == null || artifactId.length() <= 0) {
-            artifactId = null;
-        }
-        return artifactId;
-    }
-
     private String getMethod(String descriptionPath) {
         String method = "GET";
         if (descriptionPath.contains(".put")) {

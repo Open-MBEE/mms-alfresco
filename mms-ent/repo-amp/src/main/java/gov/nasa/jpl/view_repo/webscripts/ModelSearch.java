@@ -32,19 +32,13 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -61,9 +55,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
 
 /**
  * Model search service that returns a JSONArray of elements

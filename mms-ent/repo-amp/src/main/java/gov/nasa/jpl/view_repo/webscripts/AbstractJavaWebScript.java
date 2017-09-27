@@ -29,7 +29,6 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -56,9 +55,7 @@ import gov.nasa.jpl.view_repo.util.EmsTransaction;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import sun.rmi.runtime.Log;
 
 /**
  * Base class for all EMS Java backed webscripts. Provides helper functions and
@@ -87,10 +84,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     String requestSourceApplication = null;
 
     boolean prettyPrint = false;
-
-    protected void initMemberVariables(String siteName) {
-        companyhome = new ScriptNode(repository.getCompanyHome(), services);
-    }
 
     public void setRepositoryHelper(Repository repositoryHelper) {
         if (repositoryHelper == null)
@@ -466,19 +459,27 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         return refId;
     }
 
-    public WorkspaceNode getWorkspace(WebScriptRequest req) {
+    public static String getArtifactId(WebScriptRequest req) {
+        String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACT_ID);
+        if (artifactId == null || artifactId.length() <= 0) {
+            artifactId = null;
+        }
+        return artifactId;
+    }
+
+    public EmsScriptNode getWorkspace(WebScriptRequest req) {
         return getWorkspace(req, //false,
             null);
     }
 
-    public WorkspaceNode getWorkspace(WebScriptRequest req,
+    public EmsScriptNode getWorkspace(WebScriptRequest req,
         //                                       boolean createIfNotFound,
         String userName) {
         return getWorkspace(req, services, response, responseStatus, //createIfNotFound,
             userName);
     }
 
-    public static WorkspaceNode getWorkspace(WebScriptRequest req, ServiceRegistry services, StringBuffer response,
+    public static EmsScriptNode getWorkspace(WebScriptRequest req, ServiceRegistry services, StringBuffer response,
         Status responseStatus,
         //boolean createIfNotFound,
         String userName) {
@@ -489,28 +490,8 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         EmsScriptNode node = EmsScriptNode.getSiteNode(orgId);
         node = node.childByNamePath("/" + projectId + "/refs/" + refId);
         if (node != null)
-            return new WorkspaceNode(node.getNodeRef(), services);
+            return new EmsScriptNode(node.getNodeRef(), services);
         return null;
-    }
-
-    protected static boolean urlEndsWith(String url, String suffix) {
-        if (url == null)
-            return false;
-        url = url.toLowerCase().trim();
-        suffix = suffix.toLowerCase().trim();
-        if (suffix.startsWith("/"))
-            suffix = suffix.substring(1);
-        int pos = url.lastIndexOf('/');
-        return url.substring(pos + 1).startsWith(suffix);
-    }
-
-
-    protected static boolean isDisplayedElementRequest(WebScriptRequest req) {
-        if (req == null)
-            return false;
-        String url = req.getURL();
-        boolean gotSuffix = urlEndsWith(url, Sjm.ELEMENTS);
-        return gotSuffix;
     }
 
     /**

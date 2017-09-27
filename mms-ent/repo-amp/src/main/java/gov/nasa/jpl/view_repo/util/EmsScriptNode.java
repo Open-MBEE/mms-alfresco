@@ -28,14 +28,21 @@ package gov.nasa.jpl.view_repo.util;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.NavigableMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Set;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.mbee.util.*;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.ScriptNode;
@@ -45,6 +52,7 @@ import org.alfresco.repo.version.Version2Model;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
@@ -52,10 +60,13 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
-import org.hibernate.tuple.VersionProperty;
 import org.springframework.extensions.webscripts.Status;
 
-import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.mbee.util.ClassUtils;
+import gov.nasa.jpl.mbee.util.Debug;
+import gov.nasa.jpl.mbee.util.HasId;
+import gov.nasa.jpl.mbee.util.HasName;
+import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript;
 
 /**
@@ -66,8 +77,6 @@ import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript;
 public class EmsScriptNode extends ScriptNode
     implements Comparator<EmsScriptNode>, Comparable<EmsScriptNode>, HasName<String>, HasId<String> {
     private static final long serialVersionUID = 9132455162871185541L;
-
-    private PostgresHelper pgh;
 
     public static final String ADMIN_USER_NAME = "admin";
 
@@ -81,7 +90,6 @@ public class EmsScriptNode extends ScriptNode
     public static boolean versionCacheDebugPrint = false;
 
     public boolean renamed = false;
-    public boolean moved = false;
 
     /**
      * A set of content model property names that serve as workspace metadata and whose changes are
@@ -120,10 +128,6 @@ public class EmsScriptNode extends ScriptNode
             return nodeRef;
         }
 
-        public void setNodeRef(NodeRef nodeRef) {
-            this.nodeRef = nodeRef;
-        }
-
         public NodeRef getFrozenNodeRef() {
             if (frozenNodeRef == null) {
                 if (getVersion() != null) {
@@ -155,10 +159,6 @@ public class EmsScriptNode extends ScriptNode
                 }
             }
             return label;
-        }
-
-        public void setLabel(String label) {
-            this.label = label;
         }
 
         public Date getDate() {
@@ -208,12 +208,6 @@ public class EmsScriptNode extends ScriptNode
         }
     }
 
-
-    // Flag to indicate whether we checked the nodeRef version for this script
-    // node,
-    // when doing getProperty().
-    private boolean checkedNodeVersion = false;
-
     // provide logging capability of what is done
     private StringBuffer response = null;
 
@@ -226,27 +220,12 @@ public class EmsScriptNode extends ScriptNode
      */
     public boolean useFoundationalApi = true; // TODO this will be removed
 
-    protected EmsScriptNode companyHome = null;
-
-    protected EmsScriptNode siteNode = null;
-
-    protected EmsScriptNode projectNode = null;
-    protected WorkspaceNode workspace = null;
-    protected WorkspaceNode parentWorkspace = null;
-
-    /**
-     * When writing out JSON, evaluate Expressions and include the results.
-     */
-    private boolean evaluatingExpressions;
+    protected EmsScriptNode workspace = null;
 
     /**
      * Replicates the behavior of ScriptNode versions, which is private.
      */
     protected Object[] myVersions = null;
-
-    public boolean embeddingExpressionInConstraint = true;
-    public boolean embeddingExpressionInOperation = true;
-    public boolean embeddingExpressionInConnector = true;
 
     public AbstractJavaWebScript webscript = null;
 
@@ -329,7 +308,6 @@ public class EmsScriptNode extends ScriptNode
      */
     @Override public ScriptVersion createVersion(String history, boolean majorVersion) {
         this.myVersions = null;
-        // makeSureNodeRefIsNotFrozen();
         transactionCheck();
         return super.createVersion(history, majorVersion);
     }
@@ -384,12 +362,6 @@ public class EmsScriptNode extends ScriptNode
 
         return fileNode;
     }
-    // @Override
-    // public Scriptable getChildren() {
-    // Scriptable myChildren = super.getChildren();
-    // //myChildren.
-    // //if ( )
-    // }
 
     @Override public EmsScriptNode createFolder(String name) {
         return createFolder(name, null);
@@ -520,7 +492,6 @@ public class EmsScriptNode extends ScriptNode
             result = new EmsScriptNode(scriptNode.getNodeRef(), services, response);
         } else {
             Map<QName, Serializable> props = new HashMap<>(1, 1.0f);
-            // don't forget to set the name
             props.put(ContentModel.PROP_NAME, name);
 
             QName typeQName = createQName(type);
@@ -545,9 +516,6 @@ public class EmsScriptNode extends ScriptNode
             }
         }
 
-        // end = new Date(); if (Debug.isOn())
-        // System.out.println("\tcreateNode: " +
-        // (end.getTime()-start.getTime()));
         return result;
     }
 
@@ -602,23 +570,8 @@ public class EmsScriptNode extends ScriptNode
      * @param checkVersionedNode
      * @return
      */
-    public EmsScriptNode getParent(Date dateTime, WorkspaceNode ws, boolean skipNodeRefCheck,
+    public EmsScriptNode getParent(Date dateTime, EmsScriptNode ws, boolean skipNodeRefCheck,
         boolean checkVersionedNode) {
-
-        // We are not using getParent() because elementNode may be from the
-        // version
-        // store, which makes getParent() return a node from the
-        // workspace://version2store,
-        // and those nodes are equivalent to death. See CMED-702.
-        //EmsScriptNode owningParent = getOwningParent(dateTime, ws, skipNodeRefCheck, checkVersionedNode);
-        /*
-        if (owningParent != null) {
-            EmsScriptNode parent = owningParent.getReifiedPkg(dateTime, ws);
-            if (parent != null) {
-                return parent;
-            }
-        }*/
-
         return getParent();
     }
 
@@ -640,8 +593,9 @@ public class EmsScriptNode extends ScriptNode
     }
 
     public NodeRef getLiveNodeRefFromVersion() {
-        if (!isAVersion())
+        if (!isAVersion()) {
             return nodeRef;
+        }
         Version v = getCurrentVersion();
         if (v != null) {
             NodeRef liveRef = v.getVersionedNodeRef();
@@ -650,9 +604,9 @@ public class EmsScriptNode extends ScriptNode
             }
         }
         NodeRef ref = NodeUtil.getCurrentNodeRefFromCache(nodeRef);
-        if (ref != null)
+        if (ref != null) {
             return ref;
-        // Logger.error("");
+        }
         return nodeRef;
     }
 
@@ -701,7 +655,6 @@ public class EmsScriptNode extends ScriptNode
     }
 
     public boolean getOrSetCachedVersion() {
-        // transactionCheck();
         if (versionCacheDebugPrint)
             System.out.println("0: getOrSetCachedVersion(): " + this + " :: " + this.getId());
         if (!NodeUtil.doVersionCaching || isAVersion()) {
@@ -709,11 +662,6 @@ public class EmsScriptNode extends ScriptNode
                 System.out.println("1: N/A " + this.getName());
             return false;
         }
-        // if ( checkedNodeVersion ) {
-        // System.out.println("2");
-        // return false;
-        // }
-        // checkedNodeVersion = true;
         String id = getId();
         EmsVersion cachedVersion = NodeUtil.versionCache.get(id);
         Version thisVersion = getCurrentVersion();
@@ -751,8 +699,6 @@ public class EmsScriptNode extends ScriptNode
             String msg = "6: Warning! Alfresco Heisenbug failing to return current version of node " + this.getNodeRef()
                 + ".  Replacing node with unmodifiable frozen node, " + cachedVersion.getLabel() + ".";
             logger.error(msg);
-            // Debug.error( true, msg );
-            // sendNotificationEvent( "Heisenbug Occurence!", "" );
             if (response != null) {
                 response.append(msg + "\n");
             }
@@ -794,8 +740,6 @@ public class EmsScriptNode extends ScriptNode
             if (versionCacheDebugPrint)
                 System.out.println(msg);
         }
-        // // This fixes the nodeRef in esn
-        // esn.checkNodeRefVersion( null );
         return true;
     }
 
@@ -813,7 +757,7 @@ public class EmsScriptNode extends ScriptNode
      * @return
      */
     public Object getNodeRefProperty(String acmType, boolean ignoreWorkspace, Date dateTime, boolean findDeleted,
-        boolean skipNodeRefCheck, WorkspaceNode ws) {
+        boolean skipNodeRefCheck, EmsScriptNode ws) {
         // Make sure we have the right node ref before getting a property from
         // it.
 
@@ -833,7 +777,6 @@ public class EmsScriptNode extends ScriptNode
      * operation exception otherwise (go and fix the code if that happens).
      *
      * @param acmType   Short name of property to get
-     * @param cacheOkay
      * @return
      */
     public Object getProperty(String acmType) {
@@ -879,7 +822,6 @@ public class EmsScriptNode extends ScriptNode
     /**
      * Get the properties of this node
      *
-     * @param acmType Short name of property to get
      * @return
      */
     @Override public Map<String, Object> getProperties() {
@@ -905,9 +847,6 @@ public class EmsScriptNode extends ScriptNode
      * @param msg Message to be appened to response TODO: fix logger for EmsScriptNode
      */
     public void log(String msg) {
-        // if (response != null) {
-        // response.append(msg + "\n");
-        // }
     }
 
     /**
@@ -936,7 +875,6 @@ public class EmsScriptNode extends ScriptNode
                     NodeUtil.propertyCachePut(getNodeRef(), acmType, value);
                 if (acmType.equals(Acm.ACM_NAME)) {
                     renamed = true;
-                    // removeChildrenFromJsonCache();
                 }
             } catch (Exception e) {
                 // This should never happen!
@@ -1110,8 +1048,7 @@ public class EmsScriptNode extends ScriptNode
      * @return the head or current version of the node ref if it exists; otherwise return the
      * existing node ref
      */
-    public NodeRef normalizedNodeRef() {// NodeRef ref, ServiceRegistry services
-        // ) {
+    public NodeRef normalizedNodeRef() {
         VersionService vs = getServices().getVersionService();
         Version thisHeadVersion = this.getHeadVersion();
         NodeRef thisCurrent = thisHeadVersion == null ? null : thisHeadVersion.getVersionedNodeRef();
@@ -1166,13 +1103,6 @@ public class EmsScriptNode extends ScriptNode
     }
 
     public boolean exists(boolean includeDeleted) {
-        // if (NodeUtil.doFullCaching) {
-        // // full caching doesn't cache permissions, just references to script
-        // node
-        // // so make sure we can read before doing actual check
-        // if (!checkPermissions( "Read" ))
-        // return false;
-        // }
         if (!scriptNodeExists())
             return false;
         return !(!includeDeleted && hasAspect("ems:Deleted"));
@@ -1186,7 +1116,6 @@ public class EmsScriptNode extends ScriptNode
         if (super.exists()) {
             return hasAspect("ems:Deleted");
         }
-        // may seem counterintuitive, but if it doesn't exist, it isn't deleted
         return false;
     }
 
@@ -1274,6 +1203,17 @@ public class EmsScriptNode extends ScriptNode
             AuthenticationUtil.setRunAsUser(runAsUser);
         }
         return null;
+    }
+
+    public void delete() {
+        if (!checkPermissions(PermissionService.WRITE, getResponse(), getStatus())) {
+            log("no write permissions to delete workpsace " + getName());
+            return;
+        }
+
+        // Add the delete aspect to mark as "deleted"
+        makeSureNodeRefIsNotFrozen();
+        addAspect("ems:Deleted");
     }
 
 }
