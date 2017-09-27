@@ -6,6 +6,7 @@
         get workspace history
     </description>
     <url>/projects/{projectId}/refs/{refId}/history</url>
+    <url>/projects/{projectId}/refs/{refId}/commits</url>
     <format default="json">argument</format>
     <authentication>user</authentication>
     <transaction>required</transaction>

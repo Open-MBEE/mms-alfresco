@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.postgresql.util.PSQLException;
 
 public class PostgresHelper {
@@ -86,7 +86,7 @@ public class PostgresHelper {
         setWorkspace("master");
     }
 
-    public PostgresHelper(WorkspaceNode ref) {
+    public PostgresHelper(EmsScriptNode ref) {
         setWorkspace(ref);
     }
 
@@ -158,7 +158,7 @@ public class PostgresHelper {
         }
     }
 
-    public void setWorkspace(WorkspaceNode workspace) {
+    public void setWorkspace(EmsScriptNode workspace) {
         String workspaceName = workspace == null ? "" : workspace.getId();
         setWorkspace(workspaceName);
     }

@@ -64,7 +64,6 @@ import gov.nasa.jpl.view_repo.actions.ActionUtil;
 import gov.nasa.jpl.view_repo.actions.HtmlToPdfActionExecuter;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
 public class HtmlToPdfPost extends AbstractJavaWebScript {
@@ -972,7 +971,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 	 */
 	private JSONObject saveAndStartAction(WebScriptRequest req, Status status) {
 		JSONObject postJson = null;
-		//WorkspaceNode workspace = getWorkspace(req);
+		//EmsScriptNode workspace = getWorkspace(req);
 		JSONObject reqPostJson = (JSONObject) req.parseContent();
 		if (reqPostJson != null) {
 			postJson = reqPostJson;
@@ -991,7 +990,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 		return postJson;
 	}
 
-	private JSONObject handleCreate(JSONObject postJson, EmsScriptNode context, WorkspaceNode workspace, Status status)
+	private JSONObject handleCreate(JSONObject postJson, EmsScriptNode context, EmsScriptNode workspace, Status status)
 			throws JSONException {
 		EmsScriptNode jobNode = null;
 
@@ -1025,7 +1024,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
      * @param postJson
 	 * @param workspace
 	 */
-	public void startAction(EmsScriptNode jobNode, JSONObject postJson, WorkspaceNode workspace) {
+	public void startAction(EmsScriptNode jobNode, JSONObject postJson, EmsScriptNode workspace) {
 		ActionService actionService = services.getActionService();
 		Action htmlToPdfAction = actionService.createAction(HtmlToPdfActionExecuter.NAME);
 		//htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_WORKSPACE, workspace);
@@ -1195,7 +1194,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 	}
 
 	private DBImage retrieveEmbeddedImage(String storeName, String nodeId,
-			String imgName, WorkspaceNode workspace, Object timestamp)
+			String imgName, EmsScriptNode workspace, Object timestamp)
 			throws UnsupportedEncodingException {
 		Path imageDirName = Paths.get(this.fsWorkingDir, "images");
 		NodeRef imgNodeRef = NodeUtil.getNodeRefFromNodeId(storeName, nodeId);

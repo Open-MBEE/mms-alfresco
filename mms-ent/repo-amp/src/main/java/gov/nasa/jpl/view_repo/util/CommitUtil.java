@@ -82,7 +82,7 @@ public class CommitUtil {
      * @param response
      * @return
      */
-    public static ArrayList<EmsScriptNode> getCommits(WorkspaceNode workspace, ServiceRegistry services,
+    public static ArrayList<EmsScriptNode> getCommits(EmsScriptNode workspace, ServiceRegistry services,
         StringBuffer response) {
         // TODO: reimplement - need to filter commits by IDs... going to be tough with shared server
         return null;
@@ -97,7 +97,7 @@ public class CommitUtil {
      * @param response
      * @return
      */
-    public static EmsScriptNode getLastCommit(WorkspaceNode ws, ServiceRegistry services, StringBuffer response) {
+    public static EmsScriptNode getLastCommit(EmsScriptNode ws, ServiceRegistry services, StringBuffer response) {
         // TODO: reimplement
         return null;
     }
@@ -105,7 +105,7 @@ public class CommitUtil {
     /**
      * Return the latest commit before or equal to the passed date
      */
-    public static EmsScriptNode getLatestCommitAtTime(Date date, WorkspaceNode workspace, ServiceRegistry services,
+    public static EmsScriptNode getLatestCommitAtTime(Date date, EmsScriptNode workspace, ServiceRegistry services,
         StringBuffer response) {
         // TODO: reimplement
         return null;

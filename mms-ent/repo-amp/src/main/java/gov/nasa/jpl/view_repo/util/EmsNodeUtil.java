@@ -57,7 +57,7 @@ public class EmsNodeUtil {
         }
     }
 
-    public EmsNodeUtil(String projectId, WorkspaceNode workspace) {
+    public EmsNodeUtil(String projectId, EmsScriptNode workspace) {
         try {
             eh = new ElasticHelper();
             pgh = new PostgresHelper();
@@ -79,7 +79,7 @@ public class EmsNodeUtil {
         }
     }
 
-    public void switchWorkspace(WorkspaceNode workspace) {
+    public void switchWorkspace(EmsScriptNode workspace) {
         String workspaceName = workspace == null ? "" : workspace.getId();
         switchWorkspace(workspaceName);
     }
