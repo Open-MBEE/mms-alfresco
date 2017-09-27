@@ -155,7 +155,7 @@ public class ModelPost extends AbstractJavaWebScript {
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
-            results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, overwriteJson);
+            results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, overwriteJson, this.requestSourceApplication);
 
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
