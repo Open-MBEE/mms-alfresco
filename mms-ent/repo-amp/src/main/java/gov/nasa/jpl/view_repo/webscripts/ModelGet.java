@@ -259,6 +259,7 @@ public class ModelGet extends AbstractJavaWebScript {
     }
 
     private JSONObject handleCommitRequest(WebScriptRequest req) {
+        // getElement at commit
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         JSONObject element;
@@ -283,8 +284,8 @@ public class ModelGet extends AbstractJavaWebScript {
         }
 
         // Check if the element commit is the latest and is not deleted at the commit
-        if (commitId.equals(latestCommitId) ) {
-            if(elementNode.isDeleted()){
+        if (commitId.equals(latestCommitId)) {
+            if (elementNode.isDeleted()) {
                 return new JSONObject();
             }
             return emsNodeUtil.getElementByElasticID(currentElement);
@@ -293,9 +294,20 @@ public class ModelGet extends AbstractJavaWebScript {
         } else {
 
             element = emsNodeUtil.getElementAtCommit(elementId, commitId);
+            // convert commitId to timestamp
             if (element == null) {
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s", elementId,
-                    commitId);
+                JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+                String commit = emsNodeUtil.getCommitObject(commitId).getString(Sjm.TIMESTAMP);
+                try {
+                    handleMountSearchForCommits(mountsJson, elementId, commit);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                //log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s", elementId,
+                //  commitId);
             }
         }
         return element;
@@ -449,4 +461,25 @@ public class ModelGet extends AbstractJavaWebScript {
 
     }
 
+    protected JSONArray handleMountSearchForCommits(JSONObject mountsJson, String rootSysmlid, String commitId)
+        throws SQLException, IOException {
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
+
+        if (!mountsJson.has(Sjm.MOUNTS)) {
+            mountsJson = emsNodeUtil
+                .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
+        }
+        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
+        JSONArray temp = new JSONArray();
+        for (int i = 0; i < mountsArray.length(); i++) {
+            JSONArray commits = emsNodeUtil.getRefHistory(mountsJson.getString(Sjm.REFID));
+            String nearestCommit = emsNodeUtil.getNearestCommitFromTimestamp(commitId, commits).get(0).toString();
+            temp = handleMountSearchForCommits(mountsArray.getJSONObject(i), rootSysmlid, commitId);
+            if (temp.length() > 0) {
+                return temp;
+            }
+        }
+        return new JSONArray();
+
+    }
 }
