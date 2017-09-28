@@ -461,7 +461,7 @@ public class ModelGet extends AbstractJavaWebScript {
 
     }
 
-    protected JSONArray handleMountSearchForCommits(JSONObject mountsJson, String rootSysmlid, String commitId)
+    protected JSONArray handleMountSearchForCommits(JSONObject mountsJson, String rootSysmlid, String timestamp)
         throws SQLException, IOException {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
 
@@ -470,14 +470,16 @@ public class ModelGet extends AbstractJavaWebScript {
                 .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
         }
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
-        JSONArray temp = new JSONArray();
         for (int i = 0; i < mountsArray.length(); i++) {
-            JSONArray commits = emsNodeUtil.getRefHistory(mountsArray[i].getString(Sjm.REFID));
-            JSONArray nearestCommit = emsNodeUtil.getNearestCommitFromTimestamp(commitId, commits);
+            JSONArray commits = emsNodeUtil.getRefHistory(mountsArray.getJSONObject(i).getString(Sjm.REFID));
+            JSONArray nearestCommit = emsNodeUtil.getNearestCommitFromTimestamp(timestamp, commits);
             if (nearestCommit.length() > 0){
-                return nearestCommit;
+                JSONObject elementObject = emsNodeUtil.getElementAtCommit(rootSysmlid, nearestCommit.getJSONObject(0).getString(Sjm.COMMITID));
+                if(elementObject.length() > 0){
+                      return new JSONArray().put(elementObject);
+                }
             }
-            handleMountSearchForCommits(mountsArray.getJSONObject(i), rootSysmlid, commitId);
+            handleMountSearchForCommits(mountsArray.getJSONObject(i), rootSysmlid, timestamp);
         }
         return new JSONArray();
 
