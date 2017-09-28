@@ -301,15 +301,11 @@ public class ModelGet extends AbstractJavaWebScript {
             String commit = emsNodeUtil.getCommitObject(commitId).getString(Sjm.CREATED);
             try {
                 element = handleMountSearchForCommits(mountsJson, elementId, commit);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not find element %s at commit %s", elementId,
+                    commitId);
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             }
-
-            //log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s", elementId,
-            //  commitId);
-
         }
         return element;
     }
