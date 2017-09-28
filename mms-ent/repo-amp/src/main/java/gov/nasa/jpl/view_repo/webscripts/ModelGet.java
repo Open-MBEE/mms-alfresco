@@ -472,12 +472,12 @@ public class ModelGet extends AbstractJavaWebScript {
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
         JSONArray temp = new JSONArray();
         for (int i = 0; i < mountsArray.length(); i++) {
-            JSONArray commits = emsNodeUtil.getRefHistory(mountsJson.getString(Sjm.REFID));
-            String nearestCommit = emsNodeUtil.getNearestCommitFromTimestamp(commitId, commits).get(0).toString();
-            temp = handleMountSearchForCommits(mountsArray.getJSONObject(i), rootSysmlid, commitId);
-            if (temp.length() > 0) {
-                return temp;
+            JSONArray commits = emsNodeUtil.getRefHistory(mountsArray[i].getString(Sjm.REFID));
+            JSONArray nearestCommit = emsNodeUtil.getNearestCommitFromTimestamp(commitId, commits);
+            if (nearestCommit.length() > 0){
+                return nearestCommit;
             }
+            handleMountSearchForCommits(mountsArray.getJSONObject(i), rootSysmlid, commitId);
         }
         return new JSONArray();
 
