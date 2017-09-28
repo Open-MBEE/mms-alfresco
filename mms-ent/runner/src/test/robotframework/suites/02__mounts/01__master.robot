@@ -248,4 +248,30 @@ GetExtendedElementsFromAllMountedProjectsViaPADuplicates
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
+PostNewElementsToPBForCommit
+	[Documentation]		"Post element to PB to get a commit"
+	[Tags]				mounts		critical		0223
+	${post_json} =		Get File		${CURDIR}/../../JsonData/PostElementsToPBForCommit.json
+	${result} =			Post		url=${ROOT}/projects/PB/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${commit_in_pb} =		Get Commit Id		${result.json()}
+
+PostNewElementsToPAForCommit
+	[Documentation]		"Post element to PA to get a commit"
+	[Tags]				mounts		critical		0224
+	${post_json} =		Get File		${CURDIR}/../../JsonData/PostElementsToPBForCommit.json
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+
+GetCommitAcrossMounts
+	[Documentation]		"Gets closest commit in across mounts by timestamp."
+	[Tags]				mounts		critical		0225
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/eleminPB?commit=${commit_in_pb}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+
 

@@ -534,6 +534,16 @@ def binary_data(filename):
 def get_image_url(jsonObject):
     return jsonObject["artifacts"][0]["url"]
 
+def get_commit_id(results):
+    """
+    gets the commitId
+    :param result:
+    :return:
+    """
+    print("Here's the commitId"+ str(results["element"][0].get('commitId')))
+    return results["element"][0].get('commitId')
+
+
 # Main Application when running from the commandline
 if __name__ == "__main__":
     cur_dir = os.listdir('.')
