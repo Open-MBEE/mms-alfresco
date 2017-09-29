@@ -540,8 +540,8 @@ def get_commit_id(results):
     :param result:
     :return:
     """
-    print("Here's the commitId"+ str(results["element"][0].get('commitId')))
-    return results["element"][0].get('commitId')
+    #print("Here's the commitId"+ str(results["element"][0].get('commitId')))
+    return results["elements"][0].get('_commitId')
 
 
 # Main Application when running from the commandline

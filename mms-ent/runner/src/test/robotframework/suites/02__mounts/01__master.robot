@@ -251,17 +251,18 @@ GetExtendedElementsFromAllMountedProjectsViaPADuplicates
 PostNewElementsToPBForCommit
 	[Documentation]		"Post element to PB to get a commit"
 	[Tags]				mounts		critical		0223
-	${post_json} =		Get File		${CURDIR}/../../JsonData/PostElementsToPBForCommit.json
+	${post_json} =		Get File		${CURDIR}/../../JsonData/PostNewElementsToPBForCommit.json
 	${result} =			Post		url=${ROOT}/projects/PB/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${commit_in_pb} =		Get Commit Id		${result.json()}
 
 PostNewElementsToPAForCommit
 	[Documentation]		"Post element to PA to get a commit"
 	[Tags]				mounts		critical		0224
-	${post_json} =		Get File		${CURDIR}/../../JsonData/PostElementsToPBForCommit.json
+	${post_json} =		Get File		${CURDIR}/../../JsonData/PostNewElementsToPAForCommit.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
+	${commit_in_pb} =	Get Commit Id		${result.json()}
+	Set Suite Variable  ${commit_in_pb}
 
 GetCommitAcrossMounts
 	[Documentation]		"Gets closest commit in across mounts by timestamp."
