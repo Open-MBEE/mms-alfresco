@@ -94,7 +94,7 @@ public class ProductsGet extends AbstractJavaWebScript {
 
         int trueDepth = groupId != null ? (depth != null ? getInt(depth) : 1) : 10000;
 
-        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : projectId, commitId,
+        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, commitId,
             extended != null && extended.equals("true"), trueDepth);
     }
 

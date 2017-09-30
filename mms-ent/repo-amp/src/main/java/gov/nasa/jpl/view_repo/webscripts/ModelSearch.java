@@ -145,7 +145,7 @@ public class ModelSearch extends ModelPost {
                 refId = split[1];
                 EmsNodeUtil util = new EmsNodeUtil(projectId, refId);
                 util.addExtendedInformation(entry.getValue());
-                util.addExtraDocs(entry.getValue(), new HashMap<>());
+                util.addExtraDocs(entry.getValue());
             }
             return elasticResult;
         } catch (Exception e) {
