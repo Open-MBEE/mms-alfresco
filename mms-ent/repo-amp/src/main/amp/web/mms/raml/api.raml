@@ -26,6 +26,7 @@ schemas:
   - groups: !include groups.json-schema
   - history: !include history.json-schema
   - connections: !include connections.json-schema
+  - commit: !include commit.json-schema
 
 traits:
   - qualifiable:
@@ -34,6 +35,13 @@ traits:
         extended:
           description: If false, doesn't display qualified names
           type: boolean
+          required: false
+  - timestampable:
+      description: Aspect for resources that accepts timestamp argument
+      queryParameters:
+        maxTimestamp:
+          description: iso 8601 formatted timestamp
+          type: string
           required: false
   - recursable:
       description: Aspect for resources that can be retrieved recursively
@@ -163,6 +171,19 @@ resourceTypes:
     get:
       description: Get the specified project
       is: [returnProjects, returnable]
+    /commits:
+      /{commitId}:
+        uriParameters:
+          commitId:
+            description: id of commit to get
+        get:
+          description: get entire commit object
+          is: [returnable]
+          responses:
+            200:
+              body:
+                application/json:
+                  schema: commit
     /refs:
       description: All resources are "namespaced" by the ref (aka branch).  The ref is also used for tagging.
       get:
@@ -188,11 +209,11 @@ resourceTypes:
           put:
             is: [returnElements, returnable]
             description: put body is the elastic search query json to execute
-        /history:
+        /commits:
           description: get the commit history of the specififed ref.
           get:
             description: Get the hisotry of the specified ref.
-            is: [returnHistory, returnable]
+            is: [returnHistory, returnable, timestampable]
         /groups:
           description: a grouping of elements
           get:
@@ -249,7 +270,7 @@ resourceTypes:
               body:
                 application/json:
                   schema: elements
-            /history:
+            /commits:
               get:
                 description: get the element in question's history.
                 is: [returnable, returnHistory]

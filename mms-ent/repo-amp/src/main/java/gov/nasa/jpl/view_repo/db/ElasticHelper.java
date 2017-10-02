@@ -196,7 +196,7 @@ public class ElasticHelper {
 
         if (result.isSucceeded()) {
             JSONObject o = new JSONObject(result.getJsonObject().get("_source").toString());
-            o.put(Sjm.ELASTICID, result.getJsonObject().get("_id").getAsString());
+            o.put(Sjm.SYSMLID, result.getJsonObject().get("_id").getAsString());
             return o;
         }
 
