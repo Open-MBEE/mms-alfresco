@@ -801,20 +801,19 @@ public class NodeUtil {
 		NodeUtil.propertyCachePut(pngNode.getNodeRef(),
 				NodeUtil.getShortQName(ContentModel.PROP_CONTENT), contentData);
 
+		/*
 		Object[] versionHistory = pngNode.getEmsVersionHistory();
 
-//        if ( versionHistory == null || versionHistory.length <= 1 ) {
-//            pngNode.makeSureNodeRefIsNotFrozen();
-//            pngNode.createVersion( "creating the version history", false );
-//        }
-
+        if ( versionHistory == null || versionHistory.length <= 1 ) {
+            pngNode.makeSureNodeRefIsNotFrozen();
+            pngNode.createVersion( "creating the version history", false );
+        }
+        */
 		pngNode.getOrSetCachedVersion();
 
 		return pngNode;
 	}
 
-    // private static <X extends Serializable, V> void clearAlfrescoNodeCache()
-    // {
     public static void clearAlfrescoNodeCache() {
         try {
             DbNodeServiceImpl dbNodeService = (DbNodeServiceImpl) getServiceRegistry().getNodeService();
@@ -921,8 +920,8 @@ public class NodeUtil {
     }
 
     /**
-     * getServiceModules </br>
-     * </br>
+     * getServiceModules
+     *
      * Returns a JSONArray of Module Details from the Service Modules
      *
      * @param service the service containing modules to be returned
@@ -940,11 +939,11 @@ public class NodeUtil {
     }
 
     /**
-     * moduleDetailsToJson </br>
-     * </br>
+     * moduleDetailsToJson
+     *
      * Takes a module of type ModuleDetails and retrieves all off the module's members and puts them
-     * into a newly instantiated JSONObject. </br>
-     * </br>
+     * into a newly instantiated JSONObject.
+     *
      * JSONObject will have the details : title, version, aliases, class, dependencies, editions id
      * and properties
      *
@@ -969,11 +968,11 @@ public class NodeUtil {
     }
 
     /**
-     * getMMSversion </br>
-     * </br>
+     * getMMSversion
+     *
      * Gets the version number of a module, returns a JSONObject which calls on getString with
      * 'version' as an argument. This will return a String representing the version of the
-     * mms. </br>
+     * mms.
      *
      * @return Version number of the MMS as type String
      */

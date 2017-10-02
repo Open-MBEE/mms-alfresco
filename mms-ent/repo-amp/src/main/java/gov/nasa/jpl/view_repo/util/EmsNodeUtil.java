@@ -448,10 +448,6 @@ public class EmsNodeUtil {
         return results;
     }
 
-    public JSONArray getDocJson(String sysmlId, String commitId, boolean extended) {
-        return getDocJson(sysmlId, commitId, extended, 10000);
-    }
-
     /**
      * Get the documents that exist in a site at a specified time
      *
@@ -723,7 +719,7 @@ public class EmsNodeUtil {
         JSONArray oldOwnedAttributes = oldElement.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
         JSONArray newChildViews = element.optJSONArray(Sjm.CHILDVIEWS);
 
-        JSONArray ownedAttributes = new JSONArray();
+        JSONArray ownedAttributes;
         JSONArray ownedAttributesIds = new JSONArray();
 
         Set<String> oldOwnedAttributeSet = new HashSet<>();
@@ -1196,14 +1192,13 @@ public class EmsNodeUtil {
         if (nearestDate != null) {
             return nearestDate.getValue();
         }
-        //        ClassCastException - if the specified key cannot be compared with the keys currently in the map
-        //        NullPointerException - if the specified key is null and this map does not permit null keys
+        // ClassCastException - if the specified key cannot be compared with the keys currently in the map
+        // NullPointerException - if the specified key is null and this map does not permit null keys
         return null;
     }
 
     public Pair<String, Long> getDirectParentRef(String refId){
         return pgh.getParentRef(refId);
-        //:TODO merge is a problem
     }
 
     public boolean isDeleted(String sysmlid) {
@@ -1667,7 +1662,7 @@ public class EmsNodeUtil {
         return pastElement == null ? new JSONObject() : pastElement;
     }
 
-    public JSONObject getElementAtCommit(String sysmlId, String commitId, ArrayList<String> refIds) {
+    public JSONObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
         JSONObject result = new JSONObject();
 
         try {

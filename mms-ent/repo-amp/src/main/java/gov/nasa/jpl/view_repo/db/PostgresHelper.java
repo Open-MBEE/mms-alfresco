@@ -168,7 +168,7 @@ public class PostgresHelper {
             this.workspaceId = "";
         } else {
             this.workspaceId = "";
-            workspaceId = workspaceId.replace("-", "_").replaceAll("\\s+", "");
+            workspaceId = sanitizeRefId(workspaceId);
             try {
                 // Try to check for either workspaceName or workspaceId
                 connect();
@@ -1799,7 +1799,7 @@ public class PostgresHelper {
 
         try {
             // make sure that foreign key constraints match mms.sql
-            String childWorkspaceNameSanitized = childWorkspaceName.replace("-", "_").replaceAll("\\s+", "");
+            String childWorkspaceNameSanitized = sanitizeRefId(childWorkspaceName);
 
             // insert record into workspace table
 
@@ -1923,7 +1923,7 @@ public class PostgresHelper {
         if (refId == null || refId.isEmpty()) {
             refId = "master";
         }
-        refId = refId.replace("-", "_").replaceAll("\\s+", "");
+        refId = sanitizeRefId(refId);
         try {
             ResultSet rs = execQuery(
                 String.format("SELECT refId, elasticId FROM refs WHERE deleted = false AND refId = '%s'", refId));
@@ -1944,7 +1944,7 @@ public class PostgresHelper {
         if (refId.equals("master")) {
             return null;
         }
-        refId = refId.replace("-", "_").replaceAll("\\s+", "");
+        refId = sanitizeRefId(refId);
         try {
             ResultSet rs =
                 execQuery(String.format("SELECT parent, timestamp FROM refs WHERE deleted = false AND refId = '%s'", refId));
@@ -1988,7 +1988,7 @@ public class PostgresHelper {
 
         List<Map<String, Object>> result = new ArrayList<>();
         try {
-            String refIdString = refId.replace("-", "_").replaceAll("\\s+", "");
+            String refIdString = sanitizeRefId(refId);
             if (refId.equals("master")) {
                 refId = "";
             }
@@ -2181,7 +2181,7 @@ public class PostgresHelper {
     public boolean refExists(String refId) {
         String currentWorkspace = this.workspaceId;
         this.workspaceId = "";
-        refId = refId.replace("-", "_").replaceAll("\\s+", "");
+        refId = sanitizeRefId(refId);
         try {
             connect();
             PreparedStatement query = this.conn.prepareStatement("SELECT count(id) FROM refs WHERE refId = ?");
@@ -2254,5 +2254,9 @@ public class PostgresHelper {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
         closeConfig();
+    }
+
+    private String sanitizeRefId(String refId) {
+        return refId.replace("-", "_").replaceAll("\\s+", "");
     }
 }

@@ -1,14 +1,11 @@
 package gov.nasa.jpl.view_repo.db;
 
-import java.io.FileReader;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -45,15 +42,18 @@ import io.searchbox.core.Delete;
  * @version 3.0
  * @since 3.0
  */
-public class ElasticHelper {
-    private static JestClient client = null;
+public class ElasticHelper implements ElasticsearchInterface {
+    private JestClient client = null;
     private static Logger logger = Logger.getLogger(ElasticHelper.class);
     private static String elementIndex = EmsConfig.get("elastic.index.element");
     private static int resultLimit = Integer.parseInt(EmsConfig.get("elastic.limit.result"));
     private static int termLimit = Integer.parseInt(EmsConfig.get("elastic.limit.term"));
     private static int readTimeout = 1000000000;
 
-    public void init(String elasticHost) throws UnknownHostException {
+    private static final String ELEMENT = "element";
+    private static final String COMMIT = "commit";
+
+    public void init(String elasticHost) {
 
         JestClientFactory factory = new JestClientFactory();
         if (elasticHost.contains("https")) {
@@ -93,7 +93,6 @@ public class ElasticHelper {
         if (!indexExists) {
             client.execute(new CreateIndex.Builder(index.toLowerCase().replaceAll("\\s+","")).build());
         }
-        //initial organization project
     }
 
     /**
@@ -104,7 +103,7 @@ public class ElasticHelper {
      */
     public JSONObject getElementByElasticId(String id, String index) throws IOException {
         // Cannot use method for commit type
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+",""), id).type("element").build();
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+",""), id).type(ELEMENT).build();
 
         JestResult result = client.execute(get);
 
@@ -140,7 +139,7 @@ public class ElasticHelper {
             .put("query", new JSONObject().put("bool", new JSONObject().put("should", should)))
             .put("sort", new JSONArray().put(new JSONObject().put(Sjm.CREATED, new JSONObject().put("order", "desc"))));
 
-        Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType("commit").build();
+        Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType(COMMIT).build();
         SearchResult result = client.execute(search);
 
         JSONArray array = new JSONArray();
@@ -150,9 +149,9 @@ public class ElasticHelper {
             for (int i = 0; i < hits.size(); i++) {
                 JSONObject o = new JSONObject();
                 JSONObject record = new JSONObject(hits.get(i).getAsJsonObject().getAsJsonObject("_source").toString());
-                o.put("id", hits.get(i).getAsJsonObject().get("_id").getAsString());
-                o.put("_created", record.get("_created"));
-                o.put("_creator", record.get("_creator"));
+                o.put(Sjm.SYSMLID, hits.get(i).getAsJsonObject().get("_id").getAsString());
+                o.put(Sjm.CREATED, record.get(Sjm.CREATED));
+                o.put(Sjm.CREATOR, record.get(Sjm.CREATOR));
                 array.put(o);
             }
             return array;
@@ -175,7 +174,7 @@ public class ElasticHelper {
         must.put(boolQueryShould);
         JSONObject query =
             new JSONObject().put("size", resultLimit).put("query", new JSONObject().put("bool", boolQueryMust));
-        Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType("commit").build();
+        Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType(COMMIT).build();
         SearchResult result = client.execute(search);
 
         return result.getTotal() > 0;
@@ -190,7 +189,7 @@ public class ElasticHelper {
      * @return JSONObject o or null
      */
     public JSONObject getCommitByElasticId(String id, String index) throws IOException {
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+",""), id).type("commit").build();
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+",""), id).type(COMMIT).build();
 
         JestResult result = client.execute(get);
 
@@ -205,8 +204,8 @@ public class ElasticHelper {
 
     public JSONObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException {
         JSONArray filter = new JSONArray();
-        filter.put(new JSONObject().put("term", new JSONObject().put("_commitId", elasticId)));
-        filter.put(new JSONObject().put("term", new JSONObject().put("id", sysmlid)));
+        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.COMMITID, elasticId)));
+        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.SYSMLID, sysmlid)));
 
         JSONObject boolQuery = new JSONObject();
         boolQuery.put("filter", filter);
@@ -214,9 +213,11 @@ public class ElasticHelper {
         JSONObject queryJson = new JSONObject().put("query", new JSONObject().put("bool", boolQuery));
         // should passes a json array that is the terms array from above
 
-        logger.debug(String.format("Search Query %s", queryJson.toString()));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Search Query %s", queryJson.toString()));
+        }
 
-        Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType("element").build();
+        Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType(ELEMENT).build();
         SearchResult result = client.execute(search);
 
         if (result.isSucceeded()) {
@@ -242,7 +243,7 @@ public class ElasticHelper {
         int count = 0;
         JSONArray elements = new JSONArray();
 
-        if (ids.size() == 0) {
+        if (ids.isEmpty()) {
             return elements;
         }
 
@@ -262,7 +263,9 @@ public class ElasticHelper {
                 .put("query", new JSONObject().put("terms", new JSONObject().put("_id", elasticids))).put("sort",
                     new JSONArray().put(new JSONObject().put(Sjm.MODIFIED, new JSONObject().put("order", "desc"))));
 
-            logger.debug(String.format("Search Query %s", queryJson.toString()));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("Search Query %s", queryJson.toString()));
+            }
 
             Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).build();
             SearchResult result = client.execute(search);
@@ -291,12 +294,13 @@ public class ElasticHelper {
     public ElasticResult indexElement(JSONObject j, String index) throws IOException {
         // :TODO error handling
         ElasticResult result = new ElasticResult();
-        String eType = j.has("commit") ? "commit" : "element";
+        String eType = j.has(COMMIT) ? COMMIT : ELEMENT;
 
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("indexElement: %s", j));
+        }
 
-        logger.debug(String.format("indexElement: %s", j));
-
-        JSONObject k = new JSONObject();
+        JSONObject k;
         if (j.has(eType)) {
             k = removeWrapper(j);
         } else {
@@ -319,26 +323,23 @@ public class ElasticHelper {
 
         return result;
     }
+
     /**
      * refresh the index                         (1)
      *
      * @return Boolean isRefreshed
      */
     //:TODO refactor with project indexes
-    public Boolean refreshIndex() throws IOException {
+    public boolean refreshIndex() throws IOException {
         Refresh refresh = new Refresh.Builder().addIndex(elementIndex).build();
         JestResult result = client.execute(refresh);
-        if(result.isSucceeded()){
-            return true;
-        }else{
-            return false;
-        }
 
+        return result.isSucceeded();
     }
 
     public boolean updateElement(String id, JSONObject payload, String index) throws JSONException, IOException {
 
-        client.execute(new Update.Builder(payload.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+","")).type("element").build());
+        client.execute(new Update.Builder(payload.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+","")).type(ELEMENT).build());
 
         return true;
     }
@@ -412,14 +413,15 @@ public class ElasticHelper {
      * @return returns result of bulk index
      */
     private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh, String index) throws JSONException, IOException {
-        Bulk bulk = new Bulk.Builder().defaultIndex(index).defaultType("element").addAction(actions).setParameter(Parameters.REFRESH, refresh).build();
+        Bulk bulk = new Bulk.Builder().defaultIndex(index).defaultType(ELEMENT).addAction(actions).setParameter(Parameters.REFRESH, refresh).build();
         return client.execute(bulk);
     }
     // :TODO has to be set to accept multiple indexes as well.  Will need VE changes
     public JSONArray search(JSONObject queryJson) throws IOException {
-        logger.debug(String.format("Search Query %s", queryJson.toString()));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Search Query %s", queryJson.toString()));
+        }
 
-        //JSONArray elements = new JSONArray();
         JSONArray elements = new JSONArray();
 
         Search search = new Search.Builder(queryJson.toString()).build();
@@ -449,13 +451,14 @@ public class ElasticHelper {
 
     private static JSONObject removeWrapper(JSONObject jsonObject) {
         String eType = null;
-        if (jsonObject.has("element") || jsonObject.has("commit")) {
-            eType = jsonObject.has("commit") ? "commit" : "element";
+        JSONObject result = new JSONObject();
+        if (jsonObject.has(ELEMENT) || jsonObject.has(COMMIT)) {
+            eType = jsonObject.has(COMMIT) ? COMMIT : ELEMENT;
         }
         if (eType != null) {
-            jsonObject = jsonObject.getJSONObject(eType);
+            result = jsonObject.getJSONObject(eType);
         }
-        return jsonObject;
+        return result;
     }
 
     /**
@@ -474,7 +477,6 @@ public class ElasticHelper {
             for(String commitId : ids){
                 deleteList.add(new Delete.Builder(commitId).type(type).index(index.toLowerCase().replaceAll("\\s+","")).build());
             }
-            // :TODO why are we using default index?
             Bulk bulk = new Bulk.Builder().defaultIndex(index.toLowerCase().replaceAll("\\s+","")).defaultIndex(type).addAction(deleteList).build();
 
             result = client.execute(bulk);
@@ -484,10 +486,10 @@ public class ElasticHelper {
                 logger.error(result.getErrorMessage());
             }
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        return new JSONObject(result.getJsonString());
+        return new JSONObject(result != null ? result.getJsonString() : "");
     }
 
     /**
@@ -512,7 +514,7 @@ public class ElasticHelper {
                 logger.error(result.getErrorMessage());
             }
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
 
         }
         return new JSONObject(result.getJsonString());
@@ -525,7 +527,7 @@ public class ElasticHelper {
      * @param timestamp
      * @return
      */
-    public JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, ArrayList<String> refsCommitIds, String index) {
+    public JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds, String index) {
         // Create filter array
         JSONArray filter = new JSONArray();
         filter.put(new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp))));
@@ -557,13 +559,13 @@ public class ElasticHelper {
                 }
             }
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         return new JSONObject();
     }
 
-    public Map<String, String> getDeletedElementsFromCommits(ArrayList<String> commitIds, String index) {
+    public Map<String, String> getDeletedElementsFromCommits(List<String> commitIds, String index) {
 
         // Create nested query
         JSONObject queryWrapper = new JSONObject();
@@ -601,7 +603,7 @@ public class ElasticHelper {
                 return deletedElements;
             }
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         return new HashMap<>();
     }
