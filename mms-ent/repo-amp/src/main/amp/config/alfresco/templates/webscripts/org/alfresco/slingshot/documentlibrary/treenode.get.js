@@ -63,6 +63,7 @@ function getTreeNode()
          }
 
 
+         // MMS Customization : Added title: item.properties.title? item.properties.title : "" to the JSON Object
          items.push(
          {
             node: item,
