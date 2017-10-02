@@ -19,7 +19,6 @@ import java.util.regex.Pattern;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import org.alfresco.schedule.ScheduledJobLockExecuter;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,8 +30,8 @@ import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
 import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 
 public class EmsNodeUtil {
 
@@ -57,17 +56,6 @@ public class EmsNodeUtil {
         }
     }
 
-    public EmsNodeUtil(String projectId, EmsScriptNode workspace) {
-        try {
-            eh = new ElasticHelper();
-            pgh = new PostgresHelper();
-            switchProject(projectId);
-            switchWorkspace(workspace);
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-    }
-
     public EmsNodeUtil(String projectId, String workspaceName) {
         try {
             eh = new ElasticHelper();
@@ -77,11 +65,6 @@ public class EmsNodeUtil {
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-    }
-
-    public void switchWorkspace(EmsScriptNode workspace) {
-        String workspaceName = workspace == null ? "" : workspace.getId();
-        switchWorkspace(workspaceName);
     }
 
     public void switchWorkspace(String workspaceName) {
@@ -225,11 +208,7 @@ public class EmsNodeUtil {
     }
 
     public JSONObject getNodeBySysmlid(String sysmlid) {
-        return getNodeBySysmlid(sysmlid, this.workspaceName);
-    }
-
-    private JSONObject getNodeBySysmlid(String sysmlid, String workspaceName) {
-        return getNodeBySysmlid(sysmlid, workspaceName, null, true);
+        return getNodeBySysmlid(sysmlid, this.workspaceName, true);
     }
 
     /**
@@ -237,21 +216,13 @@ public class EmsNodeUtil {
      *
      * @param sysmlid       String of sysmlid to look up
      * @param workspaceName Workspace to retrieve id against
-     * @param visited       Map of visited sysmlids when traversing to unravel childViews
      * @return
      */
 
-    private JSONObject getNodeBySysmlid(String sysmlid, String workspaceName, Map<String, JSONObject> visited,
+    private JSONObject getNodeBySysmlid(String sysmlid, String workspaceName,
         boolean withChildViews) {
         if (!this.workspaceName.equals(workspaceName)) {
             switchWorkspace(workspaceName);
-        }
-
-        if (visited == null) {
-            visited = new HashMap<>();
-        }
-        if (visited.containsKey(sysmlid)) {
-            return addChildViews(visited.get(sysmlid), visited);
         }
 
         String elasticId = pgh.getElasticIdFromSysmlId(sysmlid);
@@ -261,8 +232,7 @@ public class EmsNodeUtil {
                 if (result != null) {
                     result.put(Sjm.PROJECTID, this.projectId);
                     result.put(Sjm.REFID, this.workspaceName);
-                    visited.put(sysmlid, result);
-                    return withChildViews ? addChildViews(result, visited) : result;
+                    return withChildViews ? addChildViews(result) : result;
                 }
             } catch (Exception e) {
                 logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -420,44 +390,17 @@ public class EmsNodeUtil {
         return new JSONArray();
     }
 
-    public JSONArray addExtraDocs(JSONArray elements, Map<String, JSONObject> existing) {
+    public JSONArray addExtraDocs(JSONArray elements) {
         JSONArray results = new JSONArray();
         for (int i = 0; i < elements.length(); i++) {
             JSONObject element = elements.getJSONObject(i);
             String elementSysmlId = element.getString(Sjm.SYSMLID);
             JSONArray relatedDocuments = new JSONArray();
             Map<String, List<JSONObject>> relatedDocumentsMap = new HashMap<>();
-            /*
-             might need this later but controlled by flag
-            switch (element.getString(Sjm.TYPE)) {
-                case "Property":
-                    if (existing.containsKey(element.getString(Sjm.OWNERID))) {
-                        element = existing.get(element.getString(Sjm.OWNERID));
-                    } else {
-                        element = getNodeBySysmlid(element.getString(Sjm.OWNERID));
-                        existing.put(element.getString(Sjm.SYSMLID), element);
-                    }
-                case "Slot":
-                    JSONObject appliedStereotypeInstance;
-                    if (existing.containsKey(element.getString(Sjm.OWNERID))) {
-                        appliedStereotypeInstance = existing.get(element.getString(Sjm.OWNERID));
-                    } else {
-                        appliedStereotypeInstance = getNodeBySysmlid(element.getString(Sjm.OWNERID));
-                        existing.put(appliedStereotypeInstance.getString(Sjm.SYSMLID), appliedStereotypeInstance);
-                    }
-                    if (existing.containsKey(appliedStereotypeInstance.getString(Sjm.OWNERID))) {
-                        element = existing.get(appliedStereotypeInstance.getString(Sjm.OWNERID));
-                    } else {
-                        element = getNodeBySysmlid(appliedStereotypeInstance.getString(Sjm.OWNERID));
-                        existing.put(element.getString(Sjm.SYSMLID), element);
-                    }
-            }
-            */
+
             Map<String, Set<String>> docView = new HashMap<>();
             Set<Pair<String, Integer>> parentViews =
                 pgh.getParentsOfType(elementSysmlId, PostgresHelper.DbEdgeTypes.VIEW);
-            // Set<Pair<String, String>> immediateParents =
-            //    pgh.getImmediateParents(elementSysmlId, PostgresHelper.DbEdgeTypes.VIEW);
 
             for (Pair<String, Integer> parentView : parentViews) {
 
@@ -504,10 +447,6 @@ public class EmsNodeUtil {
         return results;
     }
 
-    public JSONArray getDocJson(String sysmlId, String commitId, boolean extended) {
-        return getDocJson(sysmlId, commitId, extended, 10000);
-    }
-
     /**
      * Get the documents that exist in a site at a specified time
      *
@@ -525,15 +464,19 @@ public class EmsNodeUtil {
             docSysml2Elastic.put(node.getSysmlId(), node.getElasticId());
         }
 
-        List<Pair<String, String>> siteChildren = pgh.getChildren(sysmlId, DbEdgeTypes.CONTAINMENT, depth);
-        Set<String> siteChildrenIds = new HashSet<>();
-        for (Pair<String, String> child : siteChildren) {
-            siteChildrenIds.add(child.first);
-        }
-        for (String docSysmlId : docSysml2Elastic.keySet()) {
-            if (siteChildrenIds.contains(docSysmlId)) {
-                docElasticIds.add(docSysml2Elastic.get(docSysmlId));
+        if (sysmlId != null) {
+            List<Pair<String, String>> siteChildren = pgh.getChildren(sysmlId, DbEdgeTypes.CONTAINMENT, depth);
+            Set<String> siteChildrenIds = new HashSet<>();
+            for (Pair<String, String> child : siteChildren) {
+                siteChildrenIds.add(child.first);
             }
+            for (String docSysmlId : docSysml2Elastic.keySet()) {
+                if (siteChildrenIds.contains(docSysmlId)) {
+                    docElasticIds.add(docSysml2Elastic.get(docSysmlId));
+                }
+            }
+        } else {
+            docElasticIds.addAll(docSysml2Elastic.values());
         }
 
         JSONArray docJson = new JSONArray();
@@ -708,15 +651,8 @@ public class EmsNodeUtil {
     }
 
     public JSONObject addChildViews(JSONObject o) {
-        return addChildViews(o, null);
-    }
-
-    private JSONObject addChildViews(JSONObject o, Map<String, JSONObject> visited) {
-        if (visited == null) {
-            visited = new HashMap<>();
-        }
         boolean isView = false;
-        if (o.has(Sjm.SYSMLID) && !visited.containsKey(o.getString(Sjm.SYSMLID))) {
+        if (o.has(Sjm.SYSMLID)) {
             JSONArray typeArray = o.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
             if (typeArray != null) {
                 for (int i = 0; i < typeArray.length(); i++) {
@@ -760,7 +696,6 @@ public class EmsNodeUtil {
                 }
             }
             o.put(Sjm.CHILDVIEWS, childViews);
-            visited.put(o.getString(Sjm.SYSMLID), o);
         }
         return o;
     }
@@ -783,7 +718,7 @@ public class EmsNodeUtil {
         JSONArray oldOwnedAttributes = oldElement.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
         JSONArray newChildViews = element.optJSONArray(Sjm.CHILDVIEWS);
 
-        JSONArray ownedAttributes = new JSONArray();
+        JSONArray ownedAttributes;
         JSONArray ownedAttributesIds = new JSONArray();
 
         Set<String> oldOwnedAttributeSet = new HashSet<>();
@@ -1180,11 +1115,11 @@ public class EmsNodeUtil {
     private Map<String, Map<String, String>> calculateQualifiedInformation(JSONArray elements) {
         Map<String, Map<String, String>> result = new HashMap<>();
         Map<String, JSONObject> sysmlid2elements = getSysmlMap(elements);
-
+        Map<String, JSONObject> cache = new HashMap<>();
         for (int i = 0; i < elements.length(); i++) {
             JSONObject element = elements.getJSONObject(i);
             String sysmlid = element.getString(Sjm.SYSMLID);
-            Map<String, String> extendedInfo = getQualifiedInformationForElement(element, sysmlid2elements);
+            Map<String, String> extendedInfo = getQualifiedInformationForElement(element, sysmlid2elements, cache);
 
             Map<String, String> attrs = new HashMap<>();
             attrs.put(Sjm.QUALIFIEDNAME, extendedInfo.get(Sjm.QUALIFIEDNAME));
@@ -1198,22 +1133,11 @@ public class EmsNodeUtil {
     }
 
     private Map<String, String> getQualifiedInformationForElement(JSONObject element,
-        Map<String, JSONObject> elementMap) {
-        Map<String, JSONObject> cache = new HashMap<>();
-        return getQualifiedInformationForElement(element, elementMap, cache);
-    }
-
-    private Map<String, String> getQualifiedInformationForElement(JSONObject element,
         Map<String, JSONObject> elementMap, Map<String, JSONObject> cache) {
 
         Map<String, String> result = new HashMap<>();
 
         JSONObject o = element;
-        List<Map<String, String>> organizations = pgh.getOrganizations(null);
-        List<String> orgList = new ArrayList<>();
-        for (Map<String, String> organization : organizations) {
-            orgList.add(organization.get(ORG_ID));
-        }
         ArrayList<String> qn = new ArrayList<>();
         ArrayList<String> qid = new ArrayList<>();
         String sqn;
@@ -1230,21 +1154,15 @@ public class EmsNodeUtil {
                 if (cache.containsKey(sysmlid)) {
                     owner = cache.get(sysmlid);
                 } else {
-                    owner = getNodeBySysmlid(sysmlid);
+                    owner = getNodeBySysmlid(sysmlid, this.workspaceName, false);
                     cache.put(sysmlid, owner);
                 }
             }
 
-            String ownerId = owner.optString(Sjm.SYSMLID, null);
-            if (ownerId == null || ownerId.equals("")) {
-                ownerId = "null";
-            }
+            String ownerId = owner.optString(Sjm.SYSMLID);
             qid.add(ownerId);
 
-            String ownerName = owner.optString(Sjm.NAME, null);
-            if (ownerName == null || ownerName.equals("")) {
-                ownerName = "null";
-            }
+            String ownerName = owner.optString(Sjm.NAME);
             qn.add(ownerName);
 
             if (siteCharacterizationId == null && CommitUtil.isSite(owner)) {
@@ -1253,38 +1171,12 @@ public class EmsNodeUtil {
             o = owner;
         }
 
-        List<Pair<String, String>> containmentParents = pgh.getContainmentParents(o.optString(Sjm.SYSMLID), 1000);
-        for (Pair<String, String> parent : containmentParents) {
-            try {
-                JSONObject containmentNode = eh.getElementByElasticId(parent.second, projectId);
-                if (containmentNode != null && !containmentNode.optString(Sjm.SYSMLID)
-                    .equals(o.optString(Sjm.SYSMLID))) {
-                    qn.add(containmentNode.optString(Sjm.NAME));
-                    qid.add(containmentNode.optString(Sjm.SYSMLID));
-                }
-            } catch (Exception e) {
-                logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-            }
-        }
-
         Collections.reverse(qn);
         Collections.reverse(qid);
 
         sqn = "/" + String.join("/", qn);
         sqid = "/" + String.join("/", qid);
 
-        if (siteCharacterizationId == null) {
-            Matcher matcher = Pattern.compile("/?(.*?)/.*").matcher(sqid);
-            if (matcher.matches()) {
-                siteCharacterizationId = matcher.group(1);
-            } else {
-                siteCharacterizationId = sqid;
-            }
-        }
-
-        if (orgList.contains(siteCharacterizationId)) {
-            siteCharacterizationId = null;
-        }
 
         result.put(Sjm.QUALIFIEDNAME, sqn);
         result.put(Sjm.QUALIFIEDID, sqid);
@@ -1299,14 +1191,13 @@ public class EmsNodeUtil {
         if (nearestDate != null) {
             return nearestDate.getValue();
         }
-        //        ClassCastException - if the specified key cannot be compared with the keys currently in the map
-        //        NullPointerException - if the specified key is null and this map does not permit null keys
+        // ClassCastException - if the specified key cannot be compared with the keys currently in the map
+        // NullPointerException - if the specified key is null and this map does not permit null keys
         return null;
     }
 
     public Pair<String, Long> getDirectParentRef(String refId) {
         return pgh.getParentRef(refId);
-        //:TODO merge is a problem
     }
 
     public boolean isDeleted(String sysmlid) {
@@ -1390,14 +1281,6 @@ public class EmsNodeUtil {
         return newElements.length() >= elements.length() ? newElements : elements;
     }
 
-    JSONObject addExtendedInformationForElement(JSONObject element) {
-        JSONArray tmpArray = new JSONArray();
-        tmpArray.put(element);
-        Map<String, Map<String, String>> qualifiedInformation = new HashMap<>();
-        qualifiedInformation = calculateQualifiedInformation(tmpArray);
-        return addExtendedInformationForElement(element, qualifiedInformation);
-    }
-
     private JSONObject addExtendedInformationForElement(JSONObject element,
         Map<String, Map<String, String>> qualifiedInformation) {
 
@@ -1448,8 +1331,8 @@ public class EmsNodeUtil {
         }
         curFound = extended ?
             emsNodeUtil
-                .addExtendedInformation(extraDocs ? emsNodeUtil.addExtraDocs(curFound, new HashMap<>()) : curFound) :
-            (extraDocs ? emsNodeUtil.addExtraDocs(curFound, new HashMap<>()) : curFound);
+                .addExtendedInformation(extraDocs ? emsNodeUtil.addExtraDocs(curFound) : curFound) :
+            (extraDocs ? emsNodeUtil.addExtraDocs(curFound) : curFound);
         for (int i = 0; i < curFound.length(); i++) {
             result.put(curFound.get(i));
         }
@@ -1708,11 +1591,6 @@ public class EmsNodeUtil {
         return value;
     }
 
-    public JSONObject getCommit(String commitId) {
-        Map<String, Object> commit = pgh.getCommit(commitId);
-        return commit != null ? new JSONObject(commit) : new JSONObject();
-    }
-
     public JSONObject getModelAtCommit(String commitId) {
         JSONObject result = new JSONObject();
         JSONObject pastElement = null;
@@ -1815,7 +1693,7 @@ public class EmsNodeUtil {
         return new JSONArray();
     }
 
-    public JSONObject getElementAtCommit(String sysmlId, String commitId, ArrayList<String> refIds) {
+    public JSONObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
         JSONObject result = new JSONObject();
 
         try {

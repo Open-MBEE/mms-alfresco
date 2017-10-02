@@ -1,0 +1,99 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "description": "Returns commit object",
+    "properties": {
+        "commits": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {"$ref": "#/definitions/Commit"}
+                ]
+            }
+        }
+    },
+
+    "definitions": {
+        "Commit": {
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "id of the commit"
+                },
+                "_created": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Timestamp of the commit"
+                },
+                "_creator": {
+                    "type": "string",
+                    "description": "username of the person who made the commit"
+                },
+                "_projectId": {
+                    "type": "string",
+                    "description": "projectId of the commit"
+                },
+                "source": {
+                    "type": "string",
+                    "description": "taken from source field of the element post body, populated by clients"
+                },
+                "added": {
+                    "type": "array",
+                    "description": "An array of added elements",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "id of the added element"
+                            },
+                            "_elasticId": {
+                                "type": "string",
+                                "description": "elasticId of the added element"
+                            }
+                        }
+                    }
+                },
+                "deleted": {
+                    "type": "array",
+                    "description": "An array of deleted elements",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "id of the deleted element"
+                            },
+                            "previousElasticId": {
+                                "type": "string",
+                                "description": "elasticId of the deleted element"
+                            }
+                        }
+                    }
+                },
+                "updated": {
+                    "type": "array",
+                    "description": "An array of updated elements",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "id of the updated element"
+                            },
+                            "_elasticId": {
+                                "type": "string",
+                                "description": "elasticId of the updated element"
+                            },
+                            "previousElasticId": {
+                                "type": "string",
+                                "description": "old elasticId of the updated element"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
