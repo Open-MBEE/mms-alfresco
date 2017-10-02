@@ -268,7 +268,12 @@ public class ModelGet extends AbstractJavaWebScript {
         String commitId = req.getParameter(COMMITID);
 
         if (emsNodeUtil.getById(elementId) != null) {
-            return emsNodeUtil.getElementAtCommit(elementId, commitId);
+            JSONObject element = emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
+            if (element.length() == 0) {
+                return emsNodeUtil.getElementAtCommit(elementId, commitId);
+            } else {
+                return element;
+            }
         }
 
         JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
