@@ -282,7 +282,7 @@ public class ModelGet extends AbstractJavaWebScript {
         try {
             return handleMountSearchForCommits(mountsJson, elementId, commit);
         } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not find element %s at commit %s",
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s",
                 elementId, commitId);
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
