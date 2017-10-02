@@ -1794,7 +1794,6 @@ public class EmsNodeUtil {
     public JSONArray getNearestCommitFromTimestamp(String timestamp, JSONArray commits) {
         for (int i = 0; i < commits.length(); i++) {
             JSONObject current = commits.getJSONObject(i);
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
             Date requestedTime;
             Date currentTime;
             try {
