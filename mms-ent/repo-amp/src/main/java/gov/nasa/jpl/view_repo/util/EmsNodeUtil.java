@@ -1792,12 +1792,16 @@ public class EmsNodeUtil {
     }
 
     public JSONArray getNearestCommitFromTimestamp(String timestamp, JSONArray commits) {
+        Date requestedTime = null;
+        try {
+            requestedTime = requestedTime = df.parse(timestamp);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         for (int i = 0; i < commits.length(); i++) {
             JSONObject current = commits.getJSONObject(i);
-            Date requestedTime;
             Date currentTime;
             try {
-                requestedTime = df.parse(timestamp);
                 currentTime = df.parse(current.getString(Sjm.CREATED));
                 if (requestedTime.getTime() >= currentTime.getTime()) {
                     return new JSONArray().put(current);
