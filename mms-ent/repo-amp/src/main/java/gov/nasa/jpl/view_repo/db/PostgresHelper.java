@@ -23,7 +23,7 @@ import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.postgresql.util.PSQLException;
 
-public class PostgresHelper {
+public class PostgresHelper implements GraphInterface {
     static Logger logger = Logger.getLogger(PostgresHelper.class);
 
     private Connection conn;
@@ -32,55 +32,7 @@ public class PostgresHelper {
     private Map<String, String> projectProperties = new HashMap<>();
     private String workspaceId;
     private Savepoint savePoint;
-    public static final String LASTCOMMIT = "lastCommit";
-    public static final String INITIALCOMMIT = "initialCommit";
 
-
-    public enum DbEdgeTypes {
-        CONTAINMENT(1), VIEW(2), TRANSCLUSION(3), CHILDVIEW(4);
-
-        private final int id;
-
-        DbEdgeTypes(int id) {
-            this.id = id;
-        }
-
-        public int getValue() {
-            return id;
-        }
-    }
-
-
-    public enum DbNodeTypes {
-        ELEMENT(1), SITE(2), PROJECT(3), DOCUMENT(4), COMMENT(5), CONSTRAINT(6), INSTANCESPECIFICATION(7), OPERATION(
-            8), PACKAGE(9), PROPERTY(10), PARAMETER(11), VIEW(12), VIEWPOINT(13), SITEANDPACKAGE(14), HOLDINGBIN(
-            15), MOUNT(16);
-
-        private final int id;
-
-        public int getValue() {
-            return id;
-        }
-
-        DbNodeTypes(int id) {
-            this.id = id;
-        }
-    }
-
-
-    public enum DbCommitTypes {
-        COMMIT(1), BRANCH(2), MERGE(3);
-
-        private final int id;
-
-        public int getValue() {
-            return id;
-        }
-
-        DbCommitTypes(int id) {
-            this.id = id;
-        }
-    }
 
     public PostgresHelper() {
         setWorkspace("master");
@@ -410,7 +362,8 @@ public class PostgresHelper {
     }
 
     private Node resultSetToNode(ResultSet rs) throws SQLException {
-        return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5), rs.getString(6), rs.getBoolean(7));
+        return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5), rs.getString(6),
+            rs.getBoolean(7));
     }
 
     public List<Map<String, String>> getOrganizations(String orgId) {
@@ -579,7 +532,8 @@ public class PostgresHelper {
 
         try {
             connect();
-            PreparedStatement query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE initialcommit IS NOT NULL");
+            PreparedStatement query = this.conn
+                .prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE initialcommit IS NOT NULL");
             ResultSet rs = query.executeQuery();
             while (rs.next()) {
                 result.add(resultSetToNode(rs));
@@ -595,6 +549,7 @@ public class PostgresHelper {
 
     /**
      * Returns a modified version of all the nodes the database along with the timestamp of the last commit.
+     *
      * @return List of Maps
      */
     public List<Map<String, Object>> getAllNodesWithLastCommitTimestamp() {
@@ -602,8 +557,8 @@ public class PostgresHelper {
 
         try {
             connect();
-            ResultSet rs = execQuery(
-                String.format("SELECT nodes%1$s.id, nodes%1$s.elasticid, nodes%1$s.nodetype, nodes%1$s.sysmlid, "
+            ResultSet rs = execQuery(String.format(
+                "SELECT nodes%1$s.id, nodes%1$s.elasticid, nodes%1$s.nodetype, nodes%1$s.sysmlid, "
                     + "nodes%1$s.lastcommit, nodes%1$s.initialcommit, nodes%1$s.deleted, commits.timestamp "
                     + "FROM nodes%1$s JOIN commits ON nodes%1$s.lastcommit = commits.elasticid "
                     + "WHERE initialcommit IS NOT NULL ORDER BY commits.timestamp;", workspaceId));
@@ -774,7 +729,8 @@ public class PostgresHelper {
                 query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ?");
                 query.setString(1, sysmlId);
             } else {
-                query = this.conn.prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
+                query = this.conn
+                    .prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
                 query.setString(1, sysmlId);
                 query.setBoolean(2, false);
             }
@@ -1017,8 +973,8 @@ public class PostgresHelper {
     public void deleteNode(String sysmlId) {
         try {
             connect();
-            PreparedStatement query = this.conn
-                .prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = ? WHERE sysmlid = ?");
+            PreparedStatement query =
+                this.conn.prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = ? WHERE sysmlid = ?");
             query.setBoolean(1, true);
             query.setString(2, sysmlId);
             query.execute();
@@ -1097,7 +1053,8 @@ public class PostgresHelper {
     public Map<String, Object> getCommit(String commitId) {
         try {
             connect();
-            PreparedStatement query = this.conn.prepareStatement("SELECT commits.id, commits.elasticId, commits.refid, commits.timestamp, committype.name, creator FROM commits JOIN committype ON commits.committype = committype.id WHERE elasticId = ?");
+            PreparedStatement query = this.conn.prepareStatement(
+                "SELECT commits.id, commits.elasticId, commits.refid, commits.timestamp, committype.name, creator FROM commits JOIN committype ON commits.committype = committype.id WHERE elasticId = ?");
             query.setString(1, commitId);
             ResultSet rs = query.executeQuery();
 
@@ -1792,7 +1749,8 @@ public class PostgresHelper {
         }
     }
 
-    public void createBranchFromWorkspace(String childWorkspaceName, String workspaceName, String elasticId, String commitId, boolean isTag) {
+    public void createBranchFromWorkspace(String childWorkspaceName, String workspaceName, String elasticId,
+        String commitId, boolean isTag) {
         if (childWorkspaceName == null || childWorkspaceName.length() == 0 || childWorkspaceName.equals("master")) {
             return;
         }
@@ -1825,7 +1783,8 @@ public class PostgresHelper {
             copyTable("nodes", childWorkspaceNameSanitized, workspaceId);
 
             if (commitId != null && !commitId.isEmpty()) {
-                execUpdate(String.format("UPDATE nodes%s SET deleted = true WHERE initialcommit IS NOT NULL", childWorkspaceNameSanitized));
+                execUpdate(String.format("UPDATE nodes%s SET deleted = true WHERE initialcommit IS NOT NULL",
+                    childWorkspaceNameSanitized));
             } else {
                 copyTable("edges", childWorkspaceNameSanitized, workspaceId);
             }
@@ -1845,9 +1804,8 @@ public class PostgresHelper {
                 childWorkspaceNameSanitized, childWorkspaceNameSanitized));
 
             if (isTag) {
-                execUpdate(String
-                    .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s",
-                        childWorkspaceNameSanitized, EmsConfig.get("pg.user")));
+                execUpdate(String.format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s",
+                    childWorkspaceNameSanitized, EmsConfig.get("pg.user")));
             }
 
         } catch (SQLException e) {
@@ -1946,8 +1904,8 @@ public class PostgresHelper {
         }
         refId = sanitizeRefId(refId);
         try {
-            ResultSet rs =
-                execQuery(String.format("SELECT parent, timestamp FROM refs WHERE deleted = false AND refId = '%s'", refId));
+            ResultSet rs = execQuery(
+                String.format("SELECT parent, timestamp FROM refs WHERE deleted = false AND refId = '%s'", refId));
 
             if (rs.next()) {
                 String checkForMaster =
@@ -2016,7 +1974,9 @@ public class PostgresHelper {
                 result.add(commit);
             }
 
-            rs = execQuery(String.format("SELECT parent, parentCommit FROM refs WHERE refId = '%s' OR refId = '%s'", refId, refIdString));
+            rs = execQuery(String
+                .format("SELECT parent, parentCommit FROM refs WHERE refId = '%s' OR refId = '%s'", refId,
+                    refIdString));
             if (rs.next() && rs.getInt(2) != 0) {
                 String nextRefId = rs.getString(1);
                 result.addAll(getRefsCommits(nextRefId, rs.getInt(2)));
@@ -2049,9 +2009,9 @@ public class PostgresHelper {
     public void insertRef(String newWorkspaceId, String newWorkspaceName, int headCommit, String elasticId,
         boolean isTag) {
         String parent;
-        if(workspaceId.equals("") && !newWorkspaceId.equals("master")){
+        if (workspaceId.equals("") && !newWorkspaceId.equals("master")) {
             parent = "master";
-        }else{
+        } else {
             parent = workspaceId;
         }
         try {

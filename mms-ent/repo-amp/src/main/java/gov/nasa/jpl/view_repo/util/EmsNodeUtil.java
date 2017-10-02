@@ -19,7 +19,6 @@ import java.util.regex.Pattern;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import org.alfresco.schedule.ScheduledJobLockExecuter;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,8 +30,8 @@ import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
 import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 
 public class EmsNodeUtil {
 

@@ -43,7 +43,7 @@ import io.searchbox.core.Delete;
  * @since 3.0
  */
 public class ElasticHelper implements ElasticsearchInterface {
-    private JestClient client = null;
+    private static JestClient client = null;
     private static Logger logger = Logger.getLogger(ElasticHelper.class);
     private static String elementIndex = EmsConfig.get("elastic.index.element");
     private static int resultLimit = Integer.parseInt(EmsConfig.get("elastic.limit.result"));
