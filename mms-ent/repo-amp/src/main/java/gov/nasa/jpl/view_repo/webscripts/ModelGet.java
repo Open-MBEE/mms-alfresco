@@ -269,7 +269,7 @@ public class ModelGet extends AbstractJavaWebScript {
 
         if (emsNodeUtil.getById(elementId) != null) {
             JSONObject element = emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
-            if (element.length() == 0) {
+            if (element.length() == 0 || element == null) {
                 return emsNodeUtil.getElementAtCommit(elementId, commitId);
             } else {
                 return element;
