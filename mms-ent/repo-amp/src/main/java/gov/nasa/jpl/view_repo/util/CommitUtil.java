@@ -25,9 +25,9 @@ import gov.nasa.jpl.view_repo.connections.JmsConnection;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbCommitTypes;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbCommitTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 
 /**
  * Utilities for saving commits and sending out deltas based on commits
@@ -57,68 +57,14 @@ public class CommitUtil {
     public static boolean cleanJson = false;
     private static ElasticHelper eh = null;
 
-    private CommitUtil() {
-        // try {
-        // eh = new ElasticHelper();
-        // } catch (Exception e) {
-        // logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        // }
-    }
-
     private static JmsConnection jmsConnection = null;
 
     public static void setJmsConnection(JmsConnection jmsConnection) {
-        if (logger.isInfoEnabled())
+        if (logger.isInfoEnabled()) {
             logger.info("Setting jms");
+        }
         CommitUtil.jmsConnection = jmsConnection;
     }
-
-
-    /**
-     * Given a workspace gets an ordered list of the commit history
-     *
-     * @param workspace
-     * @param services
-     * @param response
-     * @return
-     */
-    public static ArrayList<EmsScriptNode> getCommits(EmsScriptNode workspace, ServiceRegistry services,
-        StringBuffer response) {
-        // TODO: reimplement - need to filter commits by IDs... going to be tough with shared server
-        return null;
-    }
-
-
-    /**
-     * Get the most recent commit in a workspace
-     *
-     * @param ws
-     * @param services
-     * @param response
-     * @return
-     */
-    public static EmsScriptNode getLastCommit(EmsScriptNode ws, ServiceRegistry services, StringBuffer response) {
-        // TODO: reimplement
-        return null;
-    }
-
-    /**
-     * Return the latest commit before or equal to the passed date
-     */
-    public static EmsScriptNode getLatestCommitAtTime(Date date, EmsScriptNode workspace, ServiceRegistry services,
-        StringBuffer response) {
-        // TODO: reimplement
-        return null;
-    }
-
-
-    /**
-     */
-    public static boolean revertCommit(EmsScriptNode commit, ServiceRegistry services) {
-        // TODO: implement
-        return true;
-    }
-
 
     public static DbNodeTypes getNodeType(JSONObject e) {
 
@@ -237,7 +183,8 @@ public class CommitUtil {
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
 
-        if (bulkElasticEntry(added, "added", withChildViews, projectId) && bulkElasticEntry(updated, "updated", withChildViews, projectId)) {
+        if (bulkElasticEntry(added, "added", withChildViews, projectId) && bulkElasticEntry(updated, "updated",
+            withChildViews, projectId)) {
 
             try {
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
@@ -583,7 +530,8 @@ public class CommitUtil {
         }
     }
 
-    public static boolean insertForBranchInPast(PostgresHelper pgh, List<Map<String, String>> list, String type, String projectId) {
+    public static boolean insertForBranchInPast(PostgresHelper pgh, List<Map<String, String>> list, String type,
+        String projectId) {
         Savepoint sp = null;
         List<String> nullParents;
         try {
@@ -676,16 +624,13 @@ public class CommitUtil {
         JSONObject jmsMsg = new JSONObject();
         JSONObject siteElement = new JSONObject();
 
-        JSONObject site;
-        JSONObject siteHoldingBin;
         JSONObject projectHoldingBin;
         JSONObject viewInstanceBin;
         JSONObject project;
         ElasticResult eProject;
-        ElasticResult eSite;
         ElasticResult eProjectHoldingBin;
         ElasticResult eViewInstanceBin;
-        //ElasticResult eSiteHoldingBin;
+
         String projectSysmlid;
         String projectName;
 
@@ -758,11 +703,11 @@ public class CommitUtil {
                 eh.refreshIndex();
 
                 pgh.insertNode(eProject.elasticId, eProject.sysmlid, DbNodeTypes.PROJECT);
-                pgh.insertNode(eProjectHoldingBin.elasticId, HOLDING_BIN_PREFIX + projectSysmlid, DbNodeTypes.HOLDINGBIN);
+                pgh.insertNode(eProjectHoldingBin.elasticId, HOLDING_BIN_PREFIX + projectSysmlid,
+                    DbNodeTypes.HOLDINGBIN);
                 pgh.insertNode(eViewInstanceBin.elasticId, "view_instances_bin_" + projectSysmlid,
                     DbNodeTypes.HOLDINGBIN);
 
-                //pgh.insertEdge(orgId, eProject.sysmlid, DbEdgeTypes.CONTAINMENT);
                 pgh.insertEdge(projectSysmlid, eProjectHoldingBin.sysmlid, DbEdgeTypes.CONTAINMENT);
                 pgh.insertEdge(projectSysmlid, eViewInstanceBin.sysmlid, DbEdgeTypes.CONTAINMENT);
 
@@ -803,7 +748,8 @@ public class CommitUtil {
         executor.submit(() -> {
 
             Timer timer = new Timer();
-            logger.info(String.format("Starting branch %s started by %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR)));
+            logger.info(String.format("Starting branch %s started by %s", created.getString(Sjm.SYSMLID),
+                created.optString(Sjm.CREATOR)));
 
             String srcId = src.optString(Sjm.SYSMLID);
 
@@ -826,7 +772,8 @@ public class CommitUtil {
                     List<Map<String, String>> edgeInserts = new ArrayList<>();
                     List<Map<String, String>> childEdgeInserts = new ArrayList<>();
 
-                    processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS), nodeInserts, edgeInserts, childEdgeInserts);
+                    processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS), nodeInserts,
+                        edgeInserts, childEdgeInserts);
 
                     if (!nodeInserts.isEmpty() || !edgeInserts.isEmpty() || !childEdgeInserts.isEmpty()) {
                         if (!nodeInserts.isEmpty()) {
@@ -871,7 +818,8 @@ public class CommitUtil {
 
             branchJson.put("createdRef", created);
             sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
-            logger.info(String.format("Finished branch %s started by %s finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer));
+            logger.info(String.format("Finished branch %s started by %s finished at %s", created.getString(Sjm.SYSMLID),
+                created.optString(Sjm.CREATOR), timer));
         });
         executor.shutdown();
 
