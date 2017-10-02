@@ -1,0 +1,12 @@
+{
+    "elements": [
+        {
+            "documentation": "something",
+            "id": "eleminPA",
+            "name": "test mount object",
+            "ownerId": "PA",
+            "type": "Class",
+            "isDerived": false
+        }
+    ]
+}

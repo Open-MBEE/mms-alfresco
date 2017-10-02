@@ -114,7 +114,7 @@ public class EmsNodeUtil {
 
     public JSONArray getProjects() {
         JSONArray projects = new JSONArray();
-        for (Map<String, Object>project : pgh.getProjects()) {
+        for (Map<String, Object> project : pgh.getProjects()) {
             switchProject(project.get(Sjm.SYSMLID).toString());
             JSONObject proj = getNodeBySysmlid(project.get(Sjm.SYSMLID).toString());
             proj.put(ORG_ID, project.get(ORG_ID).toString());
@@ -429,7 +429,7 @@ public class EmsNodeUtil {
             Iterator<Map.Entry<String, List<JSONObject>>> it = relatedDocumentsMap.entrySet().iterator();
             it.forEachRemaining(pair -> {
                 JSONArray viewIds = new JSONArray();
-                for (JSONObject value: pair.getValue()) {
+                for (JSONObject value : pair.getValue()) {
                     viewIds.put(value);
                 }
                 JSONObject relatedDocObject = new JSONObject();
@@ -503,8 +503,8 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public JSONObject processPostJson(JSONArray elements, String user,
-        Set<String> oldElasticIds, boolean overwriteJson, String src) {
+    public JSONObject processPostJson(JSONArray elements, String user, Set<String> oldElasticIds, boolean overwriteJson,
+        String src) {
 
         JSONObject result = new JSONObject();
 
@@ -1196,7 +1196,7 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public Pair<String, Long> getDirectParentRef(String refId){
+    public Pair<String, Long> getDirectParentRef(String refId) {
         return pgh.getParentRef(refId);
     }
 
@@ -1355,9 +1355,9 @@ public class EmsNodeUtil {
         return pgh.getSites(sites, sitepackages);
     }
 
-    public JSONObject getCommitObject(String commitId){
+    public JSONObject getCommitObject(String commitId) {
         try {
-            return eh.getCommitByElasticId(commitId, projectId );
+            return eh.getCommitByElasticId(commitId, projectId);
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -1442,9 +1442,11 @@ public class EmsNodeUtil {
                     return false;
                 } else {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Is Equivalent: " + isEquivalent((Map<String, Object>) value1, (Map<String, Object>) value2));
+                        logger.debug("Is Equivalent: " + isEquivalent((Map<String, Object>) value1,
+                            (Map<String, Object>) value2));
                     }
-                    if (!isEquivalent((Map<String, Object>) value1, (Map<String, Object>) value2)) return false;
+                    if (!isEquivalent((Map<String, Object>) value1, (Map<String, Object>) value2))
+                        return false;
                 }
             } else if (value1 instanceof List) {
                 if (!(value2 instanceof List)) {
@@ -1453,7 +1455,8 @@ public class EmsNodeUtil {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Is Equivalent: " + isEquivalent((List<Object>) value1, (List<Object>) value2));
                     }
-                    if (!isEquivalent((List<Object>) value1, (List<Object>) value2)) return false;
+                    if (!isEquivalent((List<Object>) value1, (List<Object>) value2))
+                        return false;
                 }
             } else if (value1 instanceof String) {
                 if (!(value2 instanceof String)) {
@@ -1462,7 +1465,8 @@ public class EmsNodeUtil {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Is Equivalent: " + value1.equals(value2));
                     }
-                    if (!value1.equals(value2)) return false;
+                    if (!value1.equals(value2))
+                        return false;
                 }
             } else if (value1 instanceof Boolean) {
                 if (!(value2 instanceof Boolean)) {
@@ -1471,7 +1475,8 @@ public class EmsNodeUtil {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Is Equivalent: " + value1 != value2);
                     }
-                    if (value1 != value2) return false;
+                    if (value1 != value2)
+                        return false;
                 }
             } else {
                 if (logger.isDebugEnabled()) {
@@ -1606,7 +1611,7 @@ public class EmsNodeUtil {
             for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
                 if (((Date) n.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
                     try {
-                        if(!deletedElementIds.containsKey( (String) n.get(Sjm.ELASTICID))) {
+                        if (!deletedElementIds.containsKey((String) n.get(Sjm.ELASTICID))) {
                             pastElement = eh.getElementByCommitId((String) n.get(PostgresHelper.LASTCOMMIT),
                                 (String) n.get(Sjm.SYSMLID), projectId);
                         }
@@ -1617,7 +1622,8 @@ public class EmsNodeUtil {
                     pastElement = getElementAtCommit((String) n.get(Sjm.SYSMLID), commitId, refsCommitsIds);
                 }
 
-                if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds.containsKey(pastElement.getString(Sjm.ELASTICID))) {
+                if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds
+                    .containsKey(pastElement.getString(Sjm.ELASTICID))) {
                     elements.put(pastElement);
                 }
 
@@ -1644,21 +1650,47 @@ public class EmsNodeUtil {
         ArrayList<String> refsCommitsIds = new ArrayList<>();
         if (commit != null) {
             String refId = commit.get(Sjm.REFID).toString();
-            List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId, Integer.parseInt(commit.get(Sjm.SYSMLID).toString()));
+            List<Map<String, Object>> refsCommits =
+                pgh.getRefsCommits(refId, Integer.parseInt(commit.get(Sjm.SYSMLID).toString()));
 
             for (Map<String, Object> ref : refsCommits) {
-                refsCommitsIds.add((String)ref.get(Sjm.SYSMLID));
+                refsCommitsIds.add((String) ref.get(Sjm.SYSMLID));
             }
 
             Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds, projectId);
 
             pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
 
-            if (pastElement != null && pastElement.has(Sjm.SYSMLID) && deletedElementIds.containsKey(pastElement.getString(Sjm.ELASTICID))) {
+            if (pastElement != null && pastElement.has(Sjm.SYSMLID) && deletedElementIds
+                .containsKey(pastElement.getString(Sjm.ELASTICID))) {
                 pastElement = new JSONObject();
             }
         }
         return pastElement == null ? new JSONObject() : pastElement;
+    }
+
+    public JSONArray getNearestCommitFromTimestamp(String timestamp, JSONArray commits) {
+        Date requestedTime = null;
+        try {
+            requestedTime = requestedTime = df.parse(timestamp);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        for (int i = 0; i < commits.length(); i++) {
+            JSONObject current = commits.getJSONObject(i);
+            Date currentTime;
+            try {
+                currentTime = df.parse(current.getString(Sjm.CREATED));
+                if (requestedTime.getTime() >= currentTime.getTime()) {
+                    return new JSONArray().put(current);
+                }
+            } catch (Exception e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+                }
+            }
+        }
+        return new JSONArray();
     }
 
     public JSONObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
@@ -1670,7 +1702,7 @@ public class EmsNodeUtil {
 
             Date date = (Date) commit.get(Sjm.TIMESTAMP);
             Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis( date.getTime());
+            cal.setTimeInMillis(date.getTime());
             cal.setTimeZone(TimeZone.getTimeZone("GMT"));
             String timestamp = df.format(cal.getTime());
 

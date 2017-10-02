@@ -125,7 +125,7 @@ public class ModelGet extends AbstractJavaWebScript {
         JSONObject top = new JSONObject();
 
         if (validateRequest(req, status)) {
-            Boolean isCommit = req.getParameter(COMMITID) != null;
+            Boolean isCommit = req.getParameter(COMMITID) != null && !req.getParameter(COMMITID).isEmpty();
             try {
                 if (isCommit) {
                     JSONArray commitJsonToArray = new JSONArray();
@@ -259,46 +259,34 @@ public class ModelGet extends AbstractJavaWebScript {
     }
 
     private JSONObject handleCommitRequest(WebScriptRequest req) {
+        // getElement at commit
         String projectId = getProjectId(req);
         String refId = getRefId(req);
-        JSONObject element;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         String elementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
-        String currentElement = emsNodeUtil.getById(elementId).getElasticId();
+        String commitId = req.getParameter(COMMITID);
 
-        // This is the commit of the version of the element we want
-        String commitId = (req.getParameter(COMMITID).isEmpty()) ?
-            emsNodeUtil.getById(elementId).getLastCommit() :
-            req.getParameter(COMMITID);
+        if (emsNodeUtil.getById(elementId) != null) {
+            JSONObject element = emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
+            if (element == null || element.length() == 0) {
+                return emsNodeUtil.getElementAtCommit(elementId, commitId);
+            } else {
+                return element;
+            }
+        }
 
-        // This is the lastest commit for the element
-        Node elementNode = emsNodeUtil.getById(elementId);
-        String latestCommitId = elementNode.getLastCommit();
-        Boolean checkInProjectAndRef = false;
+        JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+        // convert commitId to timestamp
+        String commit = emsNodeUtil.getCommitObject(commitId).getString(Sjm.CREATED);
         try {
-            checkInProjectAndRef = emsNodeUtil.commitContainsElement(elementId, commitId);
+            return handleMountSearchForCommits(mountsJson, elementId, commit);
         } catch (Exception e) {
-            logger.warn(e.getMessage());
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s",
+                elementId, commitId);
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-
-        // Check if the element commit is the latest and is not deleted at the commit
-        if (commitId.equals(latestCommitId) ) {
-            if(elementNode.isDeleted()){
-                return new JSONObject();
-            }
-            return emsNodeUtil.getElementByElasticID(currentElement);
-        } else if (checkInProjectAndRef) {
-            return emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
-        } else {
-
-            element = emsNodeUtil.getElementAtCommit(elementId, commitId);
-            if (element == null) {
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s", elementId,
-                    commitId);
-            }
-        }
-        return element;
+        return new JSONObject();
     }
 
     /**
@@ -449,4 +437,36 @@ public class ModelGet extends AbstractJavaWebScript {
 
     }
 
+    protected JSONObject handleMountSearchForCommits(JSONObject mountsJson, String rootSysmlid, String timestamp)
+        throws SQLException, IOException {
+
+        if (!mountsJson.has(Sjm.MOUNTS)) {
+            EmsNodeUtil emsNodeUtil =
+                new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
+            mountsJson = emsNodeUtil
+                .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
+        }
+        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
+        for (int i = 0; i < mountsArray.length(); i++) {
+            EmsNodeUtil nodeUtil = new EmsNodeUtil(mountsArray.getJSONObject(i).getString(Sjm.SYSMLID),
+                mountsArray.getJSONObject(i).getString(Sjm.REFID));
+            if (nodeUtil.getById(rootSysmlid) != null) {
+                JSONArray commits = nodeUtil.getRefHistory(mountsArray.getJSONObject(i).getString(Sjm.REFID));
+                JSONArray nearestCommit = nodeUtil.getNearestCommitFromTimestamp(timestamp, commits);
+                if (nearestCommit.length() > 0) {
+                    JSONObject elementObject =
+                        nodeUtil.getElementAtCommit(rootSysmlid, nearestCommit.getJSONObject(0).getString(Sjm.SYSMLID));
+                    if (elementObject.length() > 0) {
+                        return elementObject;
+                    }
+                }
+                return new JSONObject();
+            }
+            JSONObject el = handleMountSearchForCommits(mountsArray.getJSONObject(i), rootSysmlid, timestamp);
+            if (el.length() > 0) {
+                return el;
+            }
+        }
+        return new JSONObject();
+    }
 }
