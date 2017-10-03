@@ -266,7 +266,6 @@ public class ModelPost extends AbstractJavaWebScript {
                                 model.put(Sjm.RES, createResponseJson());
                             } else {
                                 resultJson.put("upload", svgArtifact);
-                                svgArtifact.getOrSetCachedVersion();
                                 if (!NodeUtil.skipSvgToPng) {
                                     try {
                                         Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
@@ -289,7 +288,6 @@ public class ModelPost extends AbstractJavaWebScript {
                                             logger.error("Failed to convert SVG to PNG!\n");
                                         } else {
                                             synchSvgAndPngVersions(svgArtifact, pngArtifact);
-                                            pngArtifact.getOrSetCachedVersion();
                                         }
                                         Files.deleteIfExists(svgPath);
                                         Files.deleteIfExists(pngPath);
@@ -379,7 +377,6 @@ public class ModelPost extends AbstractJavaWebScript {
         int pngVerLen = pngNode.getEmsVersionHistory().length;
 
         while (pngVersion < svgVersion || pngVerLen < svgVerLen) {
-            pngNode.makeSureNodeRefIsNotFrozen();
             pngNode.createVersion("creating the version history", false);
             pngVer = pngNode.getCurrentVersion();
             pngVerLabel = pngVer.getVersionLabel();

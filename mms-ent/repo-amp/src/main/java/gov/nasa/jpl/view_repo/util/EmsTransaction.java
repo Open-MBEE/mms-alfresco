@@ -27,10 +27,10 @@ public abstract class EmsTransaction {
     protected Status responseStatus = new Status();
     //private UserTransaction trx;
 
-    public EmsTransaction(//UserTransaction oldTrx, 
+    public EmsTransaction(//UserTransaction oldTrx,
                           ServiceRegistry services,
                           StringBuffer response, Status responseStatus) {
-        this( //oldTrx, 
+        this( //oldTrx,
               services, response, responseStatus, false );
     }
 
@@ -51,17 +51,17 @@ public abstract class EmsTransaction {
             }
             return;
         }
-        
-        
+
+
         // running with transactions
-        
+
 ////        if ( trx == null ) {
 ////            trx = services.getTransactionService().getNonPropagatingUserTransaction();
 ////        }
 ////        if ( trx != null && trx.getStatus() == javax.transaction.Status. ) {
 ////            trx.commit();
 ////        }
-        
+
         // If we're in a transaction already, commit it and start a new one
         UserTransaction trx = null;
         boolean wasInTransaction = NodeUtil.isInsideTransactionNow();
@@ -75,7 +75,7 @@ public abstract class EmsTransaction {
         }
         // for new transaction
         trx = NodeUtil.createTransaction();
-        
+
         try {
             if ( syncTransactions ) {
                 synchronized ( logger ) {
@@ -101,7 +101,7 @@ public abstract class EmsTransaction {
             }
         } finally {
             NodeUtil.setInsideTransactionNow( false );
-            
+
             // Restart outer transaction if there was one.
             if ( wasInTransaction ) {
                 trx = NodeUtil.createTransaction();
@@ -109,7 +109,7 @@ public abstract class EmsTransaction {
             }
         }
     }
-    
+
     protected void tryCommit( UserTransaction trx ) {
         try {
             commit( trx );
@@ -123,7 +123,7 @@ public abstract class EmsTransaction {
             NodeUtil.setInsideTransactionNow( false );
         }
     }
-    
+
     protected void tryBegin( UserTransaction trx ) {
         try {
 //            logger.warn( "begin trx=" + trx.hashCode() );
@@ -142,7 +142,7 @@ public abstract class EmsTransaction {
         } finally {
         }
     }
-    
+
     protected void transactionWrappedRun( UserTransaction trx ) throws Throwable {
 //        logger.warn( "begin2 trx=" + trx.hashCode() );
 //        logger.warn(Debug.stackTrace());
@@ -171,7 +171,7 @@ public abstract class EmsTransaction {
         Timer.stopTimer(timerCommit, "!!!!! EmsTransaction commit time", NodeUtil.timeEvents);
 
     }
-    
+
     abstract public void run() throws Exception;
 
 
@@ -179,8 +179,6 @@ public abstract class EmsTransaction {
         // The property cache is invalid if commit fails. Clear it.
         // TODO -- a better solution would be to just clear the properties for
         // nodes affected by the transaction
-        NodeUtil.initPropertyCache();
-
         if ( msg == null || msg.length() <= 0 ) {
             msg = "DB transaction failed";
         }
@@ -197,7 +195,7 @@ public abstract class EmsTransaction {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
-            NodeUtil.sendNotificationEvent( "Transaction did not roll back properly!", "rollback failed on " + addr , services );
+            //NodeUtil.sendNotificationEvent( "Transaction did not roll back properly!", "rollback failed on " + addr , services );
         }
     }
 
