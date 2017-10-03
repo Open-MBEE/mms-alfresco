@@ -990,7 +990,7 @@ public class NodeUtil {
         }
 
         // Remove appended tags from version
-        int endIndex = mmsVersion.lastIndexOf("-");
+        int endIndex = mmsVersion.indexOf('-');
         return endIndex > -1 ? mmsVersion.substring(0, endIndex) : mmsVersion;
     }
 }
