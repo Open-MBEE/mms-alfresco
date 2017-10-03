@@ -989,7 +989,8 @@ public class NodeUtil {
             }
         }
 
-        int endIndex = mmsVersion.lastIndexOf(".");
-        return endIndex > 0 ? mmsVersion.substring(0, endIndex) : mmsVersion;
+        // Remove appended tags from version
+        int endIndex = mmsVersion.lastIndexOf("-");
+        return endIndex > -1 ? mmsVersion.substring(0, endIndex) : mmsVersion;
     }
 }
