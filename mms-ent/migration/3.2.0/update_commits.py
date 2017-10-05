@@ -19,9 +19,9 @@ Updates the commits, projects and ref objects with the correct project Id key
 
 def main(args):
     es = Elasticsearch([{'host': args[1], 'port': 9200}], timeout=300)
-    util.base_url = args[1] + ":8080"
+    util.base_url = args[2]
     print(util.base_url)
-    username = args[2]
+    username = args[3]
     password = getpass.getpass()
     # need auth to get projects from the rest API
     util.auth_key = {"username": username, "password": password}
@@ -150,7 +150,7 @@ def get_projects(base_url, ticket):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print "You need to pass the username and the host"
+    if len(sys.argv) < 4:
+        print "You need to pass the elastic host, mms host, and mms admin username"
     else:
         main(sys.argv)

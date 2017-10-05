@@ -18,15 +18,15 @@ Grabs all the data from the current index and re-indexes by project
 
 
 def main(args):
-    util.base_url = "http://" + str(args[1]) + ":8080"
+    util.base_url = args[1]
     print(util.base_url)
     username = args[2]
     password = getpass.getpass()
     # need auth to get projects from the rest API
     util.auth_key = {"username": username, "password": password}
     util.ticket = util.get_ticket(util.base_url, util.auth_key)
-    es = Elasticsearch([{'host': args[1], 'port': 9200}], timeout=300)
-    remoteElasticsearch = Elasticsearch([{'host': args[3], 'port': 9200}], timeout=300)
+    es = Elasticsearch([{'host': args[3], 'port': 9200}], timeout=300)
+    remoteElasticsearch = Elasticsearch([{'host': args[4], 'port': 9200}], timeout=300)
 
     # Get all the projects
     projects = None
@@ -115,7 +115,7 @@ def add_actions(projectId, type, id, doc):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print "Not enough arguments.  Needs the src hostname, Alfresco username, hostname of destination elasticsearch server. "
+    if len(sys.argv) < 5:
+        print "Not enough arguments.  Needs the mms host, Alfresco admin username, src elastic host, and hostname of destination elasticsearch server. "
     else:
         main(sys.argv)

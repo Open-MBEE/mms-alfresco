@@ -63,9 +63,9 @@ def delete_orgs(dbname, host, user, password):
             print(orgNames)
             cur.execute('DELETE FROM edges WHERE parent = %s', [orgId])
         # CASE 2: holding_bin or holding_bin_{orgid}
-        holding_bins = [orgNames, 'holding_bin', 'holding_bin_' + orgNames]
-        for bin in holding_bins:
-            cur.execute('DELETE FROM nodes WHERE sysmlid = %s', [bin])
+            holding_bins = [orgNames, 'holding_bin', 'holding_bin_' + orgNames]
+            for bin in holding_bins:
+                cur.execute('DELETE FROM nodes WHERE sysmlid = %s', [bin])
         conn.commit()
     except psycopg2.DatabaseError, e:
         if conn is not None:
