@@ -19,12 +19,12 @@ Remove edges and nodes in project dbs that are no longer relevant (global holdin
 
 ### Updating Commit, Project and Ref Elastic Obejcts with the _projectId key
 
-2. Run `update_commits.py [your_admin_username_for_alfresco] [your_ip_host_name]`
+2. Run `update_commits.py [elastic hostname] [mms host] [your_admin_username_for_alfresco]`
 
 ### Converting indexes from 'mms' to 'projectIds'
 
 3. Run the template mapping script without the delete all indexes.  Make sure not to delete indexes if it's the same server. (in repo-amp/src/main/java/gov/nasa/jpl/view_repo/db, update the host if needed)
-4. Run `convert_indexes.py [src_hostname] [your_admin_username_for_alfresco] [destination_ElasticSearch_hostname]`
+4. Run `convert_indexes.py [mms host] [your_admin_username_for_alfresco] [src elastic hostname] [destination_elastich_hostname]`
 
 ### Notes on Failure
 
