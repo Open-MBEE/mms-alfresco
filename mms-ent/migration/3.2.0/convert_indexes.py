@@ -24,7 +24,7 @@ def main(args):
     password = getpass.getpass()
     # need auth to get projects from the rest API
     util.auth_key = {"username": username, "password": password}
-    util.ticket = util.get_ticket(util.base_url, util.auth_key)
+    util.ticket = util.get_ticket()
     es = Elasticsearch([{'host': args[3], 'port': 9200}], timeout=300)
     remoteElasticsearch = Elasticsearch([{'host': args[4], 'port': 9200}], timeout=300)
 

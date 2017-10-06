@@ -25,7 +25,7 @@ def main(args):
     password = getpass.getpass()
     # need auth to get projects from the rest API
     util.auth_key = {"username": username, "password": password}
-    util.ticket = util.get_ticket(util.base_url, util.auth_key)
+    util.ticket = util.get_ticket()
     # Get all the projects
     projectsIds = None
     project_elastic = []
