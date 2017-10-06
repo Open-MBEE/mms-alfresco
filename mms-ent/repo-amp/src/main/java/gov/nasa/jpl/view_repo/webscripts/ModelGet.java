@@ -26,10 +26,7 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -37,13 +34,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.util.*;
-import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.jscript.ScriptVersion;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -55,6 +49,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.db.Node;
 
 /**
  * Descriptor in /view-repo/src/main/amp/config/alfresco/extension/templates/webscripts
@@ -108,7 +103,10 @@ public class ModelGet extends AbstractJavaWebScript {
 
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
-        logger.error("Accept: " + accept);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Accept: %s", accept));
+        }
 
         if (accept.contains("image") && !accept.contains("webp")) {
             model = handleArtifactGet(req, status, accept);
@@ -127,7 +125,7 @@ public class ModelGet extends AbstractJavaWebScript {
         JSONObject top = new JSONObject();
 
         if (validateRequest(req, status)) {
-            Boolean isCommit = req.getParameter(COMMITID) != null;
+            Boolean isCommit = req.getParameter(COMMITID) != null && !req.getParameter(COMMITID).isEmpty();
             try {
                 if (isCommit) {
                     JSONArray commitJsonToArray = new JSONArray();
@@ -261,41 +259,34 @@ public class ModelGet extends AbstractJavaWebScript {
     }
 
     private JSONObject handleCommitRequest(WebScriptRequest req) {
+        // getElement at commit
         String projectId = getProjectId(req);
         String refId = getRefId(req);
-        JSONObject element;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         String elementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
-        String currentElement = emsNodeUtil.getById(elementId).getElasticId();
+        String commitId = req.getParameter(COMMITID);
 
-        // This is the commit of the version of the element we want
-        String commitId = (req.getParameter(COMMITID).isEmpty()) ?
-            emsNodeUtil.getById(elementId).getLastCommit() :
-            req.getParameter(COMMITID);
-
-        // This is the lastest commit for the element
-        String lastestCommitId = emsNodeUtil.getById(elementId).getLastCommit();
-        Boolean checkInProjectAndRef = false;
-        try {
-            checkInProjectAndRef = emsNodeUtil.commitContainsElement(elementId, commitId);
-        } catch (Exception e) {
-            logger.warn(e.getMessage());
-        }
-
-        if (commitId.equals(lastestCommitId)) {
-            return emsNodeUtil.getElementByElasticID(currentElement);
-        } else if (checkInProjectAndRef) {
-            return emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
-        } else {
-
-            element = emsNodeUtil.getElementAtCommit(elementId, commitId);
-            if (element == null) {
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s", elementId,
-                    commitId);
+        if (emsNodeUtil.getById(elementId) != null) {
+            JSONObject element = emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
+            if (element == null || element.length() == 0) {
+                return emsNodeUtil.getElementAtCommit(elementId, commitId);
+            } else {
+                return element;
             }
         }
-        return element;
+
+        JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+        // convert commitId to timestamp
+        String commit = emsNodeUtil.getCommitObject(commitId).getString(Sjm.CREATED);
+        try {
+            return handleMountSearchForCommits(mountsJson, elementId, commit);
+        } catch (Exception e) {
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s",
+                elementId, commitId);
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return new JSONObject();
     }
 
     /**
@@ -446,4 +437,36 @@ public class ModelGet extends AbstractJavaWebScript {
 
     }
 
+    protected JSONObject handleMountSearchForCommits(JSONObject mountsJson, String rootSysmlid, String timestamp)
+        throws SQLException, IOException {
+
+        if (!mountsJson.has(Sjm.MOUNTS)) {
+            EmsNodeUtil emsNodeUtil =
+                new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
+            mountsJson = emsNodeUtil
+                .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
+        }
+        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
+        for (int i = 0; i < mountsArray.length(); i++) {
+            EmsNodeUtil nodeUtil = new EmsNodeUtil(mountsArray.getJSONObject(i).getString(Sjm.SYSMLID),
+                mountsArray.getJSONObject(i).getString(Sjm.REFID));
+            if (nodeUtil.getById(rootSysmlid) != null) {
+                JSONArray commits = nodeUtil.getRefHistory(mountsArray.getJSONObject(i).getString(Sjm.REFID));
+                JSONArray nearestCommit = nodeUtil.getNearestCommitFromTimestamp(timestamp, commits);
+                if (nearestCommit.length() > 0) {
+                    JSONObject elementObject =
+                        nodeUtil.getElementAtCommit(rootSysmlid, nearestCommit.getJSONObject(0).getString(Sjm.SYSMLID));
+                    if (elementObject.length() > 0) {
+                        return elementObject;
+                    }
+                }
+                return new JSONObject();
+            }
+            JSONObject el = handleMountSearchForCommits(mountsArray.getJSONObject(i), rootSysmlid, timestamp);
+            if (el.length() > 0) {
+                return el;
+            }
+        }
+        return new JSONObject();
+    }
 }

@@ -94,7 +94,7 @@ public class Sjm {
     public static final String REDEFINEDPROPERTYIDS = "redefinedPropertyIds";
     public static final String REPRESENTATIONID = "representationId";
     public static final String SLOTIDS = "slotIds";
-    public static final String SOURCEID = "sourceId";
+    public static final String SOURCE = "source";
     public static final String SPECIFICATION = "specification";
     public static final String STEREOTYPEDELEMENTID = "stereotypedElementId";
     public static final String SUBSETTEDPROPERTYIDS = "subsettedPropertyIds";

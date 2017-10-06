@@ -3,8 +3,6 @@
  */
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 

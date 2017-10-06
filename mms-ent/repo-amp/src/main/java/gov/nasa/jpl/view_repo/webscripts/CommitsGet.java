@@ -22,9 +22,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static gov.nasa.jpl.view_repo.util.Sjm.COMMITID;
-
-
 /**
  * @author dank
  *
@@ -63,14 +60,15 @@ public class CommitsGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
+        JSONObject top = new JSONObject();
+        JSONArray elementJson = null;
 
         if (logger.isDebugEnabled()) {
             logger.debug(user + " " + req.getURL());
         }
 
-        JSONObject top = new JSONObject();
-        JSONArray elementJson = handleRequest(req);
-
+        String projectId = getProjectId(req);
+        elementJson = handleRequest(req, projectId, "master");
 
         try {
             if (elementJson.length() > 0) {
@@ -94,9 +92,10 @@ public class CommitsGet extends AbstractJavaWebScript {
         return model;
     }
 
-    @Override
-    protected boolean validateRequest(WebScriptRequest req, Status status) {
-        // TODO Auto-generated method stub
+    /**
+     * Validate the request and check some permissions
+     */
+    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         return true;
     }
 
@@ -106,8 +105,9 @@ public class CommitsGet extends AbstractJavaWebScript {
      * @param req
      * @return
      */
-    private JSONArray handleRequest(WebScriptRequest req) {
+    private JSONArray handleRequest(WebScriptRequest req, String projectId, String refId) {
 
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         JSONArray commitJson = new JSONArray();
         String commitId = req.getServiceMatch().getTemplateVars().get(COMMIT_ID);
 
@@ -119,9 +119,10 @@ public class CommitsGet extends AbstractJavaWebScript {
 
         try {
             ElasticHelper eh = new ElasticHelper();
-            commitJson.put(eh.getCommitByElasticId(commitId));
+            commitJson.put(emsNodeUtil.getCommitObject(commitId));
         } catch (IOException e) {
-            e.printStackTrace();
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not insert into ElasticSearch");
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         return commitJson;

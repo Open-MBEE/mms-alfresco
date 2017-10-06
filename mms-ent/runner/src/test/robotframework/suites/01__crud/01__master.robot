@@ -159,6 +159,7 @@ RecreateDeletedProject
 	[Tags]			  crud		critical		0114
 	${post_json} =		Get File		${CURDIR}/../../JsonData/ProjectForDeleteProject.json
 	${result} =			Post			url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
+	Sleep				${POST_DELAY_INDEXING}
 	Should Be Equal		${result.status_code}		${200}
 	${result} =			Get		url=${ROOT}/projects/DeleteProject		headers=&{REQ_HEADER}
 	Log To Console	  ${result.json()}
@@ -169,3 +170,54 @@ RecreateDeletedProject
 	Should Match Baseline		${compare_result}
 	${result} =		 Delete	  url=${ROOT}/projects/DeleteProject
 	Should Be Equal	 ${result.status_code}	   ${200}
+
+OverwriteElement
+    [Documentation]     "Test creating an element with certain properties, then overwriting the element with an update."
+    [Tags]              crud        critical        0115
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/BaseOverwriteElement.json
+    ${base_element} =         Post            url=${ROOT}/projects/PA/refs/master/elements        data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${base_element.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/OverwrittenElement.json
+    ${overwritten_element} =         Post            url=${ROOT}/projects/PA/refs/master/elements?overwrite=true        data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${overwritten_element.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+	${result} =			Compare Json To Json		${base_element.json()}		${overwritten_element.json()}
+	Should not be true      ${result}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${overwritten_element.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+DeleteElement
+    [Documentation]  "Test deleting an element"
+    [Tags]           crud       critical        0116
+    # Create element first
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/DeleteElement.json
+    ${result} =         Post            url=${ROOT}/projects/PA/refs/master/elements        data=${post_json}       headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+	# Delete element
+	${result} =         Delete          url=${ROOT}/projects/PA/refs/master/elements/DeleteElement          headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	# Try to get element
+	${result} =         Get         url=${ROOT}/projects/PA/refs/master/elements/DeleteElement          headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${404}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+ResurrectElement
+    [Documentation]     "Test resurrecting deleted element"
+    [Tags]              crud        critical        0117
+    # Resurrect Element by posting update to it
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/ResurrectElement.json
+    ${result} =         Post            url=${ROOT}/projects/PA/refs/master/elements        data=${post_json}       headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+	${result} =         Get             url=${ROOT}/projects/PA/refs/master/elements/DeleteElement        headers=&{REQ_HEADER}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}

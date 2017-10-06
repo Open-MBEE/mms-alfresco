@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -43,16 +42,10 @@ import java.util.Set;
 import java.util.HashSet;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.WorkspaceNode;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.EmsTransaction;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
@@ -67,7 +60,6 @@ import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
@@ -97,7 +89,7 @@ public class ModelPost extends AbstractJavaWebScript {
     protected String content = null;
     protected String siteName = null;
     protected String path = null;
-    protected WorkspaceNode workspace = null;
+    protected EmsScriptNode workspace = null;
     protected Path pngPath = null;
 
     private final String NEWELEMENTS = "newElements";
@@ -145,8 +137,10 @@ public class ModelPost extends AbstractJavaWebScript {
 
     protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user, String contentType) {
         JSONObject newElementsObject = new JSONObject();
+        JSONObject results;
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
+        boolean overwriteJson = Boolean.parseBoolean(req.getParameter("overwrite"));
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
@@ -159,7 +153,9 @@ public class ModelPost extends AbstractJavaWebScript {
             JSONObject postJson = new JSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
-            JSONObject results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds);
+
+            results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, overwriteJson, this.requestSourceApplication);
+
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
             if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews)) {
@@ -280,9 +276,9 @@ public class ModelPost extends AbstractJavaWebScript {
 
                                             @Override public void run() throws Exception {
                                                 try {
-                                                    pngArtifact = NodeUtil.updateOrCreateArtifactPng(svgArtifact,
-                                                        pngPath, siteName, projectId, refId, null, response,
-                                                        null, false);
+                                                    pngArtifact = NodeUtil
+                                                        .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName,
+                                                            projectId, refId, null, response, null, false);
                                                 } catch (Throwable ex) {
                                                     throw new Exception("Failed to convert SVG to PNG!\n");
                                                 }
@@ -297,6 +293,10 @@ public class ModelPost extends AbstractJavaWebScript {
                                         }
                                         Files.deleteIfExists(svgPath);
                                         Files.deleteIfExists(pngPath);
+                                    } catch (IOException e) {
+                                        if (logger.isDebugEnabled()) {
+                                            logger.debug("Failed to convert image", e);
+                                        }
                                     } catch (Throwable ex) {
                                         logger.error("Failed to convert SVG to PNG!\n");
                                     }
@@ -350,6 +350,9 @@ public class ModelPost extends AbstractJavaWebScript {
     }
 
     protected static Path svgToPng(Path svgPath) throws Throwable {
+        if (svgPath.toString().contains(".png")) {
+            return svgPath;
+        }
         Path pngPath = Paths.get(svgPath.toString().replace(".svg", ".png"));
         try (OutputStream png_ostream = new FileOutputStream(pngPath.toString())) {
             String svg_URI_input = svgPath.toUri().toURL().toString();

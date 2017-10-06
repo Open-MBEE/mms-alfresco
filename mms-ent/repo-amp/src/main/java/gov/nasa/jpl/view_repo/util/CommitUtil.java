@@ -25,9 +25,9 @@ import gov.nasa.jpl.view_repo.connections.JmsConnection;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbCommitTypes;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbCommitTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 
 /**
  * Utilities for saving commits and sending out deltas based on commits
@@ -57,68 +57,14 @@ public class CommitUtil {
     public static boolean cleanJson = false;
     private static ElasticHelper eh = null;
 
-    private CommitUtil() {
-        // try {
-        // eh = new ElasticHelper();
-        // } catch (Exception e) {
-        // logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        // }
-    }
-
     private static JmsConnection jmsConnection = null;
 
     public static void setJmsConnection(JmsConnection jmsConnection) {
-        if (logger.isInfoEnabled())
+        if (logger.isInfoEnabled()) {
             logger.info("Setting jms");
+        }
         CommitUtil.jmsConnection = jmsConnection;
     }
-
-
-    /**
-     * Given a workspace gets an ordered list of the commit history
-     *
-     * @param workspace
-     * @param services
-     * @param response
-     * @return
-     */
-    public static ArrayList<EmsScriptNode> getCommits(WorkspaceNode workspace, ServiceRegistry services,
-        StringBuffer response) {
-        // TODO: reimplement - need to filter commits by IDs... going to be tough with shared server
-        return null;
-    }
-
-
-    /**
-     * Get the most recent commit in a workspace
-     *
-     * @param ws
-     * @param services
-     * @param response
-     * @return
-     */
-    public static EmsScriptNode getLastCommit(WorkspaceNode ws, ServiceRegistry services, StringBuffer response) {
-        // TODO: reimplement
-        return null;
-    }
-
-    /**
-     * Return the latest commit before or equal to the passed date
-     */
-    public static EmsScriptNode getLatestCommitAtTime(Date date, WorkspaceNode workspace, ServiceRegistry services,
-        StringBuffer response) {
-        // TODO: reimplement
-        return null;
-    }
-
-
-    /**
-     */
-    public static boolean revertCommit(EmsScriptNode commit, ServiceRegistry services) {
-        // TODO: implement
-        return true;
-    }
-
 
     public static DbNodeTypes getNodeType(JSONObject e) {
 
@@ -179,10 +125,10 @@ public class CommitUtil {
         return element.has(Sjm.ISSITE) && element.getBoolean(Sjm.ISSITE);
     }
 
-    private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh) {
+    private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh, String index) {
         if (elements.length() > 0) {
             try {
-                boolean bulkEntry = eh.bulkIndexElements(elements, operation, refresh);
+                boolean bulkEntry = eh.bulkIndexElements(elements, operation, refresh, index);
                 if (!bulkEntry) {
                     return false;
                 }
@@ -237,7 +183,8 @@ public class CommitUtil {
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
 
-        if (bulkElasticEntry(added, "added", withChildViews) && bulkElasticEntry(updated, "updated", withChildViews)) {
+        if (bulkElasticEntry(added, "added", withChildViews, projectId) && bulkElasticEntry(updated, "updated",
+            withChildViews, projectId)) {
 
             try {
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
@@ -458,7 +405,7 @@ public class CommitUtil {
                     pgh.close();
                 }
                 try {
-                    eh.indexElement(delta); //initial commit may fail to read back but does get indexed
+                    eh.indexElement(delta, projectId); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
@@ -583,7 +530,8 @@ public class CommitUtil {
         }
     }
 
-    public static boolean insertForBranchInPast(PostgresHelper pgh, List<Map<String, String>> list, String type, String projectId) {
+    public static boolean insertForBranchInPast(PostgresHelper pgh, List<Map<String, String>> list, String type,
+        String projectId) {
         Savepoint sp = null;
         List<String> nullParents;
         try {
@@ -623,7 +571,7 @@ public class CommitUtil {
             String owner = HOLDING_BIN_PREFIX + projectId;
             JSONObject query = new JSONObject();
             query.put("doc", new JSONObject().put("ownerId", owner));
-            eh.bulkUpdateElements(updateSet, query.toString());
+            eh.bulkUpdateElements(updateSet, query.toString(), projectId);
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             return false;
@@ -675,61 +623,28 @@ public class CommitUtil {
         String date = TimeUtils.toTimestamp(new Date().getTime());
         JSONObject jmsMsg = new JSONObject();
         JSONObject siteElement = new JSONObject();
-        JSONObject site;
-        JSONObject siteHoldingBin;
+
         JSONObject projectHoldingBin;
         JSONObject viewInstanceBin;
         JSONObject project;
         ElasticResult eProject;
-        ElasticResult eSite;
         ElasticResult eProjectHoldingBin;
         ElasticResult eViewInstanceBin;
-        ElasticResult eSiteHoldingBin;
+
         String projectSysmlid;
         String projectName;
+
         String projectLocation = o.optString("location");
 
-        if (o.has("name")) {
-            projectName = o.getString("name");
-        } else {
-            projectName = orgId + "_no_project";
-        }
+        projectName = o.getString("name");
+        projectSysmlid = o.getString(Sjm.SYSMLID);
 
-        if (o.has(Sjm.SYSMLID)) {
-            projectSysmlid = o.getString(Sjm.SYSMLID);
-        } else {
-            projectSysmlid = orgId + "_no_project";
-        }
 
         pgh.createProjectDatabase(projectSysmlid, orgId, projectName, projectLocation);
 
         siteElement.put(Sjm.SYSMLID, orgId);
 
         project = createNode(projectSysmlid, user, date, o);
-        site = createNode(orgId, user, date, siteElement);
-
-        siteHoldingBin = createNode(HOLDING_BIN_PREFIX + orgId, user, date, null);
-        siteHoldingBin.put(Sjm.NAME, "Holding Bin");
-        siteHoldingBin.put(Sjm.OWNERID, orgId);
-        siteHoldingBin.put(Sjm.TYPE, "Package");
-        siteHoldingBin.put("project", "");
-        siteHoldingBin.put(Sjm.URI, JSONObject.NULL);
-        siteHoldingBin.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
-        siteHoldingBin.put(Sjm.ISSITE, false);
-        siteHoldingBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
-        siteHoldingBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
-        siteHoldingBin.put(Sjm.DOCUMENTATION, "");
-        siteHoldingBin.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
-        siteHoldingBin.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
-        siteHoldingBin.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
-        siteHoldingBin.put(Sjm.PACKAGEIMPORTIDS, new JSONArray());
-        siteHoldingBin.put(Sjm.PACKAGEMERGEIDS, new JSONArray());
-        siteHoldingBin.put(Sjm.PROFILEAPPLICATIONIDS, new JSONArray());
-        siteHoldingBin.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
-        siteHoldingBin.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
-        siteHoldingBin.put(Sjm.TEMPLATEBINDINGIDS, new JSONArray());
-        siteHoldingBin.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
-        siteHoldingBin.put(Sjm.VISIBILITY, "public");
 
         projectHoldingBin = createNode(HOLDING_BIN_PREFIX + projectSysmlid, user, date, null);
         projectHoldingBin.put(Sjm.NAME, "Holding Bin");
@@ -777,36 +692,22 @@ public class CommitUtil {
 
         try {
             ElasticHelper eh = new ElasticHelper();
-            eSite = eh.indexElement(site);
-            eProject = eh.indexElement(project);
+            eh.createIndex(projectSysmlid);
+            eProject = eh.indexElement(project, projectSysmlid);
             eh.refreshIndex();
-
-            // only insert if the site does not exist already
-            if (pgh.getNodeFromSysmlId(orgId) == null) {
-                eSiteHoldingBin = eh.indexElement(siteHoldingBin);
-                eh.refreshIndex();
-
-                pgh.insertNode(eSite.elasticId, orgId, DbNodeTypes.SITE);
-                pgh.insertNode(eSiteHoldingBin.elasticId, HOLDING_BIN_PREFIX + orgId, DbNodeTypes.HOLDINGBIN);
-                pgh.insertEdge(orgId, eSiteHoldingBin.sysmlid, DbEdgeTypes.CONTAINMENT);
-            } else {
-                Map<String, String> siteElastic = new HashMap<>();
-                siteElastic.put("elasticid", eSite.elasticId);
-                pgh.updateNode(orgId, siteElastic);
-            }
 
             // only insert if the project does not exist already
             if (pgh.getNodeFromSysmlId(projectSysmlid) == null) {
-                eProjectHoldingBin = eh.indexElement(projectHoldingBin);
-                eViewInstanceBin = eh.indexElement(viewInstanceBin);
+                eProjectHoldingBin = eh.indexElement(projectHoldingBin, projectSysmlid);
+                eViewInstanceBin = eh.indexElement(viewInstanceBin, projectSysmlid);
                 eh.refreshIndex();
 
                 pgh.insertNode(eProject.elasticId, eProject.sysmlid, DbNodeTypes.PROJECT);
-                pgh.insertNode(eProjectHoldingBin.elasticId, HOLDING_BIN_PREFIX + projectSysmlid, DbNodeTypes.HOLDINGBIN);
+                pgh.insertNode(eProjectHoldingBin.elasticId, HOLDING_BIN_PREFIX + projectSysmlid,
+                    DbNodeTypes.HOLDINGBIN);
                 pgh.insertNode(eViewInstanceBin.elasticId, "view_instances_bin_" + projectSysmlid,
                     DbNodeTypes.HOLDINGBIN);
 
-                pgh.insertEdge(orgId, eProject.sysmlid, DbEdgeTypes.CONTAINMENT);
                 pgh.insertEdge(projectSysmlid, eProjectHoldingBin.sysmlid, DbEdgeTypes.CONTAINMENT);
                 pgh.insertEdge(projectSysmlid, eViewInstanceBin.sysmlid, DbEdgeTypes.CONTAINMENT);
 
@@ -847,7 +748,8 @@ public class CommitUtil {
         executor.submit(() -> {
 
             Timer timer = new Timer();
-            logger.info(String.format("Starting branch %s started by %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR)));
+            logger.info(String.format("Starting branch %s started by %s", created.getString(Sjm.SYSMLID),
+                created.optString(Sjm.CREATOR)));
 
             String srcId = src.optString(Sjm.SYSMLID);
 
@@ -870,7 +772,8 @@ public class CommitUtil {
                     List<Map<String, String>> edgeInserts = new ArrayList<>();
                     List<Map<String, String>> childEdgeInserts = new ArrayList<>();
 
-                    processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS), nodeInserts, edgeInserts, childEdgeInserts);
+                    processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS), nodeInserts,
+                        edgeInserts, childEdgeInserts);
 
                     if (!nodeInserts.isEmpty() || !edgeInserts.isEmpty() || !childEdgeInserts.isEmpty()) {
                         if (!nodeInserts.isEmpty()) {
@@ -895,7 +798,7 @@ public class CommitUtil {
                     "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
                         + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
                     .put("params", new JSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
-                eh.bulkUpdateElements(elementsToUpdate, payload);
+                eh.bulkUpdateElements(elementsToUpdate, payload, projectId);
                 created.put("status", "created");
 
             } catch (Exception e) {
@@ -906,7 +809,7 @@ public class CommitUtil {
             }
 
             try {
-                eh.updateElement(elasticId, new JSONObject().put("doc", created));
+                eh.updateElement(elasticId, new JSONObject().put("doc", created), projectId);
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
@@ -915,7 +818,8 @@ public class CommitUtil {
 
             branchJson.put("createdRef", created);
             sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
-            logger.info(String.format("Finished branch %s started by %s finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer));
+            logger.info(String.format("Finished branch %s started by %s finished at %s", created.getString(Sjm.SYSMLID),
+                created.optString(Sjm.CREATOR), timer));
         });
         executor.shutdown();
 

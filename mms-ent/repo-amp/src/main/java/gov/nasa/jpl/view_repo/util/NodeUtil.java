@@ -653,15 +653,11 @@ public class NodeUtil {
         if (!artifactNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
             artifactNode.addAspect(Acm.ACM_IDENTIFIABLE);
         }
-        if (!artifactNode.hasAspect("view:Checksummable")) {
-            artifactNode.addAspect("view:Checksummable");
-        }
 
         artifactNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
         artifactNode.createOrUpdateProperty("cm:isIndexed", true);
         artifactNode.createOrUpdateProperty("cm:isContentIndexed", false);
         artifactNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
-        artifactNode.createOrUpdateProperty("view:cs", cs);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Creating artifact with indexing: " + artifactNode.getProperty("cm:isIndexed"));
@@ -778,15 +774,11 @@ public class NodeUtil {
 		if (!pngNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
 			pngNode.addAspect(Acm.ACM_IDENTIFIABLE);
 		}
-		if (!pngNode.hasAspect("view:Checksummable")) {
-			pngNode.addAspect("view:Checksummable");
-		}
 
 		pngNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
 		pngNode.createOrUpdateProperty("cm:isIndexed", true);
 		pngNode.createOrUpdateProperty("cm:isContentIndexed", false);
 		pngNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
-		pngNode.createOrUpdateProperty("view:cs", cs);
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("Creating PNG artifact with indexing: "
@@ -809,20 +801,19 @@ public class NodeUtil {
 		NodeUtil.propertyCachePut(pngNode.getNodeRef(),
 				NodeUtil.getShortQName(ContentModel.PROP_CONTENT), contentData);
 
+		/*
 		Object[] versionHistory = pngNode.getEmsVersionHistory();
 
-//        if ( versionHistory == null || versionHistory.length <= 1 ) {
-//            pngNode.makeSureNodeRefIsNotFrozen();
-//            pngNode.createVersion( "creating the version history", false );
-//        }
-
+        if ( versionHistory == null || versionHistory.length <= 1 ) {
+            pngNode.makeSureNodeRefIsNotFrozen();
+            pngNode.createVersion( "creating the version history", false );
+        }
+        */
 		pngNode.getOrSetCachedVersion();
 
 		return pngNode;
 	}
 
-    // private static <X extends Serializable, V> void clearAlfrescoNodeCache()
-    // {
     public static void clearAlfrescoNodeCache() {
         try {
             DbNodeServiceImpl dbNodeService = (DbNodeServiceImpl) getServiceRegistry().getNodeService();
@@ -929,8 +920,8 @@ public class NodeUtil {
     }
 
     /**
-     * getServiceModules </br>
-     * </br>
+     * getServiceModules
+     *
      * Returns a JSONArray of Module Details from the Service Modules
      *
      * @param service the service containing modules to be returned
@@ -948,11 +939,11 @@ public class NodeUtil {
     }
 
     /**
-     * moduleDetailsToJson </br>
-     * </br>
+     * moduleDetailsToJson
+     *
      * Takes a module of type ModuleDetails and retrieves all off the module's members and puts them
-     * into a newly instantiated JSONObject. </br>
-     * </br>
+     * into a newly instantiated JSONObject.
+     *
      * JSONObject will have the details : title, version, aliases, class, dependencies, editions id
      * and properties
      *
@@ -977,11 +968,11 @@ public class NodeUtil {
     }
 
     /**
-     * getMMSversion </br>
-     * </br>
+     * getMMSversion
+     *
      * Gets the version number of a module, returns a JSONObject which calls on getString with
      * 'version' as an argument. This will return a String representing the version of the
-     * mms. </br>
+     * mms.
      *
      * @return Version number of the MMS as type String
      */
@@ -998,7 +989,8 @@ public class NodeUtil {
             }
         }
 
-        int endIndex = mmsVersion.lastIndexOf(".");
-        return endIndex > 0 ? mmsVersion.substring(0, endIndex) : mmsVersion;
+        // Remove appended tags from version
+        int endIndex = mmsVersion.indexOf('-');
+        return endIndex > -1 ? mmsVersion.substring(0, endIndex) : mmsVersion;
     }
 }

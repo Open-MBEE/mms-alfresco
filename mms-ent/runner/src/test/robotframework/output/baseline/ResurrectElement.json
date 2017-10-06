@@ -1,0 +1,26 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_inRefIds": [
+                "master"
+            ],
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "Element that will be resurrected",
+            "id": "DeleteElement",
+            "isDerived": false,
+            "name": "Resurrected Element",
+            "ownerId": "PA",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}

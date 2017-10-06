@@ -130,3 +130,55 @@ UpdateAsLoser
 	${result} =			Post		url=http://None:password@${SERVER}/alfresco/service/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${403}
 	Sleep				${POST_DELAY_INDEXING}
+
+CreateProjectAsCollaborator
+    [Documentation]     "Create a new project as collaborator"
+    [Tags]              permissions     1113
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/CollaboratorProject.json
+    ${result} =         Post            url=http://Collaborator:password@${SERVER}/alfresco/service/orgs/initorg/projects        data=${post_json}       headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+	${filter} =			Create List	 commitId
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+PostElementsToCollabProject
+    [Documentation]     "Add elements to collaborator's project"
+    [Tags]              permissions     1114
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/CollaboratorPostNewElements.json
+    ${result} =         Post            url=http://Collaborator:password@${SERVER}/alfresco/service/projects/CollaboratorProject/refs/master/elements       data=${post_json}       headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+UpdateMasterRefAsCollaborator
+    [Documentation]     "Updates the master ref object as the collaborator"
+    [Tags]              permissions     1115
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/UpdateProjectMasterRefAsCollab.json
+    ${result} =         Post            url=http://Collaborator:password@${SERVER}/alfresco/service/projects/CollaboratorProject/refs        data=${post_json}       headers=&{REQ_HEADER}
+    Should Be Equal		${result.status_code}		${200}
+    Sleep				${POST_DELAY_INDEXING}
+    ${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+    Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+    ${compare_result} =		Compare JSON		${TEST_NAME}
+    Should Match Baseline		${compare_result}
+
+UpdateCollabProjectAsLoser
+    [Documentation]     "Attempt to update the new project that collaborator made as user: loser"
+    [Tags]              permissions     1116
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/UpdateProjectMasterRefAsCollab.json
+    ${result} =         Post            url=http://None:password@${SERVER}/alfresco/service/projects/CollaboratorProject/refs        data=${post_json}       headers=&{REQ_HEADER}
+    Should Be Equal		${result.status_code}		${403}
+    Sleep				${POST_DELAY_INDEXING}
+
+UpdateCollabProjectElementsAsLoser
+    [Documentation]     "Attempt to update the new project that collaborator made as user: loser"
+    [Tags]              permissions     1117
+    ${post_json} =      Get File        ${CURDIR}/../../JsonData/UpdateProjectMasterElementAsLoser.json
+    ${result} =         Post            url=http://None:password@${SERVER}/alfresco/service/projects/CollaboratorProject/refs/master/elements       data=${post_json}       headers=&{REQ_HEADER}
+    Should Be Equal		${result.status_code}		${403}
+    Sleep				${POST_DELAY_INDEXING}

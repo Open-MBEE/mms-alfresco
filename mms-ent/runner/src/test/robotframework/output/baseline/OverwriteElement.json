@@ -1,0 +1,26 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_editable": true,
+            "_inRefIds": [
+                "master"
+            ],
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "ElementToOverwrite",
+            "isDerived": false,
+            "name": "Element to overwrite",
+            "ownerId": "PA",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ]
+}

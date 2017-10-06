@@ -28,7 +28,6 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,7 +36,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -51,13 +49,11 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.Node;
-import gov.nasa.jpl.view_repo.db.PostgresHelper;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbEdgeTypes;
-import gov.nasa.jpl.view_repo.db.PostgresHelper.DbNodeTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
+import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
@@ -102,10 +98,8 @@ public class SiteGet extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
-                String timestamp = req.getParameter("timestamp");
-                Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
 
-                JSONArray jsonArray = handleSite(projectId, refId, dateTime, req);
+                JSONArray jsonArray = handleSite(projectId, refId);
                 json = new JSONObject();
                 json.put("groups", jsonArray);
             }
@@ -133,34 +127,32 @@ public class SiteGet extends AbstractJavaWebScript {
     /**
      * Get all the sites that are contained in the workspace, and create json with that info in it.
      *
-     * @param dateTime  The time to base the site retrieval, or null
+     *
      * @return json to return
      *
      * @throws IOException
      */
-    private JSONArray handleSite(String projectId, String refId, Date dateTime, WebScriptRequest req)
+    private JSONArray handleSite(String projectId, String refId)
                     throws IOException {
 
         JSONArray json = new JSONArray();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        PostgresHelper pgh = new PostgresHelper();
-        pgh.setProject(projectId);
-        pgh.setWorkspace(refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         ElasticHelper eh = new ElasticHelper();
         List<String> ids = new ArrayList<>();
         List<String> alfs = new ArrayList<>();
 
         try {
-            List<Node> siteNodes = pgh.getSites();
-            List<Node> alfSites = pgh.getSites(true, false);
+            List<Node> siteNodes = emsNodeUtil.getSites(true, true);
+            List<Node> alfSites = emsNodeUtil.getSites(true, false);
+
             for (Node n : siteNodes) {
                 ids.add(n.getElasticId());
             }
             for (Node n : alfSites) {
                 alfs.add(n.getSysmlId());
             }
-            JSONArray elements = eh.getElementsFromElasticIds(ids);
+            JSONArray elements = eh.getElementsFromElasticIds(ids, projectId);
 
             if (logger.isDebugEnabled())
                 logger.debug("handleSite: " + elements);

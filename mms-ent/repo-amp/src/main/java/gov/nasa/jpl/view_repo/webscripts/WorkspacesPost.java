@@ -36,13 +36,10 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.*;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -51,6 +48,12 @@ import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import gov.nasa.jpl.view_repo.util.CommitUtil;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 import gov.nasa.jpl.mbee.util.Debug;
 import gov.nasa.jpl.mbee.util.TimeUtils;
@@ -191,13 +194,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             workspaceName = newWorkName;   // The name is given on the URL typically, not the ID
         }
 
-        if ((newWorkspaceId != null && newWorkspaceId.equals(NO_WORKSPACE_ID)) || (workspaceName != null
-            && workspaceName.equals(NO_WORKSPACE_ID))) {
-            log(Level.WARN, "Cannot change attributes of the master workspace.", HttpServletResponse.SC_BAD_REQUEST);
-            status.setCode(HttpServletResponse.SC_BAD_REQUEST);
-            return null;
-        }
-
         // Only create the workspace if the workspace id was not supplied:
         EmsScriptNode existingRef =
             orgNode.childByNamePath("/" + projectId + "/refs/" + newWorkspaceId);
@@ -250,7 +246,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         } else {
             // Workspace was found, so update it:
             if (existingRef.getId() != null) {
-
                 if (existingRef.isDeleted()) {
 
                     existingRef.removeAspect("ems:Deleted");
@@ -288,7 +283,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             if (permission.equals("write")) {
                 finalWorkspace.setPermission("SiteCollaborator", "GROUP_EVERYONE");
             } else {
-                finalWorkspace.setPermission("SiteConsumer", "GROUP_EVERYONE");
+                finalWorkspace.setPermission("SiteConsumer", String.format("Site_%s_SiteConsumer",orgNode.getName()));
             }
             finalWorkspace.createOrUpdateProperty("ems:permission", permission);
         }
