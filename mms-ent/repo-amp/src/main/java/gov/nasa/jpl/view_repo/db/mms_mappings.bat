@@ -17,43 +17,12 @@ if %ERRORLEVEL% geq 2 (
    EXIT /B 2
 )
 
-
-
 rem delete if previously exists and then create
 printf "\ndeleting db: "
-curl -XDELETE "http://localhost:9200/mms/"
+curl -XDELETE "http://localhost:9200/_all/"
 
-printf "\ncreating shards: "
-curl -XPUT "http://localhost:9200/mms/" -d @!MY_DIR!/mms_shard_mappings.json
+printf "\ncreating template: "
+curl -XPUT "http://localhost:9200/_template/template" -d @!MY_DIR!/mms_mappings.json
 
-
-rem create element type
-rem "_id" : { "path" : "sysmlid", "store" : true, "index" : "not_analyzed"},
-printf "\ncreating element mappings: "
-curl -XPUT "http://localhost:9200/mms/_mapping/element" -d @!MY_DIR!/mms_element_mappings.json
-
-printf "\ncreating commit mappings: "
-curl -XPUT "http://localhost:9200/mms/_mapping/commit" -d @!MY_DIR!/mms_commit_mappings.json
-
-
-rem $ curl -XPUT 'http://localhost:9200/my_index/my_type/_mapping' -d '
-rem  curl -XPUT 'http://localhost:9200/mms'
-rem  {
-rem    "mappings": {
-rem      "element": {
-rem       "dynamic_templates": [
-rem          {
-rem            "index_new_ids": {
-rem              "match_mapping_type": "string",
-rem              "match_pattern":   "*Id",
-rem              "mapping": {
-rem                "type": "keyword"
-rem              }
-rem            }
-rem          }
-rem        ]
-rem      }
-rem    }
-rem  }
 
 ENDLOCAL
