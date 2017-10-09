@@ -81,31 +81,33 @@ public class ProductsGet extends AbstractJavaWebScript {
         return model;
     }
 
-    public JSONArray handleProducts(WebScriptRequest req) throws JSONException {
+    private JSONArray handleProducts(WebScriptRequest req) throws JSONException {
 
         String commitId = req.getParameter("commitId");
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         String extended = req.getParameter("extended");
-        String depth = req.getParameter("depth");
         String groupId = req.getServiceMatch().getTemplateVars().get("groupId");
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-        int trueDepth = groupId != null ? (depth != null ? getInt(depth) : 1) : 10000;
+        // :TODO write a recursive function to find children in the  given current groupId
 
-        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, commitId,
-            extended != null && extended.equals("true"), trueDepth);
-    }
+        //int trueDepth = groupId != null ? () : 10000;
+        return null;
 
-    private int getInt(String num) {
-        try {
-            return Integer.parseInt(num);
-        } catch (NumberFormatException nfe) {
-            if(logger.isDebugEnabled()) {
-                logger.debug(String.format("%s", LogUtil.getStackTrace(nfe)));
-            }
-        }
-        return 1;
+//        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, commitId,
+//            extended != null && extended.equals("true"), trueDepth);
     }
+    /**
+     * Wrapper for handling a request and getting the appropriate Commit JSONObject
+     *
+     * @param req
+     * @return
+     */
+//    private JSONArray getGroup(WebScriptRequest req, String projectId, String refId) {
+//        return null;
+//    }
+
+
 }

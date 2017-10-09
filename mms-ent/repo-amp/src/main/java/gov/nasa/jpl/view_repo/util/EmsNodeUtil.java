@@ -464,7 +464,9 @@ public class EmsNodeUtil {
             docSysml2Elastic.put(node.getSysmlId(), node.getElasticId());
         }
 
-        if (sysmlId != null) {
+        if (sysmlId != null) {//:TODO fix logic recusively find children of passed param sysmlid, but not children of another group
+            // nodes of "type" : "sitepackage" are groups
+            // if the document has a parent that has a sitepackage parent, then it shouldn't be included
             List<Pair<String, String>> siteChildren = pgh.getChildren(sysmlId, DbEdgeTypes.CONTAINMENT, depth);
             Set<String> siteChildrenIds = new HashSet<>();
             for (Pair<String, String> child : siteChildren) {
@@ -475,7 +477,7 @@ public class EmsNodeUtil {
                     docElasticIds.add(docSysml2Elastic.get(docSysmlId));
                 }
             }
-        } else {
+        } else {// logic is fine here
             docElasticIds.addAll(docSysml2Elastic.values());
         }
 
