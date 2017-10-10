@@ -201,30 +201,30 @@ public class ProjectPost extends AbstractJavaWebScript {
 
             EmsScriptNode projectContainerNode = site.childByNamePath(projectId);
             if (projectContainerNode == null) {
-                projectContainerNode = site.createFolder(projectId);
+                projectContainerNode = site.createFolder(projectId, null, null);
                 projectContainerNode.createOrUpdateProperty(Acm.CM_TITLE, jsonObject.optString(Sjm.NAME));
                 log(Level.INFO, HttpServletResponse.SC_OK, "Project folder created.\n");
             }
 
             EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary");
             if (documentLibrary == null) {
-                documentLibrary = site.createFolder("documentLibrary");
+                documentLibrary = site.createFolder("documentLibrary", null, null);
             }
 
             EmsScriptNode documentProjectContainer = documentLibrary.childByNamePath(projectId);
             if (documentProjectContainer == null) {
-                documentProjectContainer = documentLibrary.createFolder(projectId);
+                documentProjectContainer = documentLibrary.createFolder(projectId, null, null);
                 documentProjectContainer.createOrUpdateProperty(Acm.CM_TITLE, jsonObject.optString(Sjm.NAME));
             }
 
             EmsScriptNode refContainerNode = projectContainerNode.childByNamePath(REF_PATH_SEARCH);
             if (refContainerNode == null) {
-                refContainerNode = projectContainerNode.createFolder("refs");
+                refContainerNode = projectContainerNode.createFolder("refs", null, null);
             }
 
             EmsScriptNode branch = refContainerNode.childByNamePath(NO_WORKSPACE_ID);
             if (branch == null) {
-                branch = refContainerNode.createFolder(NO_WORKSPACE_ID);
+                branch = refContainerNode.createFolder(NO_WORKSPACE_ID, null, null);
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
                 JSONObject masterWs = new JSONObject();
                 masterWs.put("id", NO_WORKSPACE_ID);

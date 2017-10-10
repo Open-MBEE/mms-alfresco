@@ -282,7 +282,7 @@ public class NodeUtil {
                 homes = homes.childByNamePath("/User Homes");
             }
             if (createIfNotFound && homes != null && homes.exists()) {
-                homeFolderScriptNode = homes.createFolder(userName);
+                homeFolderScriptNode = homes.createFolder(userName, null, null);
             } else {
                 Debug.error("Error! No user homes folder!");
             }

@@ -243,7 +243,7 @@ public class ActionUtil {
 
         EmsScriptNode jobPkgNode = contextFolder.childByNamePath("Jobs");
         if (jobPkgNode == null) {
-            jobPkgNode = contextFolder.createFolder("Jobs", "cm:folder");
+            jobPkgNode = contextFolder.createFolder("Jobs", "cm:folder", null);
             jobPkgNode.setPermission( "SiteCollaborator", "GROUP_EVERYONE" );
         }
 

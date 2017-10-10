@@ -29,15 +29,12 @@ package gov.nasa.jpl.view_repo.util;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.NavigableMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Set;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -48,7 +45,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptVersion;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.version.Version2Model;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -63,7 +59,6 @@ import org.apache.log4j.Logger;
 import org.springframework.extensions.webscripts.Status;
 
 import gov.nasa.jpl.mbee.util.ClassUtils;
-import gov.nasa.jpl.mbee.util.Debug;
 import gov.nasa.jpl.mbee.util.HasId;
 import gov.nasa.jpl.mbee.util.HasName;
 import gov.nasa.jpl.mbee.util.Utils;
@@ -223,14 +218,6 @@ public class EmsScriptNode extends ScriptNode
     @Override public EmsScriptNode createFile(String name) {
         EmsScriptNode fileNode = new EmsScriptNode(super.createFile(name).getNodeRef(), services, response, status);
         return fileNode;
-    }
-
-    @Override public EmsScriptNode createFolder(String name) {
-        return createFolder(name, null);
-    }
-
-    @Override public EmsScriptNode createFolder(String name, String type) {
-        return createFolder(name, type, null);
     }
 
     public EmsScriptNode createFolder(String name, String type, NodeRef sourceFolder) {
