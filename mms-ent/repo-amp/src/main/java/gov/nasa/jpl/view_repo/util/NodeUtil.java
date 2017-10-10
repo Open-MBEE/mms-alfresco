@@ -58,58 +58,13 @@ import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.actions.ActionUtil;
-import gov.nasa.jpl.view_repo.util.EmsScriptNode.EmsVersion;
-import sun.rmi.runtime.Log;
 
 public class NodeUtil {
-
-    public enum SearchType {
-        DOCUMENTATION("@sysml\\:documentation:\""), NAME("@sysml\\:name:\""), CM_NAME("@cm\\:name:\""), ID(
-                        "@sysml\\:id:\""), STRING("@sysml\\:string:\""), BODY("@sysml\\:body:\""), CHECKSUM(
-                                        "@view\\:cs:\""), WORKSPACE("@ems\\:workspace:\""), WORKSPACE_NAME(
-                                                        "@ems\\:workspace_name:\""), OWNER("@ems\\:owner:\""), ASPECT(
-                                                                        "ASPECT:\""), TYPE("TYPE:\"");
-
-        public String prefix;
-
-        SearchType(String prefix) {
-            this.prefix = prefix;
-        }
-    }
 
     static Logger logger = Logger.getLogger(NodeUtil.class);
 
     /* static flags and constants */
 
-    protected static boolean beenInsideTransaction = false;
-    protected static Map<Long, Boolean> beenInsideTransactionMap = new LinkedHashMap<>();
-
-    public static synchronized boolean hasBeenInsideTransaction() {
-        Boolean b = beenInsideTransactionMap.get(Thread.currentThread().getId());
-        if (b != null)
-            return b;
-        return beenInsideTransaction;
-    }
-
-    public static synchronized void setBeenInsideTransaction(boolean b) {
-        beenInsideTransaction = b;
-        beenInsideTransactionMap.put(Thread.currentThread().getId(), b);
-    }
-
-    protected static boolean beenOutsideTransaction = false;
-    protected static Map<Long, Boolean> beenOutsideTransactionMap = new LinkedHashMap<>();
-
-    public static synchronized boolean hasBeenOutsideTransaction() {
-        Boolean b = beenOutsideTransactionMap.get(Thread.currentThread().getId());
-        if (b != null)
-            return b;
-        return beenOutsideTransaction;
-    }
-
-    public static synchronized void setBeenOutsideTransaction(boolean b) {
-        beenOutsideTransaction = b;
-        beenOutsideTransactionMap.put(Thread.currentThread().getId(), b);
-    }
 
     protected static boolean insideTransactionNow = false;
     protected static Map<Long, Boolean> insideTransactionNowMap = new LinkedHashMap<>();
@@ -138,100 +93,7 @@ public class NodeUtil {
         insideTransactionNowMap.put(Thread.currentThread().getId(), b);
     }
 
-    protected static Map<Long, StackTraceElement[]> insideTransactionStrackTrace =
-                    new LinkedHashMap<>();
-    protected static Map<Long, StackTraceElement[]> outsideTransactionStrackTrace =
-                    new LinkedHashMap<>();
-
-    public static void setInsideTransactionStackTrace() {
-        insideTransactionStrackTrace.put(Thread.currentThread().getId(), Thread.currentThread().getStackTrace());
-    }
-
-    public static void setOutsideTransactionStackTrace() {
-        outsideTransactionStrackTrace.put(Thread.currentThread().getId(), Thread.currentThread().getStackTrace());
-    }
-
-
-    public static boolean doFullCaching = true;
-    public static boolean doSimpleCaching = true;
-    public static boolean doNodeAtTimeCaching = true;
-    public static boolean doHeisenCheck = true;
-    public static boolean doVersionCaching = false;
-    public static boolean doVersionHistoryCaching = true;
-    public static boolean doJsonCaching = false;
-    public static boolean doJsonDeepCaching = false;
-    public static boolean doJsonStringCaching = false;
-    public static boolean doPropertyCaching = true;
-    public static boolean doGraphDb = true;
-    public static boolean doPostProcessQualified = false;
-    public static boolean doAutoBuildGraphDb = false;
-    public static boolean skipQualified = false;
     public static boolean skipSvgToPng = false;
-    public static boolean skipWorkspacePermissionCheck = false;
-    public static boolean doOptimisticJustFirst = true;
-
-    public static boolean doorsSync = false;
-
-    // global flag that is enabled once heisenbug is seen, so it will email
-    // admins the first time heisenbug is seen
-    public static boolean heisenbugSeen = false;
-
-    /**
-     * A cache of alfresco nodes stored as a map from cm:name to node for the master branch only.
-     */
-    public static Map<String, NodeRef> simpleCache = Collections.synchronizedMap(new HashMap<String, NodeRef>());
-
-    /**
-     * A cache of alfresco nodes stored as a map from NodeRef and time to node as determined by
-     */
-    public static Map<NodeRef, Map<Long, Object>> nodeAtTimeCache =
-                    Collections.synchronizedMap(new HashMap<NodeRef, Map<Long, Object>>());
-
-    /**
-     * A cache of alfresco nodes stored as a map from query parameters to a set of nodes. TODO --
-     * list the parameters here
-     */
-    public static Map<String, Map<String, Map<String, Map<Boolean, Map<Long, Map<Boolean, Map<Boolean, Map<Boolean, Map<String, ArrayList<NodeRef>>>>>>>>>> elementCache =
-                    Collections.synchronizedMap(
-                                    new HashMap<String, Map<String, Map<String, Map<Boolean, Map<Long, Map<Boolean, Map<Boolean, Map<Boolean, Map<String, ArrayList<NodeRef>>>>>>>>>>());
-
-    /**
-     * A cache of alfresco properties of nodes
-     */
-    public static Map<NodeRef, Map<String, Object>> propertyCache =
-                    Collections.synchronizedMap(new HashMap<NodeRef, Map<String, Object>>());
-
-
-
-    // public static HashMap<String, String> versionLabelCache =
-    // new HashMap<String, String>();
-    public static Map<String, EmsVersion> versionCache = Collections.synchronizedMap(new HashMap<String, EmsVersion>());
-    public static Map<NodeRef, NodeRef> frozenNodeCache = Collections.synchronizedMap(new HashMap<NodeRef, NodeRef>());
-
-    // public static Map< NodeRef, Collection< Version > > versionHistoryCache =
-    // Collections.synchronizedMap( new HashMap< NodeRef, Collection< Version >
-    // >() );
-    public static Map<NodeRef, VersionHistory> versionHistoryCache =
-                    Collections.synchronizedMap(new HashMap<NodeRef, VersionHistory>());
-
-    // Set< String > filter, boolean isExprOrProp,Date dateTime, boolean
-    // isIncludeQualified
-    public static Map<String, Map<Long, Map<Boolean, Map<Set<String>, Map<String, JSONObject>>>>> jsonDeepCache =
-                    Collections.synchronizedMap(
-                                    new HashMap<String, Map<Long, Map<Boolean, Map<Set<String>, Map<String, JSONObject>>>>>());
-    public static Map<String, Map<Long, JSONObject>> jsonCache =
-                    Collections.synchronizedMap(new HashMap<String, Map<Long, JSONObject>>());
-
-    // The json string cache maps JSONObjects to an integer (date in millis) to
-    // a string rendering of itself paired with the date.
-    public static Map<JSONObject, Map<Integer, Pair<Date, String>>> jsonStringCache =
-                    Collections.synchronizedMap(new HashMap<JSONObject, Map<Integer, Pair<Date, String>>>());
-
-    // REVIEW -- TODO -- Should we try and cache the toString() output of the
-    // json, too?
-    // REVIEW -- TODO -- This would mean we'd have to concatenate the json
-    // REVIEW -- TODO -- strings ourselves instead of just one big toString()
-    // REVIEW -- TODO -- on the collection as done currently.
 
     // Set the flag to time events that occur during a model post using the
     // timers
@@ -240,48 +102,6 @@ public class NodeUtil {
 
     public static ServiceRegistry services = null;
     public static Repository repository = null;
-
-    public static Object NULL_OBJECT = new Object() {
-        @Override
-        public String toString() {
-            return "NULL_OBJECT";
-        }
-    };
-
-    /**
-     * clear or create the cache for correcting bad node refs (that refer to wrong versions)
-     */
-    public static void initPropertyCache() {
-        propertyCache.clear();
-    }
-
-    public static Object propertyCachePut(NodeRef nodeRef, String propertyName, Object value) {
-        if (!doPropertyCaching || nodeRef == null || Utils.isNullOrEmpty(propertyName)) {
-            return null;
-        }
-        if (logger.isDebugEnabled())
-            logger.debug("propertyCachePut(" + nodeRef + ", " + propertyName + ", " + value + ")");
-        if (value == null)
-            value = NULL_OBJECT;
-        return Utils.put(propertyCache, nodeRef, propertyName, value);
-    }
-
-    public static Object propertyCacheGet(NodeRef nodeRef, String propertyName) {
-        if (!doPropertyCaching || nodeRef == null || Utils.isNullOrEmpty(propertyName)) {
-            return null;
-        }
-        Object o = Utils.get(propertyCache, nodeRef, propertyName);
-        if (logger.isTraceEnabled())
-            logger.trace("propertyCachePut(" + nodeRef + ", " + propertyName + ", " + o + ")");
-        return o;
-    }
-
-    public static NodeRef getCurrentNodeRefFromCache(NodeRef maybeFrozenNodeRef) {
-        NodeRef ref = frozenNodeCache.get(maybeFrozenNodeRef);
-        if (ref != null)
-            return ref;
-        return null;
-    }
 
     public static Repository getRepository() {
         return repository;
@@ -302,19 +122,6 @@ public class NodeUtil {
     public static ServiceRegistry getServiceRegistry() {
         return services;
     }
-
-    public static int compare(Version v1, Version v2) {
-        if (v1 == v2)
-            return 0;
-        if (v1 == null)
-            return -1;
-        if (v2 == null)
-            return 1;
-        Date d1 = v1.getFrozenModifiedDate();
-        Date d2 = v2.getFrozenModifiedDate();
-        return d1.compareTo(d2);
-    }
-
 
     /**
      * Given a long-form QName, this method uses the namespace service to create a short-form QName
@@ -374,21 +181,6 @@ public class NodeUtil {
         return companyHome;
     }
 
-    public static int compareVersions(NodeRef ref1, NodeRef ref2) {
-        Date d1 = getLastModified(ref1);
-        Date d2 = getLastModified(ref2);
-        return CompareUtils.compare(d1, d2);
-    }
-
-    public static Date getLastModified(NodeRef ref) {
-        try {
-            return (Date) NodeUtil.getNodeProperty(ref, Acm.ACM_LAST_MODIFIED, services, true, false);
-        } catch (Throwable t) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(t)));
-        }
-        return null;
-    }
-
     public static Object getNodeProperty(ScriptNode node, Object o, ServiceRegistry services,
                     boolean useFoundationalApi, boolean cacheOkay) {
         return getNodeProperty(node.getNodeRef(), o, services, useFoundationalApi, cacheOkay);
@@ -420,39 +212,6 @@ public class NodeUtil {
                                 + ") = null.  No Key!");
             return null;
         }
-
-        // Check cache
-        if (NodeUtil.doPropertyCaching && cacheOkay) {
-            Object result = NodeUtil.propertyCacheGet(node, keyStr);
-            if (result != null) { // null means cache miss
-                if (result == NodeUtil.NULL_OBJECT) {
-                    if (logger.isTraceEnabled())
-                        logger.trace("getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay + ") = "
-                                        + null);
-                    return null;
-                }
-                if (logger.isDebugEnabled()) {
-                    if (logger.isTraceEnabled())
-                        logger.trace("^ cache hit!  getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay
-                                        + ") = " + result);
-                    QName qName = oIsString ? NodeUtil.createQName(keyStr, services) : (QName) key;
-                    Object result2 = services.getNodeService().getProperty(node, qName);
-                    if (result == result2 || (result != null && result2 != null && result.equals(result2))) {
-                        // cool
-                        if (logger.isTraceEnabled())
-                            logger.trace("good result = " + result + ", result2 = " + result2);
-                    } else {
-                        logger.warn("\nbad result = " + result + ", result2 = " + result2 + "\n");
-                    }
-                    if (logger.isTraceEnabled())
-                        logger.trace("getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay + ") = "
-                                        + result);
-                }
-                return result;
-            }
-        }
-
-        // Not found in cache -- get normally
         QName qName = oIsString ? NodeUtil.createQName(keyStr, services) : (QName) key;
         Object result;
         if (useFoundationalApi) {
@@ -465,9 +224,6 @@ public class NodeUtil {
         } else {
             ScriptNode sNode = new ScriptNode(node, services);
             result = sNode.getProperties().get(keyStr);
-        }
-        if (NodeUtil.doPropertyCaching && cacheOkay) {
-            NodeUtil.propertyCachePut(node, keyStr, result);
         }
         if (logger.isTraceEnabled())
             logger.trace("getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay + ") = " + result);
@@ -526,10 +282,7 @@ public class NodeUtil {
                 homes = homes.childByNamePath("/User Homes");
             }
             if (createIfNotFound && homes != null && homes.exists()) {
-                homeFolderScriptNode = homes.createFolder(userName);
-                if (homeFolderScriptNode != null)
-                    homeFolderScriptNode.getOrSetCachedVersion();
-                homes.getOrSetCachedVersion();
+                homeFolderScriptNode = homes.createFolder(userName, null, null);
             } else {
                 Debug.error("Error! No user homes folder!");
             }
@@ -635,7 +388,6 @@ public class NodeUtil {
         // Node wasnt found, so create one:
         if (artifactNode == null) {
             artifactNode = subfolder.createNode(artifactId, "cm:content");
-            subfolder.getOrSetCachedVersion();
         }
 
         if (artifactNode == null || !artifactNode.exists()) {
@@ -643,7 +395,6 @@ public class NodeUtil {
             return null;
         }
 
-        artifactNode.makeSureNodeRefIsNotFrozen();
         if (!artifactNode.hasAspect("cm:versionable")) {
             artifactNode.addAspect("cm:versionable");
         }
@@ -673,11 +424,7 @@ public class NodeUtil {
         if (base64content == null) {
             contentData = ContentData.setEncoding(contentData, "UTF-8");
         }
-        artifactNode.makeSureNodeRefIsNotFrozen();
-        artifactNode.transactionCheck();
         services.getNodeService().setProperty(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
-        NodeUtil.propertyCachePut(artifactNode.getNodeRef(), NodeUtil.getShortQName(ContentModel.PROP_CONTENT),
-                        contentData);
 
         // if only version, save dummy version so snapshots can reference
         // versioned images - need to check against 1 since if someone
@@ -685,12 +432,8 @@ public class NodeUtil {
         Object[] versionHistory = artifactNode.getEmsVersionHistory();
 
         if (versionHistory == null || versionHistory.length <= 1) {
-            artifactNode.makeSureNodeRefIsNotFrozen();
             artifactNode.createVersion("creating the version history", false);
         }
-
-        artifactNode.getOrSetCachedVersion();
-
         return artifactNode;
     }
 
@@ -756,7 +499,6 @@ public class NodeUtil {
 		// Node wasnt found, so create one:
 		if (pngNode == null) {
 			pngNode = subfolder.createNode(artifactId, "cm:content");
-			subfolder.getOrSetCachedVersion();
 		}
 
 		if (pngNode == null || !pngNode.exists()) {
@@ -764,7 +506,6 @@ public class NodeUtil {
 			return null;
 		}
 
-		pngNode.makeSureNodeRefIsNotFrozen();
 		if (!pngNode.hasAspect("cm:versionable")) {
 			pngNode.addAspect("cm:versionable");
 		}
@@ -794,12 +535,8 @@ public class NodeUtil {
 		contentData = ContentData.setMimetype(contentData,
 				EmsScriptNode.getMimeType(finalType));
 		contentData = ContentData.setEncoding(contentData, "UTF-8");
-		pngNode.makeSureNodeRefIsNotFrozen();
-		pngNode.transactionCheck();
 		services.getNodeService().setProperty(pngNode.getNodeRef(),
 				ContentModel.PROP_CONTENT, contentData);
-		NodeUtil.propertyCachePut(pngNode.getNodeRef(),
-				NodeUtil.getShortQName(ContentModel.PROP_CONTENT), contentData);
 
 		/*
 		Object[] versionHistory = pngNode.getEmsVersionHistory();
@@ -809,73 +546,9 @@ public class NodeUtil {
             pngNode.createVersion( "creating the version history", false );
         }
         */
-		pngNode.getOrSetCachedVersion();
 
 		return pngNode;
 	}
-
-    public static void clearAlfrescoNodeCache() {
-        try {
-            DbNodeServiceImpl dbNodeService = (DbNodeServiceImpl) getServiceRegistry().getNodeService();
-            Object[] emptyArray = new Object[] {};
-            Method method = ClassUtils.getMethodForArgs(NodeDAO.class, "clear", emptyArray);
-            NodeDAO nodeDao = (NodeDAO) ClassUtils.getFieldValue(dbNodeService, "nodeDAO", false);
-            MethodCall mc = new MethodCall(nodeDao, method, emptyArray);
-            mc.invoke(false);
-        } catch (Exception e) {
-            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-    }
-
-    public static void transactionCheck(Logger logger, EmsScriptNode node) {
-        if (NodeUtil.isInsideTransactionNow()) {
-            if (NodeUtil.hasBeenOutsideTransaction()) {
-                /*
-                Exception e = new Exception();
-                logger.error("In transaction when have been outside! " + node, e);
-                logger.error("Stack trace when last outside transaction:\n"
-                                + Utils.toString(getOutsideTransactionStackTrace()));
-                */
-            }
-            NodeUtil.setBeenInsideTransaction(true);
-            setInsideTransactionStackTrace();
-        } else {
-            if (NodeUtil.hasBeenInsideTransaction()) {
-                /*
-                Exception e = new Exception();
-                logger.error("Outside transaction when have been inside! " + node, e);
-                logger.error("Stack trace when last inside transaction:\n"
-                                + Utils.toString(getInsideTransactionStackTrace()));
-                */
-            }
-            NodeUtil.setBeenOutsideTransaction(true);
-            setOutsideTransactionStackTrace();
-        }
-    }
-
-    /**
-     * FIXME Recipients and senders shouldn't be hardcoded - need to have these spring injected
-     *
-     * @param subject
-     * @param msg
-     */
-    public static void sendNotificationEvent(String subject, String msg, ServiceRegistry services) {
-        // FIXME: need to base the single send on the same subject
-        if (!heisenbugSeen) {
-            String hostname = services.getSysAdminParams().getAlfrescoHost();
-
-            String sender = hostname + "@jpl.nasa.gov";
-            String recipient;
-
-            if (hostname.toLowerCase().contains("europa")) {
-                recipient = "kerzhner@jpl.nasa.gov";
-                ActionUtil.sendEmailTo(sender, recipient, msg, subject, services);
-            }
-            recipient = "mbee-dev-admin@jpl.nasa.gov";
-            ActionUtil.sendEmailTo(sender, recipient, msg, subject, services);
-            heisenbugSeen = true;
-        }
-    }
 
     public static String getHostname() {
         return services.getSysAdminParams().getAlfrescoHost();

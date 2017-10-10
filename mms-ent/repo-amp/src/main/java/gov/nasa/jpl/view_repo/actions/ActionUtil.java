@@ -118,12 +118,11 @@ public class ActionUtil {
         String logName = node.getProperty("cm:name") + ".log";
 
         // create logNode if necessary
-        EmsScriptNode parent = node.getParent(null, null, false, true);
+        EmsScriptNode parent = node.getParent();
         EmsScriptNode logNode = parent.childByNamePath(logName);
         if (logNode == null) {
             logNode = parent.createNode(logName, "cm:content");
             if (!logNode.hasAspect("cm:versionable")) {
-                logNode.makeSureNodeRefIsNotFrozen();
                 logNode.addAspect("cm:versionable");
             }
             // TODO: check if node for log is of type Job
@@ -131,16 +130,11 @@ public class ActionUtil {
         }
 
         saveStringToFile(logNode, mimeType, services, data);
-
-        node.getOrSetCachedVersion();
-        if ( logNode != null ) logNode.getOrSetCachedVersion();
-
         return logNode;
     }
 
     public static void saveStringToFile(EmsScriptNode node, String mimeType, ServiceRegistry services, String data) {
         ContentWriter writer = services.getContentService().getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
-        node.transactionCheck();
         writer.putContent(data.toString());
         setContentDataMimeType(writer, node, mimeType, services);
     }
@@ -155,10 +149,7 @@ public class ActionUtil {
     public static void setContentDataMimeType(ContentWriter writer, EmsScriptNode node, String mimetype, ServiceRegistry sr) {
         ContentData contentData = writer.getContentData();
         contentData = ContentData.setMimetype(contentData, mimetype);
-        node.makeSureNodeRefIsNotFrozen();
-        node.transactionCheck();
         sr.getNodeService().setProperty(node.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
-        NodeUtil.propertyCachePut( node.getNodeRef(), NodeUtil.getShortQName( ContentModel.PROP_CONTENT ), contentData );
     }
 
 
@@ -221,9 +212,6 @@ public class ActionUtil {
 
         jobNode.createOrUpdateProperty("ems:job_status", "Active");
 
-        jobNode.getOrSetCachedVersion();
-        jobPkgNode.getOrSetCachedVersion();
-
         // set the owner to original user say they can modify
         jobNode.setOwner( AuthenticationUtil.getFullyAuthenticatedUser() );
 
@@ -255,9 +243,8 @@ public class ActionUtil {
 
         EmsScriptNode jobPkgNode = contextFolder.childByNamePath("Jobs");
         if (jobPkgNode == null) {
-            jobPkgNode = contextFolder.createFolder("Jobs", "cm:folder");
+            jobPkgNode = contextFolder.createFolder("Jobs", "cm:folder", null);
             jobPkgNode.setPermission( "SiteCollaborator", "GROUP_EVERYONE" );
-            contextFolder.getOrSetCachedVersion();
         }
 
         if (jobPkgNode != null) {

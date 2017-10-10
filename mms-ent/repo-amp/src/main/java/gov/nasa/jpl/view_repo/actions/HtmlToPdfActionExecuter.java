@@ -184,9 +184,6 @@ public class HtmlToPdfActionExecuter extends ActionExecuterAbstractBase {
 	protected void clearCache() {
 		response = new StringBuffer();
 		responseStatus = new Status();
-		NodeUtil.setBeenInsideTransaction(false);
-		NodeUtil.setBeenOutsideTransaction(false);
-		NodeUtil.setInsideTransactionNow(false);
 	}
 
 	@Override

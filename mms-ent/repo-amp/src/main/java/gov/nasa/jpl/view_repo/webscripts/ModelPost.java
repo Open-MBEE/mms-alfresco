@@ -254,42 +254,32 @@ public class ModelPost extends AbstractJavaWebScript {
                         // Update or create the artifact if possible:
                         if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
 
-                            new EmsTransaction(this.services, this.response, this.responseStatus) {
-                                @Override public void run() throws Exception {
-                                    svgArtifact = NodeUtil.updateOrCreateArtifact(artifactId, extension, null, content,
-                                        siteName, projectId, refId, null, response, null, false);
-                                }
-                            };
+                            svgArtifact = NodeUtil
+                                .updateOrCreateArtifact(artifactId, extension, null, content, siteName, projectId,
+                                    refId, null, response, null, false);
 
                             if (svgArtifact == null) {
                                 logger.error("Was not able to create the artifact!\n");
                                 model.put(Sjm.RES, createResponseJson());
                             } else {
                                 resultJson.put("upload", svgArtifact);
-                                svgArtifact.getOrSetCachedVersion();
                                 if (!NodeUtil.skipSvgToPng) {
                                     try {
                                         Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
                                         pngPath = svgToPng(svgPath);
 
-                                        new EmsTransaction(this.services, this.response, this.responseStatus) {
-
-                                            @Override public void run() throws Exception {
-                                                try {
-                                                    pngArtifact = NodeUtil
-                                                        .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName,
-                                                            projectId, refId, null, response, null, false);
-                                                } catch (Throwable ex) {
-                                                    throw new Exception("Failed to convert SVG to PNG!\n");
-                                                }
-                                            }
-                                        };
+                                        try {
+                                            pngArtifact = NodeUtil
+                                                .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName,
+                                                    projectId, refId, null, response, null, false);
+                                        } catch (Throwable ex) {
+                                            throw new Exception("Failed to convert SVG to PNG!\n");
+                                        }
 
                                         if (pngArtifact == null) {
                                             logger.error("Failed to convert SVG to PNG!\n");
                                         } else {
                                             synchSvgAndPngVersions(svgArtifact, pngArtifact);
-                                            pngArtifact.getOrSetCachedVersion();
                                         }
                                         Files.deleteIfExists(svgPath);
                                         Files.deleteIfExists(pngPath);
@@ -379,7 +369,6 @@ public class ModelPost extends AbstractJavaWebScript {
         int pngVerLen = pngNode.getEmsVersionHistory().length;
 
         while (pngVersion < svgVersion || pngVerLen < svgVerLen) {
-            pngNode.makeSureNodeRefIsNotFrozen();
             pngNode.createVersion("creating the version history", false);
             pngVer = pngNode.getCurrentVersion();
             pngVerLabel = pngVer.getVersionLabel();
