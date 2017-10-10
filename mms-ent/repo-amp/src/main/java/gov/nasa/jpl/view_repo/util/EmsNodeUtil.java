@@ -457,27 +457,29 @@ public class EmsNodeUtil {
     public JSONArray getDocJson(String sysmlId, String commitId, boolean extended, int depth) {
 
         JSONArray result = new JSONArray();
-        List<Node> docNodes = pgh.getNodesByType(DbNodeTypes.DOCUMENT);
         List<String> docElasticIds = new ArrayList<>();
-        Map<String, String> docSysml2Elastic = new HashMap<>();
-        for (Node node : docNodes) {
-            docSysml2Elastic.put(node.getSysmlId(), node.getElasticId());
-        }
+
 
         if (sysmlId != null) {//:TODO fix logic recusively find children of passed param sysmlid, but not children of another group
             // nodes of "type" : "sitepackage" are groups
             // if the document has a parent that has a sitepackage parent, then it shouldn't be included
-            List<Pair<String, String>> siteChildren = pgh.getChildren(sysmlId, DbEdgeTypes.CONTAINMENT, depth);
-            Set<String> siteChildrenIds = new HashSet<>();
-            for (Pair<String, String> child : siteChildren) {
-                siteChildrenIds.add(child.first);
-            }
-            for (String docSysmlId : docSysml2Elastic.keySet()) {
-                if (siteChildrenIds.contains(docSysmlId)) {
-                    docElasticIds.add(docSysml2Elastic.get(docSysmlId));
-                }
-            }
+//            List<Pair<String, String>> siteChildren = pgh.getChildren(sysmlId, DbEdgeTypes.CONTAINMENT, depth);
+//            Set<String> siteChildrenIds = new HashSet<>();
+//            for (Pair<String, String> child : siteChildren) {
+//                siteChildrenIds.add(child.first);
+//            }
+//            for (String docSysmlId : docSysml2Elastic.keySet()) {
+//                if (siteChildrenIds.contains(docSysmlId)) {
+//                    docElasticIds.add(docSysml2Elastic.get(docSysmlId));
+//                }
+//            }
+            return null;
         } else {// logic is fine here
+            List<Node> docNodes = pgh.getNodesByType(DbNodeTypes.DOCUMENT);
+            Map<String, String> docSysml2Elastic = new HashMap<>();
+            for (Node node : docNodes) {
+                docSysml2Elastic.put(node.getSysmlId(), node.getElasticId());
+            }
             docElasticIds.addAll(docSysml2Elastic.values());
         }
 

@@ -93,21 +93,10 @@ public class ProductsGet extends AbstractJavaWebScript {
 
         // :TODO write a recursive function to find children in the  given current groupId
 
-        //int trueDepth = groupId != null ? () : 10000;
-        return null;
+        int trueDepth = groupId != null ? 1 : 10000;
 
-//        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, commitId,
-//            extended != null && extended.equals("true"), trueDepth);
+        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, commitId,
+            extended != null && extended.equals("true"), trueDepth);
     }
-    /**
-     * Wrapper for handling a request and getting the appropriate Commit JSONObject
-     *
-     * @param req
-     * @return
-     */
-//    private JSONArray getGroup(WebScriptRequest req, String projectId, String refId) {
-//        return null;
-//    }
-
 
 }
