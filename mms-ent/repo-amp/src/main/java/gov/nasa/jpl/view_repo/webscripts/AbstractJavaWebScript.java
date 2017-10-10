@@ -118,41 +118,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         final Cache cache);
 
 
-    // Don't use this - we don't need to handle transactions any more
-    @Deprecated protected Map<String, Object> executeImplImpl(final WebScriptRequest req, final Status status,
-        final Cache cache, boolean withoutTransactions) {
-
-        final Map<String, Object> model = new HashMap<>();
-
-        if (checkMmsVersions) {
-            if (compareMmsVersions(req, getResponse(), status)) {
-                model.put(Sjm.RES, createResponseJson());
-                return model;
-            }
-        }
-
-        new EmsTransaction(getServices(), getResponse(), getResponseStatus(), withoutTransactions) {
-            @Override public void run() throws Exception {
-                Map<String, Object> m = executeImplImpl(req, status, cache);
-                if (m != null) {
-                    model.putAll(m);
-                }
-            }
-        };
-        if (!model.containsKey(Sjm.RES) && response != null && response.toString().length() > 0) {
-            model.put(Sjm.RES, response.toString());
-
-        }
-        // need to check if the transaction resulted in rollback, if so change the status code
-        // TODO: figure out how to get the response message in (response is always empty)
-        if (getResponseStatus().getCode() != HttpServletResponse.SC_ACCEPTED) {
-            status.setCode(getResponseStatus().getCode());
-        }
-
-        return model;
-    }
-
-
     /**
      * Parse the request and do validation checks on request
      * TODO: Investigate whether or not to deprecate and/or remove

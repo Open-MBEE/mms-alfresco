@@ -254,12 +254,9 @@ public class ModelPost extends AbstractJavaWebScript {
                         // Update or create the artifact if possible:
                         if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
 
-                            new EmsTransaction(this.services, this.response, this.responseStatus) {
-                                @Override public void run() throws Exception {
-                                    svgArtifact = NodeUtil.updateOrCreateArtifact(artifactId, extension, null, content,
-                                        siteName, projectId, refId, null, response, null, false);
-                                }
-                            };
+                            svgArtifact = NodeUtil
+                                .updateOrCreateArtifact(artifactId, extension, null, content, siteName, projectId,
+                                    refId, null, response, null, false);
 
                             if (svgArtifact == null) {
                                 logger.error("Was not able to create the artifact!\n");
@@ -271,18 +268,13 @@ public class ModelPost extends AbstractJavaWebScript {
                                         Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
                                         pngPath = svgToPng(svgPath);
 
-                                        new EmsTransaction(this.services, this.response, this.responseStatus) {
-
-                                            @Override public void run() throws Exception {
-                                                try {
-                                                    pngArtifact = NodeUtil
-                                                        .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName,
-                                                            projectId, refId, null, response, null, false);
-                                                } catch (Throwable ex) {
-                                                    throw new Exception("Failed to convert SVG to PNG!\n");
-                                                }
-                                            }
-                                        };
+                                        try {
+                                            pngArtifact = NodeUtil
+                                                .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName,
+                                                    projectId, refId, null, response, null, false);
+                                        } catch (Throwable ex) {
+                                            throw new Exception("Failed to convert SVG to PNG!\n");
+                                        }
 
                                         if (pngArtifact == null) {
                                             logger.error("Failed to convert SVG to PNG!\n");

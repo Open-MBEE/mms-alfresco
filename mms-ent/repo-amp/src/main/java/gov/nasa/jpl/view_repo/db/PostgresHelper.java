@@ -2219,4 +2219,20 @@ public class PostgresHelper implements GraphInterface {
     private String sanitizeRefId(String refId) {
         return refId.replace("-", "_").replaceAll("\\s+", "");
     }
+
+    public boolean isLocked() {
+        try {
+            String query = "SELECT id FROM queue WHERE refId = ";
+            ResultSet rs = execQuery(query);
+            while(rs.next()) {
+                if (rs.getInt(1) > 0) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+
+        return false;
+    }
 }
