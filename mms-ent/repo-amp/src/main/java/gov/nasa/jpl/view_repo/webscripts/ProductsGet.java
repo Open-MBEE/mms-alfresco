@@ -92,6 +92,7 @@ public class ProductsGet extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         // :TODO write a recursive function to find children in the  given current groupId
+        // pass a depth of one and see if the result is correct
 
         int trueDepth = groupId != null ? 1 : 10000;
 
