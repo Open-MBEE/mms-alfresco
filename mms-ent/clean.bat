@@ -30,6 +30,6 @@ echo "Dropping previous databases"
 
 Call repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms_mappings.bat
 rmdir alf_data_dev /s /q
-rem too lazy to cleanly check for the existence of maven in your path :P 
+rem too lazy to cleanly check for the existence of maven in your path :P
 rem TODO: fix this
-mvn clean -Ppurge
+mvnw.cmd clean -Ddependency.surf.version=6.3 -Ppurge

@@ -461,7 +461,9 @@ public class EmsNodeUtil {
         List<String> docElasticIds = new ArrayList<>();
         Map<String, String> docSysml2Elastic = new HashMap<>();
         for (Node node : docNodes) {
-            docSysml2Elastic.put(node.getSysmlId(), node.getElasticId());
+            if (!node.isDeleted()) {
+                docSysml2Elastic.put(node.getSysmlId(), node.getElasticId());
+            }
         }
 
         if (sysmlId != null) {
