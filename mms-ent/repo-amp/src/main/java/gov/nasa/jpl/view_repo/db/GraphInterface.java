@@ -167,7 +167,7 @@ public interface GraphInterface {
 
     boolean isTag(String refId);
 
-    void updateTag(String name, String elasticId, String id);
+    void setAsTag(String refId);
 
     void deleteRef(String id);
 

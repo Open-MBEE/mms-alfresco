@@ -3,10 +3,21 @@ package gov.nasa.jpl.view_repo.util;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.StampedLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,10 +65,10 @@ public class CommitUtil {
 
     private static final String HOLDING_BIN_PREFIX = "holding_bin_";
 
-    public static boolean cleanJson = false;
     private static ElasticHelper eh = null;
-
     private static JmsConnection jmsConnection = null;
+
+    private Map<String, LinkedList<LinkedBlockingDeque<String>>> commitQueue = new HashMap<>();
 
     public static void setJmsConnection(JmsConnection jmsConnection) {
         if (logger.isInfoEnabled()) {
@@ -751,6 +762,9 @@ public class CommitUtil {
             logger.info(String.format("Starting branch %s started by %s", created.getString(Sjm.SYSMLID),
                 created.optString(Sjm.CREATOR)));
 
+            boolean hasCommit = (commitId != null && !commitId.isEmpty());
+            boolean success = false;
+
             String srcId = src.optString(Sjm.SYSMLID);
 
             PostgresHelper pgh = new PostgresHelper();
@@ -758,7 +772,7 @@ public class CommitUtil {
             pgh.setWorkspace(srcId);
 
             try {
-                boolean hasCommit = (commitId != null && !commitId.isEmpty());
+
                 pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId,
                     commitId, isTag);
                 eh = new ElasticHelper();
@@ -801,6 +815,8 @@ public class CommitUtil {
                 eh.bulkUpdateElements(elementsToUpdate, payload, projectId);
                 created.put("status", "created");
 
+                success = true;
+
             } catch (Exception e) {
                 created.put("status", "failed");
                 if (logger.isDebugEnabled()) {
@@ -814,6 +830,10 @@ public class CommitUtil {
                 if (logger.isDebugEnabled()) {
                     logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
                 }
+            }
+
+            if (success && isTag && hasCommit) {
+                pgh.setAsTag(created.getString(Sjm.SYSMLID));
             }
 
             branchJson.put("createdRef", created);
