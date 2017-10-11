@@ -223,7 +223,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 return null;
             } else {
                 EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs");
-                EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId);
+                EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId, null, null);
 
                 if (dstWs != null) {
                     // keep history of the branch

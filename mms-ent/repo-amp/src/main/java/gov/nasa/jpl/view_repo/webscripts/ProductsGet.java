@@ -86,7 +86,6 @@ public class ProductsGet extends AbstractJavaWebScript {
         String commitId = req.getParameter("commitId");
         String refId = getRefId(req);
         String projectId = getProjectId(req);
-        String extended = req.getParameter("extended");
         String groupId = req.getServiceMatch().getTemplateVars().get("groupId");
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
@@ -96,8 +95,7 @@ public class ProductsGet extends AbstractJavaWebScript {
 
         int trueDepth = groupId != null ? 1 : 10000;
 
-        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, commitId,
-            extended != null && extended.equals("true"), trueDepth);
+        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, commitId,false, trueDepth);
     }
 
 }
