@@ -22,14 +22,14 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
-public class ProductsGet extends AbstractJavaWebScript {
-    static Logger logger = Logger.getLogger(ProductsGet.class);
+public class DocumentsGet extends AbstractJavaWebScript {
+    static Logger logger = Logger.getLogger(DocumentsGet.class);
 
-    public ProductsGet() {
+    public DocumentsGet() {
         super();
     }
 
-    public ProductsGet(Repository repository, ServiceRegistry services) {
+    public DocumentsGet(Repository repository, ServiceRegistry services) {
         this.repository = repository;
         this.services = services;
     }
@@ -40,7 +40,7 @@ public class ProductsGet extends AbstractJavaWebScript {
     }
 
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
-        ProductsGet instance = new ProductsGet(repository, getServices());
+        DocumentsGet instance = new DocumentsGet(repository, getServices());
         return instance.executeImplImpl(req, status, cache);
     }
 
