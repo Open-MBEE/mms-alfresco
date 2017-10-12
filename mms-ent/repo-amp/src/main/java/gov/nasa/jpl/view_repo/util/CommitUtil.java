@@ -21,7 +21,10 @@ import java.util.concurrent.locks.StampedLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Logger;
@@ -32,6 +35,7 @@ import org.json.JSONObject;
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.TimeUtils;
+import gov.nasa.jpl.view_repo.actions.ActionUtil;
 import gov.nasa.jpl.view_repo.connections.JmsConnection;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
@@ -840,6 +844,17 @@ public class CommitUtil {
             sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
             logger.info(String.format("Finished branch %s started by %s finished at %s", created.getString(Sjm.SYSMLID),
                 created.optString(Sjm.CREATOR), timer));
+
+            String msg = String.format("Branch %s started by %s has finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer);
+            String subject = String.format("Branch %s has finished at %s", created.getString(Sjm.SYSMLID), timer);
+            ServiceRegistry services = NodeUtil.getServices();
+            NodeRef person = services.getPersonService().getPersonOrNull(AuthenticationUtil.getFullyAuthenticatedUser());
+
+            if (person != null) {
+                String recipient = services.getNodeService().getProperty(person, ContentModel.PROP_EMAIL).toString();
+                String sender = EmsConfig.get("app.email.from");
+                ActionUtil.sendEmailTo(sender, recipient, msg, subject, services);
+            }
         });
         executor.shutdown();
 
