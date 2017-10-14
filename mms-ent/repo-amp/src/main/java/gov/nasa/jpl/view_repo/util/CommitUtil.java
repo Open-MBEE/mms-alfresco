@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.postgresql.util.PSQLException;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.Timer;
@@ -623,7 +624,8 @@ public class CommitUtil {
         return true;
     }
 
-    public static void sendOrganizationDelta(String orgId, String orgName, String user) {
+    public static void sendOrganizationDelta(String orgId, String orgName, String user) throws PSQLException 
+    {
         PostgresHelper pgh = new PostgresHelper();
         pgh.createOrganization(orgId, orgName);
     }

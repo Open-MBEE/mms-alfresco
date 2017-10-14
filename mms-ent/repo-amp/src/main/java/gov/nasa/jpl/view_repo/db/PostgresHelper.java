@@ -1466,7 +1466,8 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
-    public int createOrganization(String orgId, String orgName) {
+    public int createOrganization(String orgId, String orgName) 
+    	throws PSQLException {
         int recordId = 0;
         try {
             connectConfig();
@@ -1487,7 +1488,7 @@ public class PostgresHelper implements GraphInterface {
             ServerErrorMessage em = pe.getServerErrorMessage();
             // Do nothing for duplicate found
             if (!em.getConstraint().equals("unique_organizations")) {
-                logger.error(String.format("%s:%s", LogUtil.getStackTrace(pe), em));
+                throw pe;
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
