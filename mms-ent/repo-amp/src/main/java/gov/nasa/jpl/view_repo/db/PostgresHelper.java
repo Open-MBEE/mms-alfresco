@@ -22,6 +22,7 @@ import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
 
 public class PostgresHelper implements GraphInterface {
     static Logger logger = Logger.getLogger(PostgresHelper.class);
@@ -1483,7 +1484,11 @@ public class PostgresHelper implements GraphInterface {
                 }
             }
         } catch (PSQLException pe) {
+            ServerErrorMessage em = pe.getServerErrorMessage();
             // Do nothing for duplicate found
+            if (!em.getConstraint().equals("unique_organizations")) {
+                logger.error(String.format("%s:%s", LogUtil.getStackTrace(pe), em));
+            }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
