@@ -232,7 +232,10 @@ public class CommitUtil {
                     if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                         createOrUpdateSiteChar(e, projectId, refId, services);
                     }
-
+                    String type = e.optString(Sjm.TYPE);
+                    if (type.equals("Slot") || type.equals("Property") || type.equals("Port")) {
+                        processValueEdges(e, viewEdges);
+                    }
                     if (e.has(Sjm.CONTENTS)) {
                         JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
@@ -255,9 +258,9 @@ public class CommitUtil {
                         }
                     }
                     if (isPartProperty(e)) {
-                        String type = e.optString(Sjm.TYPEID);
-                        if (type != null) {
-                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), type);
+                        String typeid = e.optString(Sjm.TYPEID);
+                        if (typeid != null) {
+                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), typeid);
                             childViewEdges.add(p);
                         }
                     }
@@ -291,7 +294,10 @@ public class CommitUtil {
                     if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                         createOrUpdateSiteChar(e, projectId, refId, services);
                     }
-
+                    String type = e.optString(Sjm.TYPE);
+                    if (type.equals("Slot") || type.equals("Property") || type.equals("Port")) {
+                        processValueEdges(e, viewEdges);
+                    }
                     if (e.has(Sjm.CONTENTS)) {
                         JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
@@ -314,9 +320,9 @@ public class CommitUtil {
                         }
                     }
                     if (isPartProperty(e)) {
-                        String type = e.optString(Sjm.TYPEID);
-                        if (type != null) {
-                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), type);
+                        String typeid = e.optString(Sjm.TYPEID);
+                        if (typeid != null) {
+                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), typeid);
                             childViewEdges.add(p);
                         }
                     }
@@ -473,7 +479,10 @@ public class CommitUtil {
             if (doc != null && !doc.equals("")) {
                 processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
             }
-
+            String type = e.optString(Sjm.TYPE);
+            if (type.equals("Slot") || type.equals("Property") || type.equals("Port")) {
+                processValueEdges(e, viewEdges);
+            }
             if (e.has(Sjm.CONTENTS)) {
                 JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                 if (contents != null) {
@@ -496,9 +505,9 @@ public class CommitUtil {
                 }
             }
             if (isPartProperty(e)) {
-                String type = e.optString(Sjm.TYPEID);
-                if (type != null) {
-                    Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), type);
+                String typeid = e.optString(Sjm.TYPEID);
+                if (typeid != null) {
+                    Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), typeid);
                     childViewEdges.add(p);
                 }
             }
@@ -920,16 +929,33 @@ public class CommitUtil {
         return false;
     }
 
-    private static Pattern pattern = Pattern.compile("<mms-cf.*mms-element-id=\"([^\"]*)\"");
+    private static Pattern pattern = Pattern.compile("<mms-cf.*?mms-element-id=\"([^\"]+)\"");
+
+    public static void processValueEdges(JSONObject element, List<Pair<String, String>> edges) {
+        JSONObject defaultValue = element.optJSONObject(Sjm.DEFAULTVALUE);
+        JSONArray slotValues = element.optJSONArray("value");
+        if (defaultValue != null && defaultValue.optString(Sjm.TYPE).equals("LiteralString")) {
+            processDocumentEdges(element.getString(Sjm.SYSMLID), defaultValue.optString("value"), edges);
+        }
+        if (slotValues != null) {
+            for (int i = 0; i < slotValues.length(); i++) {
+                JSONObject val = slotValues.optJSONObject(i);
+                if (val != null && val.optString(Sjm.TYPE).equals("LiteralString")) {
+                    processDocumentEdges(element.getString(Sjm.SYSMLID), val.optString("value"), edges);
+                }
+            }
+        }
+    }
 
     public static void processDocumentEdges(String sysmlid, String doc, List<Pair<String, String>> documentEdges) {
         if (doc != null) {
             Matcher matcher = pattern.matcher(doc);
 
             while (matcher.find()) {
-                String mmseid = matcher.group(1).replace("\"", "");
-                if (mmseid != null)
+                String mmseid = matcher.group(1);
+                if (mmseid != null) {
                     documentEdges.add(new Pair<>(sysmlid, mmseid));
+                }
             }
         }
     }
@@ -956,10 +982,18 @@ public class CommitUtil {
                 String string = iss.getString("value");
                 try {
                     JSONObject json = new JSONObject(string);
-                    Set<Object> sources = findKeyValueInJsonObject(json, "source");
+                    StringBuilder text = new StringBuilder();
+                    Set<Object> sources = findKeyValueInJsonObject(json, "source", text);
                     for (Object source : sources) {
                         if (source instanceof String) {
                             documentEdges.add(new Pair<>(sysmlId, (String) source));
+                        }
+                    }
+                    Matcher matcher = pattern.matcher(text);
+                    while (matcher.find()) {
+                        String mmseid = matcher.group(1);
+                        if (mmseid != null) {
+                            documentEdges.add(new Pair<>(sysmlId, mmseid));
                         }
                     }
                 } catch (JSONException ex) {
@@ -969,31 +1003,34 @@ public class CommitUtil {
         }
     }
 
-    public static Set<Object> findKeyValueInJsonObject(JSONObject json, String keyMatch) {
+    public static Set<Object> findKeyValueInJsonObject(JSONObject json, String keyMatch, StringBuilder text) {
         Set<Object> result = new HashSet<>();
         Iterator<?> keys = json.keys();
         while (keys.hasNext()) {
             String key = (String) keys.next();
             Object value = json.get(key);
+            if (key.equals("text")) {
+                text.append(value);
+            }
             if (key.equals(keyMatch)) {
                 result.add(value);
             } else if (value instanceof JSONObject) {
-                result.addAll(findKeyValueInJsonObject((JSONObject) value, keyMatch));
+                result.addAll(findKeyValueInJsonObject((JSONObject) value, keyMatch, text));
             } else if (value instanceof JSONArray) {
-                result.addAll(findKeyValueInJsonArray((JSONArray) value, keyMatch));
+                result.addAll(findKeyValueInJsonArray((JSONArray) value, keyMatch, text));
             }
         }
         return result;
     }
 
-    public static Set<Object> findKeyValueInJsonArray(JSONArray jsonArray, String keyMatch) {
+    public static Set<Object> findKeyValueInJsonArray(JSONArray jsonArray, String keyMatch, StringBuilder text) {
         Set<Object> result = new HashSet<>();
 
         for (int ii = 0; ii < jsonArray.length(); ii++) {
             if (jsonArray.get(ii) instanceof JSONObject) {
-                result.addAll(findKeyValueInJsonObject((JSONObject) jsonArray.get(ii), keyMatch));
+                result.addAll(findKeyValueInJsonObject((JSONObject) jsonArray.get(ii), keyMatch, text));
             } else if (jsonArray.get(ii) instanceof JSONArray) {
-                result.addAll(findKeyValueInJsonArray((JSONArray) jsonArray.get(ii), keyMatch));
+                result.addAll(findKeyValueInJsonArray((JSONArray) jsonArray.get(ii), keyMatch, text));
             }
         }
 
