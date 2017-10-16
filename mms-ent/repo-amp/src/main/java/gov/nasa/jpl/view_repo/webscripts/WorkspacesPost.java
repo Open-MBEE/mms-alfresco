@@ -231,12 +231,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                     dstWs.setProperty("cm:title", dstWs.getId() + "_" + srcId);
                     dstWs.setProperty("cm:name", dstWs.getName());
 
-                    dstWs.addAspect("ems:HasWorkspace");
-                    dstWs.setProperty("ems:workspace", dstWs.getNodeRef());
-
-                    dstWs.addAspect("ems:Workspace");
-                    dstWs.setProperty("ems:workspace_name", newWorkspaceId);
-
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
                         jsonObject != null ? jsonObject.optString("source") : null, commitId);
 
