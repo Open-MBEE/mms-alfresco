@@ -6,46 +6,35 @@ FROM dank/alpine-jdk-tomcat:0.1
 
 MAINTAINER Dan Karlsson <dan.e.karlsson@jpl.nasa.gov>
 
-# Debugging and environment set up
-RUN echo $JAVA_HOME
+ENV POSTGRES_HOST localhost
+ENV ALFRESCO_HOME /usr/local/tomcat
+ENV ALF_DATA_DIR /mnt/alf_data
+ENV CONFIG_DIR /usr/local/config
 
 
 # Set the working directory to be the tomcat home dir
-WORKDIR /usr/local/tomcat
+WORKDIR /usr/local
 
+COPY config /usr/local/config
+COPY config/config_alfresco.sh .
+COPY config/run.sh tomcat/bin
 
-# Copy AMP files over
-VOLUME view-repo-5.0/alf_data_dev
+# Download the community zip files
+RUN wget --no-check-certificate "https://download.alfresco.com/release/community/201605-build-00010/alfresco-community-distribution-201605.zip" \
+    && chmod +x config_alfresco.sh \
+    && chmod +x tomcat/bin/run.sh \
+    && ./config_alfresco.sh
 
-# The alfresco-tomcat Directory : opt/alfresco-5.0.d/tomcat/webapps/
-# RUN rm /opt/alfresco-5.0.d/tomcat/webapps/alfresco/WEB-INF/classes/alfresco-global.properties
+RUN cp ${CONFIG_DIR}/alfresco-global.properties tomcat/shared/classes/ \
+    && cp ${CONFIG_DIR}/catalina.properties tomcat/conf/ \
+    && cp ${CONFIG_DIR}/solr4-context.xml tomcat/conf/Catalina/localhost/solr4.xml \
+    && cp ${CONFIG_DIR}/tomcat-server.xml tomcat/conf/server.xml
 
-RUN mkdir -p /usr/local/tomat/shared/classes \
-    && rm -rf /usr/local/tomcat/webapps \
-    && mkdir -p /usr/local/tomcat/webapps
+RUN addgroup -S tomcat \
+    && adduser -S -g tomcat tomcat \
+    && chown -R tomcat:tomcat /usr/local/tomcat \
+    && mkdir -p /mnt/alf_data/solr4 \
+    && chown -R tomcat:tomcat /mnt/alf_data
 
-COPY classes/* /usr/local/tomcat/shared/classes/
-RUN ls /usr/local/tomcat/shared/classes/
-
-COPY properties/catalina.properties /usr/local/tomcat/conf/
-RUN ls /usr/local/tomcat/conf
-
-# Basic Alfresco war files
-COPY wars/alfresco/ROOT.war /usr/local/tomcat/webapps
-COPY wars/alfresco/alfresco.war /usr/local/tomcat/webapps
-COPY wars/alfresco/solr4.war /usr/local/tomcat/webapps
-RUN ls /usr/local/tomcat/webapps
-
-# Custom MMS Repo and Share war files
-COPY wars/mms/repo.3-31-16.war /usr/local/tomcat/webapps/repo.war
-COPY wars/mms/share.3-31-16.war /usr/local/tomcat/webapps/share.war
-RUN ls /usr/local/tomcat/webapps
-
-COPY jars/postgresql-9.4-1201-jdbc41.jar /user/local/tomcat/lib/postgresql-9.4-1201-jdbc41.jar
-COPY jars/h2-1.4.191.jar /user/local/tomcat/lib/h2-1.4.191.jar
-
-
-# Don't think these commands are needed at the moment.
-# RUN mkdir -p /usr/local/tomcat/webapps/alfresco-solr4 \
-#     && mkdir -p /usr/local/tomcat/webapps/repo \
-#     && mkdir -p /usr/local/tomcat/webapps/share
+EXPOSE 8080
+CMD ["tomcat/bin/run.sh"]
