@@ -254,7 +254,7 @@ create or replace function get_paths_to_node(integer, integer, text)
   end;
 $$ language plpgsql;
 -- Gets documents by the group level
-CREATE OR REPLACE FUNCTION get_group(integer, integer, text, integer, integer)
+CREATE OR REPLACE FUNCTION get_group_docs(integer, integer, text, integer, integer, integer)
     RETURNS table(id bigint) AS $$
     BEGIN
         RETURN query
@@ -267,7 +267,7 @@ CREATE OR REPLACE FUNCTION get_group(integer, integer, text, integer, integer)
             from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and
             edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || '
         )
-        select distinct nid from children;' ;
+        select distinct nid from children where nodetype = ' || $6 || ';' ;
     END;
 $$ language plpgsql;
 

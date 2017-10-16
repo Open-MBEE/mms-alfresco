@@ -93,7 +93,7 @@ public class DocumentsGet extends AbstractJavaWebScript {
         // :TODO write a recursive function to find children in the  given current groupId
         // pass a depth of one and see if the result is correct
 
-        int trueDepth = groupId != null ? 2 : 10000;
+        int trueDepth = 10000;
 
         return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, commitId,false, trueDepth);
     }

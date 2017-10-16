@@ -1380,6 +1380,30 @@ public class PostgresHelper implements GraphInterface {
         return result;
     }
 
+    // returns list of elasticId
+    public List<Pair<String, String>> getGroupDocuments(String sysmlId, DbEdgeTypes et, int depth, DbNodeTypes nt) {
+        List<Pair<String, String>> result = new ArrayList<>();
+        try {
+            Node n = getNodeFromSysmlId(sysmlId);
+
+            if (n == null)
+                return result;
+
+            ResultSet rs = execQuery(
+                "SELECT sysmlId, elasticId FROM \"nodes" + workspaceId + "\" WHERE id IN (SELECT id FROM get_group_docs("
+                    + n.getId() + ", " + et.getValue() + ", '" + workspaceId + "', " + depth + ", '" + nt + ", '" + DbNodeTypes.DOCUMENT + " ))");
+
+            while (rs.next()) {
+                result.add(new Pair<>(rs.getString(1), rs.getString(2)));
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return result;
+    }
+
     public void deleteEdgesForNode(String sysmlId) {
         try {
             Node n = getNodeFromSysmlId(sysmlId);

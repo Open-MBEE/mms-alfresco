@@ -462,7 +462,7 @@ public class EmsNodeUtil {
         if (sysmlId != null) {//:TODO fix logic recusively find children of passed param sysmlid, but not children of another group
             // nodes of "type" : "sitepackage" are groups
             // if the document has a parent that has a sitepackage parent, then it shouldn't be included
-            List<Pair<String, String>> siteChildren = pgh.getChildren(sysmlId, DbEdgeTypes.CONTAINMENT, depth);
+            List<Pair<String, String>> siteChildren = pgh.getGroupDocuments(sysmlId, DbEdgeTypes.CONTAINMENT, depth, DbNodeTypes.SITEANDPACKAGE);
             Set<String> siteChildrenIds = new HashSet<>();
             for (Pair<String, String> child : siteChildren) {
                 siteChildrenIds.add(child.first);
