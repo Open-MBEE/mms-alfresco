@@ -1466,7 +1466,7 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
-    public int createOrganization(String orgId, String orgName) 
+    public int createOrganization(String orgId, String orgName)
     	throws PSQLException {
         int recordId = 0;
         try {
@@ -1810,8 +1810,7 @@ public class PostgresHelper implements GraphInterface {
                 childWorkspaceNameSanitized, childWorkspaceNameSanitized));
 
             if (isTag && (commitId == null || commitId.isEmpty())) {
-                execUpdate(String.format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s",
-                    childWorkspaceNameSanitized, EmsConfig.get("pg.user")));
+                setAsTag(childWorkspaceNameSanitized);
             }
 
         } catch (SQLException e) {
@@ -1853,6 +1852,8 @@ public class PostgresHelper implements GraphInterface {
             execUpdate(String
                 .format("UPDATE refs SET tag = true WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false",
                     sanitizeRefId(refId)));
+            execUpdate(String.format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s",
+                sanitizeRefId(refId), EmsConfig.get("pg.user")));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
