@@ -353,6 +353,16 @@ public class EmsNodeUtil {
         return getChildren(sysmlid, DbEdgeTypes.CONTAINMENT, maxDepth);
     }
 
+    public JSONArray getChildrenIds(String sysmlid, DbEdgeTypes dbEdge, final Long maxDepth) {
+        JSONArray children = new JSONArray();
+        int depth = maxDepth == null ? 100000 : maxDepth.intValue();
+
+        for (Pair<String, String> childId : pgh.getChildren(sysmlid, dbEdge, depth)) {
+            children.put(childId.first);
+        }
+        return children;
+    }
+
     public JSONArray getChildren(String sysmlid, DbEdgeTypes dbEdge, final Long maxDepth) {
         Set<String> children = new HashSet<>();
 
