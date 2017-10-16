@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.postgresql.util.PSQLException;
+
 public interface GraphInterface {
     String LASTCOMMIT = "lastCommit";
     String INITIALCOMMIT = "initialCommit";
@@ -157,7 +159,7 @@ public interface GraphInterface {
 
     void deleteEdges(String parentSysmlId, String childSysmlId, DbEdgeTypes dbet);
 
-    int createOrganization(String orgId, String orgName);
+    int createOrganization(String orgId, String orgName) throws PSQLException;
 
     void createProjectDatabase(String projectId, String orgId, String name, String location);
 
@@ -167,7 +169,7 @@ public interface GraphInterface {
 
     boolean isTag(String refId);
 
-    void updateTag(String name, String elasticId, String id);
+    void setAsTag(String refId);
 
     void deleteRef(String id);
 

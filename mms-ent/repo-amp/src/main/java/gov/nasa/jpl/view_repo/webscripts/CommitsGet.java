@@ -1,10 +1,10 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
-import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -17,10 +17,10 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import gov.nasa.jpl.mbee.util.Timer;
+import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.LogUtil;
 
 /**
  * @author dank
@@ -117,13 +117,13 @@ public class CommitsGet extends AbstractJavaWebScript {
         }
         logger.info("Commit ID " + commitId + " found");
 
-        try {
-            ElasticHelper eh = new ElasticHelper();
-            commitJson.put(emsNodeUtil.getCommitObject(commitId));
-        } catch (IOException e) {
+        JSONObject commitObject = emsNodeUtil.getCommitObject(commitId);
+
+        if (commitObject == null) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not insert into ElasticSearch");
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
+
+        commitJson.put(commitObject);
 
         return commitJson;
     }

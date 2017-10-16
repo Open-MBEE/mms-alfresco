@@ -22,6 +22,7 @@ import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
 
 public class PostgresHelper implements GraphInterface {
     static Logger logger = Logger.getLogger(PostgresHelper.class);
@@ -1465,7 +1466,8 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
-    public int createOrganization(String orgId, String orgName) {
+    public int createOrganization(String orgId, String orgName) 
+    	throws PSQLException {
         int recordId = 0;
         try {
             connectConfig();
@@ -1483,7 +1485,11 @@ public class PostgresHelper implements GraphInterface {
                 }
             }
         } catch (PSQLException pe) {
+            ServerErrorMessage em = pe.getServerErrorMessage();
             // Do nothing for duplicate found
+            if (!em.getConstraint().equals("unique_organizations")) {
+                throw pe;
+            }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1739,7 +1745,7 @@ public class PostgresHelper implements GraphInterface {
                 && (this.configConn.createStatement()
                 .execute(String.format("SELECT id FROM projects WHERE projectId = '%s'", mountId)))) {
                 this.configConn.createStatement().execute(String
-                    .format("INSERT INTO projectMounts (projectId, mountId) VALUES " + "('%s','%s')", projectId,
+                    .format("INSERT INTO projectMounts (projectId, mountId) VALUES ('%s','%s')", projectId,
                         mountId));
             }
         } catch (Exception e) {
@@ -1803,7 +1809,7 @@ public class PostgresHelper implements GraphInterface {
                 "ALTER TABLE ONLY edges%s ADD CONSTRAINT edges%s_edgetype_fkey FOREIGN KEY (edgetype) REFERENCES edgetypes(id)",
                 childWorkspaceNameSanitized, childWorkspaceNameSanitized));
 
-            if (isTag) {
+            if (isTag && (commitId == null || commitId.isEmpty())) {
                 execUpdate(String.format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s",
                     childWorkspaceNameSanitized, EmsConfig.get("pg.user")));
             }
@@ -1828,7 +1834,8 @@ public class PostgresHelper implements GraphInterface {
     public boolean isTag(String refId) {
         try {
             ResultSet rs = execQuery(String
-                .format("SELECT tag FROM refs WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false", refId));
+                .format("SELECT tag FROM refs WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false",
+                    sanitizeRefId(refId)));
             if (rs.next()) {
                 return rs.getBoolean(1);
             }
@@ -1841,11 +1848,11 @@ public class PostgresHelper implements GraphInterface {
         return false;
     }
 
-    public void updateTag(String name, String elasticId, String id) {
+    public void setAsTag(String refId) {
         try {
             execUpdate(String
-                .format("UPDATE tags SET timestamp = now(),name = '%s',elasticId = '%s' WHERE id = '%s'", name,
-                    elasticId, id));
+                .format("UPDATE refs SET tag = true WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false",
+                    sanitizeRefId(refId)));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -2218,5 +2225,23 @@ public class PostgresHelper implements GraphInterface {
 
     private String sanitizeRefId(String refId) {
         return refId.replace("-", "_").replaceAll("\\s+", "");
+    }
+
+    public boolean isLocked() {
+        try {
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("SELECT count(id) FROM queue WHERE refId = ?");
+            query.setString(1, this.workspaceId);
+            ResultSet rs = query.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true;
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return false;
     }
 }

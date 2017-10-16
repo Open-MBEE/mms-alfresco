@@ -6,21 +6,21 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Format;
-import org.springframework.extensions.webscripts.ScriptContent;
-import org.springframework.extensions.webscripts.ScriptProcessor;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WebScriptStatus;
+
+import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
  * Copyright (C) 2005-2009 Alfresco Software Limited.
@@ -114,24 +114,8 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             model.put("cache", cache);
 
             try {
-                // execute script if it exists
-                ScriptDetails script = getExecuteScript(req.getContentType());
-                if (script != null) {
-                    if (logger.isDebugEnabled())
-                        logger.debug("Executing script " + script.getContent().getPathDescription());
-
-                    Map<String, Object> scriptModel = createScriptParameters(req, res, script, model);
-
-                    // add return model allowing script to add items to template model
-                    Map<String, Object> returnModel = new HashMap<>(8, 1.0f);
-                    scriptModel.put("model", returnModel);
-                    executeScript(script.getContent(), scriptModel);
-                    mergeScriptModelIntoTemplateModel(script.getContent(), returnModel, model);
-                }
-
                 // create model for template rendering
                 Map<String, Object> templateModel = createTemplateParameters(req, res, model);
-
                 // is a redirect to a status specific template required?
                 if (status.getRedirect()) {
                     sendStatus(req, res, status, cache, format, templateModel);
@@ -157,33 +141,9 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     // apply cache
                     res.setCache(cache);
 
-                    String callback = null;
-                    if (getContainer().allowCallbacks()) {
-                        callback = req.getJSONCallback();
-                    }
-                    if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null) {
-                        if (logger.isDebugEnabled())
-                            logger.debug("Rendering JSON callback response: content type=" + Format.JAVASCRIPT
-                                            .mimetype() + ", status=" + statusCode + ", callback=" + callback);
-
-                        // NOTE: special case for wrapping JSON results in a javascript function callback
-                        res.setContentType(Format.JAVASCRIPT.mimetype() + ";charset=UTF-8");
-                        res.getWriter().write((callback + "("));
-                    } else {
-                        if (logger.isDebugEnabled())
-                            logger.debug("Rendering response: content type=" + mimetype + ", status=" + statusCode);
-
-                        res.setContentType(mimetype + ";charset=UTF-8");
-                    }
-
                     // render response according to requested format
                     if (templateModel.containsKey(Sjm.RES) && templateModel.get(Sjm.RES) != null) {
                         res.getWriter().write(templateModel.get(Sjm.RES).toString());
-                    }
-
-                    if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null) {
-                        // NOTE: special case for wrapping JSON results in a javascript function callback
-                        res.getWriter().write(")");
                     }
                 }
             } finally {
@@ -238,27 +198,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             cache.setMustRevalidate(false);
         }
         return true;
-    }
-
-    /**
-     * Merge script generated model into template-ready model
-     *
-     * @param scriptContent script content
-     * @param scriptModel   script model
-     * @param templateModel template model
-     */
-    private void mergeScriptModelIntoTemplateModel(ScriptContent scriptContent, Map<String, Object> scriptModel,
-                    Map<String, Object> templateModel) {
-        // determine script processor
-        ScriptProcessor scriptProcessor = getContainer().getScriptProcessorRegistry().getScriptProcessor(scriptContent);
-        if (scriptProcessor != null) {
-            for (Map.Entry<String, Object> entry : scriptModel.entrySet()) {
-                // retrieve script model value
-                Object value = entry.getValue();
-                Object templateValue = scriptProcessor.unwrapValue(value);
-                templateModel.put(entry.getKey(), templateValue);
-            }
-        }
     }
 
     /**

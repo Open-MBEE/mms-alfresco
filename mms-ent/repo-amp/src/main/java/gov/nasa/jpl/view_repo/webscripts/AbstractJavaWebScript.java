@@ -29,14 +29,12 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
@@ -51,10 +49,8 @@ import gov.nasa.jpl.mbee.util.Debug;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
-import gov.nasa.jpl.view_repo.util.EmsTransaction;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 
 /**
@@ -73,8 +69,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     // injected members
     protected ServiceRegistry services;        // get any of the Alfresco services
     protected Repository repository;        // used for lucene search
-
-    private ScriptNode companyhome;
 
     // response to HTTP request, made as class variable so all methods can update
     protected StringBuffer response = new StringBuffer();
@@ -109,48 +103,12 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     }
 
     public AbstractJavaWebScript() {
-        // default constructor for spring
         super();
     }
 
 
     abstract protected Map<String, Object> executeImplImpl(final WebScriptRequest req, final Status status,
         final Cache cache);
-
-
-    // Don't use this - we don't need to handle transactions any more
-    @Deprecated protected Map<String, Object> executeImplImpl(final WebScriptRequest req, final Status status,
-        final Cache cache, boolean withoutTransactions) {
-
-        final Map<String, Object> model = new HashMap<>();
-
-        if (checkMmsVersions) {
-            if (compareMmsVersions(req, getResponse(), status)) {
-                model.put(Sjm.RES, createResponseJson());
-                return model;
-            }
-        }
-
-        new EmsTransaction(getServices(), getResponse(), getResponseStatus(), withoutTransactions) {
-            @Override public void run() throws Exception {
-                Map<String, Object> m = executeImplImpl(req, status, cache);
-                if (m != null) {
-                    model.putAll(m);
-                }
-            }
-        };
-        if (!model.containsKey(Sjm.RES) && response != null && response.toString().length() > 0) {
-            model.put(Sjm.RES, response.toString());
-
-        }
-        // need to check if the transaction resulted in rollback, if so change the status code
-        // TODO: figure out how to get the response message in (response is always empty)
-        if (getResponseStatus().getCode() != HttpServletResponse.SC_ACCEPTED) {
-            status.setCode(getResponseStatus().getCode());
-        }
-
-        return model;
-    }
 
 
     /**
@@ -163,30 +121,19 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      */
     abstract protected boolean validateRequest(WebScriptRequest req, Status status);
 
-    protected EmsScriptNode getSiteNode(String siteName) {
-        return getSiteNodeImpl(siteName, null, null, false, true);
-    }
-
     /**
      * Helper method for getSideNode* methods
      *
      * @param siteName
-     * @param refId
-     * @param commitId
-     * @param forWorkspace
      * @return
      */
-    private EmsScriptNode getSiteNodeImpl(String siteName, String refId, String commitId, boolean forWorkspace,
-        boolean errorOnNull) {
-
+    protected EmsScriptNode getSiteNode(String siteName) {
         EmsScriptNode siteNode = null;
 
-        if (siteName == null) {
-            //log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "No sitename provided" );
-            // FIXME: do nothing for now as updates on elements are running afoul here
-        } else {
+        if (siteName != null) {
             siteNode = EmsScriptNode.getSiteNode(siteName);
         }
+
         return siteNode;
     }
 
@@ -420,7 +367,9 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
                 logger.info(String.format("%s", req.parseContent()));
             }
         } catch (Exception e) {
-            // do nothing, just means no content when content-type was specified
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
     }
 
@@ -468,29 +417,16 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     }
 
     public EmsScriptNode getWorkspace(WebScriptRequest req) {
-        return getWorkspace(req, //false,
-            null);
-    }
-
-    public EmsScriptNode getWorkspace(WebScriptRequest req,
-        //                                       boolean createIfNotFound,
-        String userName) {
-        return getWorkspace(req, services, response, responseStatus, //createIfNotFound,
-            userName);
-    }
-
-    public static EmsScriptNode getWorkspace(WebScriptRequest req, ServiceRegistry services, StringBuffer response,
-        Status responseStatus,
-        //boolean createIfNotFound,
-        String userName) {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         EmsScriptNode node = EmsScriptNode.getSiteNode(orgId);
         node = node.childByNamePath("/" + projectId + "/refs/" + refId);
-        if (node != null)
+        if (node != null) {
             return new EmsScriptNode(node.getNodeRef(), services);
+        }
+
         return null;
     }
 

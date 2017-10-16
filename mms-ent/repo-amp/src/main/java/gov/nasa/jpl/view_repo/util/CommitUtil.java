@@ -3,24 +3,40 @@ package gov.nasa.jpl.view_repo.util;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.StampedLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.postgresql.util.PSQLException;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.TimeUtils;
+import gov.nasa.jpl.view_repo.actions.ActionUtil;
 import gov.nasa.jpl.view_repo.connections.JmsConnection;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
@@ -54,10 +70,10 @@ public class CommitUtil {
 
     private static final String HOLDING_BIN_PREFIX = "holding_bin_";
 
-    public static boolean cleanJson = false;
     private static ElasticHelper eh = null;
-
     private static JmsConnection jmsConnection = null;
+
+    private Map<String, LinkedList<LinkedBlockingDeque<String>>> commitQueue = new HashMap<>();
 
     public static void setJmsConnection(JmsConnection jmsConnection) {
         if (logger.isInfoEnabled()) {
@@ -221,7 +237,10 @@ public class CommitUtil {
                     if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                         createOrUpdateSiteChar(e, projectId, refId, services);
                     }
-
+                    String type = e.optString(Sjm.TYPE);
+                    if (type.equals("Slot") || type.equals("Property") || type.equals("Port")) {
+                        processValueEdges(e, viewEdges);
+                    }
                     if (e.has(Sjm.CONTENTS)) {
                         JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
@@ -244,9 +263,9 @@ public class CommitUtil {
                         }
                     }
                     if (isPartProperty(e)) {
-                        String type = e.optString(Sjm.TYPEID);
-                        if (type != null) {
-                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), type);
+                        String typeid = e.optString(Sjm.TYPEID);
+                        if (typeid != null) {
+                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), typeid);
                             childViewEdges.add(p);
                         }
                     }
@@ -280,7 +299,10 @@ public class CommitUtil {
                     if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                         createOrUpdateSiteChar(e, projectId, refId, services);
                     }
-
+                    String type = e.optString(Sjm.TYPE);
+                    if (type.equals("Slot") || type.equals("Property") || type.equals("Port")) {
+                        processValueEdges(e, viewEdges);
+                    }
                     if (e.has(Sjm.CONTENTS)) {
                         JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
@@ -303,9 +325,9 @@ public class CommitUtil {
                         }
                     }
                     if (isPartProperty(e)) {
-                        String type = e.optString(Sjm.TYPEID);
-                        if (type != null) {
-                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), type);
+                        String typeid = e.optString(Sjm.TYPEID);
+                        if (typeid != null) {
+                            Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), typeid);
                             childViewEdges.add(p);
                         }
                     }
@@ -462,7 +484,10 @@ public class CommitUtil {
             if (doc != null && !doc.equals("")) {
                 processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
             }
-
+            String type = e.optString(Sjm.TYPE);
+            if (type.equals("Slot") || type.equals("Property") || type.equals("Port")) {
+                processValueEdges(e, viewEdges);
+            }
             if (e.has(Sjm.CONTENTS)) {
                 JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                 if (contents != null) {
@@ -485,9 +510,9 @@ public class CommitUtil {
                 }
             }
             if (isPartProperty(e)) {
-                String type = e.optString(Sjm.TYPEID);
-                if (type != null) {
-                    Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), type);
+                String typeid = e.optString(Sjm.TYPEID);
+                if (typeid != null) {
+                    Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), typeid);
                     childViewEdges.add(p);
                 }
             }
@@ -612,7 +637,8 @@ public class CommitUtil {
         return true;
     }
 
-    public static void sendOrganizationDelta(String orgId, String orgName, String user) {
+    public static void sendOrganizationDelta(String orgId, String orgName, String user) throws PSQLException 
+    {
         PostgresHelper pgh = new PostgresHelper();
         pgh.createOrganization(orgId, orgName);
     }
@@ -751,6 +777,9 @@ public class CommitUtil {
             logger.info(String.format("Starting branch %s started by %s", created.getString(Sjm.SYSMLID),
                 created.optString(Sjm.CREATOR)));
 
+            boolean hasCommit = (commitId != null && !commitId.isEmpty());
+            boolean success = false;
+
             String srcId = src.optString(Sjm.SYSMLID);
 
             PostgresHelper pgh = new PostgresHelper();
@@ -758,7 +787,7 @@ public class CommitUtil {
             pgh.setWorkspace(srcId);
 
             try {
-                boolean hasCommit = (commitId != null && !commitId.isEmpty());
+
                 pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId,
                     commitId, isTag);
                 eh = new ElasticHelper();
@@ -801,6 +830,8 @@ public class CommitUtil {
                 eh.bulkUpdateElements(elementsToUpdate, payload, projectId);
                 created.put("status", "created");
 
+                success = true;
+
             } catch (Exception e) {
                 created.put("status", "failed");
                 if (logger.isDebugEnabled()) {
@@ -816,10 +847,25 @@ public class CommitUtil {
                 }
             }
 
+            if (success && isTag && hasCommit) {
+                pgh.setAsTag(created.getString(Sjm.SYSMLID));
+            }
+
             branchJson.put("createdRef", created);
             sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
             logger.info(String.format("Finished branch %s started by %s finished at %s", created.getString(Sjm.SYSMLID),
                 created.optString(Sjm.CREATOR), timer));
+
+            String msg = String.format("Branch %s started by %s has finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer);
+            String subject = String.format("Branch %s has finished at %s", created.getString(Sjm.SYSMLID), timer);
+            ServiceRegistry services = NodeUtil.getServices();
+            NodeRef person = services.getPersonService().getPersonOrNull(AuthenticationUtil.getFullyAuthenticatedUser());
+
+            if (person != null) {
+                String recipient = services.getNodeService().getProperty(person, ContentModel.PROP_EMAIL).toString();
+                String sender = EmsConfig.get("app.email.from");
+                ActionUtil.sendEmailTo(sender, recipient, msg, subject, services);
+            }
         });
         executor.shutdown();
 
@@ -878,16 +924,16 @@ public class CommitUtil {
 
                 EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary");
                 if (documentLibrary == null) {
-                    documentLibrary = site.createFolder("documentLibrary");
+                    documentLibrary = site.createFolder("documentLibrary", null, null);
                     documentLibrary.createOrUpdateProperty(Acm.CM_TITLE, "Document Library");
                 }
                 EmsScriptNode projectDocumentLibrary = documentLibrary.childByNamePath(projectId);
                 if (projectDocumentLibrary == null) {
-                    projectDocumentLibrary = documentLibrary.createFolder(projectId);
+                    projectDocumentLibrary = documentLibrary.createFolder(projectId, null, null);
                 }
                 EmsScriptNode siteCharFolder = projectDocumentLibrary.childByNamePath(folderId);
                 if (siteCharFolder == null) {
-                    siteCharFolder = projectDocumentLibrary.createFolder(folderId);
+                    siteCharFolder = projectDocumentLibrary.createFolder(folderId, null, null);
                     siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
                     return true;
                 } else {
@@ -900,16 +946,33 @@ public class CommitUtil {
         return false;
     }
 
-    private static Pattern pattern = Pattern.compile("<mms-cf.*mms-element-id=\"([^\"]*)\"");
+    private static Pattern pattern = Pattern.compile("<mms-cf.*?mms-element-id=\"([^\"]+)\"");
+
+    public static void processValueEdges(JSONObject element, List<Pair<String, String>> edges) {
+        JSONObject defaultValue = element.optJSONObject(Sjm.DEFAULTVALUE);
+        JSONArray slotValues = element.optJSONArray("value");
+        if (defaultValue != null && defaultValue.optString(Sjm.TYPE).equals("LiteralString")) {
+            processDocumentEdges(element.getString(Sjm.SYSMLID), defaultValue.optString("value"), edges);
+        }
+        if (slotValues != null) {
+            for (int i = 0; i < slotValues.length(); i++) {
+                JSONObject val = slotValues.optJSONObject(i);
+                if (val != null && val.optString(Sjm.TYPE).equals("LiteralString")) {
+                    processDocumentEdges(element.getString(Sjm.SYSMLID), val.optString("value"), edges);
+                }
+            }
+        }
+    }
 
     public static void processDocumentEdges(String sysmlid, String doc, List<Pair<String, String>> documentEdges) {
         if (doc != null) {
             Matcher matcher = pattern.matcher(doc);
 
             while (matcher.find()) {
-                String mmseid = matcher.group(1).replace("\"", "");
-                if (mmseid != null)
+                String mmseid = matcher.group(1);
+                if (mmseid != null) {
                     documentEdges.add(new Pair<>(sysmlid, mmseid));
+                }
             }
         }
     }
@@ -936,10 +999,18 @@ public class CommitUtil {
                 String string = iss.getString("value");
                 try {
                     JSONObject json = new JSONObject(string);
-                    Set<Object> sources = findKeyValueInJsonObject(json, "source");
+                    StringBuilder text = new StringBuilder();
+                    Set<Object> sources = findKeyValueInJsonObject(json, "source", text);
                     for (Object source : sources) {
                         if (source instanceof String) {
                             documentEdges.add(new Pair<>(sysmlId, (String) source));
+                        }
+                    }
+                    Matcher matcher = pattern.matcher(text);
+                    while (matcher.find()) {
+                        String mmseid = matcher.group(1);
+                        if (mmseid != null) {
+                            documentEdges.add(new Pair<>(sysmlId, mmseid));
                         }
                     }
                 } catch (JSONException ex) {
@@ -949,31 +1020,34 @@ public class CommitUtil {
         }
     }
 
-    public static Set<Object> findKeyValueInJsonObject(JSONObject json, String keyMatch) {
+    public static Set<Object> findKeyValueInJsonObject(JSONObject json, String keyMatch, StringBuilder text) {
         Set<Object> result = new HashSet<>();
         Iterator<?> keys = json.keys();
         while (keys.hasNext()) {
             String key = (String) keys.next();
             Object value = json.get(key);
+            if (key.equals("text")) {
+                text.append(value);
+            }
             if (key.equals(keyMatch)) {
                 result.add(value);
             } else if (value instanceof JSONObject) {
-                result.addAll(findKeyValueInJsonObject((JSONObject) value, keyMatch));
+                result.addAll(findKeyValueInJsonObject((JSONObject) value, keyMatch, text));
             } else if (value instanceof JSONArray) {
-                result.addAll(findKeyValueInJsonArray((JSONArray) value, keyMatch));
+                result.addAll(findKeyValueInJsonArray((JSONArray) value, keyMatch, text));
             }
         }
         return result;
     }
 
-    public static Set<Object> findKeyValueInJsonArray(JSONArray jsonArray, String keyMatch) {
+    public static Set<Object> findKeyValueInJsonArray(JSONArray jsonArray, String keyMatch, StringBuilder text) {
         Set<Object> result = new HashSet<>();
 
         for (int ii = 0; ii < jsonArray.length(); ii++) {
             if (jsonArray.get(ii) instanceof JSONObject) {
-                result.addAll(findKeyValueInJsonObject((JSONObject) jsonArray.get(ii), keyMatch));
+                result.addAll(findKeyValueInJsonObject((JSONObject) jsonArray.get(ii), keyMatch, text));
             } else if (jsonArray.get(ii) instanceof JSONArray) {
-                result.addAll(findKeyValueInJsonArray((JSONArray) jsonArray.get(ii), keyMatch));
+                result.addAll(findKeyValueInJsonArray((JSONArray) jsonArray.get(ii), keyMatch, text));
             }
         }
 
