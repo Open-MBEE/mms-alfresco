@@ -110,13 +110,16 @@ public class ModelsGet extends ModelGet {
 
         Map<String, Object> model = new HashMap<>();
         JSONArray elementsJson = new JSONArray();
+        JSONArray errors = new JSONArray();
+        JSONObject result = new JSONObject();
 
         try {
 
             if (validateRequest(req, status)) {
                 try {
                     Long depth = getDepthFromRequest(req);
-                    elementsJson = handleRequest(req, depth);
+                    result = handleRequest(req, depth);
+                    elementsJson = result.optJSONArray(Sjm.ELEMENTS);
                 } catch (JSONException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request");
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
@@ -124,16 +127,35 @@ public class ModelsGet extends ModelGet {
             }
 
             JSONObject top = new JSONObject();
-            if (elementsJson.length() > 0) {
+            if (elementsJson != null && elementsJson.length() > 0) {
                 JSONArray elements = filterByPermission(elementsJson, req);
                 if (elements.length() == 0) {
                     log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
                 }
+
                 top.put(Sjm.ELEMENTS, elements);
+
+                JSONArray errorMessages = new JSONArray();
+                for (String level : Sjm.ERRORLEVELS) {
+                    errors = result.optJSONArray(level);
+                    if (errors != null && errors.length() > 0) {
+                        for (int i = 0; i < errors.length(); i++) {
+                            JSONObject errorPayload = new JSONObject();
+                            errorPayload.put("code", 404);
+                            errorPayload.put("message", String.format("Element %s was not found", errors.get(i)));
+                            errorPayload.put("severity", level);
+                            errorMessages.put(errorPayload);
+                        }
+                    }
+                }
+
+                if (errorMessages.length() > 0) {
+                    top.put("messages", errorMessages);
+                }
+
                 String[] accepts = req.getHeaderValues("Accept");
                 String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
-                if (!Utils.isNullOrEmpty(response.toString()))
-                    top.put("message", response.toString());
+
                 if (prettyPrint || accept.contains("webp")) {
                     model.put(Sjm.RES, top.toString(4));
                 } else {
@@ -163,7 +185,7 @@ public class ModelsGet extends ModelGet {
      * @return
      * @throws IOException
      */
-    private JSONArray handleRequest(WebScriptRequest req, final Long maxDepth)
+    private JSONObject handleRequest(WebScriptRequest req, final Long maxDepth)
         throws JSONException, IOException, SQLException {
         JSONObject requestJson = (JSONObject) req.parseContent();
         if (requestJson.has(Sjm.ELEMENTS)) {
@@ -175,15 +197,19 @@ public class ModelsGet extends ModelGet {
 
             JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
 
-            JSONArray result = new JSONArray();
+            JSONArray found = new JSONArray();
+            JSONObject result = new JSONObject();
+
             Set<String> uniqueElements = new HashSet<>();
             for (int i = 0; i < elementsToFindJson.length(); i++) {
                 uniqueElements.add(elementsToFindJson.getJSONObject(i).getString(Sjm.SYSMLID));
             }
-            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, result);
+            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found);
+            result.put(Sjm.ELEMENTS, found);
+            result.put(Sjm.WARN, uniqueElements);
             return result;
         } else {
-            return new JSONArray();
+            return new JSONObject();
         }
     }
 }
