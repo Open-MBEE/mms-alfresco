@@ -259,7 +259,7 @@ CREATE OR REPLACE FUNCTION get_group_docs(integer, integer, text, integer, integ
     BEGIN
         RETURN query
         EXECUTE '
-        WITH RECURSIVE children(depth, nid, path, cycle, deleted) as (
+        WITH RECURSIVE children(depth, nid, path, cycle, deleted, ntype) as (
             select 0 as depth, node.id, ARRAY[node.id], false, node.deleted, node.nodetype from ' || format('nodes%s', $3) || '
             node where node.id = ' || $1 || ' and node.nodetype <> '|| $5 ||'
             UNION
