@@ -142,6 +142,7 @@ public class ModelsGet extends ModelGet {
                         for (int i = 0; i < errors.length(); i++) {
                             JSONObject errorPayload = new JSONObject();
                             errorPayload.put("code", 404);
+                            errorPayload.put(Sjm.SYSMLID, errors.get(i));
                             errorPayload.put("message", String.format("Element %s was not found", errors.get(i)));
                             errorPayload.put("severity", level);
                             errorMessages.put(errorPayload);
