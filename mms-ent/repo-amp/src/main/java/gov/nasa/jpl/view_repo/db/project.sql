@@ -260,14 +260,14 @@ CREATE OR REPLACE FUNCTION get_group_docs(integer, integer, text, integer, integ
         RETURN query
         EXECUTE '
         WITH RECURSIVE children(depth, nid, path, cycle, deleted) as (
-            select 0 as depth, node.id, ARRAY[node.id], false, node.deleted from ' || format('nodes%s', $3) || '
+            select 0 as depth, node.id, ARRAY[node.id], false, node.deleted, node.nodetype from ' || format('nodes%s', $3) || '
             node where node.id = ' || $1 || ' and node.nodetype <> '|| $5 ||'
             UNION
             select (c.depth + 1) as depth, edge.child as nid, path || cast(edge.child as bigint) as path, edge.child = ANY(path) as cycle, node.deleted as deleted, node.nodetype as ntype
             from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and
             edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || '
         )
-        select distinct nid from children where ntype = ' || $6 || ';' ;
+        select distinct nid from children where nodetype = ' || $6 || ';' ;
     END;
 $$ language plpgsql;
 
