@@ -267,7 +267,7 @@ CREATE OR REPLACE FUNCTION get_group_docs(integer, integer, text, integer, integ
             from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and
             edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || '
         )
-        select distinct nid from children where nodetype = ' || $6 || ';' ;
+        select distinct nid from children where ntype = ' || $6 || ';' ;
     END;
 $$ language plpgsql;
 

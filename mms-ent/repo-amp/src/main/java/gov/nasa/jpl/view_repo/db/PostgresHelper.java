@@ -1654,7 +1654,7 @@ public class PostgresHelper implements GraphInterface {
             execUpdate("CREATE OR REPLACE FUNCTION get_group_docs(integer, integer, text, integer, integer, integer)\n"
                 + "  returns table(id bigint) as $$\n" + "  begin\n" + "    return query\n" + "    execute '\n"
                 + "    with recursive children(depth, nid, path, cycle, deleted) as (\n"
-                + "      select 0 as depth, node.id, ARRAY[node.id], false, node.deleted from ' || format('nodes%s', $3) || '\n"
+                + "      select 0 as depth, node.id, ARRAY[node.id], false, node.deleted, node.nodetype from ' || format('nodes%s', $3) || '\n"
                 + "        node where node.id = ' || $1 || ' and node.nodetype <> ' || $5 || ' union\n"
                 + "      select (c.depth + 1) as depth, edge.child as nid, path || cast(edge.child as bigint) as path, edge.child = ANY(path) as cycle, node.deleted as deleted, node.nodetype as ntype \n"
                 + "        from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and \n"
