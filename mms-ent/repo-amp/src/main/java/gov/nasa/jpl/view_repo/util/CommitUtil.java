@@ -1,7 +1,6 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.ArrayList;
@@ -23,7 +22,9 @@ import java.util.concurrent.locks.StampedLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.mail.Authenticator;
 import javax.mail.Message;
+import javax.mail.PasswordAuthentication;
 import javax.mail.SendFailedException;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -31,14 +32,10 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,7 +45,6 @@ import org.postgresql.util.PSQLException;
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.TimeUtils;
-import gov.nasa.jpl.view_repo.actions.ActionUtil;
 import gov.nasa.jpl.view_repo.connections.JmsConnection;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
@@ -882,8 +878,13 @@ public class CommitUtil {
             if (user != null) {
                 try {
                     logger.debug("User email: " + user);
+
                     String sender = EmsConfig.get("app.email.from");
+                    String smtpProtocol = EmsConfig.get("mail.protocol");
                     String smtpHost = EmsConfig.get("mail.host");
+                    String smtpPort = EmsConfig.get("mail.port");
+                    String smtpUser = EmsConfig.get("mail.username");
+                    String smtpPass = EmsConfig.get("mail.password");
 
                     if (smtpHost.isEmpty() || sender.isEmpty()) {
                         if (logger.isDebugEnabled()) {
@@ -894,8 +895,30 @@ public class CommitUtil {
                     }
 
                     Properties props = System.getProperties();
-                    props.put("mail.smtp.host", smtpHost);
-                    Session session = Session.getInstance(props, null);
+
+                    String prefix = "mail.smtp";
+                    if (!smtpProtocol.isEmpty()) {
+                        props.put("mail.transport.protocol", smtpProtocol);
+                        prefix = "mail." + smtpProtocol;
+                    }
+
+                    props.put(prefix + ".host", smtpHost);
+                    if (!smtpPort.isEmpty()) {
+                        props.put(prefix + ".port", smtpPort);
+                    }
+
+                    Authenticator auth = null;
+                    if(!smtpUser.isEmpty() && !smtpPass.isEmpty()) {
+                        props.put(prefix + ".auth", "true");
+                        auth = new Authenticator() {
+                            @Override
+                            protected PasswordAuthentication getPasswordAuthentication() {
+                                return new PasswordAuthentication(smtpUser, smtpPass);
+                            }
+                        };
+                    }
+
+                    Session session = Session.getInstance(props, auth);
 
                     MimeMessage msg = new MimeMessage(session);
                     msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
