@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -21,12 +23,22 @@ import java.util.concurrent.locks.StampedLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.mail.Message;
+import javax.mail.SendFailedException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,6 +84,8 @@ public class CommitUtil {
 
     private static ElasticHelper eh = null;
     private static JmsConnection jmsConnection = null;
+
+    private static String user = null;
 
     private Map<String, LinkedList<LinkedBlockingDeque<String>>> commitQueue = new HashMap<>();
 
@@ -637,7 +651,7 @@ public class CommitUtil {
         return true;
     }
 
-    public static void sendOrganizationDelta(String orgId, String orgName, String user) throws PSQLException 
+    public static void sendOrganizationDelta(String orgId, String orgName, String user) throws PSQLException
     {
         PostgresHelper pgh = new PostgresHelper();
         pgh.createOrganization(orgId, orgName);
@@ -759,16 +773,22 @@ public class CommitUtil {
 
     // make sure only one branch is made at a time
     public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created,
-        String elasticId, Boolean isTag, String source) {
-        return sendBranch(projectId, src, created, elasticId, isTag, source, null);
+        String elasticId, Boolean isTag, String source, ServiceRegistry services) {
+        return sendBranch(projectId, src, created, elasticId, isTag, source, null, services);
     }
 
     // make sure only one branch is made at a time
     public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created,
-        String elasticId, Boolean isTag, String source, String commitId) {
+        String elasticId, Boolean isTag, String source, String commitId, ServiceRegistry services) {
         // FIXME: need to include branch in commit history
         JSONObject branchJson = new JSONObject();
+
         branchJson.put("source", source);
+
+        NodeRef person = services.getPersonService().getPersonOrNull(created.optString(Sjm.CREATOR));
+        if (person != null) {
+            user = services.getNodeService().getProperty(person, ContentModel.PROP_EMAIL).toString();
+        }
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
@@ -856,17 +876,56 @@ public class CommitUtil {
             logger.info(String.format("Finished branch %s started by %s finished at %s", created.getString(Sjm.SYSMLID),
                 created.optString(Sjm.CREATOR), timer));
 
-            String msg = String.format("Branch %s started by %s has finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer);
+            String body = String.format("Branch %s started by %s has finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer);
             String subject = String.format("Branch %s has finished at %s", created.getString(Sjm.SYSMLID), timer);
-            ServiceRegistry services = NodeUtil.getServices();
-            NodeRef person = services.getPersonService().getPersonOrNull(AuthenticationUtil.getFullyAuthenticatedUser());
 
-            if (person != null) {
-                String recipient = services.getNodeService().getProperty(person, ContentModel.PROP_EMAIL).toString();
-                String sender = EmsConfig.get("app.email.from");
-                ActionUtil.sendEmailTo(sender, recipient, msg, subject, services);
+            if (user != null) {
+                try {
+                    logger.debug("User email: " + user);
+                    String sender = EmsConfig.get("app.email.from");
+                    String smtpHost = EmsConfig.get("mail.host");
+
+                    if (smtpHost.isEmpty() || sender.isEmpty()) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("No smtp host");
+                        }
+                        executor.shutdown();
+                        executor.awaitTermination(60L, TimeUnit.SECONDS);
+                    }
+
+                    Properties props = System.getProperties();
+                    props.put("mail.smtp.host", smtpHost);
+                    Session session = Session.getInstance(props, null);
+
+                    MimeMessage msg = new MimeMessage(session);
+                    msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
+                    msg.addHeader("format", "flowed");
+                    msg.addHeader("Content-Transfer-Encoding", "8bit");
+
+                    msg.setFrom(new InternetAddress(sender));
+                    msg.setReplyTo(InternetAddress.parse(sender, false));
+                    msg.setSubject(subject, "UTF-8");
+                    msg.setText(body, "UTF-8");
+                    msg.setSentDate(new Date());
+
+                    List<InternetAddress> emails = new ArrayList<>();
+                    emails.add(new InternetAddress(user));
+
+                    InternetAddress[] ias = emails.toArray(new InternetAddress[emails.size()]);
+                    msg.setRecipients(Message.RecipientType.TO, ias);
+
+                    Transport.send(msg);
+                } catch (SendFailedException sfe) {
+                    logger.error("Send failed: ", sfe);
+                } catch (Exception e) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Error sending email: ", e);
+                    }
+                }
+
             }
         });
+
         executor.shutdown();
 
         return branchJson;
