@@ -83,19 +83,15 @@ public class DocumentsGet extends AbstractJavaWebScript {
 
     private JSONArray handleProducts(WebScriptRequest req) throws JSONException {
 
-        String commitId = req.getParameter("commitId");
         String refId = getRefId(req);
         String projectId = getProjectId(req);
-        String groupId = req.getServiceMatch().getTemplateVars().get("groupId");
+        String groupId = req.getParameter("groupId");
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-        // :TODO write a recursive function to find children in the  given current groupId
-        // pass a depth of one and see if the result is correct
-
         int trueDepth = 10000;
 
-        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, commitId,false, trueDepth);
+        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, trueDepth);
     }
 
 }

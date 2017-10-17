@@ -451,35 +451,20 @@ public class EmsNodeUtil {
      * Get the documents that exist in a site at a specified time
      *
      * @param sysmlId  Site to filter documents against
-     * @param commitId Commit ID to look up documents at
      * @return JSONArray of the documents in the site
      */
-    public JSONArray getDocJson(String sysmlId, String commitId, boolean extended, int depth) {
+    public JSONArray getDocJson(String sysmlId, int depth) {
 
         JSONArray result = new JSONArray();
         List<String> docElasticIds = new ArrayList<>();
 
-        if (sysmlId != null) {//:TODO fix logic recusively find children of passed param sysmlid, but not children of another group
-            // nodes of "type" : "sitepackage" are groups
-            // if the document has a parent that has a sitepackage parent, then it shouldn't be included
-            List<Pair<String, String>> siteChildren = pgh.getGroupDocuments(sysmlId, DbEdgeTypes.CONTAINMENT, depth, DbNodeTypes.SITEANDPACKAGE);
-            Set<String> siteChildrenIds = new HashSet<>();
-            for (Pair<String, String> child : siteChildren) {
-                siteChildrenIds.add(child.first);
-            }
-//            for (String docSysmlId : docSysml2Elastic.keySet()) {
-//                if (siteChildrenIds.contains(docSysmlId)) {
-//                    docElasticIds.add(docSysml2Elastic.get(docSysmlId));
-//                }
-//            }
-            return null;
-        } else {// logic is fine here
+        if (sysmlId != null || !sysmlId.equals(' ')) {
+            docElasticIds = pgh.getGroupDocuments(sysmlId, DbEdgeTypes.CONTAINMENT, depth, DbNodeTypes.SITEANDPACKAGE);
+        } else {
             List<Node> docNodes = pgh.getNodesByType(DbNodeTypes.DOCUMENT);
-            Map<String, String> docSysml2Elastic = new HashMap<>();
             for (Node node : docNodes) {
-                docSysml2Elastic.put(node.getSysmlId(), node.getElasticId());
+                docElasticIds.add(node.getElasticId());
             }
-            docElasticIds.addAll(docSysml2Elastic.values());
         }
 
         JSONArray docJson = new JSONArray();
@@ -489,16 +474,15 @@ public class EmsNodeUtil {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        if (extended) {
-            docJson = addExtendedInformation(docJson);
-        }
-
         for (int i = 0; i < docJson.length(); i++) {
             docJson.getJSONObject(i).put(Sjm.PROJECTID, this.projectId);
             docJson.getJSONObject(i).put(Sjm.REFID, this.workspaceName);
-            if (!docJson.getJSONObject(i).has(Sjm.SITECHARACTERIZATIONID)) {
+            if (!docJson.getJSONObject(i).has(Sjm.SITECHARACTERIZATIONID) && (sysmlId != null || !sysmlId.equals(' '))) {
                 docJson.getJSONObject(i)
                     .put(Sjm.SITECHARACTERIZATIONID, pgh.getGroup(docJson.getJSONObject(i).getString(Sjm.SYSMLID)));
+            }else{
+                docJson.getJSONObject(i)
+                    .put(Sjm.SITECHARACTERIZATIONID, sysmlId);
             }
             result.put(addChildViews(docJson.getJSONObject(i)));
         }
