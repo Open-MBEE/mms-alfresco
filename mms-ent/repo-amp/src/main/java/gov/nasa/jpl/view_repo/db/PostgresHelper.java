@@ -1653,13 +1653,13 @@ public class PostgresHelper implements GraphInterface {
 
             execUpdate("CREATE OR REPLACE FUNCTION get_group_docs(integer, integer, text, integer, integer, integer)\n"
                 + "  returns table(id bigint) as $$\n" + "  begin\n" + "    return query\n" + "    execute '\n"
-                + "    with recursive children(depth, nid, path, cycle, deleted) as (\n"
+                + "    with recursive children(depth, nid, path, cycle, deleted, ntype) as (\n"
                 + "      select 0 as depth, node.id, ARRAY[node.id], false, node.deleted, node.nodetype from ' || format('nodes%s', $3) || '\n"
                 + "        node where node.id = ' || $1 || ' and node.nodetype <> ' || $5 || ' union\n"
                 + "      select (c.depth + 1) as depth, edge.child as nid, path || cast(edge.child as bigint) as path, edge.child = ANY(path) as cycle, node.deleted as deleted, node.nodetype as ntype \n"
                 + "        from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and \n"
-                + "        edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || ' \n" + "      )\n"
-                + "      select distinct nid from children where nodetype = ' || $6 || ';'';\n" + "  end;\n" + "$$ language plpgsql;");
+                + "        edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || ' (node.nodetype <> '|| $5 ||' or nid = ' || $1 || ') \n" + "      )\n"
+                + "      select distinct nid from children where ntype = ' || $6 || ';'';\n" + "  end;\n" + "$$ language plpgsql;");
 
             execUpdate("CREATE OR REPLACE FUNCTION get_childviews(integer, text)\n"
                 + "  returns table(sysmlid text, aggregation text) as $$\n" + "  begin\n" + "    return query\n"

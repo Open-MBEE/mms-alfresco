@@ -261,11 +261,11 @@ CREATE OR REPLACE FUNCTION get_group_docs(integer, integer, text, integer, integ
         EXECUTE '
         WITH RECURSIVE children(depth, nid, path, cycle, deleted, ntype) as (
             select 0 as depth, node.id, ARRAY[node.id], false, node.deleted, node.nodetype from ' || format('nodes%s', $3) || '
-            node where node.id = ' || $1 || ' and node.nodetype <> '|| $5 ||'
+            node where node.id = ' || $1 || '
             UNION
             select (c.depth + 1) as depth, edge.child as nid, path || cast(edge.child as bigint) as path, edge.child = ANY(path) as cycle, node.deleted as deleted, node.nodetype as ntype
             from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and
-            edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || '
+            edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || 'and (node.nodetype <> '|| $5 ||' or nid = ' || $1 || ')
         )
         select distinct nid from children where ntype = ' || $6 || ';' ;
     END;
