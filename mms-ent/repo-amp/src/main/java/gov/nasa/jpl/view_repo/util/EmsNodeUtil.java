@@ -352,6 +352,16 @@ public class EmsNodeUtil {
         return getChildren(sysmlid, DbEdgeTypes.CONTAINMENT, maxDepth);
     }
 
+    public JSONArray getChildrenIds(String sysmlid, DbEdgeTypes dbEdge, final Long maxDepth) {
+        JSONArray children = new JSONArray();
+        int depth = maxDepth == null ? 100000 : maxDepth.intValue();
+
+        for (Pair<String, String> childId : pgh.getChildren(sysmlid, dbEdge, depth)) {
+            children.put(childId.first);
+        }
+        return children;
+    }
+
     public JSONArray getChildren(String sysmlid, DbEdgeTypes dbEdge, final Long maxDepth) {
         Set<String> children = new HashSet<>();
 
@@ -1593,16 +1603,11 @@ public class EmsNodeUtil {
             }
 
             Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds, projectId);
-
+            List<String> elasticIds = new ArrayList<>();
             for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
                 if (((Date) n.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
-                    try {
-                        if (!deletedElementIds.containsKey((String) n.get(Sjm.ELASTICID))) {
-                            pastElement = eh.getElementByCommitId((String) n.get(PostgresHelper.LASTCOMMIT),
-                                (String) n.get(Sjm.SYSMLID), projectId);
-                        }
-                    } catch (IOException e) {
-                        logger.error(e.getMessage());
+                    if (!deletedElementIds.containsKey((String) n.get(Sjm.ELASTICID))) {
+                        elasticIds.add((String)n.get(Sjm.ELASTICID));
                     }
                 } else {
                     pastElement = getElementAtCommit((String) n.get(Sjm.SYSMLID), commitId, refsCommitsIds);
@@ -1615,6 +1620,15 @@ public class EmsNodeUtil {
 
                 // Reset to null so if there is an exception it doesn't add a duplicate
                 pastElement = null;
+            }
+
+            try {
+                JSONArray elems = eh.getElementsFromElasticIds(elasticIds, projectId);
+                for (int i = 0; i < elems.length(); i++) {
+                    elements.put(elems.getJSONObject(i));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
             result.put(Sjm.ELEMENTS, elements);
         }

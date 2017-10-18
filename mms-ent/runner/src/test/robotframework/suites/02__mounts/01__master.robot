@@ -248,6 +248,17 @@ GetExtendedElementsFromAllMountedProjectsViaPADuplicates
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
+GetElementsFromAllMountedProjectsViaPAWithInvalidElement
+	[Documentation]		"Gets all elements that are in other projects mounted to PA."
+	[Tags]				mounts		critical		0219
+	${post_json} =		Get File		${CURDIR}/../../JsonData/GetAllElementsAcrossMountsWithInvalidElement.json
+	${result} =			Put		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}	   headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
 PostNewElementsToPBForCommit
 	[Documentation]		"Post element to PB to get a commit"
 	[Tags]				mounts		critical		0223

@@ -38,6 +38,11 @@
         <property name="arguments" value="mms.properties"/>
     </bean>
 
+    <bean id="emsAlfConfig" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.EmsConfig.setAlfrescoProperties"/>
+        <property name="arguments" ref="global-properties"/>
+    </bean>
+
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="gov.nasa.jpl.view_repo.webscripts.util.ShareUtils.setServices"/>
         <property name="arguments" ref="ServiceRegistry"/>

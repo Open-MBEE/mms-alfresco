@@ -26,7 +26,10 @@
 
 package gov.nasa.jpl.view_repo.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,6 +39,12 @@ import java.util.Map;
  */
 
 public class Sjm {
+
+    public static final String INFO = "info";
+    public static final String WARN = "warn";
+    public static final String ERROR = "error";
+    public static final List<String> ERRORLEVELS = new ArrayList<>(Arrays.asList(INFO, WARN, ERROR));
+
     public static final String RES = "res";
     public static final String ELEMENTS = "elements";
     public static final String PRODUCTS = "products";
@@ -139,7 +148,6 @@ public class Sjm {
     public static final String INREFIDS = "_inRefIds";
 
     public static final Map<String, String> STEREOTYPEIDS;
-
     static {
         STEREOTYPEIDS = new HashMap<>();
         STEREOTYPEIDS.put("_17_0_2_3_87b0275_1371477871400_792964_43374", "document");

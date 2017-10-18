@@ -270,13 +270,15 @@ public class ElasticHelper implements ElasticsearchInterface {
             Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).build();
             SearchResult result = client.execute(search);
 
-            if (result != null && result.getTotal() > 0) {
+            if (result != null && result.isSucceeded() && result.getTotal() > 0) {
                 JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
                 for (int i = 0; i < hits.size(); i++) {
                     JSONObject o = new JSONObject(hits.get(i).getAsJsonObject().getAsJsonObject("_source").toString());
                     o.put(Sjm.ELASTICID, hits.get(i).getAsJsonObject().get("_id").getAsString());
                     elements.put(o);
                 }
+            } else if (result != null && !result.isSucceeded()) {
+            	throw new IOException(String.format("Search failed:%s", result.getErrorMessage()));
             }
             count += termLimit;
         }
