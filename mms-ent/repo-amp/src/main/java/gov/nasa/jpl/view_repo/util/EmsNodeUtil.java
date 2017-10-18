@@ -219,8 +219,7 @@ public class EmsNodeUtil {
      * @return
      */
 
-    private JSONObject getNodeBySysmlid(String sysmlid, String workspaceName,
-        boolean withChildViews) {
+    private JSONObject getNodeBySysmlid(String sysmlid, String workspaceName, boolean withChildViews) {
         if (!this.workspaceName.equals(workspaceName)) {
             switchWorkspace(workspaceName);
         }
@@ -450,7 +449,7 @@ public class EmsNodeUtil {
     /**
      * Get the documents that exist in a site at a specified time
      *
-     * @param sysmlId  Site to filter documents against
+     * @param sysmlId Site to filter documents against
      * @return JSONArray of the documents in the site
      */
     public JSONArray getDocJson(String sysmlId, int depth) {
@@ -477,12 +476,12 @@ public class EmsNodeUtil {
         for (int i = 0; i < docJson.length(); i++) {
             docJson.getJSONObject(i).put(Sjm.PROJECTID, this.projectId);
             docJson.getJSONObject(i).put(Sjm.REFID, this.workspaceName);
-            if (!docJson.getJSONObject(i).has(Sjm.SITECHARACTERIZATIONID) && (sysmlId != null || !sysmlId.equals(' '))) {
+            if (!docJson.getJSONObject(i).has(Sjm.SITECHARACTERIZATIONID) && (sysmlId != null || !sysmlId
+                .equals(' '))) {
                 docJson.getJSONObject(i)
                     .put(Sjm.SITECHARACTERIZATIONID, pgh.getGroup(docJson.getJSONObject(i).getString(Sjm.SYSMLID)));
-            }else{
-                docJson.getJSONObject(i)
-                    .put(Sjm.SITECHARACTERIZATIONID, sysmlId);
+            } else {
+                docJson.getJSONObject(i).put(Sjm.SITECHARACTERIZATIONID, sysmlId);
             }
             result.put(addChildViews(docJson.getJSONObject(i)));
         }
@@ -1317,8 +1316,7 @@ public class EmsNodeUtil {
             }
         }
         curFound = extended ?
-            emsNodeUtil
-                .addExtendedInformation(extraDocs ? emsNodeUtil.addExtraDocs(curFound) : curFound) :
+            emsNodeUtil.addExtendedInformation(extraDocs ? emsNodeUtil.addExtraDocs(curFound) : curFound) :
             (extraDocs ? emsNodeUtil.addExtraDocs(curFound) : curFound);
         for (int i = 0; i < curFound.length(); i++) {
             result.put(curFound.get(i));
