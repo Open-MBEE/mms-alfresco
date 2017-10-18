@@ -447,7 +447,7 @@ public class EmsNodeUtil {
     }
 
     /**
-     * Get the documents that exist in a site at a specified time
+     * Get the documents that exist in a site at a specified time or get the docs by groupId
      *
      * @param sysmlId Site to filter documents against
      * @return JSONArray of the documents in the site
@@ -457,7 +457,7 @@ public class EmsNodeUtil {
         JSONArray result = new JSONArray();
         List<String> docElasticIds = new ArrayList<>();
 
-        if (sysmlId != null || !sysmlId.equals(' ')) {
+        if (sysmlId != null) {
             docElasticIds = pgh.getGroupDocuments(sysmlId, DbEdgeTypes.CONTAINMENT, depth, DbNodeTypes.SITEANDPACKAGE);
         } else {
             List<Node> docNodes = pgh.getNodesByType(DbNodeTypes.DOCUMENT);
@@ -476,12 +476,13 @@ public class EmsNodeUtil {
         for (int i = 0; i < docJson.length(); i++) {
             docJson.getJSONObject(i).put(Sjm.PROJECTID, this.projectId);
             docJson.getJSONObject(i).put(Sjm.REFID, this.workspaceName);
-            if (!docJson.getJSONObject(i).has(Sjm.SITECHARACTERIZATIONID) && (sysmlId != null || !sysmlId
-                .equals(' '))) {
-                docJson.getJSONObject(i)
-                    .put(Sjm.SITECHARACTERIZATIONID, pgh.getGroup(docJson.getJSONObject(i).getString(Sjm.SYSMLID)));
+            if (sysmlId == null) {
+                String groupId = pgh.getGroup(docJson.getJSONObject(i).getString(Sjm.SYSMLID));
+                docJson.getJSONObject(i).put(Sjm.SITECHARACTERIZATIONID, groupId);
             } else {
-                docJson.getJSONObject(i).put(Sjm.SITECHARACTERIZATIONID, sysmlId);
+                if(!sysmlId.equals(projectId)) {
+                    docJson.getJSONObject(i).put(Sjm.SITECHARACTERIZATIONID, sysmlId);
+                }
             }
             result.put(addChildViews(docJson.getJSONObject(i)));
         }
