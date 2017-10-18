@@ -472,7 +472,9 @@ public class EmsNodeUtil {
         } else {
             List<Node> docNodes = pgh.getNodesByType(DbNodeTypes.DOCUMENT);
             for (Node node : docNodes) {
-                docElasticIds.add(node.getElasticId());
+                if(!node.isDeleted()) {
+                    docElasticIds.add(node.getElasticId());
+                }
             }
         }
 
