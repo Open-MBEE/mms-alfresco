@@ -81,12 +81,4 @@ public class Node {
 
         return json;
     }
-
-    public List<String> getElasticIds(List<Node> nodes) {
-        List<String> elasticIds = new ArrayList<>();
-        for (Node node : nodes) {
-            elasticIds.add(node.getElasticId());
-        }
-        return elasticIds;
-    }
 }
