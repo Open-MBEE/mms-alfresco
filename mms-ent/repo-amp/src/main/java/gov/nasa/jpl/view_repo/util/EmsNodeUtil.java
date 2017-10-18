@@ -462,7 +462,7 @@ public class EmsNodeUtil {
      * @param sysmlId Site to filter documents against
      * @return JSONArray of the documents in the site
      */
-    public JSONArray getDocJson(String sysmlId, int depth) {
+    public JSONArray getDocJson(String sysmlId, int depth, boolean extended) {
 
         JSONArray result = new JSONArray();
         List<String> docElasticIds = new ArrayList<>();
@@ -472,7 +472,7 @@ public class EmsNodeUtil {
         } else {
             List<Node> docNodes = pgh.getNodesByType(DbNodeTypes.DOCUMENT);
             for (Node node : docNodes) {
-                if(!node.isDeleted()) {
+                if (!node.isDeleted()) {
                     docElasticIds.add(node.getElasticId());
                 }
             }
@@ -484,16 +484,21 @@ public class EmsNodeUtil {
         } catch (IOException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
+        if (extended) {
+            docJson = addExtendedInformation(docJson);
+        }
 
         for (int i = 0; i < docJson.length(); i++) {
             docJson.getJSONObject(i).put(Sjm.PROJECTID, this.projectId);
             docJson.getJSONObject(i).put(Sjm.REFID, this.workspaceName);
-            if (sysmlId == null) {
-                String groupId = pgh.getGroup(docJson.getJSONObject(i).getString(Sjm.SYSMLID));
-                docJson.getJSONObject(i).put(Sjm.SITECHARACTERIZATIONID, groupId);
-            } else {
-                if(!sysmlId.equals(projectId)) {
-                    docJson.getJSONObject(i).put(Sjm.SITECHARACTERIZATIONID, sysmlId);
+            if (!extended) {
+                if (sysmlId == null) {
+                    String groupId = pgh.getGroup(docJson.getJSONObject(i).getString(Sjm.SYSMLID));
+                    docJson.getJSONObject(i).put(Sjm.SITECHARACTERIZATIONID, groupId);
+                } else {
+                    if (!sysmlId.equals(projectId)) {
+                        docJson.getJSONObject(i).put(Sjm.SITECHARACTERIZATIONID, sysmlId);
+                    }
                 }
             }
             result.put(addChildViews(docJson.getJSONObject(i)));
@@ -1609,7 +1614,7 @@ public class EmsNodeUtil {
             for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
                 if (((Date) n.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
                     if (!deletedElementIds.containsKey((String) n.get(Sjm.ELASTICID))) {
-                        elasticIds.add((String)n.get(Sjm.ELASTICID));
+                        elasticIds.add((String) n.get(Sjm.ELASTICID));
                     }
                 } else {
                     pastElement = getElementAtCommit((String) n.get(Sjm.SYSMLID), commitId, refsCommitsIds);

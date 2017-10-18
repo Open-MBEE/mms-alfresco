@@ -86,12 +86,13 @@ public class DocumentsGet extends AbstractJavaWebScript {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         String groupId = req.getParameter("groupId");
+        String extended = req.getParameter("extended");
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         int trueDepth = 10000;
 
-        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, trueDepth);
+        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, trueDepth, extended != null && extended.equals("true"));
     }
 
 }

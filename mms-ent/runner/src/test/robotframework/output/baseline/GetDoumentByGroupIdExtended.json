@@ -1,0 +1,40 @@
+{
+    "documents": [
+        {
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "_childViews": [],
+            "_creator": "admin",
+            "_editable": true,
+            "_groupId": "SitePackageB",
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_qualifiedId": "/PA/PackageA/SitePackageB/DocB",
+            "_qualifiedName": "/Initial Organization Project Updated/PackageA/SitePackageB/DocB",
+            "_refId": "master",
+            "id": "DocB",
+            "name": "DocB",
+            "ownerId": "SitePackageB",
+            "type": "Class"
+        },
+        {
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "_childViews": [],
+            "_creator": "admin",
+            "_editable": true,
+            "_groupId": "SitePackageB",
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_qualifiedId": "/PA/PackageA/SitePackageB/PackageC/DocC",
+            "_qualifiedName": "/Initial Organization Project Updated/PackageA/SitePackageB/PackageC/DocC",
+            "_refId": "master",
+            "id": "DocC",
+            "name": "DocC",
+            "ownerId": "PackageC",
+            "type": "Class"
+        }
+    ]
+}
