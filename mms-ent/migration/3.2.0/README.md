@@ -16,6 +16,13 @@ Scripts must be run the following order:
 Remove edges and nodes in project dbs that are no longer relevant (global holding bin, org holding bin, org).
 
 1. Run `update_database.py [your_database_name] [your_db_host_name] [your_database_user_name]`
+2. Connect to Alfresco's database and run these commands in order:
+```
+delete from alf_node_aspects where qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0'));
+delete from alf_node_properties where qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0'));
+delete from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0');
+delete from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0';
+```
 
 ### Updating Commit, Project and Ref Elastic Obejcts with the _projectId key
 
