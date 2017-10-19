@@ -7,7 +7,7 @@
     </description>
     <url>/mmsversion</url>
     <format default="json">argument</format>
-    <authentication>user</authentication>
+    <authentication runas="admin">none</authentication>
     <transaction>required</transaction>
     <family>MMS REST API</family>
 </webscript>
