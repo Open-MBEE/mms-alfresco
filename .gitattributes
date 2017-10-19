@@ -1,1 +1,5 @@
-*.js linguist-vendored=false
+mms-ent/docs/* linguist-vendored
+mms-ent/repo/* linguist-vendored
+mms-ent/share/* linguist-vendored
+mms-ent/runner/* linguist-vendored
+mms-ent/solr-config/* linguist-vendored
