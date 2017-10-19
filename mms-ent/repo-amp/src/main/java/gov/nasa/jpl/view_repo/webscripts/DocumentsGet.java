@@ -81,31 +81,18 @@ public class DocumentsGet extends AbstractJavaWebScript {
         return model;
     }
 
-    public JSONArray handleProducts(WebScriptRequest req) throws JSONException {
+    private JSONArray handleProducts(WebScriptRequest req) throws JSONException {
 
-        String commitId = req.getParameter("commitId");
         String refId = getRefId(req);
         String projectId = getProjectId(req);
+        String groupId = req.getParameter("groupId");
         String extended = req.getParameter("extended");
-        String depth = req.getParameter("depth");
-        String groupId = req.getServiceMatch().getTemplateVars().get("groupId");
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-        int trueDepth = groupId != null ? (depth != null ? getInt(depth) : 1) : 10000;
+        int trueDepth = 10000;
 
-        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, commitId,
-            extended != null && extended.equals("true"), trueDepth);
+        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, trueDepth, extended != null && extended.equals("true"));
     }
 
-    private int getInt(String num) {
-        try {
-            return Integer.parseInt(num);
-        } catch (NumberFormatException nfe) {
-            if(logger.isDebugEnabled()) {
-                logger.debug(String.format("%s", LogUtil.getStackTrace(nfe)));
-            }
-        }
-        return 1;
-    }
 }

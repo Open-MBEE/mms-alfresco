@@ -1381,6 +1381,32 @@ public class PostgresHelper implements GraphInterface {
         return result;
     }
 
+    // returns list of elasticId
+    public List<String> getGroupDocuments(String sysmlId, DbEdgeTypes et, int depth, DbNodeTypes nt) {
+        List<String> result = new ArrayList<>();
+        try {
+            Node n = getNodeFromSysmlId(sysmlId);
+
+            if (n == null)
+                return result;
+
+            String query = "SELECT elasticId FROM \"nodes" + workspaceId
+                + "\" WHERE id IN (SELECT id FROM get_group_docs(" + n.getId() + ", " + et.getValue() + ", '"
+                + workspaceId + "', " + depth + ", " + nt.getValue() + ", " + DbNodeTypes.DOCUMENT.getValue() + " ))";
+
+            ResultSet rs = execQuery(query);
+
+            while (rs.next()) {
+                result.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return result;
+    }
+
     public void deleteEdgesForNode(String sysmlId) {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
@@ -1633,6 +1659,17 @@ public class PostgresHelper implements GraphInterface {
                 + "        edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || ' \n" + "      )\n"
                 + "      select distinct nid from children;';\n" + "  end;\n" + "$$ language plpgsql;");
 
+            execUpdate("CREATE OR REPLACE FUNCTION get_group_docs(integer, integer, text, integer, integer, integer)\n"
+                + "  returns table(id bigint) as $$\n" + "  begin\n" + "    return query\n" + "    execute '\n"
+                + "    with recursive children(depth, nid, path, cycle, deleted, ntype) as (\n"
+                + "      select 0 as depth, node.id, ARRAY[node.id], false, node.deleted, node.nodetype from ' || format('nodes%s', $3) || '\n"
+                + "        node where node.id = ' || $1 || '  union\n"
+                + "      select (c.depth + 1) as depth, edge.child as nid, path || cast(edge.child as bigint) as path, edge.child = ANY(path) as cycle, node.deleted as deleted, node.nodetype as ntype \n"
+                + "        from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and \n"
+                + "        edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || ' and (node.nodetype <> '|| $5 ||' or nid = ' || $1 || ') \n"
+                + "      )\n" + "      select distinct nid from children where ntype = ' || $6 || ';';\n" + "  end;\n"
+                + "$$ language plpgsql;");
+
             execUpdate("CREATE OR REPLACE FUNCTION get_childviews(integer, text)\n"
                 + "  returns table(sysmlid text, aggregation text) as $$\n" + "  begin\n" + "    return query\n"
                 + "    execute '\n" + "    with childviews(sysmlid, aggregation) as (\n" + "        (\n"
@@ -1745,8 +1782,7 @@ public class PostgresHelper implements GraphInterface {
                 && (this.configConn.createStatement()
                 .execute(String.format("SELECT id FROM projects WHERE projectId = '%s'", mountId)))) {
                 this.configConn.createStatement().execute(String
-                    .format("INSERT INTO projectMounts (projectId, mountId) VALUES ('%s','%s')", projectId,
-                        mountId));
+                    .format("INSERT INTO projectMounts (projectId, mountId) VALUES ('%s','%s')", projectId, mountId));
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
