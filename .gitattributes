@@ -1,5 +1,7 @@
 mms-ent/docs/* linguist-documentation
 mms-ent/repo/* linguist-vendored
+mms-ent/repo-amp/src/main/amp/* linguist-vendored
 mms-ent/share/* linguist-vendored
+mms-ent/share-amp/src/main/amp/* linguist-vendored
 mms-ent/runner/* linguist-vendored
 mms-ent/solr-config/* linguist-vendored
