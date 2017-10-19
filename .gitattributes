@@ -1,4 +1,5 @@
-mms-ent/docs/* linguist-vendored
+*.js linguist-language=Java
+mms-ent/docs/* linguist-documentation
 mms-ent/repo/* linguist-vendored
 mms-ent/share/* linguist-vendored
 mms-ent/runner/* linguist-vendored
