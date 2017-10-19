@@ -24,7 +24,7 @@ def get_projects(dbname, host, user, password):
     projects = []
     conn = None
     try:
-        conn = psycopg2.connect("dbname=" + dbname + " user=" + user + "host=" + host + " password=" + password)
+        conn = psycopg2.connect("dbname=" + dbname + " user=" + user + " host=" + host + " password=" + password)
         print("you're connected to ")
         print(dbname)
         cur = conn.cursor()
@@ -49,7 +49,7 @@ def delete_orgs(dbname, host, user, password):
     orgId = None
     conn = None
     try:
-        conn = psycopg2.connect("dbname=" + dbname + " user=" + user + "host=" + host + " password=" + password)
+        conn = psycopg2.connect("dbname=" + dbname + " user=" + user + " host=" + host + " password=" + password)
         print("you're connected to ")
         print(dbname)
         cur = conn.cursor()
