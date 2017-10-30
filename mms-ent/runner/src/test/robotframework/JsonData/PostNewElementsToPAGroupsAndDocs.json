@@ -1,47 +1,87 @@
+
 {
     "elements": [
         {
-            "id": "group1",
-            "_isSite": true,
-            "type": "Package",
-            "name": "group1",
-            "ownerId": "PA"
-        },
-        {
-            "id": "group2",
-            "_isSite": true,
-            "type": "Package",
-            "name": "group2",
-            "ownerId": "group1"
-        },
-        {
-            "id": "package2",
-            "ownerId": "group2",
-            "type": "Package",
-            "name": "package2"
-        },
-        {
-            "id": "doc0",
+            "id": "DocP",
             "ownerId": "PA",
-            "name": "doc0",
+            "name": "DocP",
             "_appliedStereotypeIds": [
                 "_17_0_2_3_87b0275_1371477871400_792964_43374"
             ],
             "type": "Class"
         },
         {
-            "id": "doc1",
-            "ownerId": "group1",
-            "name": "doc1",
+            "id": "PackageA",
+            "ownerId": "PA",
+            "type": "Package",
+            "name": "PackageA"
+        },
+        {
+            "id": "SitePackageB",
+            "_isSite": true,
+            "type": "Package",
+            "name": "SitePackageB",
+            "ownerId": "PackageA"
+        },
+        {
+            "id": "DocA",
+            "ownerId": "PackageA",
+            "name": "DocA",
             "_appliedStereotypeIds": [
                 "_17_0_2_3_87b0275_1371477871400_792964_43374"
             ],
             "type": "Class"
         },
         {
-            "id": "doc2",
-            "ownerId": "package2",
-            "name": "doc2",
+            "id": "DocB",
+            "ownerId": "SitePackageB",
+            "name": "DocB",
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "type": "Class"
+        },
+        {
+            "id": "PackageC",
+            "ownerId": "SitePackageB",
+            "type": "Package",
+            "name": "PackageC"
+        },
+        {
+            "id": "DocC",
+            "ownerId": "PackageC",
+            "name": "DocC",
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "type": "Class"
+        },
+        {
+            "id": "SitePackageD",
+            "_isSite": true,
+            "type": "Package",
+            "name": "SitePackageD",
+            "ownerId": "PackageC"
+        },
+        {
+            "id": "DocD",
+            "ownerId": "SitePackageD",
+            "name": "DocD",
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "type": "Class"
+        },
+        {
+            "id": "PackageE",
+            "ownerId": "SitePackageD",
+            "type": "Package",
+            "name": "PackageE"
+        },
+        {
+            "id": "DocE",
+            "ownerId": "PackageE",
+            "name": "DocE",
             "_appliedStereotypeIds": [
                 "_17_0_2_3_87b0275_1371477871400_792964_43374"
             ],

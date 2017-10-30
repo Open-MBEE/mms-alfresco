@@ -253,6 +253,23 @@ create or replace function get_paths_to_node(integer, integer, text)
     select * from node_graph where path_end = ' || $1 || ' order by path_start, array_length(path,1)';
   end;
 $$ language plpgsql;
+-- Gets documents by the group level
+CREATE OR REPLACE FUNCTION get_group_docs(integer, integer, text, integer, integer, integer)
+    RETURNS table(id bigint) AS $$
+    BEGIN
+        RETURN query
+        EXECUTE '
+        WITH RECURSIVE children(depth, nid, path, cycle, deleted, ntype) as (
+            select 0 as depth, node.id, ARRAY[node.id], false, node.deleted, node.nodetype from ' || format('nodes%s', $3) || '
+            node where node.id = ' || $1 || '
+            UNION
+            select (c.depth + 1) as depth, edge.child as nid, path || cast(edge.child as bigint) as path, edge.child = ANY(path) as cycle, node.deleted as deleted, node.nodetype as ntype
+            from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and
+            edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || 'and (node.nodetype <> '|| $5 ||' or nid = ' || $1 || ')
+        )
+        select distinct nid from children where ntype = ' || $6 || ';' ;
+    END;
+$$ language plpgsql;
 
 -- get all root parents of a node
 create aggregate array_agg_mult(anyarray) (

@@ -153,6 +153,8 @@ public interface GraphInterface {
 
     List<Pair<String, String>> getChildren(String sysmlId, DbEdgeTypes et, int depth);
 
+    List<String> getGroupDocuments(String sysmlId, DbEdgeTypes et, int depth, DbNodeTypes nt);
+
     void deleteEdgesForNode(String sysmlId);
 
     void deleteEdgesForNode(String sysmlId, boolean child, DbEdgeTypes edgeType);
