@@ -25,13 +25,17 @@ RUN wget --no-check-certificate "https://download.alfresco.com/release/community
     && chmod +x tomcat/bin/run.sh \
     && ./config_alfresco.sh
 
-RUN cp ${CONFIG_DIR}/alfresco-global.properties tomcat/shared/classes/ \
-    && cp ${CONFIG_DIR}/catalina.properties tomcat/conf/ \
+RUN cp ${CONFIG_DIR}/alfresco-global.properties tomcat/shared/classes/alfresco-global.properties \
+    && cp ${CONFIG_DIR}/catalina.properties tomcat/conf/catalina.properties \
     && cp ${CONFIG_DIR}/solr4-context.xml tomcat/conf/Catalina/localhost/solr4.xml \
-    && cp ${CONFIG_DIR}/tomcat-server.xml tomcat/conf/server.xml
+    && cp ${CONFIG_DIR}/solr4-context.xml tomcat/solr4/context.xml \
+    && cp ${CONFIG_DIR}/tomcat-server.xml tomcat/conf/server.xml \
+    && cp ${CONFIG_DIR}/archive-solrcore.properties tomcat/solr4/archive-SpacesStore/conf/solrcore.properties \
+    && cp ${CONFIG_DIR}/workspace-solrcore.properties tomcat/solr4/workspace-SpacesStore/conf/solrcore.properties
 
+# Add tomcat user and config
 RUN addgroup -S tomcat \
-    && adduser -S -g tomcat tomcat \
+    && adduser -G tomcat -g "Tomcat User" -s /bin/ash -D tomcat \
     && chown -R tomcat:tomcat /usr/local/tomcat \
     && mkdir -p /mnt/alf_data/solr4 \
     && chown -R tomcat:tomcat /mnt/alf_data

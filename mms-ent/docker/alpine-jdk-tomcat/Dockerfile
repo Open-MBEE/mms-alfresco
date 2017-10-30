@@ -18,7 +18,8 @@ RUN curl -fSL "$TOMCAT_TGZ_URL" -o tomcat.tar.gz \
     && tar -xzf tomcat.tar.gz \
     && rm tomcat.tar.gz* \
     && echo "mv apache-tomcat-${TOMCAT_VERSION} tomcat" \
-    && mv apache-tomcat-${TOMCAT_VERSION} tomcat
+    && mv apache-tomcat-${TOMCAT_VERSION} tomcat \
+    &&
 
 
 RUN echo "ls -la" && ls -la \
