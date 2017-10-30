@@ -7,7 +7,8 @@ public class EmsConfig {
     public static Properties properties = new Properties();
 
     public static void setProperties(String propertiesFile) throws Exception {
-        InputStream resourceAsStream = EmsConfig.class.getClassLoader().getResourceAsStream("mms.properties");
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        InputStream resourceAsStream = classLoader.getResourceAsStream("mms.properties");
 
         if (resourceAsStream != null) {
             properties.load(resourceAsStream);
