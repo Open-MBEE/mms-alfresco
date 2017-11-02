@@ -82,7 +82,6 @@ public class MountsGet extends AbstractJavaWebScript {
 
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
-        logger.error("Accept: " + accept);
 
         model = handleMountGet(req, status, accept);
 
@@ -116,8 +115,9 @@ public class MountsGet extends AbstractJavaWebScript {
                 top.put("message", response.toString());
 
         } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSONObject");
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create the JSON response", e);
+        } catch (Exception e) {
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
         status.setCode(responseStatus.getCode());

@@ -108,6 +108,9 @@ public class ModelsGet extends ModelGet {
         printHeader(user, logger, req);
         Timer timer = new Timer();
 
+        String[] accepts = req.getHeaderValues("Accept");
+        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
+
         Map<String, Object> model = new HashMap<>();
         JSONArray elementsJson = new JSONArray();
         JSONArray errors = new JSONArray();
@@ -121,8 +124,7 @@ public class ModelsGet extends ModelGet {
                     result = handleRequest(req, depth);
                     elementsJson = result.optJSONArray(Sjm.ELEMENTS);
                 } catch (JSONException e) {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request");
-                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
                 }
             }
 
@@ -153,9 +155,6 @@ public class ModelsGet extends ModelGet {
                 if (errorMessages.length() > 0) {
                     top.put("messages", errorMessages);
                 }
-
-                String[] accepts = req.getHeaderValues("Accept");
-                String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
                 if (prettyPrint || accept.contains("webp")) {
                     model.put(Sjm.RES, top.toString(4));

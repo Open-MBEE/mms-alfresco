@@ -112,12 +112,9 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 statusCode = HttpServletResponse.SC_FORBIDDEN;
             }
         } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "JSON malformed\n");
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal stack trace:\n %s \n",
-                e.getLocalizedMessage());
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
         if (json == null) {
             model.put(Sjm.RES, createResponseJson());

@@ -95,9 +95,8 @@ public class ModelSearch extends ModelPost {
             }
             model.put(Sjm.RES, top.toString());
         } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not create the JSON response");
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create the JSON response", e);
             model.put(Sjm.RES, createResponseJson());
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         status.setCode(responseStatus.getCode());

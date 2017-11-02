@@ -76,12 +76,9 @@ public class ProjectDelete extends AbstractJavaWebScript {
                 deleteProjectFromProjectsTable(projectId);
             }
         } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response");
         } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace:\n %s \n",
-                e.getLocalizedMessage());
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
         model.put(Sjm.RES, createResponseJson());

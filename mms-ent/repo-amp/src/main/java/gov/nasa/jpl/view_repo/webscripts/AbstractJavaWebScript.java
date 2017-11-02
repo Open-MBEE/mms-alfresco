@@ -157,6 +157,15 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         }
     }
 
+    protected void log(Level level, int code, String msg, Exception e) {
+        String levelMessage = addLevelInfoToMsg(level, msg);
+        updateResponse(code, levelMessage);
+        if (level.toInt() >= logger.getLevel().toInt()) {
+            // print to response stream if >= existing log level
+            log(level, e);
+        }
+    }
+
     // If no need for string formatting (calls with no string concatenation)
     protected void log(Level level, int code, Exception e) {
         String levelMessage = addLevelInfoToMsg(level, LogUtil.getStackTrace(e));
@@ -609,7 +618,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         try {
             privateRequestJSON = (JSONObject) req.parseContent();
         } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not retrieve JSON");
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not retrieve JSON");
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
