@@ -94,13 +94,16 @@ public class ModelSearch extends ModelPost {
                 top.put("message", response.toString());
             }
             model.put(Sjm.RES, top.toString());
+        } catch (JSONException e) {
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse the JSON request", e);
         } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create the JSON response", e);
-            model.put(Sjm.RES, createResponseJson());
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
         status.setCode(responseStatus.getCode());
-
+        if (model.isEmpty()) {
+            model.put(Sjm.RES, createResponseJson());
+        }
         printFooter(user, logger, timer);
 
         return model;
