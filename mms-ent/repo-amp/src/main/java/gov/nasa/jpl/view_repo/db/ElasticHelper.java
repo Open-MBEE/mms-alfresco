@@ -250,17 +250,9 @@ public class ElasticHelper implements ElasticsearchInterface {
         while (count < ids.size()) {
             // sublist is fromIndex inclusive, toIndex exclusive
             List<String> sub = ids.subList(count, Math.min(ids.size(), count + termLimit));
-            if (count == Math.min(ids.size(), count + termLimit)) {
-                sub = new ArrayList<>();
-                sub.add(ids.get(count));
-            }
-            JSONArray elasticids = new JSONArray();
-            for (String elasticid : sub) {
-                elasticids.put(elasticid);
-            }
 
             JSONObject queryJson = new JSONObject().put("size", resultLimit)
-                .put("query", new JSONObject().put("terms", new JSONObject().put("_id", elasticids))).put("sort",
+                .put("query", new JSONObject().put("terms", new JSONObject().put("_id", sub))).put("sort",
                     new JSONArray().put(new JSONObject().put(Sjm.MODIFIED, new JSONObject().put("order", "desc"))));
 
             if (logger.isDebugEnabled()) {
@@ -442,15 +434,6 @@ public class ElasticHelper implements ElasticsearchInterface {
         return elements;
     }
 
-    private static JSONArray removeWrapper(JSONArray jsonArray) {
-        JSONArray result = new JSONArray();
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject json = jsonArray.getJSONObject(i);
-            result.put(removeWrapper(json));
-        }
-        return result;
-    }
-
     private static JSONObject removeWrapper(JSONObject jsonObject) {
         String eType = null;
         JSONObject result = new JSONObject();
@@ -531,82 +514,90 @@ public class ElasticHelper implements ElasticsearchInterface {
      */
     public JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds, String index) {
         // Create filter array
-        JSONArray filter = new JSONArray();
-        filter.put(new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp))));
-        filter.put(new JSONObject().put("terms", new JSONObject().put(Sjm.COMMITID, refsCommitIds)));
-        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.SYSMLID, sysmlId)));
+        int count = 0;
+        while (count < refsCommitIds.size()) {
+            List<String> sub = refsCommitIds.subList(count, Math.min(refsCommitIds.size(), count + termLimit));
 
-        // Create sort
-        JSONArray sort = new JSONArray();
-        JSONObject modifiedSortOpt = new JSONObject();
-        modifiedSortOpt.put("order", "desc");
-        sort.put(new JSONObject().put("_modified", modifiedSortOpt));
+            JSONArray filter = new JSONArray();
+            filter.put(new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp))));
+            filter.put(new JSONObject().put("terms", new JSONObject().put(Sjm.COMMITID, sub)));
+            filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.SYSMLID, sysmlId)));
 
-        // Add filter to bool, then bool to query
-        JSONObject bool = new JSONObject().put("bool", new JSONObject().put("filter", filter));
-        JSONObject query = new JSONObject().put("query", bool);
-        query.put("sort", sort);
-        // Add size limit
-        query.put("size", "1");
+            // Create sort
+            JSONArray sort = new JSONArray();
+            JSONObject modifiedSortOpt = new JSONObject();
+            modifiedSortOpt.put("order", "desc");
+            sort.put(new JSONObject().put("_modified", modifiedSortOpt));
 
-        Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).build();
-        SearchResult result;
-        try {
-            result = client.execute(search);
+            // Add filter to bool, then bool to query
+            JSONObject bool = new JSONObject().put("bool", new JSONObject().put("filter", filter));
+            JSONObject query = new JSONObject().put("query", bool);
+            query.put("sort", sort);
+            // Add size limit
+            query.put("size", "1");
 
-            if (result.getTotal() > 0) {
-                JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-                if(hits.size() > 0){
-                    return new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
+            Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", "")).build();
+            SearchResult result;
+            try {
+                result = client.execute(search);
+
+                if (result.getTotal() > 0) {
+                    JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+                    if (hits.size() > 0) {
+                        return new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
+                    }
                 }
+            } catch (IOException e) {
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             }
-        } catch (IOException e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            count += termLimit;
         }
-
         return new JSONObject();
     }
 
     public Map<String, String> getDeletedElementsFromCommits(List<String> commitIds, String index) {
+        int count = 0;
+        Map<String, String> deletedElements = new HashMap<>();
+        while (count < commitIds.size()) {
+            List<String> sub = commitIds.subList(count, Math.min(commitIds.size(), count + termLimit));
 
-        // Create nested query
-        JSONObject queryWrapper = new JSONObject();
+            JSONObject queryWrapper = new JSONObject();
 
-        JSONObject query = new JSONObject();
-        query.put("must", new JSONObject().put("exists", new JSONObject().put("field", "deleted.id")));
-        query.put("filter", new JSONObject().put("terms", new JSONObject().put(Sjm.ELASTICID, commitIds)));
+            JSONObject query = new JSONObject();
+            query.put("must", new JSONObject().put("exists", new JSONObject().put("field", "deleted.id")));
+            query.put("filter", new JSONObject().put("terms", new JSONObject().put(Sjm.ELASTICID, sub)));
 
-        queryWrapper.put("query", new JSONObject().put("bool", query));
+            queryWrapper.put("query", new JSONObject().put("bool", query));
 
-        Search search = new Search.Builder(queryWrapper.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).build();
+            Search search = new Search.Builder(queryWrapper.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", "")).build();
 
-        try {
-            SearchResult result = client.execute(search);
+            try {
+                SearchResult result = client.execute(search);
 
-            if (result.getTotal() > 0) {
-                JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-                Map<String, String> deletedElements = new HashMap<>();
+                if (result.getTotal() > 0) {
+                    JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
 
-                int hitSize = hits.size();
+                    int hitSize = hits.size();
 
-                for (int i = 0; i < hitSize; ++i) {
+                    for (int i = 0; i < hitSize; ++i) {
 
-                    JSONObject hitResult = new JSONObject(hits.get(i).getAsJsonObject().toString());
-                    JSONArray deletedArray = hitResult.getJSONObject("_source").getJSONArray("deleted");
+                        JSONObject hitResult = new JSONObject(hits.get(i).getAsJsonObject().toString());
+                        JSONArray deletedArray = hitResult.getJSONObject("_source").getJSONArray("deleted");
 
-                    int numDeleted = deletedArray.length();
+                        int numDeleted = deletedArray.length();
 
-                    for (int y = 0; y < numDeleted; ++y) {
-                        JSONObject deletedObject = deletedArray.getJSONObject(y);
-                        deletedElements.put(deletedObject.getString(Sjm.ELASTICID),
-                            hitResult.getJSONObject("_source").getString(Sjm.CREATED));
+                        for (int y = 0; y < numDeleted; ++y) {
+                            JSONObject deletedObject = deletedArray.getJSONObject(y);
+                            deletedElements.put(deletedObject.getString(Sjm.ELASTICID),
+                                hitResult.getJSONObject("_source").getString(Sjm.CREATED));
+                        }
                     }
                 }
-                return deletedElements;
+            } catch (IOException e) {
+                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             }
-        } catch (IOException e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            count += termLimit;
         }
-        return new HashMap<>();
+        return deletedElements;
     }
 }
