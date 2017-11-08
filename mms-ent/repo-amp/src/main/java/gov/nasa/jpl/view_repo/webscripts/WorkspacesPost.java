@@ -247,16 +247,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 } else {
                     log(Level.INFO, "Workspace is modified", HttpServletResponse.SC_OK);
                 }
-
-                // Update the name/description:
-                // Note: allowing duplicate workspace names, so no need to check for other
-                //       refs with the same name
-                if (workspaceName != null) {
-                    existingRef.createOrUpdateProperty("ems:workspace_name", workspaceName);
-                }
-                if (desc != null) {
-                    existingRef.createOrUpdateProperty("ems:description", desc);
-                }
                 finalWorkspace = existingRef;
             } else {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Workspace not found.");
@@ -278,7 +268,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             } else {
                 finalWorkspace.setPermission("SiteConsumer", String.format("Site_%s_SiteConsumer",orgNode.getName()));
             }
-            finalWorkspace.createOrUpdateProperty("ems:permission", permission);
         }
 
         return wsJson;
