@@ -29,8 +29,9 @@ def main(args):
     # Get all the projects
     projectsIds = None
     project_elastic = []
+    project_instances = {}
     try:
-        projects, project_elastic = get_projects(util.base_url, util.ticket)
+        projects, project_elastic, project_instances = get_projects(util.base_url, util.ticket)
         projectIds = list(projects)
     except urllib2.HTTPError as err:
         print(err.code)
@@ -38,6 +39,8 @@ def main(args):
         sys.exit(0)
     project_actions = []
     for key, value in project_elastic.iteritems():
+        project_actions.append(add_actions(key, value, 'element'))
+    for key, value in project_instances.iteritems():
         project_actions.append(add_actions(key, value, 'element'))
     helpers.bulk(es, project_actions)
     refs = {}
@@ -142,11 +145,15 @@ def get_projects(base_url, ticket):
     projects = json.load(util.make_request(url, headers)).get('projects')
     project_elastic = {}
     project_ids = []
+    project_instances = {}
     for project in projects:
         projectId = project['id']
         project_elastic[project['id']] = project['_elasticId']
         project_ids.append(projectId)
-    return set(project_ids), project_elastic
+        viewInstanceBinUrl = base_url + '/alfresco/service/projects/%s/refs/master/elements/%s?alf_ticket=%s' % (projectId, 'view_instances_bin_' + projectId, ticket)
+        viewInstanceBin = json.load(util.make_request(viewInstanceBinUrl, headers)).get('elements')[0]
+        project_instances[projectId] = viewInstanceBin['_elasticId']
+    return set(project_ids), project_elastic, project_instances
 
 
 if __name__ == '__main__':
