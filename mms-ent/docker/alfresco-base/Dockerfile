@@ -2,7 +2,7 @@
 # ------------------------------------------------------------
 # Basic updates and install
 # ------------------------------------------------------------
-FROM dank/alpine-jdk-tomcat:0.1
+FROM dank/alpine-jdk-tomcat
 
 MAINTAINER Dan Karlsson <dan.e.karlsson@jpl.nasa.gov>
 
@@ -32,13 +32,6 @@ RUN cp ${CONFIG_DIR}/alfresco-global.properties tomcat/shared/classes/alfresco-g
     && cp ${CONFIG_DIR}/tomcat-server.xml tomcat/conf/server.xml \
     && cp ${CONFIG_DIR}/archive-solrcore.properties tomcat/solr4/archive-SpacesStore/conf/solrcore.properties \
     && cp ${CONFIG_DIR}/workspace-solrcore.properties tomcat/solr4/workspace-SpacesStore/conf/solrcore.properties
-
-# Add tomcat user and config
-RUN addgroup -S tomcat \
-    && adduser -G tomcat -g "Tomcat User" -s /bin/ash -D tomcat \
-    && chown -R tomcat:tomcat /usr/local/tomcat \
-    && mkdir -p /mnt/alf_data/solr4 \
-    && chown -R tomcat:tomcat /mnt/alf_data
 
 EXPOSE 8080
 CMD ["tomcat/bin/run.sh"]

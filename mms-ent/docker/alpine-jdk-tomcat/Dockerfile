@@ -18,14 +18,14 @@ RUN curl -fSL "$TOMCAT_TGZ_URL" -o tomcat.tar.gz \
     && tar -xzf tomcat.tar.gz \
     && rm tomcat.tar.gz* \
     && echo "mv apache-tomcat-${TOMCAT_VERSION} tomcat" \
-    && mv apache-tomcat-${TOMCAT_VERSION} tomcat \
-    &&
+    && mv apache-tomcat-${TOMCAT_VERSION} tomcat
 
-
-RUN echo "ls -la" && ls -la \
-    && echo "Current Dir:$PWD" \
-    && ls -la bin \
-    && ls -la tomcat
+# Add tomcat user and config
+RUN addgroup -S tomcat \
+    && adduser -G tomcat -g "Tomcat User" -s /bin/ash -D tomcat \
+    && chown -R tomcat:tomcat /usr/local/tomcat \
+    && mkdir -p /mnt/alf_data/solr4 \
+    && chown -R tomcat:tomcat /mnt/alf_data
 
 WORKDIR $CATALINA_HOME
 
