@@ -16,6 +16,12 @@ InitializeOrganization
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
+BadOrganization
+	[Documentation]		"Try to create an organization with bad request"
+	[Tags]				crud		critical		0101a
+	${result} =			Post		url=${ROOT}/orgs			data=""		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${400}
+
 GetOrgs
 	[Documentation]		"Get all orgs."
 	[Tags]				crud		critical		0102

@@ -62,7 +62,6 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
                 // can't delete master
                 if (wsId.equals(NO_WORKSPACE_ID)) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Cannot delete master workspace");
-                    status.setCode(HttpServletResponse.SC_BAD_REQUEST);
                 } else {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, wsId);
                     emsNodeUtil.deleteRef(wsId);
@@ -70,21 +69,16 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
                     if (target != null) {
                         object = printObject(target);
                         target.delete(); //this didn't actually delete the alfresco folder just added deleted aspect
-                        status.setCode(HttpServletResponse.SC_OK);
+                        responseStatus.setCode(HttpServletResponse.SC_OK);
                     } else {
                         log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Could not find workspace %s", wsId);
-                        status.setCode(HttpServletResponse.SC_NOT_FOUND);
                     }
                 }
             }
         } catch (JSONException e) {
-            status.setCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON object could not be created \n");
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
         } catch (Exception e) {
-            status.setCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal stack trace error \n");
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal stack trace error:", e);
         }
 
         if (object == null) {
@@ -103,6 +97,8 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             }
         }
+
+        status.setCode(responseStatus.getCode());
 
         printFooter(user, logger, timer);
 
