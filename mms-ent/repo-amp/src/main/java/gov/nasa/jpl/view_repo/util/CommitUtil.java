@@ -9,28 +9,26 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.StampedLock;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.mail.Authenticator;
-import javax.mail.Message;
-import javax.mail.PasswordAuthentication;
-import javax.mail.SendFailedException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import com.hazelcast.client.ClientConfig;
+import com.hazelcast.client.HazelcastClient;
+import com.hazelcast.config.Config;
+import com.hazelcast.config.GroupConfig;
+import com.hazelcast.core.DistributedTask;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 
+import gov.nasa.jpl.view_repo.util.tasks.BranchTask;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -43,7 +41,6 @@ import org.json.JSONObject;
 import org.postgresql.util.PSQLException;
 
 import gov.nasa.jpl.mbee.util.Pair;
-import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.connections.JmsConnection;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
@@ -59,6 +56,7 @@ import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
  * @author cinyoung
  */
 public class CommitUtil {
+
     static Logger logger = Logger.getLogger(CommitUtil.class);
 
     public static final String TYPE_BRANCH = "BRANCH";
@@ -83,13 +81,23 @@ public class CommitUtil {
 
     private static String user = null;
 
-    private Map<String, LinkedList<LinkedBlockingDeque<String>>> commitQueue = new HashMap<>();
+    private static HazelcastInstance hcInstance = Hazelcast.newHazelcastInstance(new Config());
+    private static HazelcastInstance hcClient = null;
+    private static BlockingQueue<Runnable> mmsQueue = null;
 
     public static void setJmsConnection(JmsConnection jmsConnection) {
-        if (logger.isInfoEnabled()) {
-            logger.info("Setting jms");
-        }
+
         CommitUtil.jmsConnection = jmsConnection;
+    }
+
+    public static void initHazelcastClient() {
+        if (hcClient == null) {
+            ClientConfig clientConfig = new ClientConfig();
+            GroupConfig groupConfig = clientConfig.getGroupConfig();
+            groupConfig.setName("dev");
+            groupConfig.setPassword("dev-pass");
+            hcClient = HazelcastClient.newHazelcastClient(clientConfig);
+        }
     }
 
     public static DbNodeTypes getNodeType(JSONObject e) {
@@ -159,7 +167,6 @@ public class CommitUtil {
                     return false;
                 }
             } catch (IOException e) {
-                logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
                 return false;
             }
         }
@@ -167,7 +174,7 @@ public class CommitUtil {
         return true;
     }
 
-    private static boolean isPartProperty(JSONObject e) {
+    public static boolean isPartProperty(JSONObject e) {
         if (!e.has(Sjm.TYPE) || !e.getString(Sjm.TYPE).equals("Property")) {
             return false;
         }
@@ -414,9 +421,7 @@ public class CommitUtil {
                     try {
                         pgh.rollBackToSavepoint(sp);
                     } catch (SQLException se) {
-                        logger.error(String.format("%s", LogUtil.getStackTrace(se)));
                     }
-                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                     return false;
                 } finally {
                     pgh.close();
@@ -430,27 +435,20 @@ public class CommitUtil {
                     try {
                         pgh.rollBackToSavepoint(sp);
                     } catch (SQLException se) {
-                        logger.error(String.format("%s", LogUtil.getStackTrace(se)));
                     }
-                    logger.error(String.format("%s", LogUtil.getStackTrace(e))); //childedges are not critical
                 } finally {
                     pgh.close();
                 }
                 try {
                     eh.indexElement(delta, projectId); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
-                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
 
             } catch (Exception e1) {
-                logger.warn("Could not complete graph storage");
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("%s", LogUtil.getStackTrace(e1)));
-                }
+
                 return false;
             }
         } else {
-            logger.error("Elasticsearch insert error occurred");
             return false;
         }
 
@@ -459,136 +457,6 @@ public class CommitUtil {
         jmsWorkspace.put("deletedElements", jmsDeleted);
 
         jmsPayload.put("refs", jmsWorkspace);
-
-        return true;
-    }
-
-    public static void processNodesAndEdgesWithoutCommit(JSONArray elements, List<Map<String, String>> nodeInserts,
-        List<Map<String, String>> edgeInserts, List<Map<String, String>> childEdgeInserts) {
-
-        List<Pair<String, String>> addEdges = new ArrayList<>();
-        List<Pair<String, String>> viewEdges = new ArrayList<>();
-        List<Pair<String, String>> childViewEdges = new ArrayList<>();
-        List<String> uniqueEdge = new ArrayList<>();
-
-        for (int i = 0; i < elements.length(); i++) {
-            JSONObject e = elements.getJSONObject(i);
-            Map<String, String> node = new HashMap<>();
-            int nodeType = getNodeType(e).getValue();
-
-            if (e.has(Sjm.ELASTICID)) {
-                node.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
-                node.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
-                node.put(NODETYPE, Integer.toString(nodeType));
-                node.put(LASTCOMMIT, e.getString(Sjm.COMMITID));
-                node.put(DELETED, "false");
-                nodeInserts.add(node);
-            }
-
-            if (e.has(Sjm.OWNERID) && e.getString(Sjm.OWNERID) != null && e.getString(Sjm.SYSMLID) != null) {
-                Pair<String, String> p = new Pair<>(e.getString(Sjm.OWNERID), e.getString(Sjm.SYSMLID));
-                addEdges.add(p);
-            }
-
-            String doc = e.optString(Sjm.DOCUMENTATION);
-            if (doc != null && !doc.equals("")) {
-                processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
-            }
-            String type = e.optString(Sjm.TYPE);
-            if (type.equals("Slot") || type.equals("Property") || type.equals("Port")) {
-                processValueEdges(e, viewEdges);
-            }
-            if (e.has(Sjm.CONTENTS)) {
-                JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
-                if (contents != null) {
-                    processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
-                }
-            } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
-                JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
-                if (iss != null) {
-                    processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
-                    processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
-                }
-            }
-            if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
-                JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
-                if (owned != null) {
-                    for (int j = 0; j < owned.length(); j++) {
-                        Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(j));
-                        childViewEdges.add(p);
-                    }
-                }
-            }
-            if (isPartProperty(e)) {
-                String typeid = e.optString(Sjm.TYPEID);
-                if (typeid != null) {
-                    Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), typeid);
-                    childViewEdges.add(p);
-                }
-            }
-        }
-
-        for (Pair<String, String> e : addEdges) {
-            String edgeTest = e.first + e.second + DbEdgeTypes.CONTAINMENT.getValue();
-            if (!uniqueEdge.contains(edgeTest)) {
-                Map<String, String> edge = new HashMap<>();
-                edge.put(PARENT, e.first);
-                edge.put(CHILD, e.second);
-                edge.put(EDGETYPE, Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
-                edgeInserts.add(edge);
-                uniqueEdge.add(edgeTest);
-            }
-        }
-
-        for (Pair<String, String> e : viewEdges) {
-            String edgeTest = e.first + e.second + DbEdgeTypes.VIEW.getValue();
-            if (!uniqueEdge.contains(edgeTest)) {
-                Map<String, String> edge = new HashMap<>();
-                edge.put(PARENT, e.first);
-                edge.put(CHILD, e.second);
-                edge.put(EDGETYPE, Integer.toString(DbEdgeTypes.VIEW.getValue()));
-                childEdgeInserts.add(edge);
-                uniqueEdge.add(edgeTest);
-            }
-        }
-
-        for (Pair<String, String> e : childViewEdges) {
-            String edgeTest = e.first + e.second + DbEdgeTypes.CHILDVIEW.getValue();
-            if (!uniqueEdge.contains(edgeTest)) {
-                Map<String, String> edge = new HashMap<>();
-                edge.put(PARENT, e.first);
-                edge.put(CHILD, e.second);
-                edge.put(EDGETYPE, Integer.toString(DbEdgeTypes.CHILDVIEW.getValue()));
-                childEdgeInserts.add(edge);
-                uniqueEdge.add(edgeTest);
-            }
-        }
-    }
-
-    public static boolean insertForBranchInPast(PostgresHelper pgh, List<Map<String, String>> list, String type,
-        String projectId) {
-        Savepoint sp = null;
-        List<String> nullParents;
-        try {
-            sp = pgh.startTransaction();
-            pgh.runBulkQueries(list, type);
-            pgh.commitTransaction();
-            nullParents = pgh.findNullParents();
-            if (nullParents != null) {
-                updateNullEdges(nullParents, projectId);
-            }
-            pgh.cleanEdges();
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-            try {
-                pgh.rollBackToSavepoint(sp);
-                return false;
-            } catch (SQLException se) {
-                logger.error(String.format("%s", LogUtil.getStackTrace(se)));
-            }
-        } finally {
-            pgh.close();
-        }
 
         return true;
     }
@@ -608,7 +476,6 @@ public class CommitUtil {
             query.put("doc", new JSONObject().put("ownerId", owner));
             eh.bulkUpdateElements(updateSet, query.toString(), projectId);
         } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             return false;
         }
         return true;
@@ -631,7 +498,6 @@ public class CommitUtil {
         try {
             eh = new ElasticHelper();
         } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
@@ -761,9 +627,6 @@ public class CommitUtil {
                 pgh.updateNode(projectSysmlid, projectElastic);
             }
         } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
-            }
         }
     }
 
@@ -786,186 +649,29 @@ public class CommitUtil {
             user = services.getNodeService().getProperty(person, ContentModel.PROP_EMAIL).toString();
         }
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
+        FutureTask<JSONObject>
+            task = new DistributedTask<>(new BranchTask(projectId, src.getString(Sjm.SYSMLID), created.toString(), elasticId, isTag, source, commitId, user));
+        ExecutorService executorService = hcInstance.getExecutorService();
+        executorService.execute(task);
 
-            Timer timer = new Timer();
-            logger.info(String.format("Starting branch %s started by %s", created.getString(Sjm.SYSMLID),
-                created.optString(Sjm.CREATOR)));
-
-            boolean hasCommit = (commitId != null && !commitId.isEmpty());
-            boolean success = false;
-
-            String srcId = src.optString(Sjm.SYSMLID);
-
-            PostgresHelper pgh = new PostgresHelper();
-            pgh.setProject(projectId);
-            pgh.setWorkspace(srcId);
-
-            try {
-
-                pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId,
-                    commitId, isTag);
-                eh = new ElasticHelper();
-
-                if (hasCommit) {
-                    pgh.setWorkspace(created.getString(Sjm.SYSMLID));
-                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
-                    JSONObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
-
-                    List<Map<String, String>> nodeInserts = new ArrayList<>();
-                    List<Map<String, String>> edgeInserts = new ArrayList<>();
-                    List<Map<String, String>> childEdgeInserts = new ArrayList<>();
-
-                    processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS), nodeInserts,
-                        edgeInserts, childEdgeInserts);
-
-                    if (!nodeInserts.isEmpty() || !edgeInserts.isEmpty() || !childEdgeInserts.isEmpty()) {
-                        if (!nodeInserts.isEmpty()) {
-                            insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
-                        }
-                        if (!edgeInserts.isEmpty()) {
-                            insertForBranchInPast(pgh, edgeInserts, EDGES, projectId);
-                        }
-                        if (!childEdgeInserts.isEmpty()) {
-                            insertForBranchInPast(pgh, childEdgeInserts, EDGES, projectId);
-                        }
-                    } else {
-                        executor.shutdown();
-                        executor.awaitTermination(60L, TimeUnit.SECONDS);
-                    }
-                } else {
-                    pgh.setWorkspace(created.getString(Sjm.SYSMLID));
-                }
-
-                Set<String> elementsToUpdate = pgh.getElasticIds();
-                String payload = new JSONObject().put("script", new JSONObject().put("inline",
-                    "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
-                        + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
-                    .put("params", new JSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
-                eh.bulkUpdateElements(elementsToUpdate, payload, projectId);
-                created.put("status", "created");
-
-                success = true;
-
-            } catch (Exception e) {
-                created.put("status", "failed");
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
-                }
-            }
-
-            try {
-                eh.updateElement(elasticId, new JSONObject().put("doc", created), projectId);
-            } catch (Exception e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
-                }
-            }
-
-            if (success && isTag && hasCommit) {
-                pgh.setAsTag(created.getString(Sjm.SYSMLID));
-            }
-
-            branchJson.put("createdRef", created);
-            sendJmsMsg(branchJson, TYPE_BRANCH, src.optString(Sjm.SYSMLID), projectId);
-            logger.info(String.format("Finished branch %s started by %s finished at %s", created.getString(Sjm.SYSMLID),
-                created.optString(Sjm.CREATOR), timer));
-
-            String body = String.format("Branch %s started by %s has finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer);
-            String subject = String.format("Branch %s has finished at %s", created.getString(Sjm.SYSMLID), timer);
-
-            if (user != null) {
-                try {
-                    logger.debug("User email: " + user);
-
-                    String sender = EmsConfig.get("app.email.from");
-                    String smtpProtocol = EmsConfig.get("mail.protocol");
-                    String smtpHost = EmsConfig.get("mail.host");
-                    String smtpPort = EmsConfig.get("mail.port");
-                    String smtpUser = EmsConfig.get("mail.username");
-                    String smtpPass = EmsConfig.get("mail.password");
-
-                    if (smtpHost.isEmpty() || sender.isEmpty()) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("No smtp host");
-                        }
-                        executor.shutdown();
-                        executor.awaitTermination(60L, TimeUnit.SECONDS);
-                    }
-
-                    Properties props = System.getProperties();
-
-                    String prefix = "mail.smtp";
-                    if (!smtpProtocol.isEmpty()) {
-                        props.put("mail.transport.protocol", smtpProtocol);
-                        prefix = "mail." + smtpProtocol;
-                    }
-
-                    props.put(prefix + ".host", smtpHost);
-                    if (!smtpPort.isEmpty()) {
-                        props.put(prefix + ".port", smtpPort);
-                    }
-
-                    Authenticator auth = null;
-                    if(!smtpUser.isEmpty() && !smtpPass.isEmpty()) {
-                        props.put(prefix + ".auth", "true");
-                        auth = new Authenticator() {
-                            @Override
-                            protected PasswordAuthentication getPasswordAuthentication() {
-                                return new PasswordAuthentication(smtpUser, smtpPass);
-                            }
-                        };
-                    }
-
-                    Session session = Session.getInstance(props, auth);
-
-                    MimeMessage msg = new MimeMessage(session);
-                    msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
-                    msg.addHeader("format", "flowed");
-                    msg.addHeader("Content-Transfer-Encoding", "8bit");
-
-                    msg.setFrom(new InternetAddress(sender));
-                    msg.setReplyTo(InternetAddress.parse(sender, false));
-                    msg.setSubject(subject, "UTF-8");
-                    msg.setText(body, "UTF-8");
-                    msg.setSentDate(new Date());
-
-                    List<InternetAddress> emails = new ArrayList<>();
-                    emails.add(new InternetAddress(user));
-
-                    InternetAddress[] ias = emails.toArray(new InternetAddress[emails.size()]);
-                    msg.setRecipients(Message.RecipientType.TO, ias);
-
-                    Transport.send(msg);
-                } catch (SendFailedException sfe) {
-                    logger.error("Send failed: ", sfe);
-                } catch (Exception e) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Error sending email: ", e);
-                    }
-                }
-
-            }
-        });
-
-        executor.shutdown();
+        try {
+            JSONObject result = task.get();
+            logger.debug(result);
+        } catch (InterruptedException ie) {
+            logger.debug(String.format("Interrupted: %s", LogUtil.getStackTrace(ie)));
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ie) {
+            logger.debug(String.format("Execution exception: %s", LogUtil.getStackTrace(ie)));
+        }
 
         return branchJson;
     }
 
-    protected static boolean sendJmsMsg(JSONObject json, String eventType, String refId, String projectId) {
+    public static boolean sendJmsMsg(JSONObject json, String eventType, String refId, String projectId) {
         boolean status = false;
         if (jmsConnection != null) {
             status = jmsConnection.publish(json, eventType, refId, projectId);
-            if (logger.isDebugEnabled()) {
-                String msg = "Event: " + eventType + ", RefId: " + refId + ", ProjectId: " + projectId + "\n";
-                msg += "JSONObject: " + json;
-                logger.debug(msg);
-            }
         } else {
-            if (logger.isInfoEnabled())
-                logger.info("JMS Connection not available");
         }
 
         return status;
