@@ -28,7 +28,9 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NavigableMap;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -335,7 +337,7 @@ public class ModelGet extends AbstractJavaWebScript {
         if (artifactNode != null) {
             if (timestamp != null) {
                 // Gets the url with the nearest timestamp to the given commit
-                NavigableMap<Long, Version> versions = artifactNode.getVersionPropertyHistory();
+                NavigableMap<Long, org.alfresco.service.cmr.version.Version> versions = artifactNode.getVersionPropertyHistory();
                 nearest = emsNodeUtil.imageVersionBeforeTimestamp(versions, timestamp);
                 if (nearest != null) {
                     return new JSONObject().put("id", artifactNode.getSysmlId()).put("url",

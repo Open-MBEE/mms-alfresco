@@ -32,7 +32,6 @@ package gov.nasa.jpl.view_repo.webscripts;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -223,7 +222,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 return null;
             } else {
                 EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs");
-                EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId);
+                EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId, null, null);
 
                 if (dstWs != null) {
                     // keep history of the branch
@@ -231,14 +230,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                     dstWs.setProperty("cm:title", dstWs.getId() + "_" + srcId);
                     dstWs.setProperty("cm:name", dstWs.getName());
 
-                    dstWs.addAspect("ems:HasWorkspace");
-                    dstWs.setProperty("ems:workspace", dstWs.getNodeRef());
-
-                    dstWs.addAspect("ems:Workspace");
-                    dstWs.setProperty("ems:workspace_name", newWorkspaceId);
-
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
-                        jsonObject != null ? jsonObject.optString("source") : null, commitId);
+                        jsonObject != null ? jsonObject.optString("source") : null, commitId, services);
 
                     finalWorkspace = dstWs;
                 }

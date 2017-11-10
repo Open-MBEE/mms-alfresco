@@ -1,5 +1,5 @@
 # Model Management System
-**Alfresco version 5.0.d**
+**Alfresco version 5.1.g**
 
 Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
 ## Developer Setup

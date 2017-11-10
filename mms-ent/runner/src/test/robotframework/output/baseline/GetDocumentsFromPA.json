@@ -7,13 +7,29 @@
             "_childViews": [],
             "_creator": "admin",
             "_editable": true,
-            "_groupId": "group1",
+            "_groupId": "SitePackageD",
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "id": "doc1",
-            "name": "doc1",
-            "ownerId": "group1",
+            "id": "DocD",
+            "name": "DocD",
+            "ownerId": "SitePackageD",
+            "type": "Class"
+        },
+        {
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "_childViews": [],
+            "_creator": "admin",
+            "_editable": true,
+            "_groupId": "SitePackageB",
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "id": "DocB",
+            "name": "DocB",
+            "ownerId": "SitePackageB",
             "type": "Class"
         },
         {
@@ -26,8 +42,8 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "id": "doc0",
-            "name": "doc0",
+            "id": "DocP",
+            "name": "DocP",
             "ownerId": "PA",
             "type": "Class"
         },
@@ -38,13 +54,44 @@
             "_childViews": [],
             "_creator": "admin",
             "_editable": true,
-            "_groupId": "group2",
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "id": "doc2",
-            "name": "doc2",
-            "ownerId": "package2",
+            "id": "DocA",
+            "name": "DocA",
+            "ownerId": "PackageA",
+            "type": "Class"
+        },
+        {
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "_childViews": [],
+            "_creator": "admin",
+            "_editable": true,
+            "_groupId": "SitePackageB",
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "id": "DocC",
+            "name": "DocC",
+            "ownerId": "PackageC",
+            "type": "Class"
+        },
+        {
+            "_appliedStereotypeIds": [
+                "_17_0_2_3_87b0275_1371477871400_792964_43374"
+            ],
+            "_childViews": [],
+            "_creator": "admin",
+            "_editable": true,
+            "_groupId": "SitePackageD",
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "id": "DocE",
+            "name": "DocE",
+            "ownerId": "PackageE",
             "type": "Class"
         }
     ]

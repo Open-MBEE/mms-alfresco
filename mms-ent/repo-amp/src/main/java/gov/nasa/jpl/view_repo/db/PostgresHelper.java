@@ -22,6 +22,7 @@ import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
 
 public class PostgresHelper implements GraphInterface {
     static Logger logger = Logger.getLogger(PostgresHelper.class);
@@ -1380,6 +1381,32 @@ public class PostgresHelper implements GraphInterface {
         return result;
     }
 
+    // returns list of elasticId
+    public List<String> getGroupDocuments(String sysmlId, DbEdgeTypes et, int depth, DbNodeTypes nt) {
+        List<String> result = new ArrayList<>();
+        try {
+            Node n = getNodeFromSysmlId(sysmlId);
+
+            if (n == null)
+                return result;
+
+            String query = "SELECT elasticId FROM \"nodes" + workspaceId
+                + "\" WHERE id IN (SELECT id FROM get_group_docs(" + n.getId() + ", " + et.getValue() + ", '"
+                + workspaceId + "', " + depth + ", " + nt.getValue() + ", " + DbNodeTypes.DOCUMENT.getValue() + " ))";
+
+            ResultSet rs = execQuery(query);
+
+            while (rs.next()) {
+                result.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return result;
+    }
+
     public void deleteEdgesForNode(String sysmlId) {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
@@ -1465,7 +1492,8 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
-    public int createOrganization(String orgId, String orgName) {
+    public int createOrganization(String orgId, String orgName)
+    	throws PSQLException {
         int recordId = 0;
         try {
             connectConfig();
@@ -1483,7 +1511,11 @@ public class PostgresHelper implements GraphInterface {
                 }
             }
         } catch (PSQLException pe) {
+            ServerErrorMessage em = pe.getServerErrorMessage();
             // Do nothing for duplicate found
+            if (!em.getConstraint().equals("unique_organizations")) {
+                throw pe;
+            }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1627,6 +1659,17 @@ public class PostgresHelper implements GraphInterface {
                 + "        edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || ' \n" + "      )\n"
                 + "      select distinct nid from children;';\n" + "  end;\n" + "$$ language plpgsql;");
 
+            execUpdate("CREATE OR REPLACE FUNCTION get_group_docs(integer, integer, text, integer, integer, integer)\n"
+                + "  returns table(id bigint) as $$\n" + "  begin\n" + "    return query\n" + "    execute '\n"
+                + "    with recursive children(depth, nid, path, cycle, deleted, ntype) as (\n"
+                + "      select 0 as depth, node.id, ARRAY[node.id], false, node.deleted, node.nodetype from ' || format('nodes%s', $3) || '\n"
+                + "        node where node.id = ' || $1 || '  union\n"
+                + "      select (c.depth + 1) as depth, edge.child as nid, path || cast(edge.child as bigint) as path, edge.child = ANY(path) as cycle, node.deleted as deleted, node.nodetype as ntype \n"
+                + "        from ' || format('edges%s', $3) || ' edge, children c, ' || format('nodes%s', $3) || ' node where edge.parent = nid and node.id = edge.child and node.deleted = false and \n"
+                + "        edge.edgeType = ' || $2 || ' and not cycle and depth < ' || $4 || ' and (node.nodetype <> '|| $5 ||' or nid = ' || $1 || ') \n"
+                + "      )\n" + "      select distinct nid from children where ntype = ' || $6 || ';';\n" + "  end;\n"
+                + "$$ language plpgsql;");
+
             execUpdate("CREATE OR REPLACE FUNCTION get_childviews(integer, text)\n"
                 + "  returns table(sysmlid text, aggregation text) as $$\n" + "  begin\n" + "    return query\n"
                 + "    execute '\n" + "    with childviews(sysmlid, aggregation) as (\n" + "        (\n"
@@ -1739,8 +1782,7 @@ public class PostgresHelper implements GraphInterface {
                 && (this.configConn.createStatement()
                 .execute(String.format("SELECT id FROM projects WHERE projectId = '%s'", mountId)))) {
                 this.configConn.createStatement().execute(String
-                    .format("INSERT INTO projectMounts (projectId, mountId) VALUES " + "('%s','%s')", projectId,
-                        mountId));
+                    .format("INSERT INTO projectMounts (projectId, mountId) VALUES ('%s','%s')", projectId, mountId));
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -1803,9 +1845,8 @@ public class PostgresHelper implements GraphInterface {
                 "ALTER TABLE ONLY edges%s ADD CONSTRAINT edges%s_edgetype_fkey FOREIGN KEY (edgetype) REFERENCES edgetypes(id)",
                 childWorkspaceNameSanitized, childWorkspaceNameSanitized));
 
-            if (isTag) {
-                execUpdate(String.format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s",
-                    childWorkspaceNameSanitized, EmsConfig.get("pg.user")));
+            if (isTag && (commitId == null || commitId.isEmpty())) {
+                setAsTag(childWorkspaceNameSanitized);
             }
 
         } catch (SQLException e) {
@@ -1828,7 +1869,8 @@ public class PostgresHelper implements GraphInterface {
     public boolean isTag(String refId) {
         try {
             ResultSet rs = execQuery(String
-                .format("SELECT tag FROM refs WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false", refId));
+                .format("SELECT tag FROM refs WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false",
+                    sanitizeRefId(refId)));
             if (rs.next()) {
                 return rs.getBoolean(1);
             }
@@ -1841,11 +1883,13 @@ public class PostgresHelper implements GraphInterface {
         return false;
     }
 
-    public void updateTag(String name, String elasticId, String id) {
+    public void setAsTag(String refId) {
         try {
             execUpdate(String
-                .format("UPDATE tags SET timestamp = now(),name = '%s',elasticId = '%s' WHERE id = '%s'", name,
-                    elasticId, id));
+                .format("UPDATE refs SET tag = true WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false",
+                    sanitizeRefId(refId)));
+            execUpdate(String.format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s",
+                sanitizeRefId(refId), EmsConfig.get("pg.user")));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -2218,5 +2262,23 @@ public class PostgresHelper implements GraphInterface {
 
     private String sanitizeRefId(String refId) {
         return refId.replace("-", "_").replaceAll("\\s+", "");
+    }
+
+    public boolean isLocked() {
+        try {
+            connect();
+            PreparedStatement query = this.conn.prepareStatement("SELECT count(id) FROM queue WHERE refId = ?");
+            query.setString(1, this.workspaceId);
+            ResultSet rs = query.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true;
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return false;
     }
 }

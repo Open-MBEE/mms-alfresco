@@ -22,14 +22,14 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
-public class ProductsGet extends AbstractJavaWebScript {
-    static Logger logger = Logger.getLogger(ProductsGet.class);
+public class DocumentsGet extends AbstractJavaWebScript {
+    static Logger logger = Logger.getLogger(DocumentsGet.class);
 
-    public ProductsGet() {
+    public DocumentsGet() {
         super();
     }
 
-    public ProductsGet(Repository repository, ServiceRegistry services) {
+    public DocumentsGet(Repository repository, ServiceRegistry services) {
         this.repository = repository;
         this.services = services;
     }
@@ -40,7 +40,7 @@ public class ProductsGet extends AbstractJavaWebScript {
     }
 
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
-        ProductsGet instance = new ProductsGet(repository, getServices());
+        DocumentsGet instance = new DocumentsGet(repository, getServices());
         return instance.executeImplImpl(req, status, cache);
     }
 
@@ -81,31 +81,18 @@ public class ProductsGet extends AbstractJavaWebScript {
         return model;
     }
 
-    public JSONArray handleProducts(WebScriptRequest req) throws JSONException {
+    private JSONArray handleProducts(WebScriptRequest req) throws JSONException {
 
-        String commitId = req.getParameter("commitId");
         String refId = getRefId(req);
         String projectId = getProjectId(req);
+        String groupId = req.getParameter("groupId");
         String extended = req.getParameter("extended");
-        String depth = req.getParameter("depth");
-        String groupId = req.getServiceMatch().getTemplateVars().get("groupId");
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-        int trueDepth = groupId != null ? (depth != null ? getInt(depth) : 1) : 10000;
+        int trueDepth = 10000;
 
-        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, commitId,
-            extended != null && extended.equals("true"), trueDepth);
+        return emsNodeUtil.getDocJson((groupId != null && !groupId.equals("")) ? groupId : null, trueDepth, extended != null && extended.equals("true"));
     }
 
-    private int getInt(String num) {
-        try {
-            return Integer.parseInt(num);
-        } catch (NumberFormatException nfe) {
-            if(logger.isDebugEnabled()) {
-                logger.debug(String.format("%s", LogUtil.getStackTrace(nfe)));
-            }
-        }
-        return 1;
-    }
 }

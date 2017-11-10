@@ -33,6 +33,13 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
+    <bean id="webscript.gov.nasa.jpl.mms.refs.elements.cfids.get"
+          class="gov.nasa.jpl.view_repo.webscripts.CfIdsGet" parent="webscript"
+          singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
+
     <!-- adding new bean -->
     <bean id="webscript.gov.nasa.jpl.mms.orgs.orgs.post"
           class="gov.nasa.jpl.view_repo.webscripts.OrgPost" parent="webscript"
@@ -81,7 +88,7 @@
     </bean>
 
     <bean id="webscript.gov.nasa.jpl.mms.refs.documents.get"
-          class="gov.nasa.jpl.view_repo.webscripts.ProductsGet" parent="webscript"
+          class="gov.nasa.jpl.view_repo.webscripts.DocumentsGet" parent="webscript"
           singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />

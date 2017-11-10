@@ -161,7 +161,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 				new DateTime().getMillis());
 		try {
 			this.nodeUserHomeSubDir = userHomeFolder
-					.createFolder(this.userHomeSubDirName);
+					.createFolder(this.userHomeSubDirName, null, null);
 		} catch (Throwable ex) {
 			log(String.format(
 					"ERROR: Failed to create user-home subdirectory! %s",

@@ -14,8 +14,9 @@ import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
- * Allows heisenCache to be turned on/off
+ * Allows flags to be turned on/off
  */
+
 public abstract class FlagSet extends DeclarativeWebScript {
     static Logger logger = Logger.getLogger(FlagSet.class);
 

@@ -1,0 +1,103 @@
+{
+    "elements": [
+        {
+            "id": "cfe1",
+            "name": "cfe1",
+            "ownerId": "holding_bin_PA",
+            "type": "Property",
+            "defaultValue": {
+                "type": "LiteralString",
+                "value": "<mms-cf mms-element-id=\"cfe3\" mms-cf-type=\"doc\">sdf</mms-cf><mms-cf mms-element-id=\"cfview\" mms-cf-type=\"name\">sdf</mms-cf>"
+            }
+        },
+        {
+            "id": "cfe2",
+            "ownerId": "holding_bin_PA",
+            "type": "Slot",
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "value": "<mms-cf mms-element-id=\"cfe4\" mms-cf-type=\"doc\">sdf</mms-cf>"
+                }
+            ]
+        },
+        {
+            "id": "cfe3",
+            "name": "cfe3",
+            "documentation": "<mms-cf mms-cf-type=\"name\" mms-element-id=\"cfe5\"></mms-cf><mms-cf mms-element-id=\"cfe6\" mms-cf-type=\"name\">sdf</mms-cf>",
+            "type": "Class",
+            "ownerId": "holding_bin_PA"
+        },
+        {
+            "id": "cfe4",
+            "name": "cfe4",
+            "type": "Class",
+            "ownerId": "holding_bin_PA"
+        },
+        {
+            "id": "cfe5",
+            "name": "cfe5",
+            "type": "Class",
+            "ownerId": "holding_bin_PA"
+        },
+        {
+            "id": "cfe6",
+            "name": "cfe6",
+            "type": "Class",
+            "ownerId": "holding_bin_PA"
+        },
+        {
+            "id": "cfview",
+            "type": "Class",
+            "ownerId": "PA",
+            "_appliedStereotypeIds": [
+                "_17_0_1_232f03dc_1325612611695_581988_21583"
+            ],
+            "_contents": {
+                "type": "Expression",
+                "operand": [
+                    {
+                        "type": "InstanceValue",
+                        "instanceId": "cfviewpe1"
+                    },
+                    {
+                        "type": "InstanceValue",
+                        "instanceId": "cfviewpe2"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "cfviewpe1",
+            "type": "InstanceSpecification",
+            "ownerId": "view_instances_bin_PA",
+            "specification": {
+                "type": "LiteralString",
+                "value": "{\"type\":\"Paragraph\", \"sourceType\":\"text\", \"text\": \"<p><mms-cf mms-element-id=\\\"cfe1\\\" mms-cf-type=\\\"val\\\">blah</mms-cf></p>\"}"
+            }
+        },
+        {
+            "id": "cfviewpe2",
+            "type": "InstanceSpecification",
+            "ownerId": "view_instances_bin_PA",
+            "specification": {
+                "type": "Expression",
+                "operand": [
+                    {
+                        "type": "InstanceValue",
+                        "instanceId": "cfviewpe3"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "cfviewpe3",
+            "type": "InstanceSpecification",
+            "ownerId": "view_instances_bin_PA",
+            "specification": {
+                "type": "LiteralString",
+                "value": "{\"type\":\"Paragraph\", \"source\":\"cfe2\", \"sourceProperty\": \"value\"}"
+            }
+        }
+    ]
+}
