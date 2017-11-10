@@ -807,11 +807,15 @@ public class CommitUtil {
                 pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId,
                     commitId, isTag);
                 eh = new ElasticHelper();
-
+                logger.info(String.format("Finished copying db tables for branch %s started by %s at %s", created.getString(Sjm.SYSMLID),
+                    created.optString(Sjm.CREATOR), timer));
                 if (hasCommit) {
                     pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
                     JSONObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
+
+                    logger.info(String.format("Finished getting elements from elastic for branch %s started by %s at %s", created.getString(Sjm.SYSMLID),
+                        created.optString(Sjm.CREATOR), timer));
 
                     List<Map<String, String>> nodeInserts = new ArrayList<>();
                     List<Map<String, String>> edgeInserts = new ArrayList<>();
@@ -820,16 +824,25 @@ public class CommitUtil {
                     processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS), nodeInserts,
                         edgeInserts, childEdgeInserts);
 
+                    logger.info(String.format("Finished processing nodes and edges for branch %s started by %s at %s", created.getString(Sjm.SYSMLID),
+                        created.optString(Sjm.CREATOR), timer));
+
                     if (!nodeInserts.isEmpty() || !edgeInserts.isEmpty() || !childEdgeInserts.isEmpty()) {
                         if (!nodeInserts.isEmpty()) {
                             insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
                         }
+                        logger.info(String.format("Finished inserting nodes (%s) for branch %s started by %s at %s", nodeInserts.size(), created.getString(Sjm.SYSMLID),
+                            created.optString(Sjm.CREATOR), timer));
                         if (!edgeInserts.isEmpty()) {
                             insertForBranchInPast(pgh, edgeInserts, EDGES, projectId);
                         }
+                        logger.info(String.format("Finished inserting containment edges (%s) for branch %s started by %s at %s", edgeInserts.size(), created.getString(Sjm.SYSMLID),
+                            created.optString(Sjm.CREATOR), timer));
                         if (!childEdgeInserts.isEmpty()) {
                             insertForBranchInPast(pgh, childEdgeInserts, EDGES, projectId);
                         }
+                        logger.info(String.format("Finished inserting other edges (%s) for branch  %s started by %s at %s", childEdgeInserts.size(), created.getString(Sjm.SYSMLID),
+                            created.optString(Sjm.CREATOR), timer));
                     } else {
                         executor.shutdown();
                         executor.awaitTermination(60L, TimeUnit.SECONDS);

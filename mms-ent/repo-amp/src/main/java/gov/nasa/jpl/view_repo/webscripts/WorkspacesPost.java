@@ -112,12 +112,9 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 statusCode = HttpServletResponse.SC_FORBIDDEN;
             }
         } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "JSON malformed\n");
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal stack trace:\n %s \n",
-                e.getLocalizedMessage());
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
         if (json == null) {
             model.put(Sjm.RES, createResponseJson());
@@ -247,16 +244,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 } else {
                     log(Level.INFO, "Workspace is modified", HttpServletResponse.SC_OK);
                 }
-
-                // Update the name/description:
-                // Note: allowing duplicate workspace names, so no need to check for other
-                //       refs with the same name
-                if (workspaceName != null) {
-                    existingRef.createOrUpdateProperty("ems:workspace_name", workspaceName);
-                }
-                if (desc != null) {
-                    existingRef.createOrUpdateProperty("ems:description", desc);
-                }
                 finalWorkspace = existingRef;
             } else {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Workspace not found.");
@@ -278,7 +265,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             } else {
                 finalWorkspace.setPermission("SiteConsumer", String.format("Site_%s_SiteConsumer",orgNode.getName()));
             }
-            finalWorkspace.createOrUpdateProperty("ems:permission", permission);
         }
 
         return wsJson;

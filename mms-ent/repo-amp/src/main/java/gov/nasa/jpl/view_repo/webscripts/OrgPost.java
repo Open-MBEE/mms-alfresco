@@ -77,7 +77,6 @@ public class OrgPost extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        int statusCode = HttpServletResponse.SC_OK;
 
         try {
             if (validateRequest(req, status)) {
@@ -97,32 +96,25 @@ public class OrgPost extends AbstractJavaWebScript {
                     String siteTitle = (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;
                     String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
                     if (!ShareUtils.constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
-                        log(Level.INFO, HttpServletResponse.SC_OK, "Failed to create site.\n");
+                        log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create site.\n");
                         logger.error(String.format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
-                        statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
                     } else {
                         log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site created.\n");
-                        statusCode = HttpServletResponse.SC_OK;
                     }
                 }
 
-                if (statusCode == HttpServletResponse.SC_OK) {
+                if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
                     CommitUtil.sendOrganizationDelta(orgId, orgName, user);
                 }
 
-            } else {
-                statusCode = responseStatus.getCode();
             }
         } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON could not be created\n");
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace:\n %s \n",
-                            e.getLocalizedMessage());
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
-        status.setCode(statusCode);
+        status.setCode(responseStatus.getCode());
         model.put(Sjm.RES, createResponseJson());
 
         printFooter(user, logger, timer);
