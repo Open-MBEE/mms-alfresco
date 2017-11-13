@@ -62,9 +62,8 @@ public class MmsVersion extends AbstractJavaWebScript {
                 model.put(Sjm.RES, mmsVersion);
             }
         } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSONObject");
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
             model.put(Sjm.RES, createResponseJson());
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         status.setCode(responseStatus.getCode());

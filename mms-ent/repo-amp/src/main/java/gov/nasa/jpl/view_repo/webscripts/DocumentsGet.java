@@ -64,17 +64,16 @@ public class DocumentsGet extends AbstractJavaWebScript {
         try {
             jsonObject.put(Sjm.DOCUMENTS, filterByPermission(handleProducts(req), req));
             model.put(Sjm.RES, jsonObject.toString());
+        } catch (JSONException e) {
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
         } catch (Exception e) {
-            model.put(Sjm.RES, createResponseJson());
-            if (e instanceof JSONException) {
-                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON creation error");
-            } else {
-                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
-            }
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
         status.setCode(responseStatus.getCode());
+        if (model.isEmpty()) {
+            model.put(Sjm.RES, createResponseJson());
+        }
 
         printFooter(user, logger, timer);
 

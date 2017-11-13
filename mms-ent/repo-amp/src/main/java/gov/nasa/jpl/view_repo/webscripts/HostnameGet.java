@@ -56,9 +56,7 @@ public class HostnameGet extends AbstractJavaWebScript {
 			jsonObj.put("share", shareJson);
 
             model.put(Sjm.RES, jsonObj.toString(4));
-        }
-		catch(JSONException js)
-		{
+        } catch(JSONException js) {
 			status.setCode(Status.STATUS_NOT_FOUND);
 			status.setMessage("Cannot get host name information.");
 			status.setException(js);

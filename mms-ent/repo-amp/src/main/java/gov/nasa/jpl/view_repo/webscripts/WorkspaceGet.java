@@ -58,11 +58,9 @@ public class WorkspaceGet extends AbstractJavaWebScript{
                 object = getRef(projectId, wsID);
             }
         } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "JSON object could not be created \n");
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error stack trace \n");
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
         if(object == null){
@@ -77,12 +75,15 @@ public class WorkspaceGet extends AbstractJavaWebScript{
                 } else {
                     model.put(Sjm.RES, object);
                 }
-            } catch (JSONException e){
-                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                model.put(Sjm.RES, createResponseJson());
+            } catch (JSONException e) {
+                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
             }
         }
+
         status.setCode(responseStatus.getCode());
+        if (model.isEmpty()) {
+            model.put(Sjm.RES, createResponseJson());
+        }
 
         printFooter(user, logger, timer);
 
