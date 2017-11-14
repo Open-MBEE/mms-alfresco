@@ -9,6 +9,7 @@ import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -34,7 +35,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-public class BranchTask implements Callable<JSONObject>, Serializable {
+public class BranchTask implements Callable<SerialJSONObject>, Serializable {
 
     private static final long serialVersionUID = 561464450547556131L;
 
@@ -63,7 +64,7 @@ public class BranchTask implements Callable<JSONObject>, Serializable {
     private Boolean isTag;
     private String srcId;
     private String createdString;
-    private JSONObject branchJson = new JSONObject();
+    private SerialJSONObject branchJson = new SerialJSONObject();
 
     private transient Timer timer;
     private transient ElasticHelper eh;
@@ -81,14 +82,15 @@ public class BranchTask implements Callable<JSONObject>, Serializable {
     }
 
     @Override
-    public JSONObject call () {
+    public SerialJSONObject call () {
         return createBranch();
     }
 
-    private JSONObject createBranch() {
+    private SerialJSONObject createBranch() {
 
-        JSONObject created = new JSONObject(createdString);
-        this.timer = new Timer();
+        timer = new Timer();
+
+        SerialJSONObject created = new SerialJSONObject(createdString);
 
         branchJson.put("source", source);
 
@@ -136,15 +138,14 @@ public class BranchTask implements Callable<JSONObject>, Serializable {
             }
 
             Set<String> elementsToUpdate = pgh.getElasticIds();
-            String payload = new JSONObject().put("script", new JSONObject().put("inline",
+            String payload = new SerialJSONObject().put("script", new SerialJSONObject().put("inline",
                 "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
                     + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
-                .put("params", new JSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
+                .put("params", new SerialJSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
             eh.bulkUpdateElements(elementsToUpdate, payload, projectId);
             created.put("status", "created");
 
             success = true;
-            done();
 
         } catch (Exception e) {
             logger.info("Branch creation failed");
@@ -153,10 +154,12 @@ public class BranchTask implements Callable<JSONObject>, Serializable {
         }
 
         try {
-            eh.updateElement(elasticId, new JSONObject().put("doc", created), projectId);
+            eh.updateElement(elasticId, new SerialJSONObject().put("doc", created), projectId);
         } catch (Exception e) {
             //Do nothing
         }
+
+        done();
 
         if (success && isTag && hasCommit) {
             pgh.setAsTag(created.getString(Sjm.SYSMLID));
@@ -167,9 +170,8 @@ public class BranchTask implements Callable<JSONObject>, Serializable {
     }
 
     public void done() {
-
-        JSONObject created = new JSONObject(createdString);
         CommitUtil.sendJmsMsg(branchJson, TYPE_BRANCH, srcId, projectId);
+        JSONObject created = new JSONObject(createdString);
         String body = String.format("Branch %s started by %s has finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), this.timer);
         String subject = String.format("Branch %s has finished at %s", created.getString(Sjm.SYSMLID), this.timer);
 

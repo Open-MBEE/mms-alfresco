@@ -12,19 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.hazelcast.client.ClientConfig;
-import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.config.Config;
-import com.hazelcast.config.GroupConfig;
-import com.hazelcast.core.DistributedTask;
+import com.hazelcast.config.ItemListenerConfig;
+import com.hazelcast.config.QueueConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
@@ -81,9 +74,7 @@ public class CommitUtil {
 
     private static String user = null;
 
-    private static HazelcastInstance hcInstance = Hazelcast.newHazelcastInstance(new Config());
-    private static HazelcastInstance hcClient = null;
-    private static BlockingQueue<Runnable> mmsQueue = null;
+    private static HazelcastInstance hzInstance = null;
 
     public static void setJmsConnection(JmsConnection jmsConnection) {
 
@@ -91,12 +82,19 @@ public class CommitUtil {
     }
 
     public static void initHazelcastClient() {
-        if (hcClient == null) {
-            ClientConfig clientConfig = new ClientConfig();
-            GroupConfig groupConfig = clientConfig.getGroupConfig();
-            groupConfig.setName("dev");
-            groupConfig.setPassword("dev-pass");
-            hcClient = HazelcastClient.newHazelcastClient(clientConfig);
+        if (hzInstance == null) {
+            Config config = new Config();
+            hzInstance = Hazelcast.newHazelcastInstance(config);
+        }
+    }
+
+    private static void initHazelcastQueue(String name) {
+        Config config = hzInstance.getConfig();
+        QueueConfig queueConfig = config.getQueueConfig(name);
+        if (queueConfig.getItemListenerConfigs().isEmpty()) {
+            logger.info("Creating new queue named: " + name);
+            queueConfig.addItemListenerConfig(new ItemListenerConfig("gov.nasa.jpl.view_repo.util.QueueConsumer", true));
+            config.addQueueConfig(queueConfig);
         }
     }
 
@@ -631,37 +629,36 @@ public class CommitUtil {
     }
 
     // make sure only one branch is made at a time
-    public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created,
+    public static synchronized JSONObject sendBranch(String projectId, SerialJSONObject src, SerialJSONObject created,
         String elasticId, Boolean isTag, String source, ServiceRegistry services) {
         return sendBranch(projectId, src, created, elasticId, isTag, source, null, services);
     }
 
     // make sure only one branch is made at a time
-    public static synchronized JSONObject sendBranch(String projectId, JSONObject src, JSONObject created,
+    public static synchronized JSONObject sendBranch(String projectId, SerialJSONObject src, SerialJSONObject created,
         String elasticId, Boolean isTag, String source, String commitId, ServiceRegistry services) {
         // FIXME: need to include branch in commit history
-        JSONObject branchJson = new JSONObject();
+        SerialJSONObject branchJson = new SerialJSONObject();
 
         branchJson.put("source", source);
+        String srcId = src.getString(Sjm.SYSMLID);
 
         NodeRef person = services.getPersonService().getPersonOrNull(created.optString(Sjm.CREATOR));
         if (person != null) {
             user = services.getNodeService().getProperty(person, ContentModel.PROP_EMAIL).toString();
         }
 
-        FutureTask<JSONObject>
-            task = new DistributedTask<>(new BranchTask(projectId, src.getString(Sjm.SYSMLID), created.toString(), elasticId, isTag, source, commitId, user));
-        ExecutorService executorService = hcInstance.getExecutorService();
-        executorService.execute(task);
+        initHazelcastQueue(String.format("%s-%s", projectId, srcId));
+        BlockingQueue<BranchTask> queue = hzInstance.getQueue(String.format("%s-%s", projectId, srcId));
+        BranchTask task = new BranchTask(
+            projectId, srcId, created.toString(), elasticId, isTag, source, commitId, user
+        );
 
         try {
-            JSONObject result = task.get();
-            logger.debug(result);
+            queue.put(task);
         } catch (InterruptedException ie) {
             logger.debug(String.format("Interrupted: %s", LogUtil.getStackTrace(ie)));
             Thread.currentThread().interrupt();
-        } catch (ExecutionException ie) {
-            logger.debug(String.format("Execution exception: %s", LogUtil.getStackTrace(ie)));
         }
 
         return branchJson;

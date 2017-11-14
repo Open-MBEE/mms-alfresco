@@ -66,7 +66,7 @@ PostNewBranchForImage
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-	Sleep				${POST_DELAY_INDEXING}
+	Sleep				${BRANCH_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
