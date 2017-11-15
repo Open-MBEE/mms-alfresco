@@ -34,9 +34,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -93,14 +93,14 @@ public class MountsGet extends AbstractJavaWebScript {
     protected Map<String, Object> handleMountGet(WebScriptRequest req, Status status, String accept) {
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject top = new JSONObject();
+        SerialJSONObject top = new SerialJSONObject();
 
         try {
             String projectId = getProjectId(req);
             String refId = getRefId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
-            JSONArray mountsArray = new JSONArray().put(mountsJson);
+            SerialJSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
+            SerialJSONArray mountsArray = new SerialJSONArray().put(mountsJson);
 
             if (mountsJson.length() > 0) {
                 top.put(Sjm.PROJECTS, filterByPermission(mountsArray, req));

@@ -47,9 +47,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
-import org.json.JSONArray;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -133,7 +133,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 
 		HtmlToPdfPost instance = new HtmlToPdfPost(repository, services);
 
-		JSONObject result = instance.saveAndStartAction(req, status);
+		SerialJSONObject result = instance.saveAndStartAction(req, status);
 		appendResponseStatusInfo(instance);
 
 		status.setCode(responseStatus.getCode());
@@ -969,16 +969,16 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 	 * @param req
 	 * @param status
 	 */
-	private JSONObject saveAndStartAction(WebScriptRequest req, Status status) {
-		JSONObject postJson = null;
+	private SerialJSONObject saveAndStartAction(WebScriptRequest req, Status status) {
+		SerialJSONObject postJson = null;
 		//EmsScriptNode workspace = getWorkspace(req);
-		JSONObject reqPostJson = (JSONObject) req.parseContent();
+        SerialJSONObject reqPostJson = new SerialJSONObject(req.parseContent());
 		if (reqPostJson != null) {
 			postJson = reqPostJson;
 			if (reqPostJson.has("documents")) {
-				JSONArray documents = reqPostJson.getJSONArray("documents");
+                SerialJSONArray documents = reqPostJson.getJSONArray("documents");
 				if (documents != null) {
-					JSONObject json = documents.getJSONObject(0);
+                    SerialJSONObject json = documents.getJSONObject(0);
 					String user = AuthenticationUtil.getRunAsUser();
 					EmsScriptNode userHomeFolder = getUserHomeFolder(user);
 
@@ -990,7 +990,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 		return postJson;
 	}
 
-	private JSONObject handleCreate(JSONObject postJson, EmsScriptNode context, EmsScriptNode workspace, Status status)
+	private SerialJSONObject handleCreate(SerialJSONObject postJson, EmsScriptNode context, EmsScriptNode workspace, Status status)
 			throws JSONException {
 		EmsScriptNode jobNode = null;
 
@@ -1024,7 +1024,7 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
      * @param postJson
 	 * @param workspace
 	 */
-	public void startAction(EmsScriptNode jobNode, JSONObject postJson, EmsScriptNode workspace) {
+	public void startAction(EmsScriptNode jobNode, SerialJSONObject postJson, EmsScriptNode workspace) {
 		ActionService actionService = services.getActionService();
 		Action htmlToPdfAction = actionService.createAction(HtmlToPdfActionExecuter.NAME);
 		//htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_WORKSPACE, workspace);

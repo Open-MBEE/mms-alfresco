@@ -30,11 +30,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-public class BranchTask implements Callable<SerialJSONObject>, Serializable {
+public class CommitTask implements Callable<SerialJSONObject>, Serializable {
 
     private static final long serialVersionUID = 561464450547556131L;
 
-    static Logger logger = Logger.getLogger(BranchTask.class);
+    static Logger logger = Logger.getLogger(CommitTask.class);
 
     private static final String NODES = "nodes";
     private static final String EDGES = "edges";
@@ -65,7 +65,7 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
     private transient ElasticHelper eh;
     private transient PostgresHelper pgh;
 
-    public BranchTask(String projectId, String srcId, String createdString, String elasticId, Boolean isTag, String source, String commitId, String author) {
+    public CommitTask(String projectId, String srcId, String createdString, String elasticId, Boolean isTag, String source, String commitId, String author) {
         this.projectId = projectId;
         this.elasticId = elasticId;
         this.source = source;
@@ -78,10 +78,10 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
 
     @Override
     public SerialJSONObject call () {
-        return createBranch();
+        return processDeltas();
     }
 
-    private SerialJSONObject createBranch() {
+    private SerialJSONObject processDeltas() {
 
         timer = new Timer();
 
@@ -108,7 +108,7 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
             if (hasCommit) {
                 pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
-                SerialJSONObject modelFromCommit = new SerialJSONObject(emsNodeUtil.getModelAtCommit(commitId).toString());
+                SerialJSONObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
 
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
                 List<Map<String, String>> edgeInserts = new ArrayList<>();

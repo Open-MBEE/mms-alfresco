@@ -8,9 +8,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -27,15 +27,15 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
     static Logger logger = Logger.getLogger(LogLevelPost.class);
 
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
 
         StringBuffer msg = new StringBuffer();
 
-        JSONObject response = new JSONObject();
+        SerialJSONObject response = new SerialJSONObject();
 
-        JSONArray requestJson;
+        SerialJSONArray requestJson;
         try {
-            requestJson = (JSONArray) req.parseContent();
+            requestJson = new SerialJSONArray(req.parseContent());
         } catch (JSONException e) {
             status.setCode(HttpServletResponse.SC_BAD_REQUEST);
             response.put("msg", "JSON malformed");
@@ -45,7 +45,7 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
 
         for (int ii = 0; ii < requestJson.length(); ii++) {
             boolean failed = false;
-            JSONObject json = requestJson.getJSONObject(ii);
+            SerialJSONObject json = requestJson.getJSONObject(ii);
 
             String className = json.getString("classname");
             String level = json.getString("loglevel");
@@ -60,10 +60,10 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
 
             if (!failed) {
                 if (!response.has("loglevels")) {
-                    response.put("loglevels", new JSONArray());
+                    response.put("loglevels", new SerialJSONArray());
                 }
                 try {
-                    JSONObject levelObject = new JSONObject();
+                    SerialJSONObject levelObject = new SerialJSONObject();
                     levelObject.put("classname", className);
                     levelObject.put("loglevel", level);
                     response.getJSONArray("loglevels").put(levelObject);

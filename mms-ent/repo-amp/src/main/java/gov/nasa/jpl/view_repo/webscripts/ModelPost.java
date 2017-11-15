@@ -60,7 +60,7 @@ import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -135,8 +135,8 @@ public class ModelPost extends AbstractJavaWebScript {
     }
 
     protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user, String contentType) {
-        JSONObject newElementsObject = new JSONObject();
-        JSONObject results;
+        SerialJSONObject newElementsObject = new SerialJSONObject();
+        SerialJSONObject results;
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
         boolean overwriteJson = Boolean.parseBoolean(req.getParameter("overwrite"));
@@ -149,7 +149,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
         try {
 
-            JSONObject postJson = new JSONObject(req.getContent().getContent());
+            SerialJSONObject postJson = new SerialJSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
@@ -198,7 +198,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
     protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user, String contentType) {
 
-        JSONObject resultJson = null;
+        SerialJSONObject resultJson = null;
         String filename = null;
         Map<String, Object> model = new HashMap<>();
 
@@ -218,7 +218,7 @@ public class ModelPost extends AbstractJavaWebScript {
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        JSONObject project = emsNodeUtil.getProject(projectId);
+        SerialJSONObject project = emsNodeUtil.getProject(projectId);
         siteName = project.optString("orgId", null);
 
         if (siteName != null && validateRequest(req, status)) {
@@ -243,7 +243,7 @@ public class ModelPost extends AbstractJavaWebScript {
                         filename = extension != null ? artifactId + extension : artifactId;
 
                         // Create return json:
-                        resultJson = new JSONObject();
+                        resultJson = new SerialJSONObject();
                         resultJson.put("filename", filename);
                         // TODO: want full path here w/ path to site also, but Doris does not use it,
                         //		 so leaving it as is.

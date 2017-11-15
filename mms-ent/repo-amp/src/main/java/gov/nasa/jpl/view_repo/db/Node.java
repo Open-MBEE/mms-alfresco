@@ -3,7 +3,7 @@ package gov.nasa.jpl.view_repo.db;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 
 
 public class Node {
@@ -72,8 +72,8 @@ public class Node {
         return isDeleted;
     }
 
-    public JSONObject toJson() {
-        JSONObject json = new JSONObject();
+    public SerialJSONObject toJson() {
+        SerialJSONObject json = new SerialJSONObject();
         json.put("id", this.id);
         json.put("sysmlId", this.sysmlId);
         json.put("elasticId", this.elasticId);

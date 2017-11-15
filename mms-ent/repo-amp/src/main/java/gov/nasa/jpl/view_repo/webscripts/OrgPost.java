@@ -37,9 +37,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -81,11 +81,11 @@ public class OrgPost extends AbstractJavaWebScript {
         try {
             if (validateRequest(req, status)) {
 
-                JSONObject json = (JSONObject) req.parseContent();
-                JSONArray elementsArray = json != null ? json.optJSONArray("orgs") : null;
-                JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ?
+                SerialJSONObject json = new SerialJSONObject(req.parseContent());
+                SerialJSONArray elementsArray = json != null ? json.optJSONArray("orgs") : null;
+                SerialJSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ?
                                 elementsArray.getJSONObject(0) :
-                                new JSONObject();
+                                new SerialJSONObject();
 
                 String orgId = projJson.getString(Sjm.SYSMLID);
                 String orgName = projJson.getString(Sjm.NAME);

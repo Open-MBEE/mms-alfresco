@@ -17,9 +17,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -58,7 +58,7 @@ public class ModelDelete extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject result = null;
+        SerialJSONObject result = null;
 
         try {
             result = handleRequest(req, status, user);
@@ -77,16 +77,16 @@ public class ModelDelete extends AbstractJavaWebScript {
         return model;
     }
 
-    protected JSONObject handleRequest(WebScriptRequest req, final Status status, String user) throws JSONException, IOException {
-        JSONObject result = new JSONObject();
+    protected SerialJSONObject handleRequest(WebScriptRequest req, final Status status, String user) throws JSONException, IOException {
+        SerialJSONObject result = new SerialJSONObject();
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
-        JSONObject res = new JSONObject();
+        SerialJSONObject res = new SerialJSONObject();
         String commitId = UUID.randomUUID().toString();
-        JSONObject commit = new JSONObject();
+        SerialJSONObject commit = new SerialJSONObject();
         commit.put(Sjm.ELASTICID, commitId);
-        JSONArray commitDeleted = new JSONArray();
-        JSONArray deletedElements = new JSONArray();
+        SerialJSONArray commitDeleted = new SerialJSONArray();
+        SerialJSONArray deletedElements = new SerialJSONArray();
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -99,10 +99,10 @@ public class ModelDelete extends AbstractJavaWebScript {
             ids.add(elementId);
         } else {
             try {
-                JSONObject requestJson = new JSONObject(req.getContent().getContent());
+                SerialJSONObject requestJson = new SerialJSONObject(req.getContent().getContent());
                 this.populateSourceApplicationFromJson(requestJson);
                 if (requestJson.has(Sjm.ELEMENTS)) {
-                    JSONArray elementsJson = requestJson.getJSONArray(Sjm.ELEMENTS);
+                    SerialJSONArray elementsJson = requestJson.getJSONArray(Sjm.ELEMENTS);
                     if (elementsJson != null) {
                         for (int ii = 0; ii < elementsJson.length(); ii++) {
                             String id = elementsJson.getJSONObject(ii).getString(Sjm.SYSMLID);
@@ -121,12 +121,12 @@ public class ModelDelete extends AbstractJavaWebScript {
 
         for (String id : ids) {
             if (emsNodeUtil.getNodeBySysmlid(id).length() > 0) {
-                JSONArray nodesToDelete = emsNodeUtil.getChildren(id);
+                SerialJSONArray nodesToDelete = emsNodeUtil.getChildren(id);
                 for (int i = 0; i < nodesToDelete.length(); i++) {
-                    JSONObject node = nodesToDelete.getJSONObject(i);
+                    SerialJSONObject node = nodesToDelete.getJSONObject(i);
                     if (node != null && !elasticIds.contains(node.getString(Sjm.ELASTICID))) {
                         deletedElements.put(node);
-                        JSONObject obj = new JSONObject();
+                        SerialJSONObject obj = new SerialJSONObject();
                         obj.put(Sjm.SYSMLID, node.getString(Sjm.SYSMLID));
                         obj.put(Sjm.ELASTICID, node.getString(Sjm.ELASTICID));
                         commitDeleted.put(obj);
@@ -138,11 +138,11 @@ public class ModelDelete extends AbstractJavaWebScript {
         }
 
         if (deletedElements.length() > 0) {
-            result.put("addedElements", new JSONArray());
-            result.put("updatedElements", new JSONArray());
+            result.put("addedElements", new SerialJSONArray());
+            result.put("updatedElements", new SerialJSONArray());
             result.put("deletedElements", deletedElements);
-            commit.put("added", new JSONArray());
-            commit.put("updated", new JSONArray());
+            commit.put("added", new SerialJSONArray());
+            commit.put("updated", new SerialJSONArray());
             commit.put("deleted", commitDeleted);
             commit.put(Sjm.CREATOR, user);
             commit.put(Sjm.CREATED, date);

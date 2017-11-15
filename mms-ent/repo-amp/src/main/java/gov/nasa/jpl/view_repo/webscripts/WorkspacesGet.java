@@ -10,9 +10,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -61,7 +61,7 @@ public class WorkspacesGet extends AbstractJavaWebScript{
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject object = null;
+        SerialJSONObject object = null;
         String projectId = getProjectId(req);
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
@@ -99,9 +99,9 @@ public class WorkspacesGet extends AbstractJavaWebScript{
         return model;
     }
 
-    protected JSONObject handleWorkspace (String projectId, boolean findDeleted) throws JSONException{
-        JSONObject json = new JSONObject();
-        JSONArray jArray = null;
+    protected SerialJSONObject handleWorkspace (String projectId, boolean findDeleted) throws JSONException{
+        SerialJSONObject json = new SerialJSONObject();
+        SerialJSONArray jArray = null;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
         jArray = emsNodeUtil.getRefsJson();
         json.put("refs", jArray);

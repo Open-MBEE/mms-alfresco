@@ -9,7 +9,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -38,16 +38,16 @@ public class HostnameGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
 		Map< String, Object > model = new HashMap<>();
-		JSONObject jsonObj = new JSONObject();
+        SerialJSONObject jsonObj = new SerialJSONObject();
 		SysAdminParams sysAdminParams = this.services.getSysAdminParams();
 
-		JSONObject alfrescoJson = new JSONObject();
+        SerialJSONObject alfrescoJson = new SerialJSONObject();
 		try{
 			alfrescoJson.put("protocol", sysAdminParams.getAlfrescoProtocol());
 			alfrescoJson.put("host", sysAdminParams.getAlfrescoHost());
 			alfrescoJson.put("port", sysAdminParams.getAlfrescoPort());
 
-			JSONObject shareJson = new JSONObject();
+            SerialJSONObject shareJson = new SerialJSONObject();
 			shareJson.put("protocol", sysAdminParams.getShareProtocol());
 			shareJson.put("host", sysAdminParams.getShareHost());
 			shareJson.put("port", sysAdminParams.getSharePort());

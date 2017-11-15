@@ -11,9 +11,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -59,7 +59,7 @@ public class DocumentsGet extends AbstractJavaWebScript {
             }
         }
 
-        JSONObject jsonObject = new JSONObject();
+        SerialJSONObject jsonObject = new SerialJSONObject();
 
         try {
             jsonObject.put(Sjm.DOCUMENTS, filterByPermission(handleProducts(req), req));
@@ -80,7 +80,7 @@ public class DocumentsGet extends AbstractJavaWebScript {
         return model;
     }
 
-    private JSONArray handleProducts(WebScriptRequest req) throws JSONException {
+    private SerialJSONArray handleProducts(WebScriptRequest req) throws JSONException {
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);

@@ -42,9 +42,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -95,10 +95,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
         int statusCode = HttpServletResponse.SC_OK;
-        JSONObject json = null;
+        SerialJSONObject json = null;
         try {
             if (validateRequest(req, status)) {
-                JSONObject reqJson = (JSONObject) req.parseContent();
+                SerialJSONObject reqJson = new SerialJSONObject(req.parseContent());
                 String projectId = getProjectId(req);
                 String sourceWorkspaceParam = reqJson.getJSONArray("refs").getJSONObject(0).optString("parentRefId");
                 String newName = reqJson.getJSONArray("refs").getJSONObject(0).optString("name");
@@ -124,8 +124,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 if (!Utils.isNullOrEmpty(response.toString())) {
                     json.put("message", response.toString());
                 }
-                JSONObject resultRefs = new JSONObject();
-                JSONArray refsList = new JSONArray();
+                SerialJSONObject resultRefs = new SerialJSONObject();
+                SerialJSONArray refsList = new SerialJSONArray();
                 refsList.put(json);
                 resultRefs.put("refs", refsList);
                 model.put(Sjm.RES, resultRefs);
@@ -141,8 +141,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         return model;
     }
 
-    public JSONObject createWorkSpace(String projectId, String sourceWorkId, String newWorkName, String commitId,
-        JSONObject jsonObject, String user, Status status) throws JSONException {
+    public SerialJSONObject createWorkSpace(String projectId, String sourceWorkId, String newWorkName, String commitId,
+        SerialJSONObject jsonObject, String user, Status status) throws JSONException {
         status.setCode(HttpServletResponse.SC_OK);
         if (Debug.isOn()) {
             Debug.outln(
@@ -151,7 +151,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         }
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, sourceWorkId == null ? NO_WORKSPACE_ID : sourceWorkId);
-        JSONObject project = emsNodeUtil.getProject(projectId);
+        SerialJSONObject project = emsNodeUtil.getProject(projectId);
         EmsScriptNode orgNode = getSiteNode(project.optString("orgId"));
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
@@ -163,8 +163,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
         String sourceWorkspaceId = null;
         String newWorkspaceId = null;
-        JSONObject wsJson = new JSONObject();
-        JSONObject srcJson = new JSONObject();
+        SerialJSONObject wsJson = new SerialJSONObject();
+        SerialJSONObject srcJson = new SerialJSONObject();
         String workspaceName = null;
         String desc = null;
         String elasticId = null;
@@ -176,7 +176,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         // and ignore any URL parameters:
         if (jsonObject != null) {
 
-            JSONArray jarr = jsonObject.getJSONArray("refs");
+            SerialJSONArray jarr = jsonObject.getJSONArray("refs");
             wsJson = jarr.getJSONObject(0);  // Will only post/update one workspace
             sourceWorkspaceId = wsJson.optString("parentRefId", null);
             srcJson = emsNodeUtil.getRefJson(sourceWorkspaceId);

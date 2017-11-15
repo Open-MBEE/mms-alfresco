@@ -45,9 +45,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -57,7 +57,7 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 
 /**
- * Model search service that returns a JSONArray of elements
+ * Model search service that returns a SerialJSONArray of elements
  *
  * @author cinyoung
  */
@@ -86,8 +86,8 @@ public class ModelSearch extends ModelPost {
 
 
         try {
-            JSONObject top = new JSONObject();
-            JSONArray elementsJson = executeSearchRequest(req);
+            SerialJSONObject top = new SerialJSONObject();
+            SerialJSONArray elementsJson = executeSearchRequest(req);
             top.put("elements", elementsJson);
 
             if (!Utils.isNullOrEmpty(response.toString())) {
@@ -106,27 +106,27 @@ public class ModelSearch extends ModelPost {
         return model;
     }
 
-    private JSONArray executeSearchRequest(WebScriptRequest req) throws JSONException, IOException {
+    private SerialJSONArray executeSearchRequest(WebScriptRequest req) throws JSONException, IOException {
 
-        JSONArray elements = new JSONArray();
+        SerialJSONArray elements = new SerialJSONArray();
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        JSONObject json = (JSONObject) req.parseContent();
+        SerialJSONObject json = new SerialJSONObject(req.parseContent());
         boolean checkIfPropOrSlot = Boolean.parseBoolean(req.getParameter("checkType"));
         try {
-            JSONArray elasticResult = emsNodeUtil.search(json);
+            SerialJSONArray elasticResult = emsNodeUtil.search(json);
             elasticResult = filterByPermission(elasticResult, req);
-            Map<String, JSONArray> bins = new HashMap<>();
+            Map<String, SerialJSONArray> bins = new HashMap<>();
             for (int i = 0; i < elasticResult.length(); i++) {
-                JSONObject e = elasticResult.getJSONObject(i);
+                SerialJSONObject e = elasticResult.getJSONObject(i);
 
                 if (checkIfPropOrSlot) {
                     String eprojId = e.getString(Sjm.PROJECTID);
                     String erefId = e.getString(Sjm.REFID);
-                    JSONObject ownere = null;
+                    SerialJSONObject ownere = null;
                     if (e.getString(Sjm.TYPE).equals("Property")) {
                         ownere = getJsonBySysmlId(eprojId, erefId, e.getString(Sjm.OWNERID));
                     } else if (e.getString(Sjm.TYPE).equals("Slot")) {
@@ -139,11 +139,11 @@ public class ModelSearch extends ModelPost {
                 }
                 String key = e.getString(Sjm.PROJECTID) + " " +  e.getString(Sjm.REFID);
                 if (!bins.containsKey(key)) {
-                    bins.put(key, new JSONArray());
+                    bins.put(key, new SerialJSONArray());
                 }
                 bins.get(key).put(e);
             }
-            for (Entry<String, JSONArray> entry: bins.entrySet()) {
+            for (Entry<String, SerialJSONArray> entry: bins.entrySet()) {
                 String[] split = entry.getKey().split(" ");
                 projectId = split[0];
                 refId = split[1];
@@ -166,7 +166,7 @@ public class ModelSearch extends ModelPost {
      * @param sysmlId of the Element to find grandowner of
      * @return JSONObject
      */
-    private JSONObject getJsonBySysmlId(String projectId, String refId, String sysmlId) {
+    private SerialJSONObject getJsonBySysmlId(String projectId, String refId, String sysmlId) {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         return emsNodeUtil.getNodeBySysmlid(sysmlId);
     }
@@ -179,7 +179,7 @@ public class ModelSearch extends ModelPost {
      * @param sysmlId of the Element to find grandowner of
      * @return JSONObject
      */
-    private JSONObject getGrandOwnerJson(String projectId, String refId, String sysmlId) {
+    private SerialJSONObject getGrandOwnerJson(String projectId, String refId, String sysmlId) {
         return getJsonBySysmlId(projectId, refId, getJsonBySysmlId(projectId, refId, sysmlId).optString(Sjm.OWNERID));
     }
 }

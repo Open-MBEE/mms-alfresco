@@ -44,9 +44,11 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.springframework.extensions.surf.util.Content;
+import org.springframework.extensions.surf.util.InputStreamContent;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -112,9 +114,9 @@ public class ModelsGet extends ModelGet {
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
         Map<String, Object> model = new HashMap<>();
-        JSONArray elementsJson = new JSONArray();
-        JSONArray errors = new JSONArray();
-        JSONObject result = new JSONObject();
+        SerialJSONArray elementsJson = new SerialJSONArray();
+        SerialJSONArray errors = new SerialJSONArray();
+        SerialJSONObject result = new SerialJSONObject();
 
         try {
 
@@ -128,21 +130,21 @@ public class ModelsGet extends ModelGet {
                 }
             }
 
-            JSONObject top = new JSONObject();
+            SerialJSONObject top = new SerialJSONObject();
             if (elementsJson != null && elementsJson.length() > 0) {
-                JSONArray elements = filterByPermission(elementsJson, req);
+                SerialJSONArray elements = filterByPermission(elementsJson, req);
                 if (elements.length() == 0) {
                     log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
                 }
 
                 top.put(Sjm.ELEMENTS, elements);
 
-                JSONArray errorMessages = new JSONArray();
+                SerialJSONArray errorMessages = new SerialJSONArray();
                 for (String level : Sjm.ERRORLEVELS) {
                     errors = result.optJSONArray(level);
                     if (errors != null && errors.length() > 0) {
                         for (int i = 0; i < errors.length(); i++) {
-                            JSONObject errorPayload = new JSONObject();
+                            SerialJSONObject errorPayload = new SerialJSONObject();
                             errorPayload.put("code", HttpServletResponse.SC_NOT_FOUND);
                             errorPayload.put(Sjm.SYSMLID, errors.get(i));
                             errorPayload.put("message", String.format("Element %s was not found", errors.get(i)));
@@ -163,7 +165,7 @@ public class ModelsGet extends ModelGet {
                 }
             } else {
                 log(Level.INFO, HttpServletResponse.SC_OK, "No elements found");
-                top.put(Sjm.ELEMENTS, new JSONArray());
+                top.put(Sjm.ELEMENTS, new SerialJSONArray());
                 model.put(Sjm.RES, top);
             }
         } catch (Exception e) {
@@ -178,27 +180,26 @@ public class ModelsGet extends ModelGet {
     }
 
     /**
-     * Wrapper for handling a request and getting the appropriate JSONArray of
+     * Wrapper for handling a request and getting the appropriate SerialJSONArray of
      * elements
      *
      * @param req
      * @return
      * @throws IOException
      */
-    private JSONObject handleRequest(WebScriptRequest req, final Long maxDepth)
-        throws JSONException, IOException, SQLException {
-        JSONObject requestJson = (JSONObject) req.parseContent();
+    private SerialJSONObject handleRequest(WebScriptRequest req, final Long maxDepth) throws Exception {
+        SerialJSONObject requestJson = new SerialJSONObject(req.parseContent());
         if (requestJson.has(Sjm.ELEMENTS)) {
-            JSONArray elementsToFindJson = requestJson.getJSONArray(Sjm.ELEMENTS);
+            SerialJSONArray elementsToFindJson = requestJson.getJSONArray(Sjm.ELEMENTS);
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
             boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
-            JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+            SerialJSONObject mountsJson = new SerialJSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
 
-            JSONArray found = new JSONArray();
-            JSONObject result = new JSONObject();
+            SerialJSONArray found = new SerialJSONArray();
+            SerialJSONObject result = new SerialJSONObject();
 
             Set<String> uniqueElements = new HashSet<>();
             for (int i = 0; i < elementsToFindJson.length(); i++) {
@@ -209,7 +210,7 @@ public class ModelsGet extends ModelGet {
             result.put(Sjm.WARN, uniqueElements);
             return result;
         } else {
-            return new JSONObject();
+            return new SerialJSONObject();
         }
     }
 }

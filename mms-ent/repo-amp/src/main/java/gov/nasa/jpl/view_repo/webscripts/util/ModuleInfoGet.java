@@ -13,8 +13,8 @@ import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.json.JSONObject;
-import org.json.JSONArray;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -35,12 +35,12 @@ public class ModuleInfoGet extends DeclarativeWebScript {
         Map<String, Object> model = new HashMap<>();
 
         ModuleService moduleService = (ModuleService)this.services.getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
-        JSONObject json = new JSONObject();
-        JSONArray modulesJson = new JSONArray();
+        SerialJSONObject json = new SerialJSONObject();
+        SerialJSONArray modulesJson = new SerialJSONArray();
 
         List< ModuleDetails > modules = moduleService.getAllModules();
         for (ModuleDetails md: modules) {
-            JSONObject jsonModule = new JSONObject();
+            SerialJSONObject jsonModule = new SerialJSONObject();
             jsonModule.put( "title", md.getTitle() );
             jsonModule.put( "version", md.getModuleVersionNumber() );
             modulesJson.put( jsonModule );
@@ -55,13 +55,13 @@ public class ModuleInfoGet extends DeclarativeWebScript {
 
     //Placed within for testing purposes!
     // TODO: Remove once finished with MmsVersion service
-    public static JSONObject checkMMSversion(WebScriptRequest req) {
+    public static SerialJSONObject checkMMSversion(WebScriptRequest req) {
         boolean matchVersions = AbstractJavaWebScript.getBooleanArg(req, "mmsVersion", false);
-        JSONObject jsonVersion = null;
+        SerialJSONObject jsonVersion = null;
         String mmsVersion = NodeUtil.getMMSversion();
         if (logger.isDebugEnabled()) logger.debug("Check versions?" + matchVersions);
         if (matchVersions) {
-            jsonVersion = new JSONObject();
+            jsonVersion = new SerialJSONObject();
             jsonVersion.put("version", mmsVersion);
         }
         return jsonVersion;
