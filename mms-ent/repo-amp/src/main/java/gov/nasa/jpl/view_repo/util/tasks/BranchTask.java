@@ -5,10 +5,15 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.GraphInterface;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
-import gov.nasa.jpl.view_repo.util.*;
-import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
+import gov.nasa.jpl.view_repo.util.CommitUtil;
+import gov.nasa.jpl.view_repo.util.EmsConfig;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import gov.nasa.jpl.view_repo.util.Sjm;
+import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
@@ -108,7 +113,7 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
             if (hasCommit) {
                 pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
-                SerialJSONObject modelFromCommit = new SerialJSONObject(emsNodeUtil.getModelAtCommit(commitId).toString());
+                JSONObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
 
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
                 List<Map<String, String>> edgeInserts = new ArrayList<>();
@@ -166,7 +171,7 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
 
     public void done() {
         CommitUtil.sendJmsMsg(branchJson, TYPE_BRANCH, srcId, projectId);
-        SerialJSONObject created = new SerialJSONObject(createdString);
+        JSONObject created = new JSONObject(createdString);
         String body = String.format("Branch %s started by %s has finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), this.timer);
         String subject = String.format("Branch %s has finished at %s", created.getString(Sjm.SYSMLID), this.timer);
 
@@ -240,7 +245,7 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
         }
     }
 
-    public static void processNodesAndEdgesWithoutCommit(SerialJSONArray elements, List<Map<String, String>> nodeInserts,
+    public static void processNodesAndEdgesWithoutCommit(JSONArray elements, List<Map<String, String>> nodeInserts,
         List<Map<String, String>> edgeInserts, List<Map<String, String>> childEdgeInserts) {
 
         List<Pair<String, String>> addEdges = new ArrayList<>();
@@ -249,7 +254,7 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
         List<String> uniqueEdge = new ArrayList<>();
 
         for (int i = 0; i < elements.length(); i++) {
-            SerialJSONObject e = elements.getJSONObject(i);
+            JSONObject e = elements.getJSONObject(i);
             Map<String, String> node = new HashMap<>();
             int nodeType = CommitUtil.getNodeType(e).getValue();
 
@@ -276,19 +281,19 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                 CommitUtil.processValueEdges(e, viewEdges);
             }
             if (e.has(Sjm.CONTENTS)) {
-                SerialJSONObject contents = e.optJSONObject(Sjm.CONTENTS);
+                JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                 if (contents != null) {
                     CommitUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                 }
             } else if (e.has(Sjm.SPECIFICATION) && nodeType == GraphInterface.DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
-                SerialJSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
+                JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
                 if (iss != null) {
                     CommitUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                     CommitUtil.processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                 }
             }
             if (nodeType == GraphInterface.DbNodeTypes.VIEW.getValue() || nodeType == GraphInterface.DbNodeTypes.DOCUMENT.getValue()) {
-                SerialJSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
+                JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
                 if (owned != null) {
                     for (int j = 0; j < owned.length(); j++) {
                         Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(j));

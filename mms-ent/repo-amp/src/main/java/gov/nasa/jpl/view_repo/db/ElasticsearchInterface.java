@@ -1,8 +1,8 @@
 package gov.nasa.jpl.view_repo.db;
 
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
+import org.json.JSONArray;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,35 +17,35 @@ public interface ElasticsearchInterface {
 
     void createIndex(String index) throws IOException;
 
-    SerialJSONObject getElementByElasticId(String id, String index) throws IOException;
+    JSONObject getElementByElasticId(String id, String index) throws IOException;
 
-    SerialJSONArray getCommitHistory(String sysmlid, String index) throws IOException;
+    JSONArray getCommitHistory(String sysmlid, String index) throws IOException;
 
     Boolean checkForElasticIdInCommit(String sysmlid, String commitId, String index) throws IOException;
 
-    SerialJSONObject getCommitByElasticId(String id, String index) throws IOException;
+    JSONObject getCommitByElasticId(String id, String index) throws IOException;
 
-    SerialJSONObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException;
+    JSONObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException;
 
-    SerialJSONArray getElementsFromElasticIds(List<String> ids, String index) throws IOException;
+    JSONArray getElementsFromElasticIds(List<String> ids, String index) throws IOException;
 
-    ElasticResult indexElement(SerialJSONObject j, String index) throws IOException;
+    ElasticResult indexElement(JSONObject j, String index) throws IOException;
 
     boolean refreshIndex() throws IOException;
 
-    boolean updateElement(String id, SerialJSONObject payload, String index) throws JSONException, IOException;
+    boolean updateElement(String id, JSONObject payload, String index) throws JSONException, IOException;
 
-    boolean bulkIndexElements(SerialJSONArray bulkElements, String operation, boolean refresh, String index) throws JSONException, IOException;
+    boolean bulkIndexElements(JSONArray bulkElements, String operation, boolean refresh, String index) throws JSONException, IOException;
 
     boolean bulkUpdateElements(Set<String> elements, String payload, String index) throws JSONException, IOException;
 
-    SerialJSONArray search(SerialJSONObject queryJson) throws IOException;
+    JSONArray search(JSONObject queryJson) throws IOException;
 
-    SerialJSONObject bulkDeleteByType(String type, ArrayList<String> ids, String index);
+    JSONObject bulkDeleteByType(String type, ArrayList<String> ids, String index);
 
-    SerialJSONObject deleteElasticElements(String field, String projectId);
+    JSONObject deleteElasticElements(String field, String projectId);
 
-    SerialJSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds, String index);
+    JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds, String index);
 
     Map<String, String> getDeletedElementsFromCommits(List<String> commitIds, String index);
 }

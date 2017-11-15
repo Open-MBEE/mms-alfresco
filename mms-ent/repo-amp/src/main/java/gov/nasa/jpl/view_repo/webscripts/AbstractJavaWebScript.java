@@ -40,7 +40,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -64,7 +64,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     private static Logger logger = Logger.getLogger(AbstractJavaWebScript.class);
 
     static boolean checkMmsVersions = false;
-    private SerialJSONObject privateRequestJSON = null;
+    private JSONObject privateRequestJSON = null;
 
     // injected members
     protected ServiceRegistry services;        // get any of the Alfresco services
@@ -275,7 +275,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
                     arrString = Arrays.toString((Object[]) obj);
                 }
                 formattedMsg = m.replaceFirst(arrString);
-            } else { // captures Timer, EmsScriptNode, Date, primitive types, NodeRef, SerialJSONObject type objects; applies toString() on all
+            } else { // captures Timer, EmsScriptNode, Date, primitive types, NodeRef, JSONObject type objects; applies toString() on all
                 formattedMsg = m.replaceFirst(obj == null ? "null" : obj.toString());
             }
             m = p.matcher(formattedMsg);
@@ -446,7 +446,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      * @param postJson
      * @throws JSONException
      */
-    protected void populateSourceApplicationFromJson(SerialJSONObject postJson) throws JSONException {
+    protected void populateSourceApplicationFromJson(JSONObject postJson) throws JSONException {
         requestSourceApplication = postJson.optString("source");
     }
 
@@ -490,9 +490,9 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         // Calls getBooleanArg to check if they have request for mms version
         // TODO: Possibly remove this and implement as an aspect?
         boolean incorrectVersion = true;
-        SerialJSONObject jsonRequest = null;
+        JSONObject jsonRequest = null;
         char logCase = '0';
-        SerialJSONObject jsonVersion = null;
+        JSONObject jsonVersion = null;
         String mmsVersion = null;
 
         // Checks if the argument is mmsVersion and returns the value specified
@@ -568,7 +568,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
 
     /**
      * getMMSversion<br>
-     * Returns a SerialJSONObject representing the mms version being used. It's format
+     * Returns a JSONObject representing the mms version being used. It's format
      * will be
      *
      * <pre>
@@ -577,10 +577,10 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      * }
      * </pre>
      *
-     * @return SerialJSONObject mmsVersion
+     * @return JSONObject mmsVersion
      */
-    public static SerialJSONObject getMMSversion() {
-        SerialJSONObject version = new SerialJSONObject();
+    public static JSONObject getMMSversion() {
+        JSONObject version = new JSONObject();
         version.put("mmsVersion", NodeUtil.getMMSversion());
         return version;
     }
@@ -608,7 +608,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     /**
      * setRequestJSON <br>
      * This will set the AbstractJavaWebScript data member requestJSON. It will
-     * make the parsedContent SerialJSONObject remain within the scope of the
+     * make the parsedContent JSONObject remain within the scope of the
      * AbstractJavaWebScript. {@link}
      *
      * @param req WebScriptRequest
@@ -616,14 +616,14 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     private void setRequestJSON(WebScriptRequest req) {
 
         try {
-            privateRequestJSON = new SerialJSONObject(req.parseContent());
+            privateRequestJSON = (JSONObject) req.parseContent();
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not retrieve JSON");
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
 
-    private SerialJSONObject getRequestJSON(WebScriptRequest req) {
+    private JSONObject getRequestJSON(WebScriptRequest req) {
         // Returns immediately if requestJSON has already been set before checking MMS Versions
         if (privateRequestJSON == null) {
             return null;

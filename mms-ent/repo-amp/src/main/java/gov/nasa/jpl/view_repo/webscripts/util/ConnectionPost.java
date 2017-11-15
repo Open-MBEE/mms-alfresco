@@ -5,7 +5,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -20,7 +20,7 @@ public class ConnectionPost extends DeclarativeWebScript {
     protected Map< String, Object > executeImpl( WebScriptRequest req,
                                                  Status status, Cache cache ) {
         Map<String, Object> model = new HashMap<>();
-        SerialJSONObject json = new SerialJSONObject(req.parseContent());
+        JSONObject json = (JSONObject) req.parseContent();
 
 
         ConnectionInterface connection = null;
@@ -29,7 +29,7 @@ public class ConnectionPost extends DeclarativeWebScript {
             connection = new JmsConnection();
         }
 
-        SerialJSONObject jsonResponse = new SerialJSONObject();
+        JSONObject jsonResponse = new JSONObject();
         if (connection == null) {
             jsonResponse.put( "msg", "connection not found" );
             status.setCode( HttpServletResponse.SC_NOT_FOUND );

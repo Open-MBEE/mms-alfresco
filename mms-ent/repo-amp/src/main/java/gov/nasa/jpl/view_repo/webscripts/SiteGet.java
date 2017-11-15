@@ -42,9 +42,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
+import org.json.JSONArray;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -92,15 +92,15 @@ public class SiteGet extends AbstractJavaWebScript {
                 return model;
             }
         }
-        SerialJSONObject json = null;
+        JSONObject json = null;
 
         try {
             if (validateRequest(req, status)) {
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
 
-                SerialJSONArray jsonArray = handleSite(projectId, refId);
-                json = new SerialJSONObject();
+                JSONArray jsonArray = handleSite(projectId, refId);
+                json = new JSONObject();
                 json.put("groups", jsonArray);
             }
         } catch (JSONException e) {
@@ -129,10 +129,10 @@ public class SiteGet extends AbstractJavaWebScript {
      *
      * @throws IOException
      */
-    private SerialJSONArray handleSite(String projectId, String refId)
+    private JSONArray handleSite(String projectId, String refId)
                     throws IOException {
 
-        SerialJSONArray json = new SerialJSONArray();
+        JSONArray json = new JSONArray();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         ElasticHelper eh = new ElasticHelper();
@@ -149,14 +149,14 @@ public class SiteGet extends AbstractJavaWebScript {
             for (Node n : alfSites) {
                 alfs.add(n.getSysmlId());
             }
-            SerialJSONArray elements = eh.getElementsFromElasticIds(ids, projectId);
+            JSONArray elements = eh.getElementsFromElasticIds(ids, projectId);
 
             if (logger.isDebugEnabled())
                 logger.debug("handleSite: " + elements);
 
             for (int i = 0; i < elements.length(); i++) {
-                SerialJSONObject o = elements.getJSONObject(i);
-                SerialJSONObject newo = new SerialJSONObject();
+                JSONObject o = elements.getJSONObject(i);
+                JSONObject newo = new JSONObject();
 
                 if (o.has(Sjm.NAME)) {
                     newo.put("_" + Sjm.NAME, o.getString(Sjm.NAME));

@@ -11,7 +11,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -50,7 +50,7 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        SerialJSONObject object = null;
+        JSONObject object = null;
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
@@ -105,8 +105,8 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
         return model;
     }
 
-    private SerialJSONObject printObject(EmsScriptNode workspace) throws JSONException {
-        return new SerialJSONObject();
+    private JSONObject printObject(EmsScriptNode workspace) throws JSONException {
+        return new JSONObject();
     }
 }
 

@@ -1,15 +1,15 @@
 package gov.nasa.jpl.view_repo.connections;
 
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 
 public interface ConnectionInterface {
     void setRefId(String refId);
 
     void setProjectId(String projectId);
 
-    boolean publish(SerialJSONObject jsonObject, String eventType, String workspaceId, String projectId);
+    boolean publish(JSONObject jsonObject, String eventType, String workspaceId, String projectId);
 
-    SerialJSONObject toJson();
+    JSONObject toJson();
 
-    void ingestJson(SerialJSONObject json);
+    void ingestJson(JSONObject json);
 }

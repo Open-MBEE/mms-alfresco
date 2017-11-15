@@ -1,7 +1,7 @@
 package gov.nasa.jpl.view_repo.db;
 
 import java.util.Map;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 
 public class Edge {
 
@@ -43,12 +43,12 @@ public class Edge {
         return properties;
     }
 
-    public SerialJSONObject toJson() {
-        SerialJSONObject json = new SerialJSONObject();
+    public JSONObject toJson() {
+        JSONObject json = new JSONObject();
         json.put("parent", this.parent);
         json.put("child", this.child);
         json.put("edgeType", this.edgeType);
-        json.put("properties", new SerialJSONObject(this.properties));
+        json.put("properties", new JSONObject(this.properties));
 
         return json;
     }

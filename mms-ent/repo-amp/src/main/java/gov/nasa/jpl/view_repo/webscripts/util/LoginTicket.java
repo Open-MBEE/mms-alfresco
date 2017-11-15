@@ -28,7 +28,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.TicketComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -73,7 +73,7 @@ public class LoginTicket extends DeclarativeWebScript
         Map<String, Object> model = new HashMap<>(1, 1.0f);
         //model.put("ticket",  ticket);
 
-        SerialJSONObject result = new SerialJSONObject();
+        JSONObject result = new JSONObject();
         try {
             username = ticketComponent.validateTicket(ticket);
             result.put("username", username);

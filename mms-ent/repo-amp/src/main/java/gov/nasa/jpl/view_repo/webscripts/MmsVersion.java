@@ -11,7 +11,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -48,7 +48,7 @@ public class MmsVersion extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
-        SerialJSONObject mmsVersion;
+        JSONObject mmsVersion;
 
         if (logger.isDebugEnabled()) {
         	logger.debug("Checking MMS Versions");

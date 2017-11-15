@@ -35,8 +35,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 
 import gov.nasa.jpl.mbee.util.Debug;
@@ -578,17 +578,17 @@ public class NodeUtil {
     /**
      * getServiceModules
      *
-     * Returns a SerialJSONArray of Module Details from the Service Modules
+     * Returns a JSONArray of Module Details from the Service Modules
      *
      * @param service the service containing modules to be returned
-     * @return SerialJSONArray of ModuleDetails within the ModuleService object
+     * @return JSONArray of ModuleDetails within the ModuleService object
      */
-    public static SerialJSONArray getServiceModulesJson(ModuleService service) {
+    public static JSONArray getServiceModulesJson(ModuleService service) {
 
-        SerialJSONArray jsonArray = new SerialJSONArray();
+        JSONArray jsonArray = new JSONArray();
         List<ModuleDetails> modules = service.getAllModules();
         for (ModuleDetails detail : modules) {
-            SerialJSONObject jsonModule = moduleDetailsToJson(detail);
+            JSONObject jsonModule = moduleDetailsToJson(detail);
             jsonArray.put(jsonModule);
         }
         return jsonArray;
@@ -600,14 +600,14 @@ public class NodeUtil {
      * Takes a module of type ModuleDetails and retrieves all off the module's members and puts them
      * into a newly instantiated JSONObject.
      *
-     * SerialJSONObject will have the details : title, version, aliases, class, dependencies, editions id
+     * JSONObject will have the details : title, version, aliases, class, dependencies, editions id
      * and properties
      *
      * @param module A single module of type ModuleDetails
-     * @return SerialJSONObject which contains all the details of that module
+     * @return JSONObject which contains all the details of that module
      */
-    public static SerialJSONObject moduleDetailsToJson(ModuleDetails module) {
-        SerialJSONObject jsonModule = new SerialJSONObject();
+    public static JSONObject moduleDetailsToJson(ModuleDetails module) {
+        JSONObject jsonModule = new JSONObject();
         try {
             jsonModule.put("mmsTitle", module.getTitle());
             jsonModule.put("mmsVersion", module.getModuleVersionNumber());
@@ -626,7 +626,7 @@ public class NodeUtil {
     /**
      * getMMSversion
      *
-     * Gets the version number of a module, returns a SerialJSONObject which calls on getString with
+     * Gets the version number of a module, returns a JSONObject which calls on getString with
      * 'version' as an argument. This will return a String representing the version of the
      * mms.
      *
@@ -634,7 +634,7 @@ public class NodeUtil {
      */
     public static String getMMSversion() {
         ModuleService service = getModuleService(services);
-        SerialJSONArray moduleDetails = getServiceModulesJson(service);
+        JSONArray moduleDetails = getServiceModulesJson(service);
         String mmsVersion = "NA";
         int moduleArrayLength = moduleDetails.length();
         if (moduleArrayLength > 0) {

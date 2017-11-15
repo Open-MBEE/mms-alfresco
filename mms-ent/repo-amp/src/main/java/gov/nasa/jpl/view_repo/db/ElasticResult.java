@@ -1,10 +1,10 @@
 package gov.nasa.jpl.view_repo.db;
 
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 
 public class ElasticResult {
 
-    public SerialJSONObject current = null;
+    public JSONObject current = null;
     public String elasticId = null;
     public String sysmlid = null;
 

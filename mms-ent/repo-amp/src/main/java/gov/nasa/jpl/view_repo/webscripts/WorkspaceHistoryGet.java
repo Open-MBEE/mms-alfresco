@@ -11,9 +11,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
+import org.json.JSONArray;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -45,7 +45,7 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        SerialJSONObject object = null;
+        JSONObject object = null;
         String projectId = getProjectId(req);
         String limit = req.getParameter("limit");
         String[] accepts = req.getHeaderValues("Accept");
@@ -87,10 +87,10 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript {
 
     }
 
-    protected SerialJSONObject getRefHistory(WebScriptRequest req, String projectId, String refId) {
-        SerialJSONObject json = new SerialJSONObject();
+    protected JSONObject getRefHistory(WebScriptRequest req, String projectId, String refId) {
+        JSONObject json = new JSONObject();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
-        SerialJSONArray commits = emsNodeUtil.getRefHistory(refId);
+        JSONArray commits = emsNodeUtil.getRefHistory(refId);
         String timestamp = req.getParameter("maxTimestamp");
 
         if (timestamp != null && !timestamp.isEmpty()) {

@@ -28,9 +28,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
+import org.json.JSONArray;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.postgresql.util.PSQLException;
 
 import gov.nasa.jpl.mbee.util.Pair;
@@ -98,13 +98,13 @@ public class CommitUtil {
         }
     }
 
-    public static DbNodeTypes getNodeType(SerialJSONObject e) {
+    public static DbNodeTypes getNodeType(JSONObject e) {
 
         String type = e.optString(Sjm.TYPE).toLowerCase();
 
         if ((type.contains("class") || type.contains("generalization") || type.contains("dependency")) && e
             .has(Sjm.APPLIEDSTEREOTYPEIDS)) {
-            SerialJSONArray typeArray = e.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
+            JSONArray typeArray = e.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
 
             for (int i = 0; i < typeArray.length(); i++) {
                 String typeString = typeArray.getString(i);
@@ -153,11 +153,11 @@ public class CommitUtil {
         }
     }
 
-    public static boolean isSite(SerialJSONObject element) {
+    public static boolean isSite(JSONObject element) {
         return element.has(Sjm.ISSITE) && element.getBoolean(Sjm.ISSITE);
     }
 
-    private static boolean bulkElasticEntry(SerialJSONArray elements, String operation, boolean refresh, String index) {
+    private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh, String index) {
         if (elements.length() > 0) {
             try {
                 boolean bulkEntry = eh.bulkIndexElements(elements, operation, refresh, index);
@@ -172,11 +172,11 @@ public class CommitUtil {
         return true;
     }
 
-    public static boolean isPartProperty(SerialJSONObject e) {
+    public static boolean isPartProperty(JSONObject e) {
         if (!e.has(Sjm.TYPE) || !e.getString(Sjm.TYPE).equals("Property")) {
             return false;
         }
-        SerialJSONArray appliedS = e.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
+        JSONArray appliedS = e.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
         if (appliedS == null || appliedS.length() == 0) {
             return false;
         }
@@ -189,7 +189,7 @@ public class CommitUtil {
         return false;
     }
 
-    private static boolean processDeltasForDb(SerialJSONObject delta, String projectId, String refId, SerialJSONObject jmsPayload,
+    private static boolean processDeltasForDb(JSONObject delta, String projectId, String refId, JSONObject jmsPayload,
         boolean withChildViews, ServiceRegistry services) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
@@ -197,17 +197,17 @@ public class CommitUtil {
         pgh.setProject(projectId);
         pgh.setWorkspace(refId);
 
-        SerialJSONArray added = delta.optJSONArray("addedElements");
-        SerialJSONArray updated = delta.optJSONArray("updatedElements");
-        SerialJSONArray deleted = delta.optJSONArray("deletedElements");
+        JSONArray added = delta.optJSONArray("addedElements");
+        JSONArray updated = delta.optJSONArray("updatedElements");
+        JSONArray deleted = delta.optJSONArray("deletedElements");
 
         String creator = delta.getJSONObject("commit").getString(Sjm.CREATOR);
         String commitElasticId = delta.getJSONObject("commit").getString(Sjm.ELASTICID);
 
-        SerialJSONObject jmsWorkspace = new SerialJSONObject();
-        SerialJSONArray jmsAdded = new SerialJSONArray();
-        SerialJSONArray jmsUpdated = new SerialJSONArray();
-        SerialJSONArray jmsDeleted = new SerialJSONArray();
+        JSONObject jmsWorkspace = new JSONObject();
+        JSONArray jmsAdded = new JSONArray();
+        JSONArray jmsUpdated = new JSONArray();
+        JSONArray jmsDeleted = new JSONArray();
 
         List<String> deletedSysmlIds = new ArrayList<>();
         List<Pair<String, String>> addEdges = new ArrayList<>();
@@ -225,7 +225,7 @@ public class CommitUtil {
                 Set<String> uniqueEdge = new HashSet<>();
 
                 for (int i = 0; i < added.length(); i++) {
-                    SerialJSONObject e = added.getJSONObject(i);
+                    JSONObject e = added.getJSONObject(i);
                     Map<String, String> node = new HashMap<>();
                     jmsAdded.put(e.getString(Sjm.SYSMLID));
                     int nodeType = getNodeType(e).getValue();
@@ -254,23 +254,22 @@ public class CommitUtil {
                     }
                     String type = e.optString(Sjm.TYPE);
                     if (type.equals("Slot") || type.equals("Property") || type.equals("Port")) {
-                        logger.error(e);
                         processValueEdges(e, viewEdges);
                     }
                     if (e.has(Sjm.CONTENTS)) {
-                        SerialJSONObject contents = e.optJSONObject(Sjm.CONTENTS);
+                        JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
                             processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                         }
                     } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
-                        SerialJSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
+                        JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
                         if (iss != null) {
                             processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                             processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                         }
                     }
                     if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
-                        SerialJSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
+                        JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
                         if (owned != null) {
                             for (int j = 0; j < owned.length(); j++) {
                                 Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(j));
@@ -288,7 +287,7 @@ public class CommitUtil {
                 }
 
                 for (int i = 0; i < deleted.length(); i++) {
-                    SerialJSONObject e = deleted.getJSONObject(i);
+                    JSONObject e = deleted.getJSONObject(i);
                     jmsDeleted.put(e.getString(Sjm.SYSMLID));
                     pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
                     pgh.deleteNode(e.getString(Sjm.SYSMLID));
@@ -296,7 +295,7 @@ public class CommitUtil {
                 }
 
                 for (int i = 0; i < updated.length(); i++) {
-                    SerialJSONObject e = updated.getJSONObject(i);
+                    JSONObject e = updated.getJSONObject(i);
                     jmsUpdated.put(e.getString(Sjm.SYSMLID));
                     int nodeType = getNodeType(e).getValue();
                     pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID), true, DbEdgeTypes.CONTAINMENT);
@@ -320,19 +319,19 @@ public class CommitUtil {
                         processValueEdges(e, viewEdges);
                     }
                     if (e.has(Sjm.CONTENTS)) {
-                        SerialJSONObject contents = e.optJSONObject(Sjm.CONTENTS);
+                        JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
                             processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                         }
                     } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
-                        SerialJSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
+                        JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
                         if (iss != null) {
                             processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                             processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                         }
                     }
                     if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
-                        SerialJSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
+                        JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
                         if (owned != null) {
                             for (int j = 0; j < owned.length(); j++) {
                                 Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(j));
@@ -420,12 +419,6 @@ public class CommitUtil {
                     try {
                         pgh.rollBackToSavepoint(sp);
                     } catch (SQLException se) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug(LogUtil.getStackTrace(se));
-                        }
-                    }
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(LogUtil.getStackTrace(e));
                     }
                     return false;
                 } finally {
@@ -440,12 +433,6 @@ public class CommitUtil {
                     try {
                         pgh.rollBackToSavepoint(sp);
                     } catch (SQLException se) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug(LogUtil.getStackTrace(se));
-                        }
-                    }
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(LogUtil.getStackTrace(e));
                     }
                 } finally {
                     pgh.close();
@@ -453,15 +440,10 @@ public class CommitUtil {
                 try {
                     eh.indexElement(delta, projectId); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(LogUtil.getStackTrace(e));
-                    }
                 }
 
             } catch (Exception e1) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(LogUtil.getStackTrace(e1));
-                }
+
                 return false;
             }
         } else {
@@ -488,8 +470,8 @@ public class CommitUtil {
             eh = new ElasticHelper();
             Set<String> updateSet = new HashSet<>(updateParents);
             String owner = HOLDING_BIN_PREFIX + projectId;
-            SerialJSONObject query = new SerialJSONObject();
-            query.put("doc", new SerialJSONObject().put("ownerId", owner));
+            JSONObject query = new JSONObject();
+            query.put("doc", new JSONObject().put("ownerId", owner));
             eh.bulkUpdateElements(updateSet, query.toString(), projectId);
         } catch (Exception e) {
             return false;
@@ -500,23 +482,23 @@ public class CommitUtil {
     /**
      * Send off the deltas to various endpoints
      *
-     * @param deltaJson SerialJSONObject of the deltas to be published
+     * @param deltaJson JSONObject of the deltas to be published
      * @param projectId String of the project Id to post to
      * @param source    Source of the delta (e.g., MD, EVM, whatever, only necessary for MD so it can
      *                  ignore)
      * @return true if publish completed
      * @throws JSONException
      */
-    public static boolean sendDeltas(SerialJSONObject deltaJson, String projectId, String workspaceId, String source,
+    public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId, String source,
         ServiceRegistry services, boolean withChildViews) {
 
-        SerialJSONObject jmsPayload = new SerialJSONObject();
+        JSONObject jmsPayload = new JSONObject();
         try {
             eh = new ElasticHelper();
         } catch (Exception e) {
         }
 
-        if (!processDeltasForDb(new SerialJSONObject(deltaJson), projectId, workspaceId, jmsPayload, withChildViews, services)) {
+        if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
             return false;
         }
 
@@ -535,16 +517,16 @@ public class CommitUtil {
         pgh.createOrganization(orgId, orgName);
     }
 
-    public static void sendProjectDelta(SerialJSONObject o, String orgId, String user) {
+    public static void sendProjectDelta(JSONObject o, String orgId, String user) {
 
         PostgresHelper pgh = new PostgresHelper();
         String date = TimeUtils.toTimestamp(new Date().getTime());
-        SerialJSONObject jmsMsg = new SerialJSONObject();
-        SerialJSONObject siteElement = new SerialJSONObject();
+        JSONObject jmsMsg = new JSONObject();
+        JSONObject siteElement = new JSONObject();
 
-        SerialJSONObject projectHoldingBin;
-        SerialJSONObject viewInstanceBin;
-        SerialJSONObject project;
+        JSONObject projectHoldingBin;
+        JSONObject viewInstanceBin;
+        JSONObject project;
         ElasticResult eProject;
         ElasticResult eProjectHoldingBin;
         ElasticResult eViewInstanceBin;
@@ -568,44 +550,44 @@ public class CommitUtil {
         projectHoldingBin.put(Sjm.NAME, "Holding Bin");
         projectHoldingBin.put(Sjm.OWNERID, projectSysmlid);
         projectHoldingBin.put(Sjm.TYPE, "Package");
-        projectHoldingBin.put(Sjm.URI, SerialJSONObject.NULL);
-        projectHoldingBin.put(Sjm.APPLIEDSTEREOTYPEIDS, new SerialJSONArray());
+        projectHoldingBin.put(Sjm.URI, JSONObject.NULL);
+        projectHoldingBin.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
         projectHoldingBin.put(Sjm.ISSITE, false);
-        projectHoldingBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, SerialJSONObject.NULL);
-        projectHoldingBin.put(Sjm.CLIENTDEPENDENCYIDS, new SerialJSONArray());
+        projectHoldingBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
+        projectHoldingBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
         projectHoldingBin.put(Sjm.DOCUMENTATION, "");
-        projectHoldingBin.put(Sjm.ELEMENTIMPORTIDS, new SerialJSONArray());
-        projectHoldingBin.put(Sjm.MDEXTENSIONSIDS, new SerialJSONArray());
-        projectHoldingBin.put(Sjm.NAMEEXPRESSION, SerialJSONObject.NULL);
-        projectHoldingBin.put(Sjm.PACKAGEIMPORTIDS, new SerialJSONArray());
-        projectHoldingBin.put(Sjm.PACKAGEMERGEIDS, new SerialJSONArray());
-        projectHoldingBin.put(Sjm.PROFILEAPPLICATIONIDS, new SerialJSONArray());
-        projectHoldingBin.put(Sjm.SUPPLIERDEPENDENCYIDS, new SerialJSONArray());
-        projectHoldingBin.put(Sjm.SYNCELEMENTID, SerialJSONObject.NULL);
-        projectHoldingBin.put(Sjm.TEMPLATEBINDINGIDS, new SerialJSONArray());
-        projectHoldingBin.put(Sjm.TEMPLATEPARAMETERID, SerialJSONObject.NULL);
+        projectHoldingBin.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+        projectHoldingBin.put(Sjm.PACKAGEIMPORTIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.PACKAGEMERGEIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.PROFILEAPPLICATIONIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
+        projectHoldingBin.put(Sjm.TEMPLATEBINDINGIDS, new JSONArray());
+        projectHoldingBin.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
         projectHoldingBin.put(Sjm.VISIBILITY, "public");
 
         viewInstanceBin = createNode("view_instances_bin_" + projectSysmlid, user, date, null);
         viewInstanceBin.put(Sjm.NAME, "View Instances Bin");
         viewInstanceBin.put(Sjm.OWNERID, projectSysmlid);
         viewInstanceBin.put(Sjm.TYPE, "Package");
-        viewInstanceBin.put(Sjm.URI, SerialJSONObject.NULL);
-        viewInstanceBin.put(Sjm.APPLIEDSTEREOTYPEIDS, new SerialJSONArray());
+        viewInstanceBin.put(Sjm.URI, JSONObject.NULL);
+        viewInstanceBin.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
         viewInstanceBin.put(Sjm.ISSITE, false);
-        viewInstanceBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, SerialJSONObject.NULL);
-        viewInstanceBin.put(Sjm.CLIENTDEPENDENCYIDS, new SerialJSONArray());
+        viewInstanceBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
+        viewInstanceBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
         viewInstanceBin.put(Sjm.DOCUMENTATION, "");
-        viewInstanceBin.put(Sjm.ELEMENTIMPORTIDS, new SerialJSONArray());
-        viewInstanceBin.put(Sjm.MDEXTENSIONSIDS, new SerialJSONArray());
-        viewInstanceBin.put(Sjm.NAMEEXPRESSION, SerialJSONObject.NULL);
-        viewInstanceBin.put(Sjm.PACKAGEIMPORTIDS, new SerialJSONArray());
-        viewInstanceBin.put(Sjm.PACKAGEMERGEIDS, new SerialJSONArray());
-        viewInstanceBin.put(Sjm.PROFILEAPPLICATIONIDS, new SerialJSONArray());
-        viewInstanceBin.put(Sjm.SUPPLIERDEPENDENCYIDS, new SerialJSONArray());
-        viewInstanceBin.put(Sjm.SYNCELEMENTID, SerialJSONObject.NULL);
-        viewInstanceBin.put(Sjm.TEMPLATEBINDINGIDS, new SerialJSONArray());
-        viewInstanceBin.put(Sjm.TEMPLATEPARAMETERID, SerialJSONObject.NULL);
+        viewInstanceBin.put(Sjm.ELEMENTIMPORTIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.MDEXTENSIONSIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.NAMEEXPRESSION, JSONObject.NULL);
+        viewInstanceBin.put(Sjm.PACKAGEIMPORTIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.PACKAGEMERGEIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.PROFILEAPPLICATIONIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.SUPPLIERDEPENDENCYIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.SYNCELEMENTID, JSONObject.NULL);
+        viewInstanceBin.put(Sjm.TEMPLATEBINDINGIDS, new JSONArray());
+        viewInstanceBin.put(Sjm.TEMPLATEPARAMETERID, JSONObject.NULL);
         viewInstanceBin.put(Sjm.VISIBILITY, "public");
 
         try {
@@ -629,8 +611,8 @@ public class CommitUtil {
                 pgh.insertEdge(projectSysmlid, eProjectHoldingBin.sysmlid, DbEdgeTypes.CONTAINMENT);
                 pgh.insertEdge(projectSysmlid, eViewInstanceBin.sysmlid, DbEdgeTypes.CONTAINMENT);
 
-                SerialJSONObject addedElements = new SerialJSONObject();
-                SerialJSONArray elementsArray = new SerialJSONArray();
+                JSONObject addedElements = new JSONObject();
+                JSONArray elementsArray = new JSONArray();
                 elementsArray.put(projectHoldingBin);
                 elementsArray.put(viewInstanceBin);
                 addedElements.put("addedElements", elementsArray);
@@ -647,13 +629,13 @@ public class CommitUtil {
     }
 
     // make sure only one branch is made at a time
-    public static synchronized SerialJSONObject sendBranch(String projectId, SerialJSONObject src, SerialJSONObject created,
+    public static synchronized JSONObject sendBranch(String projectId, SerialJSONObject src, SerialJSONObject created,
         String elasticId, Boolean isTag, String source, ServiceRegistry services) {
         return sendBranch(projectId, src, created, elasticId, isTag, source, null, services);
     }
 
     // make sure only one branch is made at a time
-    public static synchronized SerialJSONObject sendBranch(String projectId, SerialJSONObject src, SerialJSONObject created,
+    public static synchronized JSONObject sendBranch(String projectId, SerialJSONObject src, SerialJSONObject created,
         String elasticId, Boolean isTag, String source, String commitId, ServiceRegistry services) {
         // FIXME: need to include branch in commit history
         SerialJSONObject branchJson = new SerialJSONObject();
@@ -682,7 +664,7 @@ public class CommitUtil {
         return branchJson;
     }
 
-    public static boolean sendJmsMsg(SerialJSONObject json, String eventType, String refId, String projectId) {
+    public static boolean sendJmsMsg(JSONObject json, String eventType, String refId, String projectId) {
         boolean status = false;
         if (jmsConnection != null) {
             status = jmsConnection.publish(json, eventType, refId, projectId);
@@ -692,10 +674,10 @@ public class CommitUtil {
         return status;
     }
 
-    private static SerialJSONObject createNode(String sysmlid, String user, String date, SerialJSONObject e) {
+    private static JSONObject createNode(String sysmlid, String user, String date, JSONObject e) {
 
         if (e == null) {
-            e = new SerialJSONObject();
+            e = new JSONObject();
         }
 
         e.put(Sjm.SYSMLID, sysmlid);
@@ -707,7 +689,7 @@ public class CommitUtil {
         return e;
     }
 
-    public static boolean createOrUpdateSiteChar(SerialJSONObject siteChar, String projectId, String refId,
+    public static boolean createOrUpdateSiteChar(JSONObject siteChar, String projectId, String refId,
         ServiceRegistry services) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
@@ -751,15 +733,15 @@ public class CommitUtil {
 
     private static Pattern pattern = Pattern.compile("<mms-cf.*?mms-element-id=\"([^\"]+)\"");
 
-    public static void processValueEdges(SerialJSONObject element, List<Pair<String, String>> edges) {
-        SerialJSONObject defaultValue = element.optJSONObject(Sjm.DEFAULTVALUE);
-        SerialJSONArray slotValues = element.optJSONArray("value");
+    public static void processValueEdges(JSONObject element, List<Pair<String, String>> edges) {
+        JSONObject defaultValue = element.optJSONObject(Sjm.DEFAULTVALUE);
+        JSONArray slotValues = element.optJSONArray("value");
         if (defaultValue != null && defaultValue.optString(Sjm.TYPE).equals("LiteralString")) {
             processDocumentEdges(element.getString(Sjm.SYSMLID), defaultValue.optString("value"), edges);
         }
         if (slotValues != null) {
             for (int i = 0; i < slotValues.length(); i++) {
-                SerialJSONObject val = slotValues.optJSONObject(i);
+                JSONObject val = slotValues.optJSONObject(i);
                 if (val != null && val.optString(Sjm.TYPE).equals("LiteralString")) {
                     processDocumentEdges(element.getString(Sjm.SYSMLID), val.optString("value"), edges);
                 }
@@ -780,13 +762,13 @@ public class CommitUtil {
         }
     }
 
-    public static void processContentsJson(String sysmlId, SerialJSONObject contents,
+    public static void processContentsJson(String sysmlId, JSONObject contents,
         List<Pair<String, String>> documentEdges) {
         if (contents != null) {
             if (contents.has("operand")) {
-                SerialJSONArray operand = contents.getJSONArray("operand");
+                JSONArray operand = contents.getJSONArray("operand");
                 for (int ii = 0; ii < operand.length(); ii++) {
-                    SerialJSONObject value = operand.optJSONObject(ii);
+                    JSONObject value = operand.optJSONObject(ii);
                     if (value != null && value.has("instanceId")) {
                         documentEdges.add(new Pair<>(sysmlId, value.getString("instanceId")));
                     }
@@ -795,13 +777,13 @@ public class CommitUtil {
         }
     }
 
-    public static void processInstanceSpecificationSpecificationJson(String sysmlId, SerialJSONObject iss,
+    public static void processInstanceSpecificationSpecificationJson(String sysmlId, JSONObject iss,
         List<Pair<String, String>> documentEdges) {
         if (iss != null) {
             if (iss.has("value") && iss.has("type") && iss.getString("type").equals("LiteralString")) {
                 String string = iss.getString("value");
                 try {
-                    SerialJSONObject json = new SerialJSONObject(string);
+                    JSONObject json = new JSONObject(string);
                     StringBuilder text = new StringBuilder();
                     Set<Object> sources = findKeyValueInJsonObject(json, "source", text);
                     for (Object source : sources) {
@@ -823,7 +805,7 @@ public class CommitUtil {
         }
     }
 
-    public static Set<Object> findKeyValueInJsonObject(SerialJSONObject json, String keyMatch, StringBuilder text) {
+    public static Set<Object> findKeyValueInJsonObject(JSONObject json, String keyMatch, StringBuilder text) {
         Set<Object> result = new HashSet<>();
         Iterator<?> keys = json.keys();
         while (keys.hasNext()) {
@@ -834,23 +816,23 @@ public class CommitUtil {
             }
             if (key.equals(keyMatch)) {
                 result.add(value);
-            } else if (value instanceof SerialJSONObject) {
-                result.addAll(findKeyValueInJsonObject((SerialJSONObject) value, keyMatch, text));
-            } else if (value instanceof SerialJSONArray) {
-                result.addAll(findKeyValueInJsonArray((SerialJSONArray) value, keyMatch, text));
+            } else if (value instanceof JSONObject) {
+                result.addAll(findKeyValueInJsonObject((JSONObject) value, keyMatch, text));
+            } else if (value instanceof JSONArray) {
+                result.addAll(findKeyValueInJsonArray((JSONArray) value, keyMatch, text));
             }
         }
         return result;
     }
 
-    public static Set<Object> findKeyValueInJsonArray(SerialJSONArray jsonArray, String keyMatch, StringBuilder text) {
+    public static Set<Object> findKeyValueInJsonArray(JSONArray jsonArray, String keyMatch, StringBuilder text) {
         Set<Object> result = new HashSet<>();
 
         for (int ii = 0; ii < jsonArray.length(); ii++) {
-            if (jsonArray.get(ii) instanceof SerialJSONObject) {
-                result.addAll(findKeyValueInJsonObject((SerialJSONObject) jsonArray.get(ii), keyMatch, text));
-            } else if (jsonArray.get(ii) instanceof SerialJSONArray) {
-                result.addAll(findKeyValueInJsonArray((SerialJSONArray) jsonArray.get(ii), keyMatch, text));
+            if (jsonArray.get(ii) instanceof JSONObject) {
+                result.addAll(findKeyValueInJsonObject((JSONObject) jsonArray.get(ii), keyMatch, text));
+            } else if (jsonArray.get(ii) instanceof JSONArray) {
+                result.addAll(findKeyValueInJsonArray((JSONArray) jsonArray.get(ii), keyMatch, text));
             }
         }
 

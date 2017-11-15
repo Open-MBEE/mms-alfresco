@@ -36,9 +36,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
+import org.json.JSONArray;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -80,7 +80,7 @@ public class OrgGet extends AbstractJavaWebScript {
             model.put(Sjm.RES, createResponseJson());
             return model;
         }
-        SerialJSONObject json = null;
+        JSONObject json = null;
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
@@ -88,14 +88,14 @@ public class OrgGet extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
                 String orgId = getOrgId(req);
                 Boolean projects = req.getPathInfo().contains(Sjm.PROJECTS);
-                SerialJSONArray jsonArray;
+                JSONArray jsonArray;
 
                 if (projects) {
                     String projectId = getProjectId(req);
 
                     if (projectId != null) {
                         jsonArray = handleProject(projectId);
-                        json = new SerialJSONObject();
+                        json = new JSONObject();
                         json.put(Sjm.PROJECTS, filterProjectByPermission(jsonArray));
                         if (jsonArray.length() == 0) {
                             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Project does not exist\n");
@@ -105,17 +105,17 @@ public class OrgGet extends AbstractJavaWebScript {
                         }
                     } else if (orgId != null) {
                         jsonArray = handleOrgProjects(orgId);
-                        json = new SerialJSONObject();
+                        json = new JSONObject();
                         json.put(Sjm.PROJECTS, filterProjectByPermission(jsonArray));
                     } else {
                         jsonArray = handleProjects();
-                        json = new SerialJSONObject();
+                        json = new JSONObject();
                         json.put(Sjm.PROJECTS, filterProjectByPermission(jsonArray));
                     }
 
                 } else {
                     jsonArray = handleOrg(orgId);
-                    json = new SerialJSONObject();
+                    json = new JSONObject();
                     json.put(Sjm.ORGS, filterOrgsByPermission(jsonArray));
                     if (orgId != null) {
                         if (jsonArray.length() == 0) {
@@ -155,27 +155,27 @@ public class OrgGet extends AbstractJavaWebScript {
      * @return json to return
      *
      */
-    private SerialJSONArray handleOrg(String orgId) {
+    private JSONArray handleOrg(String orgId) {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
         return emsNodeUtil.getOrganization(orgId);
     }
 
-    private SerialJSONArray handleOrgProjects(String orgId) {
+    private JSONArray handleOrgProjects(String orgId) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
         return emsNodeUtil.getProjects(orgId);
     }
 
-    private SerialJSONArray handleProjects() {
+    private JSONArray handleProjects() {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
         return emsNodeUtil.getProjects();
     }
 
-    private SerialJSONArray handleProject(String projectId) {
+    private JSONArray handleProject(String projectId) {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
-        SerialJSONArray projects = new SerialJSONArray();
-        SerialJSONObject project = emsNodeUtil.getProject(projectId);
+        JSONArray projects = new JSONArray();
+        JSONObject project = emsNodeUtil.getProject(projectId);
         if (project != null) {
             projects.put(project);
         }

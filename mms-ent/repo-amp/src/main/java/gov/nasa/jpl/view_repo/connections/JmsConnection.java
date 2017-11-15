@@ -17,9 +17,9 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
+import org.json.JSONArray;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
@@ -125,7 +125,7 @@ public class JmsConnection implements ConnectionInterface {
     /**
      * Changed method to synchronized to JMS message can be sent out with appropriate refId and projectIds
      * without race condition.
-     */ public synchronized boolean publish(SerialJSONObject json, String eventType, String refId, String projectId) {
+     */ public synchronized boolean publish(JSONObject json, String eventType, String refId, String projectId) {
         boolean result = false;
         try {
             json.put("sequence", sequenceId++);
@@ -224,8 +224,8 @@ public class JmsConnection implements ConnectionInterface {
         this.projectId = projectId;
     }
 
-    @Override public SerialJSONObject toJson() {
-        SerialJSONArray connections = new SerialJSONArray();
+    @Override public JSONObject toJson() {
+        JSONArray connections = new JSONArray();
 
         for (String eventType : getConnectionMap().keySet()) {
             ConnectionInfo ci = getConnectionMap().get(eventType);
@@ -234,7 +234,7 @@ public class JmsConnection implements ConnectionInterface {
                 getConnectionMap().put(eventType, ci);
             }
 
-            SerialJSONObject connJson = new SerialJSONObject();
+            JSONObject connJson = new JSONObject();
             connJson.put("uri", ci.uri);
             connJson.put("connFactory", ci.connFactory);
             connJson.put("ctxFactory", ci.ctxFactory);
@@ -247,7 +247,7 @@ public class JmsConnection implements ConnectionInterface {
             connections.put(connJson);
         }
 
-        SerialJSONObject json = new SerialJSONObject();
+        JSONObject json = new JSONObject();
         json.put("connections", connections);
 
         return json;
@@ -256,11 +256,11 @@ public class JmsConnection implements ConnectionInterface {
     /**
      * Handle single and multiple connections embedded as connections array or not
      */
-    @Override public void ingestJson(SerialJSONObject json) {
+    @Override public void ingestJson(JSONObject json) {
         if (json.has("connections")) {
-            SerialJSONArray connections = json.getJSONArray("connections");
+            JSONArray connections = json.getJSONArray("connections");
             for (int ii = 0; ii < connections.length(); ii++) {
-                SerialJSONObject connection = connections.getJSONObject(ii);
+                JSONObject connection = connections.getJSONObject(ii);
                 ingestConnectionJson(connection);
             }
         } else {
@@ -268,7 +268,7 @@ public class JmsConnection implements ConnectionInterface {
         }
     }
 
-    public void ingestConnectionJson(SerialJSONObject json) {
+    public void ingestConnectionJson(JSONObject json) {
         String eventType = null;
         if (json.has("eventType")) {
             eventType = json.isNull("eventType") ? null : json.getString("eventType");

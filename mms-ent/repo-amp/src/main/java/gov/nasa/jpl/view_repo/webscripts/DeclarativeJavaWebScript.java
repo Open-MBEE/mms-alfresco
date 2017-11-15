@@ -8,8 +8,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -264,10 +264,10 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         return SitePermission.hasPermission(siteId, projectId, refId, permissionType);
     }
 
-    SerialJSONArray filterProjectByPermission(SerialJSONArray projects) {
-        SerialJSONArray result = new SerialJSONArray();
+    JSONArray filterProjectByPermission(JSONArray projects) {
+        JSONArray result = new JSONArray();
         for (int i = 0; i < projects.length(); i++) {
-            SerialJSONObject project = projects.optJSONObject(i);
+            JSONObject project = projects.optJSONObject(i);
             if (project != null && project.has("orgId")) {
                 Boolean perm = SitePermission.hasPermission(project.getString("orgId"), project.getString(Sjm.SYSMLID), null, Permission.READ);
                 if (perm != null && perm) {
@@ -278,10 +278,10 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         return result;
     }
 
-    SerialJSONArray filterOrgsByPermission(SerialJSONArray orgs) {
-        SerialJSONArray result = new SerialJSONArray();
+    JSONArray filterOrgsByPermission(JSONArray orgs) {
+        JSONArray result = new JSONArray();
         for (int i = 0; i < orgs.length(); i++) {
-            SerialJSONObject org = orgs.optJSONObject(i);
+            JSONObject org = orgs.optJSONObject(i);
             if (org != null && org.has("id")) {
                 Boolean perm = SitePermission.hasPermission(org.getString("id"), null, null, Permission.READ);
                 if (perm != null && perm) {
@@ -292,18 +292,18 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         return result;
     }
 
-    SerialJSONArray filterByPermission(SerialJSONArray elements, WebScriptRequest req) {
-        SerialJSONArray result = new SerialJSONArray();
+    JSONArray filterByPermission(JSONArray elements, WebScriptRequest req) {
+        JSONArray result = new JSONArray();
         Map<String, Map<Permission, Boolean>> permCache = new HashMap<>();
         Map<String, String> projectSite = new HashMap<>();
         String refId = AbstractJavaWebScript.getRefId(req);
         String projectId = AbstractJavaWebScript.getProjectId(req);
 
         for (int i = 0; i < elements.length(); i++) {
-            SerialJSONObject el = elements.optJSONObject(i);
+            JSONObject el = elements.optJSONObject(i);
             String refId2 = el.has(Sjm.REFID) ? el.getString(Sjm.REFID) : refId;
             String projectId2 = el.has(Sjm.PROJECTID) ? el.getString(Sjm.PROJECTID): projectId;
-            SerialJSONObject element = filterElementByPermission(el, projectId2, refId2, Permission.READ,
+            JSONObject element = filterElementByPermission(el, projectId2, refId2, Permission.READ,
                 permCache, projectSite);
             if (element != null) {
                 result.put(element);
@@ -312,7 +312,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         return result;
     }
 
-    private SerialJSONObject filterElementByPermission(SerialJSONObject element, String projectId, String refId,
+    private JSONObject filterElementByPermission(JSONObject element, String projectId, String refId,
                      Permission permission, Map<String, Map<Permission, Boolean>> permCache,
                                                  Map<String, String> projectSite) {
         // temp fix to skip permission checking

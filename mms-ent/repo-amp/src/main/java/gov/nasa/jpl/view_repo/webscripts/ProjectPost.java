@@ -41,9 +41,9 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
+import org.json.JSONArray;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -89,9 +89,9 @@ public class ProjectPost extends AbstractJavaWebScript {
         try {
             if (validateRequest(req, status)) {
 
-                SerialJSONObject json = new SerialJSONObject(req.parseContent());
-                SerialJSONArray elementsArray = json.optJSONArray("projects");
-                SerialJSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ? elementsArray.getJSONObject(0) : new SerialJSONObject();
+                JSONObject json = (JSONObject) req.parseContent();
+                JSONArray elementsArray = json.optJSONArray("projects");
+                JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ? elementsArray.getJSONObject(0) : new JSONObject();
 
                 String orgId = getOrgId(req);
 
@@ -145,7 +145,7 @@ public class ProjectPost extends AbstractJavaWebScript {
         return model;
     }
 
-    public int updateOrCreateProject(SerialJSONObject jsonObject, String projectId) {
+    public int updateOrCreateProject(JSONObject jsonObject, String projectId) {
         EmsScriptNode projectNode = getSiteNode(projectId);
 
         if (projectNode == null) {
@@ -155,7 +155,7 @@ public class ProjectPost extends AbstractJavaWebScript {
 
         String projectVersion = null;
         if (jsonObject.has(Acm.JSON_SPECIALIZATION)) {
-            SerialJSONObject specialization = jsonObject.getJSONObject(Acm.JSON_SPECIALIZATION);
+            JSONObject specialization = jsonObject.getJSONObject(Acm.JSON_SPECIALIZATION);
             if (specialization != null && specialization.has(Acm.JSON_PROJECT_VERSION)) {
                 projectVersion = specialization.getString(Acm.JSON_PROJECT_VERSION);
             }
@@ -179,12 +179,12 @@ public class ProjectPost extends AbstractJavaWebScript {
     /**
      * Update or create the project specified by the JSONObject
      *
-     * @param jsonObject SerialJSONObject that has the name of the project
+     * @param jsonObject JSONObject that has the name of the project
      * @param projectId  Project ID
      * @return HttpStatusResponse code for success of the POST request
      * @throws JSONException
      */
-    public int updateOrCreateProject(SerialJSONObject jsonObject, String projectId, String orgId) {
+    public int updateOrCreateProject(JSONObject jsonObject, String projectId, String orgId) {
         // see if project exists for workspace
 
         // make sure Model package under site exists
@@ -223,7 +223,7 @@ public class ProjectPost extends AbstractJavaWebScript {
             if (branch == null) {
                 branch = refContainerNode.createFolder(NO_WORKSPACE_ID, null, null);
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
-                SerialJSONObject masterWs = new SerialJSONObject();
+                JSONObject masterWs = new JSONObject();
                 masterWs.put("id", NO_WORKSPACE_ID);
                 masterWs.put("name", NO_WORKSPACE_ID);
                 // :TODO going to have to check that index doesn't exist if ES doesn't already do this

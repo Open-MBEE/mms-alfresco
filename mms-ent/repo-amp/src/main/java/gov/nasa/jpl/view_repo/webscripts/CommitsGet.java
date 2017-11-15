@@ -10,9 +10,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
+import org.json.JSONArray;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -60,8 +60,8 @@ public class CommitsGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        SerialJSONObject top = new SerialJSONObject();
-        SerialJSONArray elementJson = null;
+        JSONObject top = new JSONObject();
+        JSONArray elementJson = null;
 
         if (logger.isDebugEnabled()) {
             logger.debug(user + " " + req.getURL());
@@ -106,10 +106,10 @@ public class CommitsGet extends AbstractJavaWebScript {
      * @param req
      * @return
      */
-    private SerialJSONArray handleRequest(WebScriptRequest req, String projectId, String refId) {
+    private JSONArray handleRequest(WebScriptRequest req, String projectId, String refId) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        SerialJSONArray commitJson = new SerialJSONArray();
+        JSONArray commitJson = new JSONArray();
         String commitId = req.getServiceMatch().getTemplateVars().get(COMMIT_ID);
 
         if (commitId == null){
@@ -118,7 +118,7 @@ public class CommitsGet extends AbstractJavaWebScript {
         }
         logger.info("Commit ID " + commitId + " found");
 
-        SerialJSONObject commitObject = emsNodeUtil.getCommitObject(commitId);
+        JSONObject commitObject = emsNodeUtil.getCommitObject(commitId);
 
         if (commitObject == null) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not insert into ElasticSearch");

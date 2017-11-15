@@ -40,8 +40,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.json.JSONException;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -100,11 +100,11 @@ public class CfIdsGet extends AbstractJavaWebScript {
     protected Map<String, Object> handleElementGet(WebScriptRequest req, Status status) {
 
         Map<String, Object> model = new HashMap<>();
-        SerialJSONObject top = new SerialJSONObject();
+        JSONObject top = new JSONObject();
 
         if (validateRequest(req, status)) {
             try {
-                SerialJSONArray elementsJson = null;
+                JSONArray elementsJson = null;
                 String modelId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
                 if (null == modelId) {
                     log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s", modelId);
@@ -128,24 +128,24 @@ public class CfIdsGet extends AbstractJavaWebScript {
         return model;
     }
 
-    protected SerialJSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
+    protected JSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
         throws SQLException, IOException {
         // get timestamp if specified
         String projectId = getProjectId(req);
         String refId = getRefId(req);
-        SerialJSONObject mountsJson = new SerialJSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+        JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
         return handleMountSearch(mountsJson, rootSysmlid);
     }
 
-    protected SerialJSONArray handleMountSearch(SerialJSONObject mountsJson, String rootSysmlid)
+    protected JSONArray handleMountSearch(JSONObject mountsJson, String rootSysmlid)
         throws SQLException, IOException {
-        SerialJSONArray result = null;
+        JSONArray result = null;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
         Node n = emsNodeUtil.getById(rootSysmlid);
         if (n != null) {
             if (n.isDeleted()) {
                 log(Level.ERROR, HttpServletResponse.SC_GONE, "Element %s is deleted", rootSysmlid);
-                return new SerialJSONArray();
+                return new JSONArray();
             }
             return emsNodeUtil.getChildrenIds(rootSysmlid, GraphInterface.DbEdgeTypes.VIEW, 20L);
         }
@@ -153,7 +153,7 @@ public class CfIdsGet extends AbstractJavaWebScript {
             mountsJson = emsNodeUtil
                 .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
         }
-        SerialJSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
+        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 
         for (int i = 0; i < mountsArray.length(); i++) {
             result = handleMountSearch(mountsArray.getJSONObject(i), rootSysmlid);

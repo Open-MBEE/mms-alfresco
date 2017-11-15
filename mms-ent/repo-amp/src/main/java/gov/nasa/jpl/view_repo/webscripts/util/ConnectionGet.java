@@ -5,7 +5,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -27,7 +27,7 @@ public class ConnectionGet extends DeclarativeWebScript {
             connection = new JmsConnection();
         }
 
-        SerialJSONObject json = new SerialJSONObject();
+        JSONObject json = new JSONObject();
         if (connection == null) {
             json.put( "msg", "connection not found" );
             status.setCode( HttpServletResponse.SC_NOT_FOUND );

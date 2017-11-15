@@ -14,9 +14,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
+import org.json.JSONArray;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -69,8 +69,8 @@ public class HistoryGet extends ModelGet {
             logger.debug(user + " " + req.getURL());
         }
 
-        SerialJSONObject top = new SerialJSONObject();
-        SerialJSONArray elementsJson = handleRequest(req);
+        JSONObject top = new JSONObject();
+        JSONArray elementsJson = handleRequest(req);
 
         try {
             if (elementsJson.length() > 0) {
@@ -102,18 +102,18 @@ public class HistoryGet extends ModelGet {
     }
 
     /**
-     * Wrapper for handling a request and getting the appropriate SerialJSONArray of
+     * Wrapper for handling a request and getting the appropriate JSONArray of
      * elements
      *
      * @param req
      * @return
      */
-    private SerialJSONArray handleRequest(WebScriptRequest req) {
+    private JSONArray handleRequest(WebScriptRequest req) {
         // REVIEW -- Why check for errors here if validate has already been
         // called? Is the error checking code different? Why?
 
         // Creates an empty JSONArray
-        SerialJSONArray jsonHist = null;
+        JSONArray jsonHist = null;
         try {
             String[] idKeys = { "modelid", "elementid", "elementId" };
             String modelId = null;
@@ -127,7 +127,7 @@ public class HistoryGet extends ModelGet {
             if (modelId == null) {
                 logger.error("Model ID Null...");
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element");
-                return new SerialJSONArray();
+                return new JSONArray();
             }
 
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), getRefId(req));

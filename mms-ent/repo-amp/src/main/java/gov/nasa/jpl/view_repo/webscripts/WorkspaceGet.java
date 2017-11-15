@@ -11,9 +11,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
+import org.json.JSONArray;
 import org.json.JSONException;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -47,7 +47,7 @@ public class WorkspaceGet extends AbstractJavaWebScript{
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        SerialJSONObject object = null;
+        JSONObject object = null;
         String projectId = getProjectId(req);
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
@@ -91,11 +91,11 @@ public class WorkspaceGet extends AbstractJavaWebScript{
 
     }
 
-    protected SerialJSONObject getRef(String projectId, String refId) {
-        SerialJSONObject json = new SerialJSONObject();
-        SerialJSONArray jsonArray = new SerialJSONArray();
+    protected JSONObject getRef(String projectId, String refId) {
+        JSONObject json = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
-        SerialJSONObject ref = emsNodeUtil.getRefJson(refId);
+        JSONObject ref = emsNodeUtil.getRefJson(refId);
         jsonArray.put(ref);
         json.put("refs" , jsonArray);
         return json;
