@@ -78,7 +78,7 @@ public class ModelDelete extends AbstractJavaWebScript {
     }
 
     protected JSONObject handleRequest(WebScriptRequest req, final Status status, String user) throws JSONException, IOException {
-        JSONObject result = new JSONObject();
+        SerialJSONObject result = new SerialJSONObject();
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
         JSONObject res = new JSONObject();

@@ -189,7 +189,7 @@ public class CommitUtil {
         return false;
     }
 
-    private static boolean processDeltasForDb(JSONObject delta, String projectId, String refId, JSONObject jmsPayload,
+    private static boolean processDeltasForDb(SerialJSONObject delta, String projectId, String refId, JSONObject jmsPayload,
         boolean withChildViews, ServiceRegistry services) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
@@ -197,17 +197,17 @@ public class CommitUtil {
         pgh.setProject(projectId);
         pgh.setWorkspace(refId);
 
-        JSONArray added = delta.optJSONArray("addedElements");
-        JSONArray updated = delta.optJSONArray("updatedElements");
-        JSONArray deleted = delta.optJSONArray("deletedElements");
+        SerialJSONArray added = delta.optJSONArray("addedElements");
+        SerialJSONArray updated = delta.optJSONArray("updatedElements");
+        SerialJSONArray deleted = delta.optJSONArray("deletedElements");
 
         String creator = delta.getJSONObject("commit").getString(Sjm.CREATOR);
         String commitElasticId = delta.getJSONObject("commit").getString(Sjm.ELASTICID);
 
-        JSONObject jmsWorkspace = new JSONObject();
-        JSONArray jmsAdded = new JSONArray();
-        JSONArray jmsUpdated = new JSONArray();
-        JSONArray jmsDeleted = new JSONArray();
+        SerialJSONObject jmsWorkspace = new SerialJSONObject();
+        SerialJSONArray jmsAdded = new SerialJSONArray();
+        SerialJSONArray jmsUpdated = new SerialJSONArray();
+        SerialJSONArray jmsDeleted = new SerialJSONArray();
 
         List<String> deletedSysmlIds = new ArrayList<>();
         List<Pair<String, String>> addEdges = new ArrayList<>();
@@ -225,7 +225,7 @@ public class CommitUtil {
                 Set<String> uniqueEdge = new HashSet<>();
 
                 for (int i = 0; i < added.length(); i++) {
-                    JSONObject e = added.getJSONObject(i);
+                    SerialJSONObject e = added.getJSONObject(i);
                     Map<String, String> node = new HashMap<>();
                     jmsAdded.put(e.getString(Sjm.SYSMLID));
                     int nodeType = getNodeType(e).getValue();
@@ -257,19 +257,19 @@ public class CommitUtil {
                         processValueEdges(e, viewEdges);
                     }
                     if (e.has(Sjm.CONTENTS)) {
-                        JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
+                        SerialJSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
                             processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                         }
                     } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
-                        JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
+                        SerialJSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
                         if (iss != null) {
                             processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                             processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                         }
                     }
                     if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
-                        JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
+                        SerialJSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
                         if (owned != null) {
                             for (int j = 0; j < owned.length(); j++) {
                                 Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(j));
@@ -287,7 +287,7 @@ public class CommitUtil {
                 }
 
                 for (int i = 0; i < deleted.length(); i++) {
-                    JSONObject e = deleted.getJSONObject(i);
+                    SerialJSONObject e = deleted.getJSONObject(i);
                     jmsDeleted.put(e.getString(Sjm.SYSMLID));
                     pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
                     pgh.deleteNode(e.getString(Sjm.SYSMLID));
@@ -295,7 +295,7 @@ public class CommitUtil {
                 }
 
                 for (int i = 0; i < updated.length(); i++) {
-                    JSONObject e = updated.getJSONObject(i);
+                    SerialJSONObject e = updated.getJSONObject(i);
                     jmsUpdated.put(e.getString(Sjm.SYSMLID));
                     int nodeType = getNodeType(e).getValue();
                     pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID), true, DbEdgeTypes.CONTAINMENT);
@@ -319,19 +319,19 @@ public class CommitUtil {
                         processValueEdges(e, viewEdges);
                     }
                     if (e.has(Sjm.CONTENTS)) {
-                        JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
+                        SerialJSONObject contents = e.optJSONObject(Sjm.CONTENTS);
                         if (contents != null) {
                             processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                         }
                     } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
-                        JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
+                        SerialJSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
                         if (iss != null) {
                             processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                             processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                         }
                     }
                     if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
-                        JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
+                        SerialJSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
                         if (owned != null) {
                             for (int j = 0; j < owned.length(); j++) {
                                 Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(j));
@@ -419,6 +419,7 @@ public class CommitUtil {
                     try {
                         pgh.rollBackToSavepoint(sp);
                     } catch (SQLException se) {
+                        logger.info(String.format("%s", LogUtil.getStackTrace(se)));
                     }
                     return false;
                 } finally {
@@ -433,6 +434,7 @@ public class CommitUtil {
                     try {
                         pgh.rollBackToSavepoint(sp);
                     } catch (SQLException se) {
+                        logger.info(String.format("%s", LogUtil.getStackTrace(se)));
                     }
                 } finally {
                     pgh.close();
@@ -440,10 +442,11 @@ public class CommitUtil {
                 try {
                     eh.indexElement(delta, projectId); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
+                    logger.info(String.format("%s", LogUtil.getStackTrace(e)));
                 }
 
             } catch (Exception e1) {
-
+                logger.info(String.format("%s", LogUtil.getStackTrace(e1)));
                 return false;
             }
         } else {
@@ -489,7 +492,7 @@ public class CommitUtil {
      * @return true if publish completed
      * @throws JSONException
      */
-    public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId, String source,
+    public static boolean sendDeltas(SerialJSONObject deltaJson, String projectId, String workspaceId, String source,
         ServiceRegistry services, boolean withChildViews) {
 
         JSONObject jmsPayload = new JSONObject();
@@ -641,15 +644,17 @@ public class CommitUtil {
         SerialJSONObject branchJson = new SerialJSONObject();
 
         branchJson.put("source", source);
+        logger.info("SrcJSON in sendBranch: " + src.toString());
         String srcId = src.getString(Sjm.SYSMLID);
+        String createdId = created.getString(Sjm.SYSMLID);
 
         NodeRef person = services.getPersonService().getPersonOrNull(created.optString(Sjm.CREATOR));
         if (person != null) {
             user = services.getNodeService().getProperty(person, ContentModel.PROP_EMAIL).toString();
         }
 
-        initHazelcastQueue(String.format("%s-%s", projectId, srcId));
-        BlockingQueue<BranchTask> queue = hzInstance.getQueue(String.format("%s-%s", projectId, srcId));
+        initHazelcastQueue(String.format("%s-%s", projectId, createdId));
+        BlockingQueue<BranchTask> queue = hzInstance.getQueue(String.format("%s-%s", projectId, createdId));
         BranchTask task = new BranchTask(
             projectId, srcId, created.toString(), elasticId, isTag, source, commitId, user
         );
@@ -733,15 +738,15 @@ public class CommitUtil {
 
     private static Pattern pattern = Pattern.compile("<mms-cf.*?mms-element-id=\"([^\"]+)\"");
 
-    public static void processValueEdges(JSONObject element, List<Pair<String, String>> edges) {
-        JSONObject defaultValue = element.optJSONObject(Sjm.DEFAULTVALUE);
-        JSONArray slotValues = element.optJSONArray("value");
+    public static void processValueEdges(SerialJSONObject element, List<Pair<String, String>> edges) {
+        SerialJSONObject defaultValue = element.optJSONObject(Sjm.DEFAULTVALUE);
+        SerialJSONArray slotValues = element.optJSONArray("value");
         if (defaultValue != null && defaultValue.optString(Sjm.TYPE).equals("LiteralString")) {
             processDocumentEdges(element.getString(Sjm.SYSMLID), defaultValue.optString("value"), edges);
         }
         if (slotValues != null) {
             for (int i = 0; i < slotValues.length(); i++) {
-                JSONObject val = slotValues.optJSONObject(i);
+                SerialJSONObject val = slotValues.optJSONObject(i);
                 if (val != null && val.optString(Sjm.TYPE).equals("LiteralString")) {
                     processDocumentEdges(element.getString(Sjm.SYSMLID), val.optString("value"), edges);
                 }
@@ -762,13 +767,13 @@ public class CommitUtil {
         }
     }
 
-    public static void processContentsJson(String sysmlId, JSONObject contents,
+    public static void processContentsJson(String sysmlId, SerialJSONObject contents,
         List<Pair<String, String>> documentEdges) {
         if (contents != null) {
             if (contents.has("operand")) {
-                JSONArray operand = contents.getJSONArray("operand");
+                SerialJSONArray operand = contents.getJSONArray("operand");
                 for (int ii = 0; ii < operand.length(); ii++) {
-                    JSONObject value = operand.optJSONObject(ii);
+                    SerialJSONObject value = operand.optJSONObject(ii);
                     if (value != null && value.has("instanceId")) {
                         documentEdges.add(new Pair<>(sysmlId, value.getString("instanceId")));
                     }
@@ -777,13 +782,13 @@ public class CommitUtil {
         }
     }
 
-    public static void processInstanceSpecificationSpecificationJson(String sysmlId, JSONObject iss,
+    public static void processInstanceSpecificationSpecificationJson(String sysmlId, SerialJSONObject iss,
         List<Pair<String, String>> documentEdges) {
         if (iss != null) {
             if (iss.has("value") && iss.has("type") && iss.getString("type").equals("LiteralString")) {
                 String string = iss.getString("value");
                 try {
-                    JSONObject json = new JSONObject(string);
+                    SerialJSONObject json = new SerialJSONObject(string);
                     StringBuilder text = new StringBuilder();
                     Set<Object> sources = findKeyValueInJsonObject(json, "source", text);
                     for (Object source : sources) {
@@ -805,7 +810,7 @@ public class CommitUtil {
         }
     }
 
-    public static Set<Object> findKeyValueInJsonObject(JSONObject json, String keyMatch, StringBuilder text) {
+    public static Set<Object> findKeyValueInJsonObject(SerialJSONObject json, String keyMatch, StringBuilder text) {
         Set<Object> result = new HashSet<>();
         Iterator<?> keys = json.keys();
         while (keys.hasNext()) {
@@ -817,22 +822,22 @@ public class CommitUtil {
             if (key.equals(keyMatch)) {
                 result.add(value);
             } else if (value instanceof JSONObject) {
-                result.addAll(findKeyValueInJsonObject((JSONObject) value, keyMatch, text));
+                result.addAll(findKeyValueInJsonObject((SerialJSONObject) value, keyMatch, text));
             } else if (value instanceof JSONArray) {
-                result.addAll(findKeyValueInJsonArray((JSONArray) value, keyMatch, text));
+                result.addAll(findKeyValueInJsonArray((SerialJSONArray) value, keyMatch, text));
             }
         }
         return result;
     }
 
-    public static Set<Object> findKeyValueInJsonArray(JSONArray jsonArray, String keyMatch, StringBuilder text) {
+    public static Set<Object> findKeyValueInJsonArray(SerialJSONArray jsonArray, String keyMatch, StringBuilder text) {
         Set<Object> result = new HashSet<>();
 
         for (int ii = 0; ii < jsonArray.length(); ii++) {
             if (jsonArray.get(ii) instanceof JSONObject) {
-                result.addAll(findKeyValueInJsonObject((JSONObject) jsonArray.get(ii), keyMatch, text));
+                result.addAll(findKeyValueInJsonObject((SerialJSONObject) jsonArray.get(ii), keyMatch, text));
             } else if (jsonArray.get(ii) instanceof JSONArray) {
-                result.addAll(findKeyValueInJsonArray((JSONArray) jsonArray.get(ii), keyMatch, text));
+                result.addAll(findKeyValueInJsonArray((SerialJSONArray) jsonArray.get(ii), keyMatch, text));
             }
         }
 
