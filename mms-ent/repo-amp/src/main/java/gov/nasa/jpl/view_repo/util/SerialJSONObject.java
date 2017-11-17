@@ -144,6 +144,8 @@ public class SerialJSONObject extends JSONObject implements Serializable {
         Object object = this.get(key);
         if (object instanceof SerialJSONObject) {
             return (SerialJSONObject) object;
+        } else if (object instanceof JSONObject) {
+            return new SerialJSONObject(object);
         } else {
             throw new JSONException("SerialJSONObject[" + quote(key) + "] is not a SerialJSONObject.");
         }
