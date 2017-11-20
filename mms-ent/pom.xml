@@ -134,6 +134,48 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <!-- Invoke your build with -Prun to run the multimodule project and enable rapid dev mode in your IDE.
+                 See 'run' profile in the sub modules pom.xml for further behavioral details.
+             -->
+            <id>build</id>
+            <properties>
+                <!-- While running in rapid dev mode with -Prun, we don't want amp web resources
+                    to be added to the war, so we can load them directly from the AMP project (see
+                    runner/tomcat/context-*.xml for more details) -->
+                <maven.alfresco.includeWebResources>true</maven.alfresco.includeWebResources>
+            </properties>
+        </profile>
+
+        <!-- if we're on a unix machine, chmod run.sh to be executable -->
+        <profile>
+            <id>chmod</id>
+            <activation><os><family>unix</family></os></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>chmod</id>
+                                <phase>validate</phase>
+                                <goals><goal>exec</goal></goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <executable>chmod</executable>
+                            <arguments>
+                                <argument>+x</argument>
+                                <argument>${basedir}/run.sh</argument>
+                            </arguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <distributionManagement>
