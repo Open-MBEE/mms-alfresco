@@ -67,6 +67,10 @@ jar xf ../share.war
 cd ../solr4
 jar xf ../solr4.war
 
+# Remove extra backup files
+cd ${TOMCAT_DIR}/webapps
+rm -rf *.bak
+
 # Remove the extra files to reduce image size.
 cd ${CUR_DIR}
 rm -rf alfresco-community-distribution-201605.zip alfresco-community-distribution-201605

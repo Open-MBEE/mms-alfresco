@@ -32,9 +32,8 @@ COPY config/run.sh tomcat/bin/run.sh
 
 
 # Download the community zip files
-RUN wget --no-check-certificate "https://download.alfresco.com/release/community/201605-build-00010/alfresco-community-distribution-201605.zip"
-
-RUN chmod +x config_alfresco.sh \
+RUN wget --no-check-certificate "https://download.alfresco.com/release/community/201605-build-00010/alfresco-community-distribution-201605.zip" \
+    && chmod +x config_alfresco.sh \
     && chmod +x tomcat/bin/run.sh \
     && ./config_alfresco.sh
 
@@ -48,7 +47,6 @@ RUN cp ${CONFIG_DIR}/alfresco-global.properties tomcat/shared/classes/alfresco-g
 
 # ---- MMS -----
 COPY files ${FILES_DIR}
-RUN ls ${FILES_DIR}
 RUN java -jar ${TOMCAT_DIR}/bin/alfresco-mmt.jar install ${FILES_DIR}/mms-amp*.amp ${TOMCAT_DIR}/webapps/alfresco.war -force \
     && java -jar ${TOMCAT_DIR}/bin/alfresco-mmt.jar install ${FILES_DIR}/mms-share-amp*.amp ${TOMCAT_DIR}/webapps/share.war -force \
     && cd ${TOMCAT_DIR}/webapps \
@@ -60,19 +58,23 @@ RUN java -jar ${TOMCAT_DIR}/bin/alfresco-mmt.jar install ${FILES_DIR}/mms-amp*.a
     && jar xf ../share.war \
     && mv ${FILES_DIR}/mms.properties.example ${TOMCAT_DIR}/shared/classes/mms.properties \
     && cp ${FILES_DIR}/web.xml ${TOMCAT_DIR}/webapps/alfresco/WEB-INF/web.xml \
-    && rm -rf ${FILES_DIR}
+    && rm -rf ${FILES_DIR} \
+    && cd ${TOMCAT_DIR}/webapps \
+    && rm *.bak
 
 
 # Add tomcat user and config
 RUN addgroup -S tomcat \
     && adduser -G tomcat -g "Tomcat User" -s /bin/ash -D tomcat \
-    && mkdir -p ${ALF_DARA_DIR}/solr4 \
+    && mkdir -p ${ALF_DATA_DIR}/solr4 \
     && chown -R tomcat:tomcat ${TOMCAT_DIR} \
-    && chown -R tomcat:tomcat ${ALF_DARA_DIR}
-    
+    && chown -R tomcat:tomcat ${ALF_DATA_DIR}
+
 # Alfresco
 EXPOSE 8080:8080
 # Postgres
 EXPOSE 5432:5432
 # ElasticSearch
 EXPOSE 9200:9200
+
+CMD ["/usr/local/tomcat/bin/run.sh"]
