@@ -29,12 +29,14 @@ WORKDIR /usr/local
 COPY config /usr/local/config
 COPY config/config_alfresco.sh .
 COPY config/run.sh tomcat/bin/run.sh
+COPY config/set_properties.sh tomcat/bin/set_properties.sh
 
 
 # Download the community zip files
 RUN wget --no-check-certificate "https://download.alfresco.com/release/community/201605-build-00010/alfresco-community-distribution-201605.zip" \
     && chmod +x config_alfresco.sh \
     && chmod +x tomcat/bin/run.sh \
+    && chmod +x tomcat/bin/set_properties.sh \
     && ./config_alfresco.sh
 
 RUN cp ${CONFIG_DIR}/alfresco-global.properties tomcat/shared/classes/alfresco-global.properties \
@@ -73,8 +75,8 @@ RUN addgroup -S tomcat \
 # Alfresco
 EXPOSE 8080:8080
 # Postgres
-EXPOSE 5432:5432
+#EXPOSE 5432:5432
 # ElasticSearch
-EXPOSE 9200:9200
+#EXPOSE 9200:9200
 
 CMD ["/usr/local/tomcat/bin/run.sh"]

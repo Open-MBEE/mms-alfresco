@@ -6,9 +6,9 @@ ROOT_DIR=/usr/local/alfresco-community-distribution-201605
 TOMCAT_DIR=/usr/local/tomcat
 unzip -q alfresco-community-distribution-201605.zip
 
-ls -la
-ls -la ${CUR_DIR}
-ls -la ${TOMCAT_DIR}
+#ls -la
+#ls -la ${CUR_DIR}
+#ls -la ${TOMCAT_DIR}
 
 echo "cp -r ${ROOT_DIR}/alf_data /mnt/"
 cp -r ${ROOT_DIR}/alf_data /mnt/
