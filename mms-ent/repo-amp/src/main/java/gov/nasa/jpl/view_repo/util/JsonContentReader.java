@@ -3,11 +3,14 @@ package gov.nasa.jpl.view_repo.util;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
+import org.springframework.util.StreamUtils;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.text.SimpleDateFormat;
@@ -19,7 +22,6 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
 
     private JSONObject json;
     private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-    private InputStream is;
 
     public JsonContentReader(JSONObject json) {
         this(json, "store://");
@@ -28,7 +30,6 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
     public JsonContentReader(JSONObject json, String url) {
         super(url);
         this.json = json;
-        is = new ByteArrayInputStream(json.toString().getBytes());
     }
 
     public JSONObject getJson() {
@@ -36,17 +37,17 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
     }
 
     public boolean exists() {
-        return !this.json.has(Sjm.RES);
+        return this.json.length() > 0;
     }
 
     public long getSize() {
-        return !this.exists() ? 0L : this.json.length();
+        return !this.exists() ? 0L : this.json.toString().length();
     }
 
     public long getLastModified() {
         Date lastModified = new Date();
         try {
-            lastModified = df.parse(this.json.getString(Sjm.MODIFIED));
+            lastModified = df.parse(this.json.optString(Sjm.MODIFIED));
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("getLastModified Error: ", e);
@@ -60,15 +61,24 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
     }
 
     public void getStreamContent(OutputStream os) throws ContentIOException {
+        InputStream is = new ByteArrayInputStream(this.json.toString().getBytes());
         try {
-            IOUtils.copy(is, os);
+            StreamUtils.copy(is, os);
         } catch (IOException var3) {
             throw new ContentIOException("Failed to copy content to output stream: \n   accessor: " + this, var3);
+        } finally {
+            try {
+                is.close();
+                os.close();
+            } catch (IOException var12) {
+                // Intentionally Blank
+            }
         }
     }
 
     protected ReadableByteChannel getDirectReadableChannel() throws ContentIOException {
         ReadableByteChannel channel = null;
+        InputStream is = new ByteArrayInputStream(this.json.toString().getBytes());
         try {
             if (!this.exists()) {
                 throw new IOException("File does not exist: " + this.json);

@@ -147,7 +147,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
 
                     // render response according to requested format
                     if (templateModel.containsKey(Sjm.RES) && templateModel.get(Sjm.RES) != null) {
-                        //if (false) {
                         if (templateModel.get(Sjm.RES) instanceof JSONObject) {
                             JsonContentReader reader = new JsonContentReader((JSONObject) templateModel.get(Sjm.RES));
                             final long size = reader.getSize();
