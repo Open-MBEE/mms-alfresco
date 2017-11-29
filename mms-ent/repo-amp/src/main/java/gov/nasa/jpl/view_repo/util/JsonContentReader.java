@@ -20,34 +20,38 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
 
     private static Logger logger = Logger.getLogger(JsonContentReader.class);
 
-    private JSONObject json;
+    private String json;
+    private String modified;
+    private long size;
     private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     public JsonContentReader(JSONObject json) {
-        this(json, "store://");
+        this(json.toString(), "store://");
+        modified = json.optString(Sjm.MODIFIED);
+        size = json.length();
     }
 
-    public JsonContentReader(JSONObject json, String url) {
+    public JsonContentReader(String json, String url) {
         super(url);
         this.json = json;
     }
 
-    public JSONObject getJson() {
+    public String getJson() {
         return this.json;
     }
 
     public boolean exists() {
-        return this.json.length() > 0;
+        return this.size > 0;
     }
 
     public long getSize() {
-        return !this.exists() ? 0L : this.json.toString().length();
+        return !this.exists() ? 0L : this.json.length();
     }
 
     public long getLastModified() {
         Date lastModified = new Date();
         try {
-            lastModified = df.parse(this.json.optString(Sjm.MODIFIED));
+            lastModified = df.parse(this.modified);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("getLastModified Error: ", e);
@@ -61,7 +65,7 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
     }
 
     public void getStreamContent(OutputStream os) throws ContentIOException {
-        InputStream is = new ByteArrayInputStream(this.json.toString().getBytes());
+        InputStream is = new ByteArrayInputStream(this.json.getBytes());
         try {
             StreamUtils.copy(is, os);
         } catch (IOException var3) {
@@ -78,7 +82,7 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
 
     protected ReadableByteChannel getDirectReadableChannel() throws ContentIOException {
         ReadableByteChannel channel = null;
-        InputStream is = new ByteArrayInputStream(this.json.toString().getBytes());
+        InputStream is = new ByteArrayInputStream(this.json.getBytes());
         try {
             if (!this.exists()) {
                 throw new IOException("File does not exist: " + this.json);
@@ -92,7 +96,9 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
             throw new ContentIOException("Failed to open json channel: " + this, var3);
         } finally {
             try {
-                channel.close();
+                if (channel != null) {
+                    channel.close();
+                }
             } catch (IOException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Error: ", e);
