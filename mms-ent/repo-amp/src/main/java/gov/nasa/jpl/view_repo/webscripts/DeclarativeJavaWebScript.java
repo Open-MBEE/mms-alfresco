@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.JsonContentReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -67,6 +68,9 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     public static final String NO_WORKSPACE_ID = "master"; // default is master if unspecified
     public static final String NO_PROJECT_ID = "no_project";
     public static final String NO_SITE_ID = "no_site";
+
+    private static final String HEADER_CONTENT_RANGE = "Content-Range";
+    private static final String HEADER_CONTENT_LENGTH = "Content-Length";
 
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
@@ -143,8 +147,25 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
 
                     // render response according to requested format
                     if (templateModel.containsKey(Sjm.RES) && templateModel.get(Sjm.RES) != null) {
-                        res.getWriter().write(templateModel.get(Sjm.RES).toString());
-                        res.setHeader("Content-Type", "application/json;charset=UTF-8");
+                        //if (false) {
+                        if (templateModel.get(Sjm.RES) instanceof JSONObject) {
+                            JsonContentReader reader = new JsonContentReader((JSONObject) templateModel.get(Sjm.RES));
+                            final long size = reader.getSize();
+                            // set mimetype for the content and the character encoding for the stream
+                            res.setContentType("application/json");
+                            res.setContentEncoding("UTF-8");
+                            // return the complete entity range
+                            res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size - 1L) + "/" + Long.toString(size));
+                            res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
+
+                            // get the content and stream directly to the response output stream
+                            // assuming the repository is capable of streaming in chunks, this should allow large files
+                            // to be streamed directly to the browser response stream.
+                            reader.getStreamContent(res.getOutputStream());
+                        } else {
+                            res.getWriter().write(templateModel.get(Sjm.RES).toString());
+                            res.setHeader("Content-Type", "application/json;charset=UTF-8");
+                        }
                     }
                 }
             } finally {
