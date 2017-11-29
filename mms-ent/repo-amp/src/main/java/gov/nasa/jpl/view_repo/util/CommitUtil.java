@@ -1041,7 +1041,7 @@ public class CommitUtil {
         return false;
     }
 
-    private static Pattern pattern = Pattern.compile("<mms-cf.*?mms-element-id=\"([^\"]+)\"");
+    private static Pattern pattern = Pattern.compile("<mms-cf.*?mms-element-id=\"([a-zA-Z0-9_\\-]+)\"");
 
     public static void processValueEdges(JSONObject element, List<Pair<String, String>> edges) {
         JSONObject defaultValue = element.optJSONObject(Sjm.DEFAULTVALUE);
