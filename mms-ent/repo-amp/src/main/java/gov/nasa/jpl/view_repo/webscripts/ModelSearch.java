@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.HashSet;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -123,6 +125,8 @@ public class ModelSearch extends ModelPost {
             JSONArray elasticResult = emsNodeUtil.search(json);
             elasticResult = filterByPermission(elasticResult, req);
             Map<String, JSONArray> bins = new HashMap<>();
+            JSONArray finalResult = new JSONArray();
+            Set<String> found = new HashSet<>();
             for (int i = 0; i < elasticResult.length(); i++) {
                 JSONObject e = elasticResult.getJSONObject(i);
 
@@ -135,11 +139,18 @@ public class ModelSearch extends ModelPost {
                     } else if (e.getString(Sjm.TYPE).equals("Slot")) {
                         ownere = getGrandOwnerJson(eprojId, erefId, e.getString(Sjm.OWNERID));
                     }
-                    if (ownere != null && ownere.has(Sjm.SYSMLID)) {
-                        elasticResult.put(i, ownere);
-                        e = ownere;
+                    if (ownere != null && ownere.has(Sjm.SYSMLID) && !found.contains(ownere.getString(Sjm.SYSMLID))) {
+                        finalResult.put(ownere);
+                        String key = ownere.getString(Sjm.PROJECTID) + " " +  ownere.getString(Sjm.REFID);
+                        if (!bins.containsKey(key)) {
+                            bins.put(key, new JSONArray());
+                        }
+                        bins.get(key).put(ownere);
+                        found.add(ownere.getString(Sjm.SYSMLID));
                     }
                 }
+                finalResult.put(e);
+                found.add(e.getString(Sjm.SYSMLID));
                 String key = e.getString(Sjm.PROJECTID) + " " +  e.getString(Sjm.REFID);
                 if (!bins.containsKey(key)) {
                     bins.put(key, new JSONArray());
@@ -154,11 +165,10 @@ public class ModelSearch extends ModelPost {
                 util.addExtendedInformation(entry.getValue());
                 util.addExtraDocs(entry.getValue());
             }
-            return elasticResult;
+            return finalResult;
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
-
         return elements;
     }
 
