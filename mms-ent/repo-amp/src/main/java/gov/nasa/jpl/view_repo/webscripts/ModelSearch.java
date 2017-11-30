@@ -88,7 +88,7 @@ public class ModelSearch extends ModelPost {
 
 
         try {
-            boolean noprocess = Boolean.parseBoolean(req.getParameter("noprocess"));
+            boolean noprocess = Boolean.parseBoolean(req.getParameter("literal"));
             if (noprocess) {
                 JSONObject json = (JSONObject) req.parseContent();
                 ElasticHelper eh = new ElasticHelper();
