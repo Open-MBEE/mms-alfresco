@@ -65,18 +65,10 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
     }
 
     public void getStreamContent(OutputStream os) throws ContentIOException {
-        InputStream is = new ByteArrayInputStream(this.json.getBytes());
         try {
-            StreamUtils.copy(is, os);
+            StreamUtils.copy(this.json.getBytes(), os);
         } catch (IOException var3) {
             throw new ContentIOException("Failed to copy content to output stream: \n   accessor: " + this, var3);
-        } finally {
-            try {
-                is.close();
-                os.close();
-            } catch (IOException var12) {
-                // Intentionally Blank
-            }
         }
     }
 

@@ -147,15 +147,17 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
 
                     // render response according to requested format
                     if (templateModel.containsKey(Sjm.RES) && templateModel.get(Sjm.RES) != null) {
+                        res.setContentType("application/json");
+                        res.setContentEncoding("UTF-8");
+                        //if (false) {
                         if (templateModel.get(Sjm.RES) instanceof JSONObject) {
                             JsonContentReader reader = new JsonContentReader((JSONObject) templateModel.get(Sjm.RES));
                             final long size = reader.getSize();
                             // set mimetype for the content and the character encoding for the stream
-                            res.setContentType("application/json");
-                            res.setContentEncoding("UTF-8");
                             // return the complete entity range
                             res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size - 1L) + "/" + Long.toString(size));
-                            res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
+                            //res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
+                            //res.setHeader("Transfer-Encoding", "chunked");
 
                             // get the content and stream directly to the response output stream
                             // assuming the repository is capable of streaming in chunks, this should allow large files
@@ -163,7 +165,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                             reader.getStreamContent(res.getOutputStream());
                         } else {
                             res.getWriter().write(templateModel.get(Sjm.RES).toString());
-                            res.setHeader("Content-Type", "application/json;charset=UTF-8");
                         }
                     }
                 }
