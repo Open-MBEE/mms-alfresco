@@ -55,6 +55,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.db.ElasticHelper;
+
 
 /**
  * Model search service that returns a JSONArray of elements
@@ -86,14 +88,22 @@ public class ModelSearch extends ModelPost {
 
 
         try {
-            JSONObject top = new JSONObject();
-            JSONArray elementsJson = executeSearchRequest(req);
-            top.put("elements", elementsJson);
+            boolean noprocess = Boolean.parseBoolean(req.getParameter("noprocess"));
+            if (noprocess) {
+                JSONObject json = (JSONObject) req.parseContent();
+                ElasticHelper eh = new ElasticHelper();
+                JSONObject result = eh.searchLiteral(json);
+                model.put(Sjm.RES, result.toString());
+            } else {
+                JSONObject top = new JSONObject();
+                JSONArray elementsJson = executeSearchRequest(req);
+                top.put("elements", elementsJson);
 
-            if (!Utils.isNullOrEmpty(response.toString())) {
-                top.put("message", response.toString());
+                if (!Utils.isNullOrEmpty(response.toString())) {
+                    top.put("message", response.toString());
+                }
+                model.put(Sjm.RES, top.toString());
             }
-            model.put(Sjm.RES, top.toString());
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse the JSON request", e);
         } catch (Exception e) {
