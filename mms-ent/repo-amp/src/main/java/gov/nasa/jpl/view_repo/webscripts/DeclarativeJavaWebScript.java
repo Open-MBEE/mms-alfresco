@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.gson.Gson;
 import gov.nasa.jpl.view_repo.util.JsonContentReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -152,12 +153,14 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                         res.setContentEncoding("UTF-8");
                         //if (false) {
                         if (templateModel.get(Sjm.RES) instanceof JSONObject) {
-                            JsonContentReader reader = new JsonContentReader((JSONObject) templateModel.get(Sjm.RES));
+                            JSONObject json = (JSONObject) templateModel.get(Sjm.RES);
+                            Map<String, Object> jsonMap = EmsNodeUtil.toMap(json);
+                            JsonContentReader reader = new JsonContentReader(jsonMap);
                             final long size = reader.getSize();
                             // set mimetype for the content and the character encoding for the stream
                             // return the complete entity range
                             res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size - 1L) + "/" + Long.toString(size));
-                            //res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
+                            res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
                             //res.setHeader("Transfer-Encoding", "chunked");
 
                             // get the content and stream directly to the response output stream
@@ -175,7 +178,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             }
         } catch (Throwable e) {
             logger.error(String.format("Caught exception; decorating with appropriate status template : %s",
-                            LogUtil.getStackTrace(e)));
+                LogUtil.getStackTrace(e)));
             throw createStatusException(e, req, res);
         }
     }
@@ -291,7 +294,8 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         for (int i = 0; i < projects.length(); i++) {
             JSONObject project = projects.optJSONObject(i);
             if (project != null && project.has("orgId")) {
-                Boolean perm = SitePermission.hasPermission(project.getString("orgId"), project.getString(Sjm.SYSMLID), null, Permission.READ);
+                Boolean perm = SitePermission
+                    .hasPermission(project.getString("orgId"), project.getString(Sjm.SYSMLID), null, Permission.READ);
                 if (perm != null && perm) {
                     result.put(project);
                 }
@@ -324,9 +328,9 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         for (int i = 0; i < elements.length(); i++) {
             JSONObject el = elements.optJSONObject(i);
             String refId2 = el.has(Sjm.REFID) ? el.getString(Sjm.REFID) : refId;
-            String projectId2 = el.has(Sjm.PROJECTID) ? el.getString(Sjm.PROJECTID): projectId;
-            JSONObject element = filterElementByPermission(el, projectId2, refId2, Permission.READ,
-                permCache, projectSite);
+            String projectId2 = el.has(Sjm.PROJECTID) ? el.getString(Sjm.PROJECTID) : projectId;
+            JSONObject element =
+                filterElementByPermission(el, projectId2, refId2, Permission.READ, permCache, projectSite);
             if (element != null) {
                 result.put(element);
             }
@@ -335,8 +339,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     }
 
     private JSONObject filterElementByPermission(JSONObject element, String projectId, String refId,
-                     Permission permission, Map<String, Map<Permission, Boolean>> permCache,
-                                                 Map<String, String> projectSite) {
+        Permission permission, Map<String, Map<Permission, Boolean>> permCache, Map<String, String> projectSite) {
         // temp fix to skip permission checking
         Boolean hasPerm;
         String siteId = null;
@@ -354,7 +357,8 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             hasPerm = permCache.get(cacheKey).get(permission);
         } else {
             hasPerm = SitePermission.hasPermission(siteId, projectId, refId, permission);
-            Map<Permission, Boolean> permMap = permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
+            Map<Permission, Boolean> permMap =
+                permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
             permMap.put(permission, (hasPerm == null) ? false : hasPerm);
             permCache.put(cacheKey, permMap);
         }
@@ -366,7 +370,8 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     editable = permCache.get(cacheKey).get(Permission.WRITE);
                 } else {
                     editable = SitePermission.hasPermission(siteId, projectId, refId, Permission.WRITE);
-                    Map<Permission, Boolean> writePermMap = permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
+                    Map<Permission, Boolean> writePermMap =
+                        permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
                     writePermMap.put(Permission.WRITE, editable);
                     permCache.put(cacheKey, writePermMap);
                 }

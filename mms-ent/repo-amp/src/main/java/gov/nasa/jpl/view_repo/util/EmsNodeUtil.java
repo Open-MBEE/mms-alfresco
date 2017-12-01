@@ -1397,7 +1397,7 @@ public class EmsNodeUtil {
         return sysmlid2elements;
     }
 
-    private static Map<String, Object> toMap(JSONObject object) {
+    public static Map<String, Object> toMap(JSONObject object) {
         Map<String, Object> map = new HashMap<>();
 
         Iterator<?> keysItr = object.keys();

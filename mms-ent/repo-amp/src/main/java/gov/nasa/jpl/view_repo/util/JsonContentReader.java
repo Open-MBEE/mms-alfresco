@@ -1,10 +1,13 @@
 package gov.nasa.jpl.view_repo.util;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 import org.springframework.util.StreamUtils;
 
 import java.io.ByteArrayInputStream;
@@ -15,6 +18,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 public class JsonContentReader extends AbstractContentReader implements ContentReader {
 
@@ -24,11 +28,16 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
     private String modified;
     private long size;
     private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    private static ObjectMapper om;
+    static {
+        om = new ObjectMapper();
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+    }
 
-    public JsonContentReader(JSONObject json) {
-        this(json.toString(), "store://");
-        modified = json.optString(Sjm.MODIFIED);
-        size = json.length();
+    public JsonContentReader(Map<String, Object> json) throws JsonProcessingException {
+        this(om.writeValueAsString(json), "store://");
+        modified = (String) json.get(Sjm.MODIFIED);
+        size = json.keySet().size();
     }
 
     public JsonContentReader(String json, String url) {
