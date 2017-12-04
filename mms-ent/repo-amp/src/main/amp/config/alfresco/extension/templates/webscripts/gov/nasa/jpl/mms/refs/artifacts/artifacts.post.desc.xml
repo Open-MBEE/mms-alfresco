@@ -5,8 +5,8 @@
     <description>
         post elements
     </description>
-    <url>/projects/{projectId}/refs/{refId}/elements</url>
-    <url>/projects/{projectId}/refs/{refId}/elements/{artifactId}</url>
+    <url>/projects/{projectId}/refs/{refId}/artifacts</url>
+    <url>/projects/{projectId}/refs/{refId}/artifacts/{artifactId}</url>
     <format default="json">argument</format>
     <authentication>user</authentication>
     <transaction>required</transaction>

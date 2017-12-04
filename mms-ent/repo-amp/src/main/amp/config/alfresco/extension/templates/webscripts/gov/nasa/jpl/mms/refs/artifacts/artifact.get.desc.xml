@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webscript>
 <webscript>
-    <shortname>get element with {elementId}</shortname>
+    <shortname>get element with {artifactId}</shortname>
     <description>
-        get element with {elementId}
+        get artifact with {artifactId}
     </description>
-      <url>/projects/{projectId}/refs/{refId}/elements/{elementId}</url>
+      <url>/projects/{projectId}/refs/{refId}/artifacts/{artifactId}</url>
       <format default="json">argument</format>
       <authentication>user</authentication>
     <transaction>required</transaction>
