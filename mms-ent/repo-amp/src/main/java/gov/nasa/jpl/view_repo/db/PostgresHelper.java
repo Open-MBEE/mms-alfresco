@@ -1629,6 +1629,11 @@ public class PostgresHelper implements GraphInterface {
             execUpdate("CREATE INDEX refsIndex on refs(id)");
 
             execUpdate(
+                "CREATE TABLE artifacts(id bigserial primary key, elasticId text not null unique, sysmlId text not null unique, lastCommit text, initialCommit text, deleted boolean default false, checksum text not null, location text not null);");
+            execUpdate("CREATE INDEX artifactIndex on artifacts(id);");
+            execUpdate("CREATE INDEX sysmlArtifactIndex on artifacts(sysmlId);");
+
+            execUpdate(
                 "CREATE OR REPLACE FUNCTION insert_edge(text, text, text, integer)\n" + "  returns integer as $$\n"
                     + "  begin\n" + "    execute '\n"
                     + "      insert into ' || (format('edges%s', $3)) || ' (parent, child, edgeType) values((select id from ' || format('nodes%s',$3) || ' where sysmlId = ''' || $1 || '''), (select id from ' || format('nodes%s', $3) || ' where sysmlId = ''' || $2 || '''), ' || $4 || ');';\n"
