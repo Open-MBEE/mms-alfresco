@@ -224,7 +224,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 if (dstWs != null) {
                     // keep history of the branch
                     String srcId = srcWs.getName().equals(NO_WORKSPACE_ID) ? NO_WORKSPACE_ID : srcWs.getId();
-                    dstWs.setProperty("cm:title", dstWs.getId() + "_" + srcId);
+                    dstWs.setProperty("cm:title", newWorkspaceId + "_" + srcId);
                     dstWs.setProperty("cm:name", dstWs.getName());
 
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
