@@ -59,6 +59,7 @@ import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.surf.util.Content;
@@ -120,7 +121,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         JSONObject writeToDb;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
         // Would ideally be a transaction
-        writeToDb = processArtifactDelta(req);
+        writeToDb = processArtifactDelta(req, user);
 
         result = handleArtifactPost(req, status, user, contentType);
 
@@ -129,14 +130,22 @@ public class ArtifactPost extends AbstractJavaWebScript {
         return result;
     }
 
-    protected JSONObject processArtifactDelta(final WebScriptRequest req) {
+    protected JSONObject processArtifactDelta(final WebScriptRequest req, String user) {
+        String refId = getRefId(req);
+        String projectId = getProjectId(req);
+        Map<String, Object> model = new HashMap<>();
+        JSONArray results = new JSONArray();
+
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+
+
         try {
             FormData formData = (FormData) req.parseContent();
             FormData.FormField[] fields = formData.getFields();
             //Set<String> names = formData.getFieldNames();
             String data = formData.toString();
             //FormData.FieldData data = formData.new FieldData();
-            JSONObject delta = new JSONObject();
+            JSONObject postJson = new JSONObject();
             for (FormData.FormField field : fields) {
                 logger.debug("field.getName(): " + field.getName());
                 if (field.getName().equals("file") && field.getIsFile()) {
@@ -149,15 +158,51 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 } else {
                     String name = field.getName();
                     String value = field.getValue();
-                    delta.put(name, value);
+                    postJson.put(name, value);
                     logger.debug("filename: " + name);
 
                 }
             }
-            return delta;
+            postJson.put(Sjm.TYPE, "Artifact");
+            results.put(postJson);
+            this.populateSourceApplicationFromJson(postJson);
+            Set<String> oldElasticIds = new HashSet<>();
+            JSONObject delta = emsNodeUtil.processPostJson(results, user, oldElasticIds, false, this.requestSourceApplication, Sjm.ARTIFACT);
+            String commitId = delta.getJSONObject("commit").getString(Sjm.ELASTICID);
+            if (CommitUtil.sendDeltas(delta, projectId, refId, requestSourceApplication, services, false)) {
+//                if (!oldElasticIds.isEmpty()) {
+//                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
+//                }
+//                Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
+//
+//                if (withChildViews) {
+//                    for (int i = 0; i < results.getJSONArray(NEWELEMENTS).length(); i++) {
+//                        results.getJSONArray(NEWELEMENTS)
+//                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i)));
+//                    }
+//                }
+//
+//                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray(NEWELEMENTS), req)) : filterByPermission(results.getJSONArray(NEWELEMENTS), req));
+//                newElementsObject.put(Sjm.COMMITID, commitId);
+//                newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
+//                newElementsObject.put(Sjm.CREATOR, user);
+//
+//                if (prettyPrint) {
+//                    model.put(Sjm.RES, newElementsObject.toString(4));
+//                } else {
+//                    model.put(Sjm.RES, newElementsObject);
+//                }
+//
+//                status.setCode(responseStatus.getCode());
+            } else {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
+                model.put(Sjm.RES, createResponseJson());
+            }
+            return postJson;
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
+
         return new JSONObject();
     }
 

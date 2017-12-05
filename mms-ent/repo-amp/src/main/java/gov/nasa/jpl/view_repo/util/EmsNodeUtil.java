@@ -506,36 +506,9 @@ public class EmsNodeUtil {
 
         return result;
     }
-    /*{"commits": [{
-    "type": "Element/Artifact",
-    "_created": "2017-11-01T14:22:18.764-0700",
-    "_creator": "hang",
-    "_elasticId": "176dedab-1c3c-45ae-b531-2af0dd34137c",
-    "added": [],
-    "deleted": [],
-    "updated": [{
-        "_elasticId": "823048a1-dc35-4edb-b020-ef25d54bb108",
-        "id": "_18_5_2_40a019f_1508788689109_208719_59158",
-        "previousElasticId": "43083458-1fcd-4384-8ff3-c3ac18bf0f0e",
-        "contentType": "application/json|image/svg|etc"
-    }]
-}]}*/
-    /*{
-    "id": "artifactid",
-    "_elasticId":"blah",
-    "_modified": "date",
-    "_modifier": "user",
-    "location": "link",
-    "name": "",
-    "checksum": "hash (use md5?)",
-    "contentType": "image/svg",
-    "_projectId": "",
-    "_refId": "",
-    "type": "Artifact"
-}*/
 
     public JSONObject processPostJson(JSONArray elements, String user, Set<String> oldElasticIds, boolean overwriteJson,
-        String src) {
+        String src, String type) {
 
         JSONObject result = new JSONObject();
 
@@ -608,7 +581,7 @@ public class EmsNodeUtil {
             }
 
             if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null || o.getString(Sjm.OWNERID)
-                .equalsIgnoreCase("null")) {
+                .equalsIgnoreCase("null") && o.getString(Sjm.TYPE).equals(Sjm.ELEMENT)) {
                 o.put(Sjm.OWNERID, holdingBinSysmlid);
             }
             reorderChildViews(o, newElements, addedElements, updatedElements, deletedElements, commitAdded,
@@ -623,6 +596,10 @@ public class EmsNodeUtil {
                 JSONObject newObj = new JSONObject();
                 newObj.put(Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
                 newObj.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
+                // this for the artifact object, has extra key...
+                if(o.getString(type).equals("Artifact")){
+                        newObj.put(Sjm.CONTENTTYPE, o.getString(Sjm.CONTENTTYPE));
+                }
                 commitAdded.put(newObj);
             } else if (updated) {
                 logger.debug("ELEMENT UPDATED!");
@@ -654,9 +631,11 @@ public class EmsNodeUtil {
         commit.put(Sjm.CREATED, date);
         commit.put(Sjm.PROJECTID, projectId);
         commit.put(Sjm.SOURCE, src);
+        commit.put(Sjm.TYPE, type);
 
 
         result.put("commit", commit);
+
 
         return result;
     }

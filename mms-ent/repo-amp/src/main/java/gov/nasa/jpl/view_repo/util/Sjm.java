@@ -148,6 +148,10 @@ public class Sjm {
     public static final String INREFIDS = "_inRefIds";
 
     public static final String CHECKSUM = "checksum";
+    public static final String ARTIFACTS = "artifacts";
+    public static final String CONTENTTYPE = "contentType";
+    public static final String ELEMENT = "Element";
+    public static final String ARTIFACT = "Artifact";
 
 
     public static final Map<String, String> STEREOTYPEIDS;

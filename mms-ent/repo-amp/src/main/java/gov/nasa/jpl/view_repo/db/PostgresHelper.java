@@ -1422,6 +1422,21 @@ public class PostgresHelper implements GraphInterface {
             close();
         }
     }
+    public void deleteEdgesForArtifact(String sysmlId) {
+        try {
+            Node n = getNodeFromSysmlId(sysmlId);
+
+            if (n == null)
+                return;
+
+            execUpdate(
+                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId() + " OR parent = " + n.getId());
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+    }
 
     public void deleteEdgesForNode(String sysmlId, boolean child, DbEdgeTypes edgeType) {
         try {

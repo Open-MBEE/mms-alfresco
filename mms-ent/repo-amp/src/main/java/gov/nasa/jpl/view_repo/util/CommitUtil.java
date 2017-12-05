@@ -183,6 +183,120 @@ public class CommitUtil {
         }
         return false;
     }
+    private static boolean processArtifactDeltasForDb(JSONObject delta, String projectId, String refId, JSONObject jmsPayload,
+        boolean withChildViews, ServiceRegistry services) {
+        PostgresHelper pgh = new PostgresHelper();
+        pgh.setProject(projectId);
+        pgh.setWorkspace(refId);
+
+        JSONArray added = delta.optJSONArray("addedElements");
+        JSONArray updated = delta.optJSONArray("updatedElements");
+        JSONArray deleted = delta.optJSONArray("deletedElements");
+
+        String creator = delta.getJSONObject("commit").getString(Sjm.CREATOR);
+        String commitElasticId = delta.getJSONObject("commit").getString(Sjm.ELASTICID);
+
+        JSONObject jmsWorkspace = new JSONObject();
+        JSONArray jmsAdded = new JSONArray();
+        JSONArray jmsUpdated = new JSONArray();
+        JSONArray jmsDeleted = new JSONArray();
+
+        List<String> deletedSysmlIds = new ArrayList<>();
+        if (bulkElasticEntry(added, "added", false, projectId) && bulkElasticEntry(updated, "updated",
+            false, projectId)) {
+            try {
+                List<Map<String, String>> nodeInserts = new ArrayList<>();
+                List<Map<String, String>> nodeUpdates = new ArrayList<>();
+
+                for (int i = 0; i < added.length(); i++) {
+                    JSONObject e = added.getJSONObject(i);
+                    Map<String, String> artifact = new HashMap<>();
+                    jmsAdded.put(e.getString(Sjm.SYSMLID));
+
+                    if (e.has(Sjm.ELASTICID)) {
+                        artifact.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
+                        artifact.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
+                        artifact.put(INITIALCOMMIT, e.getString(Sjm.ELASTICID));
+                        artifact.put(LASTCOMMIT, commitElasticId);
+                        nodeInserts.add(artifact);
+                    }
+                }
+
+                for (int i = 0; i < deleted.length(); i++) {
+                    JSONObject e = deleted.getJSONObject(i);
+                    jmsDeleted.put(e.getString(Sjm.SYSMLID));
+                    pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
+                    pgh.deleteNode(e.getString(Sjm.SYSMLID));
+                    deletedSysmlIds.add(e.getString(Sjm.SYSMLID));
+                }
+
+                for (int i = 0; i < updated.length(); i++) {
+                    JSONObject e = updated.getJSONObject(i);
+                    jmsUpdated.put(e.getString(Sjm.SYSMLID));
+
+                    if (e.has(Sjm.ELASTICID)) {
+                        Map<String, String> updatedNode = new HashMap<>();
+                        updatedNode.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
+                        updatedNode.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
+                        updatedNode.put(DELETED, "false");
+                        updatedNode.put(LASTCOMMIT, commitElasticId);
+                        nodeUpdates.add(updatedNode);
+                    }
+                }
+
+                List<String> nullParents;
+                Savepoint sp = null;
+                try {//do node insert, updates, and containment edge updates
+                    //do bulk delete edges for affected sysmlids here - delete containment, view and childview
+                    sp = pgh.startTransaction();
+                    pgh.runBulkQueries(nodeInserts, NODES);
+                    pgh.runBulkQueries(nodeUpdates, "updates");
+                    pgh.updateBySysmlIds(NODES, LASTCOMMIT, commitElasticId, deletedSysmlIds);
+                    pgh.commitTransaction();
+                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
+                    nullParents = pgh.findNullParents();
+                    if (nullParents != null) {
+                        updateNullEdges(nullParents, projectId);
+                    }
+                } catch (Exception e) {
+                    try {
+                        pgh.rollBackToSavepoint(sp);
+                    } catch (SQLException se) {
+                        logger.error(String.format("%s", LogUtil.getStackTrace(se)));
+                    }
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                    return false;
+                } finally {
+                    pgh.close();
+                }
+                try {
+                    eh.indexElement(delta, projectId); //initial commit may fail to read back but does get indexed
+                } catch (Exception e) {
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                }
+
+            } catch (Exception e1) {
+                logger.warn("Could not complete graph storage");
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("%s", LogUtil.getStackTrace(e1)));
+                }
+                return false;
+            }
+
+        }else {
+            logger.error("Elasticsearch insert error occurred");
+            return false;
+        }
+
+        jmsWorkspace.put("addedElements", jmsAdded);
+        jmsWorkspace.put("updatedElements", jmsUpdated);
+        jmsWorkspace.put("deletedElements", jmsDeleted);
+
+        jmsPayload.put("refs", jmsWorkspace);
+
+        return true;
+
+    }
 
     private static boolean processDeltasForDb(JSONObject delta, String projectId, String refId, JSONObject jmsPayload,
         boolean withChildViews, ServiceRegistry services) {
