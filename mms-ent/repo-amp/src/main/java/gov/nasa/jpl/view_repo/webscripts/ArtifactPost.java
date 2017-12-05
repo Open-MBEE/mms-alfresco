@@ -115,36 +115,12 @@ public class ArtifactPost extends AbstractJavaWebScript {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         printHeader(user, logger, req, true);
         Timer timer = new Timer();
-        // :TODO get request body req.parseContent().parseContent()
-        // JSONObject json = (JSONObject) req.parseContent();
-        FormData formData = (FormData)req.parseContent();
-        FormData.FormField[] fields = formData.getFields();
-        //Set<String> names = formData.getFieldNames();
-        String data = formData.toString();
-        //FormData.FieldData data = formData.new FieldData();
-        for(FormData.FormField field : fields) {
-            logger.debug("field.getName(): "+field.getName());
-            if(field.getName().equals("file") && field.getIsFile()) {
-                String filename = field.getFilename();
-                Content content = field.getContent();
-                String mimetype = field.getMimetype();
-                logger.debug("filename: "+filename);
-                logger.debug("content: "+content);
-                logger.debug("mimetype: "+mimetype);
-            }else{
-                String name = field.getName();
-                String value = field.getValue();
-                logger.debug("filename: "+name);
-
-            }
-        }
-
 
         Map<String, Object> result;
         JSONObject writeToDb;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
         // Would ideally be a transaction
-        writeToDb = processArtifactDelta();
+        writeToDb = processArtifactDelta(req);
 
         result = handleArtifactPost(req, status, user, contentType);
 
@@ -153,11 +129,40 @@ public class ArtifactPost extends AbstractJavaWebScript {
         return result;
     }
 
-    protected JSONObject processArtifactDelta(){
+    protected JSONObject processArtifactDelta(final WebScriptRequest req) {
+        try {
+            FormData formData = (FormData) req.parseContent();
+            FormData.FormField[] fields = formData.getFields();
+            //Set<String> names = formData.getFieldNames();
+            String data = formData.toString();
+            //FormData.FieldData data = formData.new FieldData();
+            JSONObject delta = new JSONObject();
+            for (FormData.FormField field : fields) {
+                logger.debug("field.getName(): " + field.getName());
+                if (field.getName().equals("file") && field.getIsFile()) {
+                    String filename = field.getFilename();
+                    Content content = field.getContent();
+                    String mimetype = field.getMimetype();
+                    logger.debug("filename: " + filename);
+                    logger.debug("content: " + content);
+                    logger.debug("mimetype: " + mimetype);
+                } else {
+                    String name = field.getName();
+                    String value = field.getValue();
+                    delta.put(name, value);
+                    logger.debug("filename: " + name);
+
+                }
+            }
+            return delta;
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
         return new JSONObject();
     }
 
-    protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user, String contentType) {
+    protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user,
+        String contentType) {
 
         JSONObject resultJson = null;
         String filename = null;
@@ -172,7 +177,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         try {
             Object binaryContent = req.getContent().getContent();
             content = binaryContent.toString();
-        } catch(IOException e) {
+        } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
@@ -197,7 +202,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
                     if (artifactIdPath.length() > (lastIndex + 1)) {
 
-                        path = projectId + "/refs/" + refId + "/" + (lastIndex != -1 ? artifactIdPath.substring(0, lastIndex) : "");
+                        path = projectId + "/refs/" + refId + "/" + (lastIndex != -1 ?
+                            artifactIdPath.substring(0, lastIndex) :
+                            "");
                         artifactId = lastIndex != -1 ? artifactIdPath.substring(lastIndex + 1) : artifactIdPath;
                         logger.error("artifactId: " + artifactId);
 
@@ -230,8 +237,8 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
                                         try {
                                             pngArtifact = NodeUtil
-                                                .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName,
-                                                    projectId, refId, null, response, null, false);
+                                                .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName, projectId,
+                                                    refId, null, response, null, false);
                                         } catch (Throwable ex) {
                                             throw new Exception("Failed to convert SVG to PNG!\n");
                                         }

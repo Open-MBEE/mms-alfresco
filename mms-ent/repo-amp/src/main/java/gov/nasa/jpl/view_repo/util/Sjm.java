@@ -147,6 +147,9 @@ public class Sjm {
     public static final String TIMESTAMP = "_timestamp";
     public static final String INREFIDS = "_inRefIds";
 
+    public static final String CHECKSUM = "checksum";
+
+
     public static final Map<String, String> STEREOTYPEIDS;
     static {
         STEREOTYPEIDS = new HashMap<>();
