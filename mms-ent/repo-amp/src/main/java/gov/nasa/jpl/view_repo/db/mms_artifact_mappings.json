@@ -1,0 +1,41 @@
+{
+    "artifact": {
+        "properties": {
+            "location": {
+                "type": "keyword"
+            },
+            "name": {
+                "type": "keyword"
+            },
+            "checksum": {
+                "type": "keyword"
+            },
+            "contentType": {
+                "type": "keyword"
+            },
+            "type": {
+                "type": "keyword"
+            },
+            "_projectId": {
+                "type": "keyword"
+            },
+            "_refId": {
+                "type": "keyword"
+            },
+            "_modifier": {
+                "type": "keyword"
+            },
+            "_created": {
+                "type": "date",
+                "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            },
+            "_modified": {
+                "type": "date",
+                "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            },
+            "_elasticId":{
+                "type": "keyword"
+            }
+        }
+    }
+}
