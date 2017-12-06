@@ -148,19 +148,11 @@ public class ArtifactPost extends AbstractJavaWebScript {
             JSONObject postJson = new JSONObject();
             for (FormData.FormField field : fields) {
                 logger.debug("field.getName(): " + field.getName());
-                if (field.getName().equals("file") && field.getIsFile()) {
-                    String filename = field.getFilename();
-                    Content content = field.getContent();
-                    String mimetype = field.getMimetype();
-                    logger.debug("filename: " + filename);
-                    logger.debug("content: " + content);
-                    logger.debug("mimetype: " + mimetype);
-                } else {
+                if (!field.getName().equals("file") && !field.getIsFile()) {
                     String name = field.getName();
                     String value = field.getValue();
                     postJson.put(name, value);
-                    logger.debug("filename: " + name);
-
+                    logger.debug("property name: " + name);
                 }
             }
             postJson.put(Sjm.TYPE, "Artifact");
@@ -213,12 +205,29 @@ public class ArtifactPost extends AbstractJavaWebScript {
         String filename = null;
         Map<String, Object> model = new HashMap<>();
 
-        extension = contentType.replaceFirst(".*/(\\w+).*", "$1");
-
-        if (!extension.startsWith(".")) {
-            extension = "." + extension;
+//        extension = contentType.replaceFirst(".*/(\\w+).*", "$1");
+//
+//        if (!extension.startsWith(".")) {
+//            extension = "." + extension;
+//        }
+        FormData formData = (FormData) req.parseContent();
+        FormData.FormField[] fields = formData.getFields();
+        //Set<String> names = formData.getFieldNames();
+        String data = formData.toString();
+        //FormData.FieldData data = formData.new FieldData();
+        JSONObject postJson = new JSONObject();
+        for (FormData.FormField field : fields) {
+            logger.debug("field.getName(): " + field.getName());
+            if (field.getName().equals("file") && field.getIsFile()) {
+                String filename = field.getFilename();
+                Content content = field.getContent();
+                String mimetype = field.getMimetype();
+                logger.debug("filename: " + filename);
+                logger.debug("content: " + content);
+                logger.debug("mimetype: " + mimetype);
+            }
         }
-
+        // :TODO is content always binary?
         try {
             Object binaryContent = req.getContent().getContent();
             content = binaryContent.toString();
