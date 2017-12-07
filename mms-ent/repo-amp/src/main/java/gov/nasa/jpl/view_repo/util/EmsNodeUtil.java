@@ -1409,6 +1409,8 @@ public class EmsNodeUtil {
                 value = toList((JSONArray) value);
             } else if (value instanceof JSONObject) {
                 value = toMap((JSONObject) value);
+            } else if (value == JSONObject.NULL) {
+                value = null;
             }
             map.put(key, value);
         }

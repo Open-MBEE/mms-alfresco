@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.gson.Gson;
 import gov.nasa.jpl.view_repo.util.JsonContentReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -151,17 +150,10 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     if (templateModel.containsKey(Sjm.RES) && templateModel.get(Sjm.RES) != null) {
                         res.setContentType("application/json");
                         res.setContentEncoding("UTF-8");
-                        //if (false) {
                         if (templateModel.get(Sjm.RES) instanceof JSONObject) {
                             JSONObject json = (JSONObject) templateModel.get(Sjm.RES);
                             Map<String, Object> jsonMap = EmsNodeUtil.toMap(json);
                             JsonContentReader reader = new JsonContentReader(jsonMap);
-                            final long size = reader.getSize();
-                            // set mimetype for the content and the character encoding for the stream
-                            // return the complete entity range
-                            res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size - 1L) + "/" + Long.toString(size));
-                            res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
-                            //res.setHeader("Transfer-Encoding", "chunked");
 
                             // get the content and stream directly to the response output stream
                             // assuming the repository is capable of streaming in chunks, this should allow large files

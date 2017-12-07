@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -32,6 +33,7 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
     static {
         om = new ObjectMapper();
         om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
     public JsonContentReader(Map<String, Object> json) throws JsonProcessingException {
@@ -75,7 +77,8 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
 
     public void getStreamContent(OutputStream os) throws ContentIOException {
         try {
-            StreamUtils.copy(this.json.getBytes(), os);
+            InputStream is = new ByteArrayInputStream(this.json.getBytes());
+            StreamUtils.copy(is, os);
         } catch (IOException var3) {
             throw new ContentIOException("Failed to copy content to output stream: \n   accessor: " + this, var3);
         }
@@ -105,6 +108,15 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
                     logger.debug("Error: ", e);
                 }
             }
+        }
+    }
+
+    public InputStream getContentInputStream() throws ContentIOException {
+        try {
+            ReadableByteChannel channel = this.getDirectReadableChannel();
+            return Channels.newInputStream(channel);
+        } catch (Throwable var11) {
+            throw new ContentIOException("Failed to open stream onto channel: \n   accessor: " + this, var11);
         }
     }
 }
