@@ -57,6 +57,7 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -80,6 +81,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
     protected EmsScriptNode svgArtifact = null;
     protected EmsScriptNode pngArtifact = null;
+    protected String filename = null;
     protected String artifactId = null;
     protected String extension = null;
     protected String content = null;
@@ -120,17 +122,42 @@ public class ArtifactPost extends AbstractJavaWebScript {
         Map<String, Object> result;
         JSONObject writeToDb;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
-        // Would ideally be a transaction
-        writeToDb = processArtifactDelta(req, user);
+        JSONObject postJson = new JSONObject();
 
-        result = handleArtifactPost(req, status, user, contentType);
+        FormData formData = (FormData) req.parseContent();
+        FormData.FormField[] fields = formData.getFields();
+        try {
+            for (FormData.FormField field : fields) {
+                logger.debug("field.getName(): " + field.getName());
+                if (field.getName().equals("file") && field.getIsFile()) {
+                    filename = field.getFilename();
+                    Object binaryContent = field.getContent().getContent();
+                    content = binaryContent.toString();
+                    logger.debug("filename: " + filename);
+                    logger.debug("content: " + content);
+                } else {
+                    String name = field.getName();
+                    String value = field.getValue();
+                    postJson.put(name, value);
+                    logger.debug("property name: " + name);
+                }
+            }
+            postJson.put(Sjm.TYPE, "Artifact");
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+
+        // Would ideally be a transaction
+        writeToDb = processArtifactDelta(req, user, postJson);
+
+        result = handleArtifactPost(req, status, user, postJson);
 
         printFooter(user, logger, timer);
 
         return result;
     }
 
-    protected JSONObject processArtifactDelta(final WebScriptRequest req, String user) {
+    protected JSONObject processArtifactDelta(final WebScriptRequest req, String user, JSONObject postJson) {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         Map<String, Object> model = new HashMap<>();
@@ -140,54 +167,40 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
 
         try {
-            FormData formData = (FormData) req.parseContent();
-            FormData.FormField[] fields = formData.getFields();
-            //Set<String> names = formData.getFieldNames();
-            String data = formData.toString();
-            //FormData.FieldData data = formData.new FieldData();
-            JSONObject postJson = new JSONObject();
-            for (FormData.FormField field : fields) {
-                logger.debug("field.getName(): " + field.getName());
-                if (!field.getName().equals("file") && !field.getIsFile()) {
-                    String name = field.getName();
-                    String value = field.getValue();
-                    postJson.put(name, value);
-                    logger.debug("property name: " + name);
-                }
-            }
-            postJson.put(Sjm.TYPE, "Artifact");
             results.put(postJson);
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
-            JSONObject delta = emsNodeUtil.processPostJson(results, user, oldElasticIds, false, this.requestSourceApplication, Sjm.ARTIFACT);
+            JSONObject delta = emsNodeUtil
+                .processPostJson(results, user, oldElasticIds, false, this.requestSourceApplication, Sjm.ARTIFACT);
             String commitId = delta.getJSONObject("commit").getString(Sjm.ELASTICID);
             if (CommitUtil.sendDeltas(delta, projectId, refId, requestSourceApplication, services, false)) {
-//                if (!oldElasticIds.isEmpty()) {
-//                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
-//                }
-//                Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
-//
-//                if (withChildViews) {
-//                    for (int i = 0; i < results.getJSONArray(NEWELEMENTS).length(); i++) {
-//                        results.getJSONArray(NEWELEMENTS)
-//                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i)));
-//                    }
-//                }
-//
-//                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray(NEWELEMENTS), req)) : filterByPermission(results.getJSONArray(NEWELEMENTS), req));
-//                newElementsObject.put(Sjm.COMMITID, commitId);
-//                newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
-//                newElementsObject.put(Sjm.CREATOR, user);
-//
-//                if (prettyPrint) {
-//                    model.put(Sjm.RES, newElementsObject.toString(4));
-//                } else {
-//                    model.put(Sjm.RES, newElementsObject);
-//                }
-//
-//                status.setCode(responseStatus.getCode());
+                //                if (!oldElasticIds.isEmpty()) {
+                //                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
+                //                }
+                //                Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
+                //
+                //                if (withChildViews) {
+                //                    for (int i = 0; i < results.getJSONArray(NEWELEMENTS).length(); i++) {
+                //                        results.getJSONArray(NEWELEMENTS)
+                //                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i)));
+                //                    }
+                //                }
+                //
+                //                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray(NEWELEMENTS), req)) : filterByPermission(results.getJSONArray(NEWELEMENTS), req));
+                //                newElementsObject.put(Sjm.COMMITID, commitId);
+                //                newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
+                //                newElementsObject.put(Sjm.CREATOR, user);
+                //
+                //                if (prettyPrint) {
+                //                    model.put(Sjm.RES, newElementsObject.toString(4));
+                //                } else {
+                //                    model.put(Sjm.RES, newElementsObject);
+                //                }
+                //
+                //                status.setCode(responseStatus.getCode());
             } else {
-                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
+                    "Commit failed, please check server logs for failed items");
                 model.put(Sjm.RES, createResponseJson());
             }
             return postJson;
@@ -199,41 +212,10 @@ public class ArtifactPost extends AbstractJavaWebScript {
     }
 
     protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user,
-        String contentType) {
+        JSONObject postJson) {
 
         JSONObject resultJson = null;
-        String filename = null;
         Map<String, Object> model = new HashMap<>();
-
-//        extension = contentType.replaceFirst(".*/(\\w+).*", "$1");
-//
-//        if (!extension.startsWith(".")) {
-//            extension = "." + extension;
-//        }
-        FormData formData = (FormData) req.parseContent();
-        FormData.FormField[] fields = formData.getFields();
-        //Set<String> names = formData.getFieldNames();
-        String data = formData.toString();
-        //FormData.FieldData data = formData.new FieldData();
-        JSONObject postJson = new JSONObject();
-        for (FormData.FormField field : fields) {
-            logger.debug("field.getName(): " + field.getName());
-            if (field.getName().equals("file") && field.getIsFile()) {
-                String filename = field.getFilename();
-                Content content = field.getContent();
-                String mimetype = field.getMimetype();
-                logger.debug("filename: " + filename);
-                logger.debug("content: " + content);
-                logger.debug("mimetype: " + mimetype);
-            }
-        }
-        // :TODO is content always binary?
-        try {
-            Object binaryContent = req.getContent().getContent();
-            content = binaryContent.toString();
-        } catch (IOException e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -242,92 +224,67 @@ public class ArtifactPost extends AbstractJavaWebScript {
         siteName = project.optString("orgId", null);
 
         if (siteName != null && validateRequest(req, status)) {
-
             try {
-                // Get the artifact name from the url:
-                String artifactIdPath = getArtifactId(req);
+                extension = FilenameUtils.getExtension(filename);
+                artifactId = postJson.getString(Sjm.SYSMLID);
+                path = projectId + "/refs/" + refId + "/" + artifactId + System.currentTimeMillis() + extension;
+                // Create return json:
+                resultJson = new JSONObject();
+                resultJson.put("filename", filename);
+                // TODO: want full path here w/ path to site also, but Doris does not use it,
+                //		 so leaving it as is.
+                resultJson.put("path", path);
+                resultJson.put("site", siteName);
 
-                logger.debug("ArtifactIdPath: " + artifactIdPath);
-                logger.debug("Content: " + content);
-                logger.debug("Header: " + req.getHeader("Content-Type"));
+                // Update or create the artifact if possible:
+                if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
 
-                if (artifactIdPath != null) {
-                    int lastIndex = artifactIdPath.lastIndexOf("/");
+                    svgArtifact = NodeUtil
+                        .updateOrCreateArtifact(artifactId, extension, null, content, siteName, projectId, refId, null,
+                            response, null, false);
 
-                    if (artifactIdPath.length() > (lastIndex + 1)) {
-
-                        path = projectId + "/refs/" + refId + "/" + (lastIndex != -1 ?
-                            artifactIdPath.substring(0, lastIndex) :
-                            "");
-                        artifactId = lastIndex != -1 ? artifactIdPath.substring(lastIndex + 1) : artifactIdPath;
-                        logger.error("artifactId: " + artifactId);
-
-                        filename = extension != null ? artifactId + extension : artifactId;
-
-                        // Create return json:
-                        resultJson = new JSONObject();
-                        resultJson.put("filename", filename);
-                        // TODO: want full path here w/ path to site also, but Doris does not use it,
-                        //		 so leaving it as is.
-                        resultJson.put("path", path);
-                        resultJson.put("site", siteName);
-
-                        // Update or create the artifact if possible:
-                        if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
-
-                            svgArtifact = NodeUtil
-                                .updateOrCreateArtifact(artifactId, extension, null, content, siteName, projectId,
-                                    refId, null, response, null, false);
-
-                            if (svgArtifact == null) {
-                                logger.error("Was not able to create the artifact!\n");
-                                model.put(Sjm.RES, createResponseJson());
-                            } else {
-                                resultJson.put("upload", svgArtifact);
-                                if (!NodeUtil.skipSvgToPng) {
-                                    try {
-                                        Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
-                                        pngPath = svgToPng(svgPath);
-
-                                        try {
-                                            pngArtifact = NodeUtil
-                                                .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName, projectId,
-                                                    refId, null, response, null, false);
-                                        } catch (Throwable ex) {
-                                            throw new Exception("Failed to convert SVG to PNG!\n");
-                                        }
-
-                                        if (pngArtifact == null) {
-                                            logger.error("Failed to convert SVG to PNG!\n");
-                                        } else {
-                                            synchSvgAndPngVersions(svgArtifact, pngArtifact);
-                                        }
-                                        Files.deleteIfExists(svgPath);
-                                        Files.deleteIfExists(pngPath);
-                                    } catch (IOException e) {
-                                        if (logger.isDebugEnabled()) {
-                                            logger.debug("Failed to convert image", e);
-                                        }
-                                    } catch (Throwable ex) {
-                                        logger.error("Failed to convert SVG to PNG!\n");
-                                    }
-                                }
-                            }
-                        } else {
-                            logger.error("Invalid artifactId or no content!\n");
-                            model.put(Sjm.RES, createResponseJson());
-                        }
-                    } else {
-                        logger.error("Invalid artifactId!\\n");
+                    if (svgArtifact == null) {
+                        logger.error("Was not able to create the artifact!\n");
                         model.put(Sjm.RES, createResponseJson());
-                    }
+                    } else {
+                        resultJson.put("upload", svgArtifact);
+                        if (!NodeUtil.skipSvgToPng) {
+                            try {
+                                Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
+                                pngPath = svgToPng(svgPath);
 
+                                try {
+                                    pngArtifact = NodeUtil
+                                        .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName, projectId, refId,
+                                            null, response, null, false);
+                                } catch (Throwable ex) {
+                                    throw new Exception("Failed to convert SVG to PNG!\n");
+                                }
+
+                                if (pngArtifact == null) {
+                                    logger.error("Failed to convert SVG to PNG!\n");
+                                } else {
+                                    synchSvgAndPngVersions(svgArtifact, pngArtifact);
+                                }
+                                Files.deleteIfExists(svgPath);
+                                Files.deleteIfExists(pngPath);
+                            } catch (IOException e) {
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug("Failed to convert image", e);
+                                }
+                            } catch (Throwable ex) {
+                                logger.error("Failed to convert SVG to PNG!\n");
+                            }
+                        }
+                    }
                 } else {
                     logger.error("artifactId not supplied!\\n");
                     model.put(Sjm.RES, createResponseJson());
                 }
 
-            } catch (JSONException e) {
+            } catch (JSONException e)
+
+            {
                 logger.error("Issues creating return JSON\\n");
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 model.put(Sjm.RES, createResponseJson());
