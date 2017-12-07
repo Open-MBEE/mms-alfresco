@@ -77,8 +77,7 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
 
     public void getStreamContent(OutputStream os) throws ContentIOException {
         try {
-            InputStream is = new ByteArrayInputStream(this.json.getBytes());
-            StreamUtils.copy(is, os);
+            StreamUtils.copy(new ByteArrayInputStream(this.json.getBytes()), os);
         } catch (IOException var3) {
             throw new ContentIOException("Failed to copy content to output stream: \n   accessor: " + this, var3);
         }
@@ -86,14 +85,11 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
 
     protected ReadableByteChannel getDirectReadableChannel() throws ContentIOException {
         ReadableByteChannel channel = null;
-        InputStream is = new ByteArrayInputStream(this.json.getBytes());
         try {
             if (!this.exists()) {
                 throw new IOException("File does not exist: " + this.json);
             } else {
-
-                channel = Channels.newChannel(is);
-
+                channel = Channels.newChannel(new ByteArrayInputStream(this.json.getBytes()));
                 return channel;
             }
         } catch (Throwable var3) {
@@ -113,8 +109,7 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
 
     public InputStream getContentInputStream() throws ContentIOException {
         try {
-            ReadableByteChannel channel = this.getDirectReadableChannel();
-            return Channels.newInputStream(channel);
+            return Channels.newInputStream(this.getDirectReadableChannel());
         } catch (Throwable var11) {
             throw new ContentIOException("Failed to open stream onto channel: \n   accessor: " + this, var11);
         }
