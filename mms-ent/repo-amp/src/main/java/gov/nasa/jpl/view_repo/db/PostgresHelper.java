@@ -1542,8 +1542,8 @@ public class PostgresHelper implements GraphInterface {
         }
 
         try {
-            if (location == null || location.isEmpty()) {
-                location = EmsConfig.get("pg.host");
+            if (location == null) {
+                location = "";
             }
             connectConfig();
             if (organizationId > 0) {
