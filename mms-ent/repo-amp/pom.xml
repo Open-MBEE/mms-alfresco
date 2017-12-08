@@ -151,8 +151,8 @@
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4</artifactId>
-            <version>4.5</version>
-        </dependency><!--$NO-MVN-MAN-VER$-->
+            <version>4.5</version><!--$NO-MVN-MAN-VER$-->
+        </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-rasterizer</artifactId>

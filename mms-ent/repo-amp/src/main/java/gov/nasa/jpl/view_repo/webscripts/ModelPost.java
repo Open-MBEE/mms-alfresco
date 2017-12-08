@@ -261,7 +261,7 @@ public class ModelPost extends AbstractJavaWebScript {
                                 logger.error("Was not able to create the artifact!\n");
                                 model.put(Sjm.RES, createResponseJson());
                             } else {
-                                resultJson.put("upload", svgArtifact);
+                                //resultJson.put("upload", svgArtifact);
                                 if (!NodeUtil.skipSvgToPng) {
                                     try {
                                         Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
