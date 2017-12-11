@@ -25,7 +25,7 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
 
     private static Logger logger = Logger.getLogger(JsonContentReader.class);
 
-    private String json;
+    private byte[] json;
     private String modified;
     private long size;
     private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
@@ -37,17 +37,17 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
     }
 
     public JsonContentReader(Map<String, Object> json) throws JsonProcessingException {
-        this(om.writeValueAsString(json), "store://");
+        this(om.writeValueAsBytes(json), "store://");
         modified = (String) json.get(Sjm.MODIFIED);
         size = json.keySet().size();
     }
 
-    public JsonContentReader(String json, String url) {
+    public JsonContentReader(byte[] json, String url) {
         super(url);
         this.json = json;
     }
 
-    public String getJson() {
+    public byte[] getJson() {
         return this.json;
     }
 
@@ -56,7 +56,7 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
     }
 
     public long getSize() {
-        return !this.exists() ? 0L : this.json.length();
+        return !this.exists() ? 0L : this.json.length;
     }
 
     public long getLastModified() {
@@ -71,29 +71,33 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
         return lastModified.getTime();
     }
 
-    protected ContentReader createReader() throws ContentIOException {
+    protected ContentReader createReader() {
         return new JsonContentReader(this.json, this.getContentUrl());
     }
 
-    public void getStreamContent(OutputStream os) throws ContentIOException {
+    public void getStreamContent(OutputStream os) {
         try {
-            StreamUtils.copy(new ByteArrayInputStream(this.json.getBytes()), os);
-        } catch (IOException var3) {
-            throw new ContentIOException("Failed to copy content to output stream: \n   accessor: " + this, var3);
+            StreamUtils.copy(new ByteArrayInputStream(this.json), os);
+        } catch (IOException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Failed to copy content to output stream: \n   accessor: " + this, e);
+            }
         }
     }
 
-    protected ReadableByteChannel getDirectReadableChannel() throws ContentIOException {
+    protected ReadableByteChannel getDirectReadableChannel() {
         ReadableByteChannel channel = null;
         try {
-            if (!this.exists()) {
-                throw new IOException("File does not exist: " + this.json);
+            if (!this.exists() && logger.isDebugEnabled()) {
+                logger.debug("JSON does not exist");
             } else {
-                channel = Channels.newChannel(new ByteArrayInputStream(this.json.getBytes()));
+                channel = Channels.newChannel(new ByteArrayInputStream(this.json));
                 return channel;
             }
-        } catch (Throwable var3) {
-            throw new ContentIOException("Failed to open json channel: " + this, var3);
+        } catch (ContentIOException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Failed to open json channel: " + this, e);
+            }
         } finally {
             try {
                 if (channel != null) {
@@ -105,13 +109,18 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
                 }
             }
         }
+        return null;
     }
 
-    public InputStream getContentInputStream() throws ContentIOException {
+    public InputStream getContentInputStream() {
         try {
             return Channels.newInputStream(this.getDirectReadableChannel());
-        } catch (Throwable var11) {
-            throw new ContentIOException("Failed to open stream onto channel: \n   accessor: " + this, var11);
+        } catch (ContentIOException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Failed to open stream onto channel: \n   accessor: " + this, e);
+            }
         }
+
+        return null;
     }
 }
