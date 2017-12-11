@@ -157,7 +157,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
-            if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews)) {
+            if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews, false)) {
                 if (!oldElasticIds.isEmpty()) {
                     emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
                 }

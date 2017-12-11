@@ -543,11 +543,11 @@ public class EmsNodeUtil {
                 o.put(Sjm.SYSMLID, sysmlid);
             }
 
-            String content = o.toString();
-            if (isImageData(content)) {
-                content = extractAndReplaceImageData(content, organization);
-                o = new JSONObject(content);
-            }
+            //String content = o.toString();
+            //            if (isImageData(content)) {
+            //                content = extractAndReplaceImageData(content, organization);
+            //                o = new JSONObject(content);
+            //            }
 
             boolean added = !existingMap.containsKey(sysmlid);
             boolean updated = false;
@@ -580,8 +580,8 @@ public class EmsNodeUtil {
                 o.remove(Sjm.QUALIFIEDNAME);
             }
 
-            if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null || o.getString(Sjm.OWNERID)
-                .equalsIgnoreCase("null") && o.getString(Sjm.TYPE).equals(Sjm.ELEMENT)) {
+            if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null
+                || o.getString(Sjm.OWNERID).equalsIgnoreCase("null") && o.getString(Sjm.TYPE).equals(Sjm.ELEMENT)) {
                 o.put(Sjm.OWNERID, holdingBinSysmlid);
             }
             reorderChildViews(o, newElements, addedElements, updatedElements, deletedElements, commitAdded,
@@ -597,8 +597,8 @@ public class EmsNodeUtil {
                 newObj.put(Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
                 newObj.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
                 // this for the artifact object, has extra key...
-                if(o.getString(type).equals("Artifact")){
-                        newObj.put(Sjm.CONTENTTYPE, o.getString(Sjm.CONTENTTYPE));
+                if (o.getString(type).equals("Artifact")) {
+                    newObj.put(Sjm.CONTENTTYPE, o.getString(Sjm.CONTENTTYPE));
                 }
                 commitAdded.put(newObj);
             } else if (updated) {
@@ -1554,51 +1554,50 @@ public class EmsNodeUtil {
         return m.matches();
     }
 
-    private String extractAndReplaceImageData(String value, String siteName) {
-        if (value == null) {
-            return null;
-        }
-
-        Pattern p = Pattern.compile(
-            "(.*)<img[^>]*\\ssrc\\s*=\\\\\\s*[\\\"']data:image/([^;]*);\\s*base64\\s*,([^\\\"']*)[\\\"'][^>]*>(.*)",
-            Pattern.DOTALL);
-        while (true) {
-            Matcher m = p.matcher(value);
-            if (!m.matches()) {
-                logger.debug(String.format("no match found for value=%s",
-                    value.substring(0, Math.min(value.length(), 100)) + (value.length() > 100 ? " . . ." : "")));
-                break;
-            } else {
-                logger.debug(String.format("match found for value=%s",
-                    value.substring(0, Math.min(value.length(), 100)) + (value.length() > 100 ? " . . ." : "")));
-                if (m.groupCount() != 4) {
-                    logger.debug(String.format("Expected 4 match groups, got %s! %s", m.groupCount(), m));
-                    break;
-                }
-                String extension = m.group(2);
-                String content = m.group(3);
-                String name = "img_" + System.currentTimeMillis();
-
-                // No need to pass a date since this is called in the context of
-                // updating a node, so the time is the current time (which is
-                // null).
-                EmsScriptNode artNode = NodeUtil
-                    .updateOrCreateArtifact(name, extension, content, null, siteName, projectId, this.workspaceName,
-                        null, null, null, false);
-                if (artNode == null || !artNode.exists()) {
-                    logger.debug("Failed to pull out image data for value! " + value);
-                    break;
-                }
-
-                String url = artNode.getUrl();
-                String link = "<img src=\\\"" + url + "\\\"/>";
-                link = link.replace("/d/d/", "/alfresco/service/api/node/content/");
-                value = m.group(1) + link + m.group(4);
-            }
-        }
-
-        return value;
-    }
+//    private String extractAndReplaceImageData(String value, String siteName) {
+//        if (value == null) {
+//            return null;
+//        }
+//        Pattern p = Pattern.compile(
+//            "(.*)<img[^>]*\\ssrc\\s*=\\\\\\s*[\\\"']data:image/([^;]*);\\s*base64\\s*,([^\\\"']*)[\\\"'][^>]*>(.*)",
+//            Pattern.DOTALL);
+//        while (true) {
+//            Matcher m = p.matcher(value);
+//            if (!m.matches()) {
+//                logger.debug(String.format("no match found for value=%s",
+//                    value.substring(0, Math.min(value.length(), 100)) + (value.length() > 100 ? " . . ." : "")));
+//                break;
+//            } else {
+//                logger.debug(String.format("match found for value=%s",
+//                    value.substring(0, Math.min(value.length(), 100)) + (value.length() > 100 ? " . . ." : "")));
+//                if (m.groupCount() != 4) {
+//                    logger.debug(String.format("Expected 4 match groups, got %s! %s", m.groupCount(), m));
+//                    break;
+//                }
+//                String extension = m.group(2);
+//                String content = m.group(3);
+//                String name = "img_" + System.currentTimeMillis();
+//
+//                // No need to pass a date since this is called in the context of
+//                // updating a node, so the time is the current time (which is
+//                // null).
+//                EmsScriptNode artNode = NodeUtil
+//                    .updateOrCreateArtifact(name, extension, content, null, siteName, projectId, this.workspaceName,
+//                        null, null, null, false);
+//                if (artNode == null || !artNode.exists()) {
+//                    logger.debug("Failed to pull out image data for value! " + value);
+//                    break;
+//                }
+//
+//                String url = artNode.getUrl();
+//                String link = "<img src=\\\"" + url + "\\\"/>";
+//                link = link.replace("/d/d/", "/alfresco/service/api/node/content/");
+//                value = m.group(1) + link + m.group(4);
+//            }
+//        }
+//
+//        return value;
+//    }
 
     public JSONObject getModelAtCommit(String commitId) {
         JSONObject result = new JSONObject();

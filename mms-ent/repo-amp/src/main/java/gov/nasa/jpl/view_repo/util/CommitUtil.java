@@ -183,8 +183,9 @@ public class CommitUtil {
         }
         return false;
     }
-    private static boolean processArtifactDeltasForDb(JSONObject delta, String projectId, String refId, JSONObject jmsPayload,
-        boolean withChildViews, ServiceRegistry services) {
+
+    private static boolean processArtifactDeltasForDb(JSONObject delta, String projectId, String refId,
+        JSONObject jmsPayload, boolean withChildViews, ServiceRegistry services) {
         PostgresHelper pgh = new PostgresHelper();
         pgh.setProject(projectId);
         pgh.setWorkspace(refId);
@@ -202,8 +203,8 @@ public class CommitUtil {
         JSONArray jmsDeleted = new JSONArray();
 
         List<String> deletedSysmlIds = new ArrayList<>();
-        if (bulkElasticEntry(added, "added", false, projectId) && bulkElasticEntry(updated, "updated",
-            false, projectId)) {
+        if (bulkElasticEntry(added, "added", false, projectId) && bulkElasticEntry(updated, "updated", false,
+            projectId)) {
             try {
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
                 List<Map<String, String>> nodeUpdates = new ArrayList<>();
@@ -283,7 +284,7 @@ public class CommitUtil {
                 return false;
             }
 
-        }else {
+        } else {
             logger.error("Elasticsearch insert error occurred");
             return false;
         }
@@ -739,7 +740,7 @@ public class CommitUtil {
      * @throws JSONException
      */
     public static boolean sendDeltas(JSONObject deltaJson, String projectId, String workspaceId, String source,
-        ServiceRegistry services, boolean withChildViews) {
+        ServiceRegistry services, boolean withChildViews, boolean isArtifact) {
 
         JSONObject jmsPayload = new JSONObject();
         try {
@@ -748,8 +749,14 @@ public class CommitUtil {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
-            return false;
+        if (isArtifact) {
+            if (!processArtifactDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
+                return false;
+            }
+        } else {
+            if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
+                return false;
+            }
         }
 
         if (source != null) {
@@ -761,8 +768,7 @@ public class CommitUtil {
         return true;
     }
 
-    public static void sendOrganizationDelta(String orgId, String orgName, String user) throws PSQLException
-    {
+    public static void sendOrganizationDelta(String orgId, String orgName, String user) throws PSQLException {
         PostgresHelper pgh = new PostgresHelper();
         pgh.createOrganization(orgId, orgName);
     }
@@ -921,15 +927,16 @@ public class CommitUtil {
                 pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId,
                     commitId, isTag);
                 eh = new ElasticHelper();
-                logger.info(String.format("Finished copying db tables for branch %s started by %s at %s", created.getString(Sjm.SYSMLID),
-                    created.optString(Sjm.CREATOR), timer));
+                logger.info(String.format("Finished copying db tables for branch %s started by %s at %s",
+                    created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer));
                 if (hasCommit) {
                     pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
                     JSONObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
 
-                    logger.info(String.format("Finished getting elements from elastic for branch %s started by %s at %s", created.getString(Sjm.SYSMLID),
-                        created.optString(Sjm.CREATOR), timer));
+                    logger.info(String
+                        .format("Finished getting elements from elastic for branch %s started by %s at %s",
+                            created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer));
 
                     List<Map<String, String>> nodeInserts = new ArrayList<>();
                     List<Map<String, String>> edgeInserts = new ArrayList<>();
@@ -938,25 +945,29 @@ public class CommitUtil {
                     processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS), nodeInserts,
                         edgeInserts, childEdgeInserts);
 
-                    logger.info(String.format("Finished processing nodes and edges for branch %s started by %s at %s", created.getString(Sjm.SYSMLID),
-                        created.optString(Sjm.CREATOR), timer));
+                    logger.info(String.format("Finished processing nodes and edges for branch %s started by %s at %s",
+                        created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer));
 
                     if (!nodeInserts.isEmpty() || !edgeInserts.isEmpty() || !childEdgeInserts.isEmpty()) {
                         if (!nodeInserts.isEmpty()) {
                             insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
                         }
-                        logger.info(String.format("Finished inserting nodes (%s) for branch %s started by %s at %s", nodeInserts.size(), created.getString(Sjm.SYSMLID),
-                            created.optString(Sjm.CREATOR), timer));
+                        logger.info(String.format("Finished inserting nodes (%s) for branch %s started by %s at %s",
+                            nodeInserts.size(), created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer));
                         if (!edgeInserts.isEmpty()) {
                             insertForBranchInPast(pgh, edgeInserts, EDGES, projectId);
                         }
-                        logger.info(String.format("Finished inserting containment edges (%s) for branch %s started by %s at %s", edgeInserts.size(), created.getString(Sjm.SYSMLID),
-                            created.optString(Sjm.CREATOR), timer));
+                        logger.info(String
+                            .format("Finished inserting containment edges (%s) for branch %s started by %s at %s",
+                                edgeInserts.size(), created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR),
+                                timer));
                         if (!childEdgeInserts.isEmpty()) {
                             insertForBranchInPast(pgh, childEdgeInserts, EDGES, projectId);
                         }
-                        logger.info(String.format("Finished inserting other edges (%s) for branch  %s started by %s at %s", childEdgeInserts.size(), created.getString(Sjm.SYSMLID),
-                            created.optString(Sjm.CREATOR), timer));
+                        logger.info(String
+                            .format("Finished inserting other edges (%s) for branch  %s started by %s at %s",
+                                childEdgeInserts.size(), created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR),
+                                timer));
                     } else {
                         executor.shutdown();
                         executor.awaitTermination(60L, TimeUnit.SECONDS);
@@ -999,7 +1010,8 @@ public class CommitUtil {
             logger.info(String.format("Finished branch %s started by %s finished at %s", created.getString(Sjm.SYSMLID),
                 created.optString(Sjm.CREATOR), timer));
 
-            String body = String.format("Branch %s started by %s has finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), timer);
+            String body = String.format("Branch %s started by %s has finished at %s", created.getString(Sjm.SYSMLID),
+                created.optString(Sjm.CREATOR), timer);
             String subject = String.format("Branch %s has finished at %s", created.getString(Sjm.SYSMLID), timer);
 
             if (user != null) {
@@ -1035,11 +1047,10 @@ public class CommitUtil {
                     }
 
                     Authenticator auth = null;
-                    if(!smtpUser.isEmpty() && !smtpPass.isEmpty()) {
+                    if (!smtpUser.isEmpty() && !smtpPass.isEmpty()) {
                         props.put(prefix + ".auth", "true");
                         auth = new Authenticator() {
-                            @Override
-                            protected PasswordAuthentication getPasswordAuthentication() {
+                            @Override protected PasswordAuthentication getPasswordAuthentication() {
                                 return new PasswordAuthentication(smtpUser, smtpPass);
                             }
                         };

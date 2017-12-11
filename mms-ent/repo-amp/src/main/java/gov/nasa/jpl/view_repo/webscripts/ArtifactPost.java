@@ -120,6 +120,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> result;
+        Map<String, Object> alfrescoImage;
         JSONObject writeToDb;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
         JSONObject postJson = new JSONObject();
@@ -147,68 +148,62 @@ public class ArtifactPost extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        // Would ideally be a transaction
-        writeToDb = processArtifactDelta(req, user, postJson);
-
-        result = handleArtifactPost(req, status, user, postJson);
+        // Would ideally be a transaction, :TODO the image has to be successfully posted before the json is post to the db
+        // maybe processArtifactDelta needs to be called from handleArtifactPost
+        alfrescoImage = handleArtifactPost(req, status, user, postJson);
+        result = processArtifactDelta(req, user, postJson, status);
 
         printFooter(user, logger, timer);
 
         return result;
     }
 
-    protected JSONObject processArtifactDelta(final WebScriptRequest req, String user, JSONObject postJson) {
+    protected Map<String, Object> processArtifactDelta(final WebScriptRequest req, String user, JSONObject postJson,
+        final Status status) {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         Map<String, Object> model = new HashMap<>();
-        JSONArray results = new JSONArray();
+        JSONObject newElementsObject = new JSONObject();
+        JSONObject results;
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
 
         try {
-            results.put(postJson);
+            JSONArray delta = new JSONArray();
+            delta.put(postJson);
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
-            JSONObject delta = emsNodeUtil
-                .processPostJson(results, user, oldElasticIds, false, this.requestSourceApplication, Sjm.ARTIFACT);
-            String commitId = delta.getJSONObject("commit").getString(Sjm.ELASTICID);
-            if (CommitUtil.sendDeltas(delta, projectId, refId, requestSourceApplication, services, false)) {
-                //                if (!oldElasticIds.isEmpty()) {
-                //                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
-                //                }
-                //                Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
-                //
-                //                if (withChildViews) {
-                //                    for (int i = 0; i < results.getJSONArray(NEWELEMENTS).length(); i++) {
-                //                        results.getJSONArray(NEWELEMENTS)
-                //                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i)));
-                //                    }
-                //                }
-                //
-                //                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray(NEWELEMENTS), req)) : filterByPermission(results.getJSONArray(NEWELEMENTS), req));
-                //                newElementsObject.put(Sjm.COMMITID, commitId);
-                //                newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
-                //                newElementsObject.put(Sjm.CREATOR, user);
-                //
-                //                if (prettyPrint) {
-                //                    model.put(Sjm.RES, newElementsObject.toString(4));
-                //                } else {
-                //                    model.put(Sjm.RES, newElementsObject);
-                //                }
-                //
-                //                status.setCode(responseStatus.getCode());
+            results = emsNodeUtil
+                .processPostJson(delta, user, oldElasticIds, false, this.requestSourceApplication, Sjm.ARTIFACT);
+            String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
+            if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, false, true)) {
+                if (!oldElasticIds.isEmpty()) {
+                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
+                }
+                Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
+                newElementsObject.put(Sjm.ELEMENTS, filterByPermission(results.getJSONArray(NEWELEMENTS), req));
+                newElementsObject.put(Sjm.COMMITID, commitId);
+                newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
+                newElementsObject.put(Sjm.CREATOR, user);
+
+                if (prettyPrint) {
+                    model.put(Sjm.RES, newElementsObject.toString(4));
+                } else {
+                    model.put(Sjm.RES, newElementsObject);
+                }
+
+                status.setCode(responseStatus.getCode());
             } else {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
                     "Commit failed, please check server logs for failed items");
                 model.put(Sjm.RES, createResponseJson());
             }
-            return postJson;
+            return model;
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-
-        return new JSONObject();
+        return model;
     }
 
     protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user,

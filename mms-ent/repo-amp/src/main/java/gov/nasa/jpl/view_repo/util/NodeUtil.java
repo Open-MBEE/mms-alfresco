@@ -52,7 +52,7 @@ public class NodeUtil {
     protected static boolean insideTransactionNow = false;
     protected static Map<Long, Boolean> insideTransactionNowMap = new LinkedHashMap<>();
     protected static Map<Long, UserTransaction> transactionMap =
-                    Collections.synchronizedMap(new LinkedHashMap<Long, UserTransaction>());
+        Collections.synchronizedMap(new LinkedHashMap<Long, UserTransaction>());
 
     public static synchronized boolean isInsideTransactionNow() {
         Boolean b = insideTransactionNowMap.get(Thread.currentThread().getId());
@@ -123,8 +123,7 @@ public class NodeUtil {
      * Helper to create a QName from either a fully qualified or short-name QName string
      * <P>
      *
-     * @param s Fully qualified or short-name QName string
-     *
+     * @param s        Fully qualified or short-name QName string
      * @param services ServiceRegistry for getting the service to resolve the name space
      * @return QName
      */
@@ -157,7 +156,8 @@ public class NodeUtil {
                 logger.debug("getCompanyHome() failed, no services or no nodeLocatorService: " + services);
             }
         }
-        NodeRef companyHomeNodeRef = services != null ? services.getNodeLocatorService().getNode("companyhome", null, null): null;
+        NodeRef companyHomeNodeRef =
+            services != null ? services.getNodeLocatorService().getNode("companyhome", null, null) : null;
         if (companyHomeNodeRef != null) {
             companyHome = new EmsScriptNode(companyHomeNodeRef, services);
         }
@@ -165,7 +165,7 @@ public class NodeUtil {
     }
 
     public static Object getNodeProperty(ScriptNode node, Object o, ServiceRegistry services,
-                    boolean useFoundationalApi, boolean cacheOkay) {
+        boolean useFoundationalApi, boolean cacheOkay) {
         return getNodeProperty(node.getNodeRef(), o, services, useFoundationalApi, cacheOkay);
     }
 
@@ -176,14 +176,14 @@ public class NodeUtil {
      * it is the caller's responsibility to make sure the cache is not used for these.
      *
      * @param node
-     * @param key the name of the property, e.g., "cm:name"
+     * @param key       the name of the property, e.g., "cm:name"
      * @param services
      * @param cacheOkay whether to look in the cache and cache a new value, assuming the cache is
-     *        turned on.
+     *                  turned on.
      * @return
      */
     public static Object getNodeProperty(NodeRef node, Object key, ServiceRegistry services, boolean useFoundationalApi,
-                    boolean cacheOkay) {
+        boolean cacheOkay) {
         if (node == null || key == null)
             return null;
 
@@ -191,8 +191,8 @@ public class NodeUtil {
         String keyStr = oIsString ? (String) key : NodeUtil.getShortQName((QName) key);
         if (keyStr.isEmpty()) {
             if (logger.isTraceEnabled())
-                logger.trace("getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay
-                                + ") = null.  No Key!");
+                logger
+                    .trace("getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay + ") = null.  No Key!");
             return null;
         }
         QName qName = oIsString ? NodeUtil.createQName(keyStr, services) : (QName) key;
@@ -203,7 +203,7 @@ public class NodeUtil {
             result = services.getNodeService().getProperty(node, qName);
             if (logger.isTraceEnabled())
                 logger.trace("^ cache miss!  getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay + ") = "
-                                + result);
+                    + result);
         } else {
             ScriptNode sNode = new ScriptNode(node, services);
             result = sNode.getProperties().get(keyStr);
@@ -257,8 +257,7 @@ public class NodeUtil {
         EmsScriptNode homeFolderScriptNode = null;
         PersonService personService = getServices().getPersonService();
         NodeRef personNode = personService.getPerson(userName);
-        homeFolderNode = (NodeRef) getNodeProperty(personNode, ContentModel.PROP_HOMEFOLDER, getServices(), true,
-                            true);
+        homeFolderNode = (NodeRef) getNodeProperty(personNode, ContentModel.PROP_HOMEFOLDER, getServices(), true, true);
         if (homeFolderNode == null || !exists(homeFolderNode)) {
             EmsScriptNode homes = getCompanyHome(getServices());
             if (homes != null) {
@@ -317,13 +316,13 @@ public class NodeUtil {
      * @return
      */
     public static EmsScriptNode updateOrCreateArtifact(String name, String type, String base64content,
-                    String strContent, String orgId, String projectId, String refId,
-                    Date dateTime, StringBuffer response, Status status, boolean ignoreName) {
+        String strContent, String orgId, String projectId, String refId, Date dateTime, StringBuffer response,
+        Status status, boolean ignoreName) {
 
         EmsScriptNode artifactNode;
         String myType = Utils.isNullOrEmpty(type) ? "svg" : type;
         String finalType = myType.startsWith(".") ? myType.substring(1) : myType;
-        String artifactId = name + "." + finalType;
+        String artifactId = name + System.currentTimeMillis() + "." + finalType;
 
         byte[] content = (base64content == null) ? null : DatatypeConverter.parseBase64Binary(base64content);
 
@@ -335,7 +334,7 @@ public class NodeUtil {
 
         // see if image already exists by looking up by checksum
         //ArrayList<NodeRef> refs = findNodeRefsByType("" + cs, SearchType.CHECKSUM.prefix, false, workspace, dateTime,
-         //               false, false, services, false);
+        //               false, false, services, false);
 
         //List<EmsScriptNode> nodeList = EmsScriptNode.toEmsScriptNodeList(refs, services, response, status);
 
@@ -360,7 +359,7 @@ public class NodeUtil {
         }
 
         // find or create subfolder
-        EmsScriptNode subfolder = targetSiteNode.childByNamePath("/" + projectId +  "/refs/" + refId);
+        EmsScriptNode subfolder = targetSiteNode.childByNamePath("/" + projectId + "/refs/" + refId);
         if (subfolder == null || !subfolder.exists()) {
             return null;
         }
@@ -397,8 +396,8 @@ public class NodeUtil {
             logger.debug("Creating artifact with indexing: " + artifactNode.getProperty("cm:isIndexed"));
         }
 
-        ContentWriter writer = services.getContentService().getWriter(artifactNode.getNodeRef(),
-                        ContentModel.PROP_CONTENT, true);
+        ContentWriter writer =
+            services.getContentService().getWriter(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
         InputStream contentStream = new ByteArrayInputStream(content);
         writer.putContent(contentStream);
 
@@ -420,48 +419,47 @@ public class NodeUtil {
         return artifactNode;
     }
 
-	public static EmsScriptNode updateOrCreateArtifactPng(EmsScriptNode svgNode, Path pngPath,
-			String orgId, String projectId, String refId, Date dateTime, StringBuffer response,
-			Status status, boolean ignoreName) throws Throwable {
-		if(svgNode == null){
-			throw new NullArgumentException("SVG script node");
-		}
-		if(!Files.exists(pngPath)){
-			throw new NullArgumentException("PNG path");
-		}
+    public static EmsScriptNode updateOrCreateArtifactPng(EmsScriptNode svgNode, Path pngPath, String orgId,
+        String projectId, String refId, Date dateTime, StringBuffer response, Status status, boolean ignoreName)
+        throws Throwable {
+        if (svgNode == null) {
+            throw new NullArgumentException("SVG script node");
+        }
+        if (!Files.exists(pngPath)) {
+            throw new NullArgumentException("PNG path");
+        }
 
-		EmsScriptNode pngNode;
-		String finalType = "png";
-		String artifactId = pngPath.getFileName().toString();
+        EmsScriptNode pngNode;
+        String finalType = "png";
+        String artifactId = pngPath.getFileName().toString();
 
-		byte[] content = Files.readAllBytes(pngPath);
-		long cs = EmsScriptNode.getChecksum(content);
+        byte[] content = Files.readAllBytes(pngPath);
+        long cs = EmsScriptNode.getChecksum(content);
 
-		// see if image already exists by looking up by checksum
-		//ArrayList<NodeRef> refs = findNodeRefsByType("" + cs,
-		//		SearchType.CHECKSUM.prefix, false, workspace, dateTime, false,
-		//		false, services, false);
-		// ResultSet existingArtifacts =
-		// NodeUtil.findNodeRefsByType( "" + cs, SearchType.CHECKSUM,
-		// services );
-		// Set< EmsScriptNode > nodeSet = toEmsScriptNodeSet( existingArtifacts
-		// );
-		//List<EmsScriptNode> nodeList = EmsScriptNode.toEmsScriptNodeList(refs,
-		//		services, response, status);
-		// existingArtifacts.close();
+        // see if image already exists by looking up by checksum
+        //ArrayList<NodeRef> refs = findNodeRefsByType("" + cs,
+        //		SearchType.CHECKSUM.prefix, false, workspace, dateTime, false,
+        //		false, services, false);
+        // ResultSet existingArtifacts =
+        // NodeUtil.findNodeRefsByType( "" + cs, SearchType.CHECKSUM,
+        // services );
+        // Set< EmsScriptNode > nodeSet = toEmsScriptNodeSet( existingArtifacts
+        // );
+        //List<EmsScriptNode> nodeList = EmsScriptNode.toEmsScriptNodeList(refs,
+        //		services, response, status);
+        // existingArtifacts.close();
 
-		EmsScriptNode matchingNode = null;
+        EmsScriptNode matchingNode = null;
 
-		//if (nodeList != null && nodeList.size() > 0) {
-		//	matchingNode = nodeList.iterator().next();
-		//}
+        //if (nodeList != null && nodeList.size() > 0) {
+        //	matchingNode = nodeList.iterator().next();
+        //}
 
-		// No need to update if the checksum and name match (even if it is in a
-		// parent branch):
-		if (matchingNode != null
-				&& (ignoreName || matchingNode.getSysmlId().equals(artifactId))) {
-			return matchingNode;
-		}
+        // No need to update if the checksum and name match (even if it is in a
+        // parent branch):
+        if (matchingNode != null && (ignoreName || matchingNode.getSysmlId().equals(artifactId))) {
+            return matchingNode;
+        }
 
         EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
 
@@ -472,57 +470,54 @@ public class NodeUtil {
         }
 
         // find or create subfolder
-        EmsScriptNode subfolder = targetSiteNode.childByNamePath("/" + projectId +  "/refs/" + refId);
+        EmsScriptNode subfolder = targetSiteNode.childByNamePath("/" + projectId + "/refs/" + refId);
         if (subfolder == null || !subfolder.exists()) {
             return null;
         }
 
         // find or create node:
         pngNode = subfolder.childByNamePath("/" + artifactId);
-		// Node wasnt found, so create one:
-		if (pngNode == null) {
-			pngNode = subfolder.createNode(artifactId, "cm:content");
-		}
+        // Node wasnt found, so create one:
+        if (pngNode == null) {
+            pngNode = subfolder.createNode(artifactId, "cm:content");
+        }
 
-		if (pngNode == null || !pngNode.exists()) {
-			Debug.err("Failed to create new PNG artifact " + artifactId + "!\n");
-			return null;
-		}
+        if (pngNode == null || !pngNode.exists()) {
+            Debug.err("Failed to create new PNG artifact " + artifactId + "!\n");
+            return null;
+        }
 
-		if (!pngNode.hasAspect("cm:versionable")) {
-			pngNode.addAspect("cm:versionable");
-		}
-		if (!pngNode.hasAspect("cm:indexControl")) {
-			pngNode.addAspect("cm:indexControl");
-		}
-		if (!pngNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
-			pngNode.addAspect(Acm.ACM_IDENTIFIABLE);
-		}
+        if (!pngNode.hasAspect("cm:versionable")) {
+            pngNode.addAspect("cm:versionable");
+        }
+        if (!pngNode.hasAspect("cm:indexControl")) {
+            pngNode.addAspect("cm:indexControl");
+        }
+        if (!pngNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
+            pngNode.addAspect(Acm.ACM_IDENTIFIABLE);
+        }
 
-		pngNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
-		pngNode.createOrUpdateProperty("cm:isIndexed", true);
-		pngNode.createOrUpdateProperty("cm:isContentIndexed", false);
-		pngNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
+        pngNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
+        pngNode.createOrUpdateProperty("cm:isIndexed", true);
+        pngNode.createOrUpdateProperty("cm:isContentIndexed", false);
+        pngNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Creating PNG artifact with indexing: "
-					+ pngNode.getProperty("cm:isIndexed"));
-		}
+        if (logger.isDebugEnabled()) {
+            logger.debug("Creating PNG artifact with indexing: " + pngNode.getProperty("cm:isIndexed"));
+        }
 
-		ContentWriter writer = services.getContentService().getWriter(
-				pngNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
-		InputStream contentStream = new ByteArrayInputStream(content);
-		writer.putContent(contentStream);
+        ContentWriter writer =
+            services.getContentService().getWriter(pngNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
+        InputStream contentStream = new ByteArrayInputStream(content);
+        writer.putContent(contentStream);
 
-		ContentData contentData = writer.getContentData();
-		contentData = ContentData.setMimetype(contentData,
-				EmsScriptNode.getMimeType(finalType));
-		contentData = ContentData.setEncoding(contentData, "UTF-8");
-		services.getNodeService().setProperty(pngNode.getNodeRef(),
-				ContentModel.PROP_CONTENT, contentData);
+        ContentData contentData = writer.getContentData();
+        contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(finalType));
+        contentData = ContentData.setEncoding(contentData, "UTF-8");
+        services.getNodeService().setProperty(pngNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
 
 		/*
-		Object[] versionHistory = pngNode.getEmsVersionHistory();
+        Object[] versionHistory = pngNode.getEmsVersionHistory();
 
         if ( versionHistory == null || versionHistory.length <= 1 ) {
             pngNode.makeSureNodeRefIsNotFrozen();
@@ -530,8 +525,8 @@ public class NodeUtil {
         }
         */
 
-		return pngNode;
-	}
+        return pngNode;
+    }
 
     public static String getHostname() {
         return services.getSysAdminParams().getAlfrescoHost();
@@ -543,10 +538,8 @@ public class NodeUtil {
 
         if (!exists(node)) {
             if (node != null) {
-                Debug.error(true, false,
-                                "Error! tried to create " + cmName + " in parent, " + parent
-                                                + ", but a deleted or corrupt node of the same name exists.  Renaming to a_"
-                                                + cmName + ".");
+                Debug.error(true, false, "Error! tried to create " + cmName + " in parent, " + parent
+                    + ", but a deleted or corrupt node of the same name exists.  Renaming to a_" + cmName + ".");
                 cmName = "a_" + cmName;
                 return getOrCreateContentNode(parent, cmName, services);
             }
@@ -570,8 +563,8 @@ public class NodeUtil {
         // Takes the ServiceRegistry and calls the ModuleService super method
         // getService(Creates an Alfresco QName using the namespace
         // service and passes in the default URI
-        ModuleService moduleService = (ModuleService) services
-                        .getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
+        ModuleService moduleService =
+            (ModuleService) services.getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
         return moduleService;
     }
 
