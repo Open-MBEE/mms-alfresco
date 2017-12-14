@@ -927,13 +927,13 @@ public class PostgresHelper implements GraphInterface {
         return query;
     }
 
-    public String createUpdateArtifactQuery(List<Map<String, String>> nodes) {
+    public String createUpdateArtifactQuery(List<Map<String, String>> artifacts) {
         String query = "";
-        for (Map<String, String> node : nodes) {
+        for (Map<String, String> artifact : artifacts) {
             query += String.format(
                 "UPDATE \"artifacts%s\" SET elasticId = '%s', sysmlId = '%s', lastcommit = '%s', contentType = '%s', deleted = %b WHERE sysmlId = '%s';",
-                workspaceId, node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"),
-                node.get("nodetype"), Boolean.parseBoolean(node.get("deleted")), node.get(Sjm.SYSMLID));
+                workspaceId, artifact.get(Sjm.ELASTICID), artifact.get(Sjm.SYSMLID), artifact.get("lastcommit"),
+                artifact.get("contenttype"), Boolean.parseBoolean(artifact.get("deleted")), artifact.get(Sjm.SYSMLID));
         }
         return query;
     }
