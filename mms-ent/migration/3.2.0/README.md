@@ -23,6 +23,19 @@ delete from alf_node_properties where qname_id in (select id from alf_qname wher
 delete from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0');
 delete from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0';
 ```
+NOTE: If migrating from pre 3.0.0, run the following queries instead: (This will delete some model data stored in alfresco)
+```
+delete from alf_node_aspects where qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0'));
+delete from alf_node_properties where node_id in (select id from alf_node where type_qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0')));
+delete from alf_child_assoc where parent_node_id in (select id from alf_node where type_qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0')));
+delete from alf_child_assoc where child_node_id in (select id from alf_node where type_qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0')));
+delete from alf_node_aspects where node_id in (select id from alf_node where type_qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0')));
+delete from alf_node_aspects where qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0')));
+delete from alf_node_assoc where type_qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0'));
+delete from alf_node where type_qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0'));
+delete from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0');
+delete from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0';
+```
 
 ### Updating Commit, Project and Ref Elastic Obejcts with the _projectId key
 

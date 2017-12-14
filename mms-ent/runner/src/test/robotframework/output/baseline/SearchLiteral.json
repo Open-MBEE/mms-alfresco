@@ -1,0 +1,35 @@
+{
+    "hits": {
+        "hits": [
+            {
+                "_index": "pa",
+                "_source": {
+                    "_creator": "admin",
+                    "_inRefIds": [
+                        "master",
+                        "imagebranch"
+                    ],
+                    "_modifier": "admin",
+                    "_projectId": "PA",
+                    "_refId": "master",
+                    "documentation": "to",
+                    "id": "302",
+                    "isDerived": false,
+                    "name": "three hundred and two",
+                    "ownerId": "301",
+                    "type": "Property",
+                    "value": [
+                        {
+                            "string": "dlam_string",
+                            "type": "LiteralString"
+                        }
+                    ]
+                },
+                "_type": "element"
+            }
+        ],
+        "max_score": null,
+        "total": 1
+    },
+    "timed_out": false
+}

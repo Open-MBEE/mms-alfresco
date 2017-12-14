@@ -1542,8 +1542,8 @@ public class PostgresHelper implements GraphInterface {
         }
 
         try {
-            if (location == null || location.isEmpty()) {
-                location = EmsConfig.get("pg.host");
+            if (location == null) {
+                location = "";
             }
             connectConfig();
             if (organizationId > 0) {
@@ -1899,7 +1899,7 @@ public class PostgresHelper implements GraphInterface {
 
     public void deleteRef(String id) {
         try {
-            execUpdate(String.format("UPDATE refs SET deleted = true WHERE refId = '%s'", id));
+            execUpdate(String.format("UPDATE refs SET deleted = true WHERE refId = '%s'", sanitizeRefId(id)));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1911,9 +1911,10 @@ public class PostgresHelper implements GraphInterface {
         if (id == null || id.isEmpty()) {
             return;
         }
+        String refId = sanitizeRefId(id);
         try {
-            execUpdate("DROP TABLE IF EXISTS \"nodes" + id + "\"");
-            execUpdate("DROP TABLE IF EXISTS \"edges" + id + "\"");
+            execUpdate("DROP TABLE IF EXISTS \"nodes" + refId + "\"");
+            execUpdate("DROP TABLE IF EXISTS \"edges" + refId + "\"");
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {

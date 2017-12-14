@@ -225,7 +225,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 if (dstWs != null) {
                     // keep history of the branch
                     String srcId = srcWs.getName().equals(NO_WORKSPACE_ID) ? NO_WORKSPACE_ID : srcWs.getId();
-                    dstWs.setProperty("cm:title", dstWs.getId() + "_" + srcId);
+                    dstWs.setProperty("cm:title", newWorkspaceId + "_" + srcId);
                     dstWs.setProperty("cm:name", dstWs.getName());
 
                     CommitUtil.sendBranch(projectId, new SerialJSONObject(srcJson.toString()), new SerialJSONObject(wsJson.toString()), elasticId, isTag,
@@ -244,16 +244,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
                 } else {
                     log(Level.INFO, "Workspace is modified", HttpServletResponse.SC_OK);
-                }
-
-                // Update the name/description:
-                // Note: allowing duplicate workspace names, so no need to check for other
-                //       refs with the same name
-                if (workspaceName != null) {
-                    existingRef.createOrUpdateProperty("ems:workspace_name", workspaceName);
-                }
-                if (desc != null) {
-                    existingRef.createOrUpdateProperty("ems:description", desc);
                 }
                 finalWorkspace = existingRef;
             } else {
@@ -276,7 +266,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             } else {
                 finalWorkspace.setPermission("SiteConsumer", String.format("Site_%s_SiteConsumer",orgNode.getName()));
             }
-            finalWorkspace.createOrUpdateProperty("ems:permission", permission);
         }
 
         return wsJson;

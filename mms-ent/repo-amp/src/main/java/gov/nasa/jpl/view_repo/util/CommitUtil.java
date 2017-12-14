@@ -49,7 +49,6 @@ import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
  * @author cinyoung
  */
 public class CommitUtil {
-
     static Logger logger = Logger.getLogger(CommitUtil.class);
 
     public static final String TYPE_BRANCH = "BRANCH";
@@ -77,7 +76,9 @@ public class CommitUtil {
     private static HazelcastInstance hzInstance = null;
 
     public static void setJmsConnection(JmsConnection jmsConnection) {
-
+        if (logger.isInfoEnabled()) {
+            logger.info("Setting jms");
+        }
         CommitUtil.jmsConnection = jmsConnection;
     }
 
@@ -165,6 +166,7 @@ public class CommitUtil {
                     return false;
                 }
             } catch (IOException e) {
+                logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
                 return false;
             }
         }
@@ -419,8 +421,9 @@ public class CommitUtil {
                     try {
                         pgh.rollBackToSavepoint(sp);
                     } catch (SQLException se) {
-                        logger.info(String.format("%s", LogUtil.getStackTrace(se)));
+                        logger.error(String.format("%s", LogUtil.getStackTrace(se)));
                     }
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                     return false;
                 } finally {
                     pgh.close();
@@ -434,22 +437,27 @@ public class CommitUtil {
                     try {
                         pgh.rollBackToSavepoint(sp);
                     } catch (SQLException se) {
-                        logger.info(String.format("%s", LogUtil.getStackTrace(se)));
+                        logger.error(String.format("%s", LogUtil.getStackTrace(se)));
                     }
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e))); //childedges are not critical
                 } finally {
                     pgh.close();
                 }
                 try {
                     eh.indexElement(delta, projectId); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
-                    logger.info(String.format("%s", LogUtil.getStackTrace(e)));
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
 
             } catch (Exception e1) {
-                logger.info(String.format("%s", LogUtil.getStackTrace(e1)));
+                logger.warn("Could not complete graph storage");
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("%s", LogUtil.getStackTrace(e1)));
+                }
                 return false;
             }
         } else {
+            logger.error("Elasticsearch insert error occurred");
             return false;
         }
 
@@ -477,6 +485,7 @@ public class CommitUtil {
             query.put("doc", new JSONObject().put("ownerId", owner));
             eh.bulkUpdateElements(updateSet, query.toString(), projectId);
         } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             return false;
         }
         return true;
@@ -499,6 +508,7 @@ public class CommitUtil {
         try {
             eh = new ElasticHelper();
         } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
@@ -628,6 +638,9 @@ public class CommitUtil {
                 pgh.updateNode(projectSysmlid, projectElastic);
             }
         } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
     }
 
@@ -673,7 +686,14 @@ public class CommitUtil {
         boolean status = false;
         if (jmsConnection != null) {
             status = jmsConnection.publish(json, eventType, refId, projectId);
+            if (logger.isDebugEnabled()) {
+                String msg = "Event: " + eventType + ", RefId: " + refId + ", ProjectId: " + projectId + "\n";
+                msg += "JSONObject: " + json;
+                logger.debug(msg);
+            }
         } else {
+            if (logger.isInfoEnabled())
+                logger.info("JMS Connection not available");
         }
 
         return status;
@@ -736,7 +756,7 @@ public class CommitUtil {
         return false;
     }
 
-    private static Pattern pattern = Pattern.compile("<mms-cf.*?mms-element-id=\"([^\"]+)\"");
+    private static Pattern pattern = Pattern.compile("<mms-cf.*?mms-element-id=\"([a-zA-Z0-9_\\-]+)\"");
 
     public static void processValueEdges(SerialJSONObject element, List<Pair<String, String>> edges) {
         SerialJSONObject defaultValue = element.optJSONObject(Sjm.DEFAULTVALUE);
