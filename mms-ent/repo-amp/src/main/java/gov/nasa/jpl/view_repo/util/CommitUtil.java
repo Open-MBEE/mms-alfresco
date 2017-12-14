@@ -75,6 +75,8 @@ public class CommitUtil {
     private static final String DELETED = "deleted";
     private static final String INITIALCOMMIT = "initialcommit";
     private static final String LASTCOMMIT = "lastcommit";
+    private static final String ARTIFACTS = "artifacts";
+    private static final String CONTENTTYPE = "contentType";
 
     private static final String HOLDING_BIN_PREFIX = "holding_bin_";
 
@@ -185,7 +187,7 @@ public class CommitUtil {
     }
 
     private static boolean processArtifactDeltasForDb(JSONObject delta, String projectId, String refId,
-        JSONObject jmsPayload, boolean withChildViews, ServiceRegistry services) {
+        JSONObject jmsPayload) {
         PostgresHelper pgh = new PostgresHelper();
         pgh.setProject(projectId);
         pgh.setWorkspace(refId);
@@ -206,8 +208,8 @@ public class CommitUtil {
         if (bulkElasticEntry(added, "added", false, projectId) && bulkElasticEntry(updated, "updated", false,
             projectId)) {
             try {
-                List<Map<String, String>> nodeInserts = new ArrayList<>();
-                List<Map<String, String>> nodeUpdates = new ArrayList<>();
+                List<Map<String, String>> artifactInserts = new ArrayList<>();
+                List<Map<String, String>> artifactUpdates = new ArrayList<>();
 
                 for (int i = 0; i < added.length(); i++) {
                     JSONObject e = added.getJSONObject(i);
@@ -219,15 +221,15 @@ public class CommitUtil {
                         artifact.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
                         artifact.put(INITIALCOMMIT, e.getString(Sjm.ELASTICID));
                         artifact.put(LASTCOMMIT, commitElasticId);
-                        nodeInserts.add(artifact);
+                        artifact.put(CONTENTTYPE, e.getString(Sjm.CONTENTTYPE));
+                        artifactInserts.add(artifact);
                     }
                 }
 
                 for (int i = 0; i < deleted.length(); i++) {
                     JSONObject e = deleted.getJSONObject(i);
                     jmsDeleted.put(e.getString(Sjm.SYSMLID));
-                    pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
-                    pgh.deleteNode(e.getString(Sjm.SYSMLID));
+                    pgh.deleteArtifact(e.getString(Sjm.SYSMLID));
                     deletedSysmlIds.add(e.getString(Sjm.SYSMLID));
                 }
 
@@ -236,12 +238,12 @@ public class CommitUtil {
                     jmsUpdated.put(e.getString(Sjm.SYSMLID));
 
                     if (e.has(Sjm.ELASTICID)) {
-                        Map<String, String> updatedNode = new HashMap<>();
-                        updatedNode.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
-                        updatedNode.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
-                        updatedNode.put(DELETED, "false");
-                        updatedNode.put(LASTCOMMIT, commitElasticId);
-                        nodeUpdates.add(updatedNode);
+                        Map<String, String> updatedArtifact = new HashMap<>();
+                        updatedArtifact.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
+                        updatedArtifact.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
+                        updatedArtifact.put(DELETED, "false");
+                        updatedArtifact.put(LASTCOMMIT, commitElasticId);
+                        artifactUpdates.add(updatedArtifact);
                     }
                 }
 
@@ -250,9 +252,9 @@ public class CommitUtil {
                 try {//do node insert, updates, and containment edge updates
                     //do bulk delete edges for affected sysmlids here - delete containment, view and childview
                     sp = pgh.startTransaction();
-                    pgh.runBulkQueries(nodeInserts, NODES);
-                    pgh.runBulkQueries(nodeUpdates, "updates");
-                    pgh.updateBySysmlIds(NODES, LASTCOMMIT, commitElasticId, deletedSysmlIds);
+                    pgh.runBulkQueries(artifactInserts, ARTIFACTS);
+                    pgh.runBulkQueries(artifactUpdates, "artifactUpdates");
+                    pgh.updateBySysmlIds(ARTIFACTS, LASTCOMMIT, commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                     nullParents = pgh.findNullParents();
@@ -750,7 +752,7 @@ public class CommitUtil {
         }
 
         if (isArtifact) {
-            if (!processArtifactDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
+            if (!processArtifactDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload)) {
                 return false;
             }
         } else {

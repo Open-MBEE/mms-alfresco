@@ -597,7 +597,7 @@ public class EmsNodeUtil {
                 newObj.put(Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
                 newObj.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
                 // this for the artifact object, has extra key...
-                if (o.getString(type).equals("Artifact")) {
+                if (type.equals("Artifact")) {
                     newObj.put(Sjm.CONTENTTYPE, o.getString(Sjm.CONTENTTYPE));
                 }
                 commitAdded.put(newObj);

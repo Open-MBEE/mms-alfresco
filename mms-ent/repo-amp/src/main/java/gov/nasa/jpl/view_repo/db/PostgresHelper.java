@@ -335,6 +335,13 @@ public class PostgresHelper implements GraphInterface {
                     storedInsert = createUpdateNodeQuery(queryCache);
                     logger.debug(String.format("Query: %s", storedInsert));
                     this.conn.createStatement().executeUpdate(storedInsert);
+                } else if (type.contains("artifactUpdates")) {
+                    storedInsert = createUpdateArtifactQuery(queryCache);
+                    logger.debug(String.format("Query: %s", storedInsert));
+                    this.conn.createStatement().executeUpdate(storedInsert);
+                }else if (type.contains("artifacts")) {
+                    storedInsert = createInsertArtifactQuery(queryCache);
+                    logger.debug(String.format("Query: %s", storedInsert));
                 } else if (type.contains("edges")) {
                     storedInsert = createInsertEdgeQuery(queryCache);
                     logger.debug(String.format("Query: %s", storedInsert));
@@ -897,11 +904,34 @@ public class PostgresHelper implements GraphInterface {
         return query;
     }
 
+    public String createInsertArtifactQuery(List<Map<String, String>> artifacts) {
+        String query = String
+            .format("INSERT INTO \"artifacts%s\" (elasticId, sysmlId, lastcommit, initialcommit, contentType) VALUES ",
+                workspaceId);
+        for (Map<String, String> artifact : artifacts) {
+            query += String.format("('%s', '%s', '%s', '%s', '%s'),", artifact.get(Sjm.ELASTICID), artifact.get(Sjm.SYSMLID),
+                artifact.get("lastcommit"), artifact.get(Sjm.ELASTICID), artifact.get("contentype"));
+        }
+        query = query.substring(0, query.length() - 1) + ";";
+        return query;
+    }
+
     public String createUpdateNodeQuery(List<Map<String, String>> nodes) {
         String query = "";
         for (Map<String, String> node : nodes) {
             query += String.format(
                 "UPDATE \"nodes%s\" SET elasticId = '%s', sysmlId = '%s', lastcommit = '%s', nodeType = '%s', deleted = %b WHERE sysmlId = '%s';",
+                workspaceId, node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"),
+                node.get("nodetype"), Boolean.parseBoolean(node.get("deleted")), node.get(Sjm.SYSMLID));
+        }
+        return query;
+    }
+
+    public String createUpdateArtifactQuery(List<Map<String, String>> nodes) {
+        String query = "";
+        for (Map<String, String> node : nodes) {
+            query += String.format(
+                "UPDATE \"artifacts%s\" SET elasticId = '%s', sysmlId = '%s', lastcommit = '%s', contentType = '%s', deleted = %b WHERE sysmlId = '%s';",
                 workspaceId, node.get(Sjm.ELASTICID), node.get(Sjm.SYSMLID), node.get("lastcommit"),
                 node.get("nodetype"), Boolean.parseBoolean(node.get("deleted")), node.get(Sjm.SYSMLID));
         }
@@ -976,6 +1006,21 @@ public class PostgresHelper implements GraphInterface {
             connect();
             PreparedStatement query =
                 this.conn.prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = ? WHERE sysmlid = ?");
+            query.setBoolean(1, true);
+            query.setString(2, sysmlId);
+            query.execute();
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+    }
+
+    public void deleteArtifact(String sysmlId) {
+        try {
+            connect();
+            PreparedStatement query =
+                this.conn.prepareStatement("UPDATE \"artifacts" + workspaceId + "\" SET deleted = ? WHERE sysmlid = ?");
             query.setBoolean(1, true);
             query.setString(2, sysmlId);
             query.execute();
@@ -1390,9 +1435,10 @@ public class PostgresHelper implements GraphInterface {
             if (n == null)
                 return result;
 
-            String query = "SELECT elasticId FROM \"nodes" + workspaceId
-                + "\" WHERE id IN (SELECT id FROM get_group_docs(" + n.getId() + ", " + et.getValue() + ", '"
-                + workspaceId + "', " + depth + ", " + nt.getValue() + ", " + DbNodeTypes.DOCUMENT.getValue() + " ))";
+            String query =
+                "SELECT elasticId FROM \"nodes" + workspaceId + "\" WHERE id IN (SELECT id FROM get_group_docs(" + n
+                    .getId() + ", " + et.getValue() + ", '" + workspaceId + "', " + depth + ", " + nt.getValue() + ", "
+                    + DbNodeTypes.DOCUMENT.getValue() + " ))";
 
             ResultSet rs = execQuery(query);
 
@@ -1422,6 +1468,7 @@ public class PostgresHelper implements GraphInterface {
             close();
         }
     }
+
     public void deleteEdgesForArtifact(String sysmlId) {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
@@ -1507,8 +1554,7 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
-    public int createOrganization(String orgId, String orgName)
-    	throws PSQLException {
+    public int createOrganization(String orgId, String orgName) throws PSQLException {
         int recordId = 0;
         try {
             connectConfig();
@@ -1644,7 +1690,7 @@ public class PostgresHelper implements GraphInterface {
             execUpdate("CREATE INDEX refsIndex on refs(id)");
 
             execUpdate(
-                "CREATE TABLE artifacts(id bigserial primary key, elasticId text not null unique, sysmlId text not null unique, lastCommit text, initialCommit text, deleted boolean default false);");
+                "CREATE TABLE artifacts(id bigserial primary key, elasticId text not null unique, contentType text not null, sysmlId text not null unique, lastCommit text, initialCommit text, deleted boolean default false);");
             execUpdate("CREATE INDEX artifactIndex on artifacts(id);");
             execUpdate("CREATE INDEX sysmlArtifactIndex on artifacts(sysmlId);");
 
@@ -1908,8 +1954,9 @@ public class PostgresHelper implements GraphInterface {
             execUpdate(String
                 .format("UPDATE refs SET tag = true WHERE (refId = '%1$s' OR refName = '%1$s') AND deleted = false",
                     sanitizeRefId(refId)));
-            execUpdate(String.format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s",
-                sanitizeRefId(refId), EmsConfig.get("pg.user")));
+            execUpdate(String
+                .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s", sanitizeRefId(refId),
+                    EmsConfig.get("pg.user")));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
