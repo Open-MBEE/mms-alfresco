@@ -581,7 +581,7 @@ public class EmsNodeUtil {
             }
 
             if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null
-                || o.getString(Sjm.OWNERID).equalsIgnoreCase("null") && o.getString(Sjm.TYPE).equals(Sjm.ELEMENT)) {
+                || o.getString(Sjm.OWNERID).equalsIgnoreCase("null") && !o.getString(Sjm.TYPE).equals(Sjm.ARTIFACT)) {
                 o.put(Sjm.OWNERID, holdingBinSysmlid);
             }
             reorderChildViews(o, newElements, addedElements, updatedElements, deletedElements, commitAdded,
