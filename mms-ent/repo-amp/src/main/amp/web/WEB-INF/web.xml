@@ -21,9 +21,9 @@
       <param-value>false</param-value>
    </context-param>
 
-    <!--  These were previously init params for the WebDAV servlet,
-          but since they are also needed to MT-enable the 
-          ExternalAccess servlet, I have made them context wide. -->
+	<!--  These were previously init params for the WebDAV servlet,
+	      but since they are also needed to MT-enable the 
+	      ExternalAccess servlet, I have made them context wide. -->
    <context-param>
          <param-name>store</param-name>
          <param-value>workspace://SpacesStore</param-value>
@@ -33,7 +33,7 @@
          <param-value>/app:company_home</param-value>
    </context-param>
 
-   <context-param><description>Vaadin production mode</description><param-name>productionMode</param-name><param-value>true</param-value></context-param>
+   <!-- Enterprise context-param placeholder -->
 
    <filter>
       <description>Cleans security context before authentication via the CMIS services or filters. Mapped only for CMIS</description>
@@ -85,6 +85,18 @@
       <filter-name>Global Localization Filter</filter-name>
       <filter-class>org.alfresco.web.app.servlet.GlobalLocalizationFilter</filter-class>
    </filter>
+
+   <filter>
+      <filter-name>X509AuthFilter</filter-name>
+      <filter-class>org.alfresco.web.app.servlet.AlfrescoX509ServletFilter</filter-class>
+      <!--
+      Uncomment to validate a specific cert for a specific URL.
+      <init-param>
+         <param-name>cert-contains</param-name>
+         <param-value>CN=Alfresco Repository Client,OU=Unknown,O=Alfresco Software Ltd.,L=Maidenhead,ST=UK,C=GB</param-value>
+      </init-param>
+      -->
+   </filter>
    
    <!-- CORS Filter Begin -->
    <!--<filter>
@@ -121,6 +133,14 @@
    </filter>-->
    <!-- CORS Filter End -->
 
+   <!-- Enterprise filter placeholder -->
+
+   <filter-mapping>
+      <filter-name>Global Localization Filter</filter-name>
+      <url-pattern>/*</url-pattern>
+      <dispatcher>REQUEST</dispatcher>
+   </filter-mapping>
+   
    <!-- CORS Filter Mappings Begin -->
    <!--<filter-mapping>
       <filter-name>CORS</filter-name>
@@ -130,27 +150,7 @@
       <url-pattern>/cmisbrowser/*</url-pattern>
    </filter-mapping>-->
    <!-- CORS Filter Mappings End -->
-
-   <filter>
-      <filter-name>Office Services Authentication Filter</filter-name>
-      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
-      <init-param>
-         <param-name>beanName</param-name>
-         <param-value>AosAuthenticationFilter</param-value>
-      </init-param>
-   </filter>
-
-   <filter>
-      <filter-name>Office Services Filter</filter-name>
-      <filter-class>org.alfresco.enterprise.repo.officeservices.service.ServiceFilter</filter-class>
-   </filter>
-
-   <filter-mapping>
-      <filter-name>Global Localization Filter</filter-name>
-      <url-pattern>/*</url-pattern>
-      <dispatcher>REQUEST</dispatcher>
-   </filter-mapping>
-    
+ 
    <filter-mapping>
       <filter-name>CMIS security context cleaning filter</filter-name>
       <url-pattern>/cmisws/*</url-pattern>
@@ -161,15 +161,7 @@
       <url-pattern>/cmisatom/*</url-pattern>
    </filter-mapping>
 
-   <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/activiti-admin/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/VAADIN/*</url-pattern>
-   </filter-mapping>
+   <!-- Activiti Global Authentication Filter mapping placeholder -->
 
    <!-- The Cookie WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->  
    <filter-mapping>
@@ -219,26 +211,27 @@
    </filter-mapping>
 
    <filter-mapping>
-      <filter-name>Office Services Authentication Filter</filter-name>
-      <url-pattern>/aos/*</url-pattern>
+      <filter-name>X509AuthFilter</filter-name>
+      <url-pattern>/service/api/solr/*</url-pattern>
    </filter-mapping>
 
    <filter-mapping>
-      <filter-name>Office Services Authentication Filter</filter-name>
-      <url-pattern>/AosResponder_ServerRoot</url-pattern>
-      <dispatcher>FORWARD</dispatcher>
+      <filter-name>X509AuthFilter</filter-name>
+      <url-pattern>/s/api/solr/*</url-pattern>
    </filter-mapping>
 
    <filter-mapping>
-      <filter-name>Office Services Authentication Filter</filter-name>
-      <url-pattern>/AosResponder_Context</url-pattern>
-      <dispatcher>FORWARD</dispatcher>
+      <filter-name>X509AuthFilter</filter-name>
+      <url-pattern>/wcservice/api/solr/*</url-pattern>
    </filter-mapping>
 
    <filter-mapping>
-      <filter-name>Office Services Filter</filter-name>
-      <url-pattern>/aos/*</url-pattern>
+      <filter-name>X509AuthFilter</filter-name>
+      <url-pattern>/wcs/api/solr/*</url-pattern>
    </filter-mapping>
+
+
+   <!-- Enterprise filter-mapping placeholder -->
 
    <listener>
       <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
@@ -264,9 +257,7 @@
         <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
    </listener> 
 
-   <listener>
-      <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
-   </listener>
+   <!-- Enterprise listener placeholder -->
 
    <servlet>
       <servlet-name>uploadContent</servlet-name>
@@ -426,93 +417,7 @@
       </init-param>
    </servlet>
 
-   <servlet>
-      <servlet-name>Vaadin Application Servlet</servlet-name>
-      <servlet-class>org.activiti.explorer.servlet.ExplorerApplicationServlet</servlet-class>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosAuthorService</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.AuthorService</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosBrowsingService</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.BrowsingService</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosCopyService</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.CopyService</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosDwsService</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.DwsService</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosListsService</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.ListsService</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosServiceDispatcher</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.ServiceDispatcher</servlet-class>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosSiteDataService</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.SiteDataService</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosVersionsService</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.VersionsService</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosVtiInfService</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.VtiInfService</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosWebsService</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.WebsService</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosWebViewResourcesService</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.WebViewResourcesService</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosWebdavService</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.WebdavService</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosServerRootResponder</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.ServerRootResponder</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>AosContextResponder</servlet-name>
-      <servlet-class>org.alfresco.enterprise.repo.officeservices.service.ContextResponder</servlet-class>
-      <load-on-startup>5</load-on-startup>
-   </servlet>
+   <!-- Enterprise servlet placeholder -->
 
    <servlet-mapping>
       <servlet-name>uploadContent</servlet-name>
@@ -571,8 +476,8 @@
 
    <!-- The cmisbrowser endpoint is provided by the Chemistry project.
         If you uncomment this section you need to make sure for security
-        reasons that that you have a firewall set up so that it is not
-        accessible from outside of the organisation.
+		reasons that that you have a firewall set up so that it is not
+		accessible from outside of the organisation.
    <servlet-mapping>
       <servlet-name>CMISFileShareServlet</servlet-name>
       <url-pattern>/cmisbrowser</url-pattern>
@@ -607,100 +512,7 @@
    </servlet-mapping>
    CMISTCK -->
 
-   <servlet-mapping>
-      <servlet-name>Vaadin Application Servlet</servlet-name>
-      <url-pattern>/activiti-admin/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>Vaadin Application Servlet</servlet-name>
-      <url-pattern>/VAADIN/*</url-pattern>
-   </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosServiceDispatcher</servlet-name>
-        <url-pattern>/aos/_vti_bin/shtml.dll/_vti_rpc</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosAuthorService</servlet-name>
-        <url-pattern>/aos/_vti_bin/_vti_aut/author.dll</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosBrowsingService</servlet-name>
-        <url-pattern>/aos/_vti_bin/owssvr.dll</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosCopyService</servlet-name>
-        <url-pattern>/aos/_vti_bin/copy.asmx</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosCopyService</servlet-name>
-        <url-pattern>/aos/_vti_bin/Copy.asmx</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosDwsService</servlet-name>
-        <url-pattern>/aos/_vti_bin/dws.asmx</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosListsService</servlet-name>
-        <url-pattern>/aos/_vti_bin/lists.asmx</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosListsService</servlet-name>
-        <url-pattern>/aos/_vti_bin/Lists.asmx</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosSiteDataService</servlet-name>
-        <url-pattern>/aos/_vti_bin/SiteData.asmx</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosVersionsService</servlet-name>
-        <url-pattern>/aos/_vti_bin/versions.asmx</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosVtiInfService</servlet-name>
-        <url-pattern>/aos/_vti_inf.html</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosWebsService</servlet-name>
-        <url-pattern>/aos/_vti_bin/webs.asmx</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosWebsService</servlet-name>
-        <url-pattern>/aos/_vti_bin/Webs.asmx</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosServerRootResponder</servlet-name>
-        <url-pattern>/AosResponder_ServerRoot</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosContextResponder</servlet-name>
-        <url-pattern>/AosResponder_Context</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosWebViewResourcesService</servlet-name>
-        <url-pattern>/aos/_aos_resources/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>AosWebdavService</servlet-name>
-        <url-pattern>/aos/*</url-pattern>
-    </servlet-mapping>
+   <!-- Enterprise servlet-mapping placeholder -->
 
    <session-config>
       <session-timeout>60</session-timeout>
@@ -710,78 +522,10 @@
       <welcome-file>index.jsp</welcome-file>
    </welcome-file-list>
    
-   <!-- Toggle securecomms placeholder start -->
+   <!--
    
-   <security-constraint>
-      <web-resource-collection>
-         <web-resource-name>SOLR</web-resource-name>
-         <url-pattern>/service/api/solr/*</url-pattern>
-      </web-resource-collection>
 
-      <auth-constraint>
-         <role-name>repoclient</role-name>
-      </auth-constraint>
-
-      <user-data-constraint>
-         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-      </user-data-constraint>
-   </security-constraint>
-
-   <security-constraint>
-      <web-resource-collection>
-         <web-resource-name>SOLR</web-resource-name>
-         <url-pattern>/s/api/solr/*</url-pattern>
-      </web-resource-collection>
-
-      <auth-constraint>
-         <role-name>repoclient</role-name>
-      </auth-constraint>
-
-      <user-data-constraint>
-         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-      </user-data-constraint>
-   </security-constraint>
-   
-   <security-constraint>
-      <web-resource-collection>
-         <web-resource-name>SOLR</web-resource-name>
-         <url-pattern>/wcservice/api/solr/*</url-pattern>
-      </web-resource-collection>
-
-      <auth-constraint>
-         <role-name>repoclient</role-name>
-      </auth-constraint>
-
-      <user-data-constraint>
-         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-      </user-data-constraint>
-   </security-constraint>
-   
-   <security-constraint>
-      <web-resource-collection>
-         <web-resource-name>SOLR</web-resource-name>
-         <url-pattern>/wcs/api/solr/*</url-pattern>
-      </web-resource-collection>
-
-      <auth-constraint>
-         <role-name>repoclient</role-name>
-      </auth-constraint>
-
-      <user-data-constraint>
-         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-      </user-data-constraint>
-   </security-constraint>
-   
-   <login-config>
-      <auth-method>CLIENT-CERT</auth-method>
-      <realm-name>Repository</realm-name>
-   </login-config>
-
-   <security-role>
-     <role-name>repoclient</role-name>
-   </security-role>
-
-   <!-- Toggle securecomms placeholder end -->
+   -->
    
    <env-entry>
       <description>A flag that globally enables or disables startup of the major Alfresco subsystems.</description>

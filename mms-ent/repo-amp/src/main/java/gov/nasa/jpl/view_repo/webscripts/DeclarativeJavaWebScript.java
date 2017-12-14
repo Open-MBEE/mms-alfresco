@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.JsonContentReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -68,6 +69,9 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     public static final String NO_PROJECT_ID = "no_project";
     public static final String NO_SITE_ID = "no_site";
 
+    private static final String HEADER_CONTENT_RANGE = "Content-Range";
+    private static final String HEADER_CONTENT_LENGTH = "Content-Length";
+
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
@@ -93,6 +97,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             String projectId = req.getServiceMatch().getTemplateVars().get(PROJECT_ID);
             Boolean perm = hasPermission(req, res);
             res.setHeader("Access-Control-Allow-Origin", "*");
+            res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, HEAD, OPTIONS");
             if (projectId == null || (perm != null && perm)) {
                 model = executeImpl(req, status, cache);
             } else {
@@ -144,8 +149,20 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
 
                     // render response according to requested format
                     if (templateModel.containsKey(Sjm.RES) && templateModel.get(Sjm.RES) != null) {
-                        res.getWriter().write(templateModel.get(Sjm.RES).toString());
-                        res.setHeader("Content-Type", "application/json;charset=UTF-8");
+                        res.setContentType("application/json");
+                        res.setContentEncoding("UTF-8");
+                        if (templateModel.get(Sjm.RES) instanceof JSONObject) {
+                            JSONObject json = (JSONObject) templateModel.get(Sjm.RES);
+                            Map<String, Object> jsonMap = EmsNodeUtil.toMap(json);
+                            JsonContentReader reader = new JsonContentReader(jsonMap);
+
+                            // get the content and stream directly to the response output stream
+                            // assuming the repository is capable of streaming in chunks, this should allow large files
+                            // to be streamed directly to the browser response stream.
+                            reader.getStreamContent(res.getOutputStream());
+                        } else {
+                            res.getWriter().write(templateModel.get(Sjm.RES).toString());
+                        }
                     }
                 }
             } finally {
@@ -154,7 +171,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             }
         } catch (Throwable e) {
             logger.error(String.format("Caught exception; decorating with appropriate status template : %s",
-                            LogUtil.getStackTrace(e)));
+                LogUtil.getStackTrace(e)));
             throw createStatusException(e, req, res);
         }
     }
@@ -270,7 +287,8 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         for (int i = 0; i < projects.length(); i++) {
             JSONObject project = projects.optJSONObject(i);
             if (project != null && project.has("orgId")) {
-                Boolean perm = SitePermission.hasPermission(project.getString("orgId"), project.getString(Sjm.SYSMLID), null, Permission.READ);
+                Boolean perm = SitePermission
+                    .hasPermission(project.getString("orgId"), project.getString(Sjm.SYSMLID), null, Permission.READ);
                 if (perm != null && perm) {
                     result.put(project);
                 }
@@ -303,9 +321,9 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         for (int i = 0; i < elements.length(); i++) {
             JSONObject el = elements.optJSONObject(i);
             String refId2 = el.has(Sjm.REFID) ? el.getString(Sjm.REFID) : refId;
-            String projectId2 = el.has(Sjm.PROJECTID) ? el.getString(Sjm.PROJECTID): projectId;
-            JSONObject element = filterElementByPermission(el, projectId2, refId2, Permission.READ,
-                permCache, projectSite);
+            String projectId2 = el.has(Sjm.PROJECTID) ? el.getString(Sjm.PROJECTID) : projectId;
+            JSONObject element =
+                filterElementByPermission(el, projectId2, refId2, Permission.READ, permCache, projectSite);
             if (element != null) {
                 result.put(element);
             }
@@ -314,8 +332,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     }
 
     private JSONObject filterElementByPermission(JSONObject element, String projectId, String refId,
-                     Permission permission, Map<String, Map<Permission, Boolean>> permCache,
-                                                 Map<String, String> projectSite) {
+        Permission permission, Map<String, Map<Permission, Boolean>> permCache, Map<String, String> projectSite) {
         // temp fix to skip permission checking
         Boolean hasPerm;
         String siteId = null;
@@ -333,7 +350,8 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             hasPerm = permCache.get(cacheKey).get(permission);
         } else {
             hasPerm = SitePermission.hasPermission(siteId, projectId, refId, permission);
-            Map<Permission, Boolean> permMap = permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
+            Map<Permission, Boolean> permMap =
+                permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
             permMap.put(permission, (hasPerm == null) ? false : hasPerm);
             permCache.put(cacheKey, permMap);
         }
@@ -345,7 +363,8 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     editable = permCache.get(cacheKey).get(Permission.WRITE);
                 } else {
                     editable = SitePermission.hasPermission(siteId, projectId, refId, Permission.WRITE);
-                    Map<Permission, Boolean> writePermMap = permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
+                    Map<Permission, Boolean> writePermMap =
+                        permCache.containsKey(cacheKey) ? permCache.get(cacheKey) : new HashMap<>();
                     writePermMap.put(Permission.WRITE, editable);
                     permCache.put(cacheKey, writePermMap);
                 }
