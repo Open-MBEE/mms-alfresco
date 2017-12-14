@@ -153,10 +153,10 @@ public class CommitUtil {
         return element.has(Sjm.ISSITE) && element.getBoolean(Sjm.ISSITE);
     }
 
-    private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh, String index) {
+    private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh, String index, String type) {
         if (elements.length() > 0) {
             try {
-                boolean bulkEntry = eh.bulkIndexElements(elements, operation, refresh, index);
+                boolean bulkEntry = eh.bulkIndexElements(elements, operation, refresh, index, type);
                 if (!bulkEntry) {
                     return false;
                 }
@@ -205,8 +205,8 @@ public class CommitUtil {
         JSONArray jmsDeleted = new JSONArray();
 
         List<String> deletedSysmlIds = new ArrayList<>();
-        if (bulkElasticEntry(added, "added", false, projectId) && bulkElasticEntry(updated, "updated", false,
-            projectId)) {
+        if (bulkElasticEntry(added, "added", false, projectId, "artifact") && bulkElasticEntry(updated, "updated", false,
+            projectId, "artifact")) {
             try {
                 List<Map<String, String>> artifactInserts = new ArrayList<>();
                 List<Map<String, String>> artifactUpdates = new ArrayList<>();
@@ -326,8 +326,8 @@ public class CommitUtil {
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
 
-        if (bulkElasticEntry(added, "added", withChildViews, projectId) && bulkElasticEntry(updated, "updated",
-            withChildViews, projectId)) {
+        if (bulkElasticEntry(added, "added", withChildViews, projectId, "element") && bulkElasticEntry(updated, "updated",
+            withChildViews, projectId, "element")) {
 
             try {
                 List<Map<String, String>> nodeInserts = new ArrayList<>();
@@ -723,7 +723,7 @@ public class CommitUtil {
             String owner = HOLDING_BIN_PREFIX + projectId;
             JSONObject query = new JSONObject();
             query.put("doc", new JSONObject().put("ownerId", owner));
-            eh.bulkUpdateElements(updateSet, query.toString(), projectId);
+            eh.bulkUpdateElements(updateSet, query.toString(), projectId, "element");
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             return false;
@@ -983,7 +983,7 @@ public class CommitUtil {
                     "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
                         + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
                     .put("params", new JSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
-                eh.bulkUpdateElements(elementsToUpdate, payload, projectId);
+                eh.bulkUpdateElements(elementsToUpdate, payload, projectId, "element");
                 created.put("status", "created");
 
                 success = true;

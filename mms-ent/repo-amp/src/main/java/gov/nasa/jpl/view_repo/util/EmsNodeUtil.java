@@ -646,7 +646,7 @@ public class EmsNodeUtil {
                 "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
                     + ".removeAll([params.refId])}").put("params", new JSONObject().put("refId", this.workspaceName)))
                 .toString();
-            eh.bulkUpdateElements(elasticIds, payload, projectId);
+            eh.bulkUpdateElements(elasticIds, payload, projectId, "element");
         } catch (IOException ex) {
             // This catch left intentionally blank
         }

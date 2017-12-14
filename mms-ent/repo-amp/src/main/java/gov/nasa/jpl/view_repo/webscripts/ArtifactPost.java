@@ -57,6 +57,7 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -119,7 +120,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         printHeader(user, logger, req, true);
         Timer timer = new Timer();
 
-        Map<String, Object> result;
+        Map<String, Object> result = new HashedMap();
         Map<String, Object> alfrescoImage;
         JSONObject writeToDb;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
@@ -150,8 +151,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         // Would ideally be a transaction, :TODO the image has to be successfully posted before the json is post to the db
         // maybe processArtifactDelta needs to be called from handleArtifactPost
-        alfrescoImage = handleArtifactPost(req, status, user, postJson);
-        result = processArtifactDelta(req, user, postJson, status);
+        if(handleArtifactPost(req, status, user, postJson)) {
+            result = processArtifactDelta(req, user, postJson, status);
+        }
 
         printFooter(user, logger, timer);
 
@@ -206,7 +208,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         return model;
     }
 
-    protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user,
+    Boolean handleArtifactPost(final WebScriptRequest req, final Status status, String user,
         JSONObject postJson) {
 
         JSONObject resultJson = null;
@@ -294,7 +296,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
             model.put(Sjm.RES, resultJson != null ? resultJson : createResponseJson());
         }
 
-        return model;
+        return true;
     }
 
     protected static Path saveSvgToFilesystem(String artifactId, String extension, String content) throws Throwable {
