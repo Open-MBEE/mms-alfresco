@@ -162,7 +162,7 @@
     </distributionManagement>
 
     <modules>
-        <module>repo-amp</module>
+        <module>mms-amp</module>
         <module>share-amp</module>
         <module>repo</module>
         <module>solr-config</module>
