@@ -3,18 +3,19 @@ Documentation    Testing Workspaces Tags on Master
 Resource        ../resources.robot
 
 *** Test Cases ***
-#PostNewImage
-#	[Documentation]		"Post a png image to mms"
-#	[Tags]				images		critical		0401
-#    ${image_file} =     Binary Data    ${CURDIR}${/}../../assets/mounts.png
-#    &{data} =           Create Dictionary    name=blah    content=blah
-#	${result} =			Post		url=${ROOT}/projects/PA/refs/master/artifacts/mounts		data=&{data}		files=${image_file}
-#	Should Be Equal		${result.status_code}		${200}
-#	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload
-#	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-#	Sleep				${POST_DELAY_INDEXING}
-#	${compare_result} =		Compare JSON		${TEST_NAME}
-#	Should Match Baseline		${compare_result}
+PostNewImage
+	[Documentation]		"Post a png image to mms"
+	[Tags]				images		critical		0401
+    ${image_file} =     Binary Data    ${CURDIR}${/}../../assets/mounts.png
+    &{headers}=         Create Dictionary    Content-Type=application/x-www-form-urlencoded
+    &{data} =           Create Dictionary    name=blah.png    contentType=blah    id=1234
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/artifacts/mounts		data=${data}		files=${image_file}		headers=${headers}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
 # The image versioning works, but nothing is returned from the server that you can verify this with
 #PostNewVersionOfImage
 #	[Documentation]		"Post a update to a existing image."
