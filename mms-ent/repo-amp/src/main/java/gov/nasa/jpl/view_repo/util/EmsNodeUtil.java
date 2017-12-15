@@ -507,8 +507,8 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public SerialJSONObject processPostJson(SerialJSONArray elements, String user, Set<String> oldElasticIds, boolean overwriteJson,
-        String src) {
+    public SerialJSONObject processPostJson(SerialJSONArray elements, String user, Set<String> oldElasticIds,
+        boolean overwriteJson, String src) {
 
         SerialJSONObject result = new SerialJSONObject();
 

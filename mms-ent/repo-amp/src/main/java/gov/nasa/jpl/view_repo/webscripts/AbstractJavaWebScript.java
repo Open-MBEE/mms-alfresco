@@ -532,8 +532,13 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         if (paramVal != null && !paramVal.equals("none") && paramVal.length() > 0) {
             // Calls NodeUtil's getMMSversion
             jsonVersion = getMMSversion();
-            mmsVersion = jsonVersion.get("mmsVersion").toString();
-
+            try {
+                mmsVersion = jsonVersion.get("mmsVersion").toString();
+            } catch (Exception e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Error getting version", e);
+                }
+            }
             log(Level.INFO, HttpServletResponse.SC_OK, "Comparing Versions....");
             if (mmsVersion.equals(paramVal)) {
                 // Compared versions matches
@@ -593,7 +598,13 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      */
     public static JSONObject getMMSversion() {
         JSONObject version = new JSONObject();
-        version.put("mmsVersion", NodeUtil.getMMSversion());
+        try {
+            version.put("mmsVersion", NodeUtil.getMMSversion());
+        } catch (JSONException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Error getting version: ", e);
+            }
+        }
         return version;
     }
 
