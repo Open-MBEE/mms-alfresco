@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
@@ -60,6 +61,7 @@ import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
@@ -151,21 +153,13 @@ public class ModelPost extends AbstractJavaWebScript {
 
         try {
 
-            JSONObject tempJson = new JSONObject(req.getContent().getContent());
-            logger.error("Original JSON: " + tempJson.toString());
-
             SerialJSONObject postJson = new SerialJSONObject(req.getContent().getContent());
-            logger.error("Posted JSON: " + postJson.toString());
-
             this.populateSourceApplicationFromJson(postJson);
-
             Set<String> oldElasticIds = new HashSet<>();
 
             results = emsNodeUtil
                 .processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, overwriteJson,
                     this.requestSourceApplication);
-
-            logger.error("JSON: " + results.toString());
 
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
@@ -179,7 +173,7 @@ public class ModelPost extends AbstractJavaWebScript {
                     for (int i = 0; i < results.getJSONArray(NEWELEMENTS).length(); i++) {
                         SerialJSONObject childViews = emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i));
                         logger.error("ChildView: " + childViews.toString());
-                        results.getJSONArray(NEWELEMENTS).put(i, childViews);
+                        results.getJSONArray(NEWELEMENTS).replace(i, childViews);
                         logger.error(results.getJSONArray(NEWELEMENTS).get(i).toString());
                     }
                 }

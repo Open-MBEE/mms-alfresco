@@ -145,7 +145,8 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <scope>provided</scope><!--$NO-MVN-MAN-VER$-->
+            <version>20170516</version><!--$NO-MVN-MAN-VER$-->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.antlr</groupId>

@@ -511,8 +511,6 @@ public class CommitUtil {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        logger.error("JSON: " + deltaJson.toString());
-
         if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
             return false;
         }
