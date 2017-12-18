@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
@@ -134,9 +135,10 @@ public class ModelPost extends AbstractJavaWebScript {
         return result;
     }
 
-    protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user, String contentType) {
+    protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user,
+        String contentType) {
         JSONObject newElementsObject = new JSONObject();
-        JSONObject results;
+        SerialJSONObject results;
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
         boolean overwriteJson = Boolean.parseBoolean(req.getParameter("overwrite"));
@@ -148,12 +150,13 @@ public class ModelPost extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         try {
-
-            JSONObject postJson = new JSONObject(req.getContent().getContent());
+            SerialJSONObject postJson = new SerialJSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
-            results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, overwriteJson, this.requestSourceApplication);
+            results = emsNodeUtil
+                .processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, overwriteJson,
+                    this.requestSourceApplication);
 
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
@@ -165,12 +168,14 @@ public class ModelPost extends AbstractJavaWebScript {
 
                 if (withChildViews) {
                     for (int i = 0; i < results.getJSONArray(NEWELEMENTS).length(); i++) {
-                        results.getJSONArray(NEWELEMENTS)
-                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i)));
+                        SerialJSONObject childViews = emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i));
+                        results.getJSONArray(NEWELEMENTS).replace(i, childViews);
                     }
                 }
 
-                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray(NEWELEMENTS), req)) : filterByPermission(results.getJSONArray(NEWELEMENTS), req));
+                newElementsObject.put(Sjm.ELEMENTS, extended ?
+                    emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray(NEWELEMENTS), req)) :
+                    filterByPermission(results.getJSONArray(NEWELEMENTS), req));
                 newElementsObject.put(Sjm.COMMITID, commitId);
                 newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
                 newElementsObject.put(Sjm.CREATOR, user);
@@ -183,7 +188,8 @@ public class ModelPost extends AbstractJavaWebScript {
 
                 status.setCode(responseStatus.getCode());
             } else {
-                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
+                    "Commit failed, please check server logs for failed items");
                 model.put(Sjm.RES, createResponseJson());
             }
 
@@ -196,7 +202,8 @@ public class ModelPost extends AbstractJavaWebScript {
         return model;
     }
 
-    protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user, String contentType) {
+    protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user,
+        String contentType) {
 
         JSONObject resultJson = null;
         String filename = null;
@@ -211,7 +218,7 @@ public class ModelPost extends AbstractJavaWebScript {
         try {
             Object binaryContent = req.getContent().getContent();
             content = binaryContent.toString();
-        } catch(IOException e) {
+        } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
@@ -227,18 +234,25 @@ public class ModelPost extends AbstractJavaWebScript {
                 // Get the artifact name from the url:
                 String artifactIdPath = getArtifactId(req);
 
-                logger.debug("ArtifactIdPath: " + artifactIdPath);
-                logger.debug("Content: " + content);
-                logger.debug("Header: " + req.getHeader("Content-Type"));
+                if (logger.isDebugEnabled()) {
+                    logger.debug("ArtifactIdPath: " + artifactIdPath);
+                    logger.debug("Content: " + content);
+                    logger.debug("Header: " + req.getHeader("Content-Type"));
+                }
 
                 if (artifactIdPath != null) {
                     int lastIndex = artifactIdPath.lastIndexOf("/");
 
                     if (artifactIdPath.length() > (lastIndex + 1)) {
 
-                        path = projectId + "/refs/" + refId + "/" + (lastIndex != -1 ? artifactIdPath.substring(0, lastIndex) : "");
+                        path = projectId + "/refs/" + refId + "/" + (lastIndex != -1 ?
+                            artifactIdPath.substring(0, lastIndex) :
+                            "");
                         artifactId = lastIndex != -1 ? artifactIdPath.substring(lastIndex + 1) : artifactIdPath;
-                        logger.error("artifactId: " + artifactId);
+
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("artifactId: " + artifactId);
+                        }
 
                         filename = extension != null ? artifactId + extension : artifactId;
 
@@ -269,8 +283,8 @@ public class ModelPost extends AbstractJavaWebScript {
 
                                         try {
                                             pngArtifact = NodeUtil
-                                                .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName,
-                                                    projectId, refId, null, response, null, false);
+                                                .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName, projectId,
+                                                    refId, null, response, null, false);
                                         } catch (Throwable ex) {
                                             throw new Exception("Failed to convert SVG to PNG!\n");
                                         }
