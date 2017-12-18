@@ -42,10 +42,6 @@ import java.util.Set;
 import java.util.HashSet;
 import javax.servlet.http.HttpServletResponse;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
@@ -99,13 +95,6 @@ public class ModelPost extends AbstractJavaWebScript {
     private final String NEWELEMENTS = "newElements";
 
     public static boolean timeEvents = false;
-
-    private static ObjectMapper om;
-    static {
-        om = new ObjectMapper();
-        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-    }
 
     public ModelPost() {
         super();
