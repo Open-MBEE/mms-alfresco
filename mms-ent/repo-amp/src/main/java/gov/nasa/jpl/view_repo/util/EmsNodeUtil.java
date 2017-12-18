@@ -580,7 +580,7 @@ public class EmsNodeUtil {
                 o.remove(Sjm.QUALIFIEDNAME);
             }
 
-            if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null || o.getString(Sjm.OWNERID)
+            if (!o.has(Sjm.OWNERID) || o.optString(Sjm.OWNERID, null) == null || o.optString(Sjm.OWNERID, null)
                 .equalsIgnoreCase("null")) {
                 o.put(Sjm.OWNERID, holdingBinSysmlid);
             }
