@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE webscript>
-<webscript>
-  <shortname>DocWeb Config post</shortname>
-  <description>Configuration dialog for DocWeb dashlet</description>
-  <url>/modules/docweb/config/{componentId}</url>
-  <format default="json">argument</format>
-  <authentication>user</authentication>
-</webscript>
