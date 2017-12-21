@@ -227,3 +227,52 @@ ResurrectElement
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+
+DeleteOrgWithProject
+	[Documentation]		"Create an organization, add project, try to delete the org."
+	[Tags]				crud		critical		0118
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/DeleteOrganization.json
+	${result} =			Post		url=${ROOT}/orgs			data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	# Add a project to the organization
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectForDeleteOrganization.json
+	${result} =			Post		url=${ROOT}/orgs/deleteorg/projects			data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${result} =         Delete          url=${ROOT}/orgs/deleteorg          headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${400}
+	${filter} =			Create List	 _commitId
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+DeleteOrgWithNoProject
+	[Documentation]		"Delete project then organization"
+	[Tags]				crud		critical		0119
+	# Delete project
+	${result} =		    Delete	  url=${ROOT}/projects/deleteorgproject
+	Should Be Equal	    ${result.status_code}	   ${200}
+	Sleep				${POST_DELAY_INDEXING}
+	${result} =			Get		url=${ROOT}/orgs/initorg/projects/deleteorgproject		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${404}
+	${result} =         Delete          url=${ROOT}/orgs/deleteorg          headers=&{REQ_HEADER}
+	Sleep				${DELETE_DELAY_INDEXING}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+ResurrectDeleteOrg
+	[Documentation]		"Resurrect the deleted organization."
+	[Tags]				crud		critical		0120
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/DeleteOrganization.json
+	${result} =			Post		url=${ROOT}/orgs			data=${post_json}		headers=&{REQ_HEADER}
+	Sleep				${POST_DELAY_INDEXING}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}

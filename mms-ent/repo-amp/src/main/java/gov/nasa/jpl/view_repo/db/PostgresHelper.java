@@ -373,6 +373,7 @@ public class PostgresHelper implements GraphInterface {
         if (orgId == null) {
             query = "SELECT id, orgId, orgName FROM organizations";
         } else {
+            orgId = this.sanitizeOrgId(orgId);
             query = String.format("SELECT id, orgId, orgName FROM organizations WHERE orgId = '%s'", orgId);
         }
         try {
@@ -2265,6 +2266,10 @@ public class PostgresHelper implements GraphInterface {
         return refId.replace("-", "_").replaceAll("\\s+", "");
     }
 
+    private String sanitizeOrgId(String orgId) {
+        return orgId.replaceAll("\\s+", "");
+    }
+
     public boolean isLocked() {
         try {
             connect();
@@ -2281,5 +2286,22 @@ public class PostgresHelper implements GraphInterface {
         }
 
         return false;
+    }
+
+    public boolean deleteOrganization(String orgId){
+        connectConfig();
+        boolean orgDeleted = false;
+
+//        orgId = sanitizeOrgId(orgId);
+        try {
+            String query = "DELETE FROM organizations WHERE orgid = \'" + orgId + "\'";
+            this.configConn.createStatement().executeUpdate(query);
+            orgDeleted = true;
+        } catch(SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        closeConfig();
+
+        return orgDeleted;
     }
 }
