@@ -30,7 +30,7 @@ public class PostgresHelper implements GraphInterface {
 
     private Connection conn;
     private Connection configConn;
-    private Map<String, Connection> connMap;
+    private Map<String, Connection> connMap = new HashMap<>();
     private String project;
     private Map<String, String> projectProperties = new HashMap<>();
     private String workspaceId;
