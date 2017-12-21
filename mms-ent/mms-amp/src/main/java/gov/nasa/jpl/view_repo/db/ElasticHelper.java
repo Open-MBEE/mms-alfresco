@@ -8,15 +8,17 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
+//import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+//import org.json.JSONObject;
 
 import com.google.gson.JsonArray;
 
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.util.JSONObject;
+import gov.nasa.jpl.view_repo.util.JSONArray;
 import io.searchbox.action.BulkableAction;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
@@ -108,7 +110,8 @@ public class ElasticHelper implements ElasticsearchInterface {
         JestResult result = client.execute(get);
 
         if (result.isSucceeded()) {
-            JSONObject o = new JSONObject(result.getJsonObject().get("_source").toString());
+        	String res = result.getJsonObject().get("_source").toString();
+            JSONObject o = new JSONObject(res);
             o.put(Sjm.ELASTICID, result.getJsonObject().get("_id").getAsString());
             return o;
         }

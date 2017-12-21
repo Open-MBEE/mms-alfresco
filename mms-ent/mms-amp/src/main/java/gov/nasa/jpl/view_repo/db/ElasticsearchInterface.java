@@ -1,14 +1,17 @@
 package gov.nasa.jpl.view_repo.db;
 
-import org.json.JSONArray;
+//import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+//import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import gov.nasa.jpl.view_repo.util.JSONObject;
+import gov.nasa.jpl.view_repo.util.JSONArray;
 
 public interface ElasticsearchInterface {
     void init(String elasticHost);

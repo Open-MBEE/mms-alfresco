@@ -47,9 +47,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
-import org.json.JSONArray;
+//import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
+//import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -65,6 +65,8 @@ import gov.nasa.jpl.view_repo.actions.HtmlToPdfActionExecuter;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.util.JSONObject;
+import gov.nasa.jpl.view_repo.util.JSONArray;
 
 public class HtmlToPdfPost extends AbstractJavaWebScript {
 	static Logger logger = Logger.getLogger(HtmlToPdfPost.class);

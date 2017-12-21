@@ -28,7 +28,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.TicketComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
-import org.json.JSONObject;
+//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -36,6 +36,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import static gov.nasa.jpl.view_repo.util.NodeUtil.services;
 import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.util.JSONObject;
+//import gov.nasa.jpl.view_repo.util.JSONArray;
 
 /**
  * Login Ticket copied from org.alfresco.repo.web.scripts.bean.LoginTicket

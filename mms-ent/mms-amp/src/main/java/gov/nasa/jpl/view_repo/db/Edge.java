@@ -1,7 +1,9 @@
 package gov.nasa.jpl.view_repo.db;
 
 import java.util.Map;
-import org.json.JSONObject;
+//import org.json.JSONObject;
+import gov.nasa.jpl.view_repo.util.JSONObject;
+//import gov.nasa.jpl.view_repo.util.JSONArray;
 
 public class Edge {
 

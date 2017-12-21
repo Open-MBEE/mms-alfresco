@@ -18,7 +18,10 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
-import org.json.JSONObject;
+//import org.json.JSONObject;
+
+import gov.nasa.jpl.view_repo.util.JSONObject;
+//import gov.nasa.jpl.view_repo.util.JSONArray;
 
 public class ShareUtils {
     static Logger logger = Logger.getLogger(ShareUtils.class);

@@ -13,8 +13,8 @@ import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.json.JSONObject;
-import org.json.JSONArray;
+//import org.json.JSONObject;
+//import org.json.JSONArray;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -22,6 +22,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.util.JSONObject;
+import gov.nasa.jpl.view_repo.util.JSONArray;
 import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript;
 
 public class ModuleInfoGet extends DeclarativeWebScript {

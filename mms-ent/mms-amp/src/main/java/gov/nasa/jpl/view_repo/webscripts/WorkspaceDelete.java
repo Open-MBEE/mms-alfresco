@@ -11,7 +11,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
-import org.json.JSONObject;
+//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -22,6 +22,8 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.JSONObject;
+//import gov.nasa.jpl.view_repo.util.JSONArray;
 
 public class WorkspaceDelete extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(WorkspaceDelete.class);
