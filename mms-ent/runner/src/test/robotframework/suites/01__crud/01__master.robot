@@ -153,8 +153,8 @@ DeleteProject
 	Sleep				${POST_DELAY_INDEXING}
 	${result} =		 Delete	  url=${ROOT}/projects/${TEST_NAME}
 	Should Be Equal	 ${result.status_code}	   ${200}
-	${result} =			Get		url=${ROOT}/orgs/initorg/projects/${TEST_NAME}		headers=&{REQ_HEADER}
-	Should Be Equal		${result.status_code}		${404}
+	${check} =			Get		url=${ROOT}/orgs/initorg/projects/${TEST_NAME}		headers=&{REQ_HEADER}
+	Should Be Equal		${check.status_code}		${404}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
