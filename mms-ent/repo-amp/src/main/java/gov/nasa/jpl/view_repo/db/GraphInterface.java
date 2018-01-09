@@ -40,13 +40,11 @@ public interface GraphInterface {
 
     ResultSet execQuery(String query) throws SQLException;
 
-    int insert(String table, Map<String, String> values) throws SQLException;
+    int insert(String table, Map<String, Object> values) throws SQLException;
 
     void updateBySysmlIds(String table, String column, String value, List<String> sysmlIds) throws SQLException;
 
     void runBulkQueries(List<String> queries, boolean withResults) throws SQLException;
-
-    void runBulkQueries(List<Map<String, String>> queries, String type) throws SQLException;
 
     List<Map<String, String>> getOrganizations(String orgId);
 
@@ -89,12 +87,6 @@ public interface GraphInterface {
     String getHeadCommitString();
 
     void insertNode(String elasticId, String sysmlId, DbNodeTypes type);
-
-    String createInsertNodeQuery(List<Map<String, String>> nodes);
-
-    String createUpdateNodeQuery(List<Map<String, String>> nodes);
-
-    String createInsertEdgeQuery(List<Map<String, String>> edges);
 
     int updateNode(String sysmlid, Map<String, String> values);
 
