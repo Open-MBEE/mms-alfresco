@@ -116,9 +116,9 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
                 SerialJSONObject modelFromCommit = new SerialJSONObject(emsNodeUtil.getModelAtCommit(commitId).toString());
 
-                List<Map<String, String>> nodeInserts = new ArrayList<>();
-                List<Map<String, String>> edgeInserts = new ArrayList<>();
-                List<Map<String, String>> childEdgeInserts = new ArrayList<>();
+                List<Map<String, Object>> nodeInserts = new ArrayList<>();
+                List<Map<String, Object>> edgeInserts = new ArrayList<>();
+                List<Map<String, Object>> childEdgeInserts = new ArrayList<>();
 
                 processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS), nodeInserts,
                     edgeInserts, childEdgeInserts);
@@ -246,8 +246,8 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
         }
     }
 
-    public static void processNodesAndEdgesWithoutCommit(SerialJSONArray elements, List<Map<String, String>> nodeInserts,
-        List<Map<String, String>> edgeInserts, List<Map<String, String>> childEdgeInserts) {
+    public static void processNodesAndEdgesWithoutCommit(SerialJSONArray elements, List<Map<String, Object>> nodeInserts,
+        List<Map<String, Object>> edgeInserts, List<Map<String, Object>> childEdgeInserts) {
 
         List<Pair<String, String>> addEdges = new ArrayList<>();
         List<Pair<String, String>> viewEdges = new ArrayList<>();
@@ -256,15 +256,15 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
 
         for (int i = 0; i < elements.length(); i++) {
             SerialJSONObject e = elements.getJSONObject(i);
-            Map<String, String> node = new HashMap<>();
+            Map<String, Object> node = new HashMap<>();
             int nodeType = CommitUtil.getNodeType(e).getValue();
 
             if (e.has(Sjm.ELASTICID)) {
                 node.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
                 node.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
-                node.put(NODETYPE, Integer.toString(nodeType));
+                node.put(NODETYPE, nodeType);
                 node.put(LASTCOMMIT, e.getString(Sjm.COMMITID));
-                node.put(DELETED, "false");
+                node.put(DELETED, false);
                 nodeInserts.add(node);
             }
 
@@ -314,10 +314,10 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
         for (Pair<String, String> e : addEdges) {
             String edgeTest = e.first + e.second + GraphInterface.DbEdgeTypes.CONTAINMENT.getValue();
             if (!uniqueEdge.contains(edgeTest)) {
-                Map<String, String> edge = new HashMap<>();
+                Map<String, Object> edge = new HashMap<>();
                 edge.put(PARENT, e.first);
                 edge.put(CHILD, e.second);
-                edge.put(EDGETYPE, Integer.toString(GraphInterface.DbEdgeTypes.CONTAINMENT.getValue()));
+                edge.put(EDGETYPE, GraphInterface.DbEdgeTypes.CONTAINMENT.getValue());
                 edgeInserts.add(edge);
                 uniqueEdge.add(edgeTest);
             }
@@ -326,10 +326,10 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
         for (Pair<String, String> e : viewEdges) {
             String edgeTest = e.first + e.second + GraphInterface.DbEdgeTypes.VIEW.getValue();
             if (!uniqueEdge.contains(edgeTest)) {
-                Map<String, String> edge = new HashMap<>();
+                Map<String, Object> edge = new HashMap<>();
                 edge.put(PARENT, e.first);
                 edge.put(CHILD, e.second);
-                edge.put(EDGETYPE, Integer.toString(GraphInterface.DbEdgeTypes.VIEW.getValue()));
+                edge.put(EDGETYPE, GraphInterface.DbEdgeTypes.VIEW.getValue());
                 childEdgeInserts.add(edge);
                 uniqueEdge.add(edgeTest);
             }
@@ -338,23 +338,23 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
         for (Pair<String, String> e : childViewEdges) {
             String edgeTest = e.first + e.second + GraphInterface.DbEdgeTypes.CHILDVIEW.getValue();
             if (!uniqueEdge.contains(edgeTest)) {
-                Map<String, String> edge = new HashMap<>();
+                Map<String, Object> edge = new HashMap<>();
                 edge.put(PARENT, e.first);
                 edge.put(CHILD, e.second);
-                edge.put(EDGETYPE, Integer.toString(GraphInterface.DbEdgeTypes.CHILDVIEW.getValue()));
+                edge.put(EDGETYPE, GraphInterface.DbEdgeTypes.CHILDVIEW.getValue());
                 childEdgeInserts.add(edge);
                 uniqueEdge.add(edgeTest);
             }
         }
     }
 
-    public static boolean insertForBranchInPast(PostgresHelper pgh, List<Map<String, String>> list, String type,
+    public static boolean insertForBranchInPast(PostgresHelper pgh, List<Map<String, Object>> list, String type,
         String projectId) {
         Savepoint sp = null;
         List<String> nullParents;
         try {
             sp = pgh.startTransaction();
-            pgh.runBulkQueries(list, type);
+            pgh.runBatchQueries(list, type);
             pgh.commitTransaction();
             nullParents = pgh.findNullParents();
             if (nullParents != null) {

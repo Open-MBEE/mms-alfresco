@@ -215,12 +215,12 @@ public class CommitUtil {
         if (bulkElasticEntry(added, "added", false, projectId, "artifact") && bulkElasticEntry(updated, "updated", false,
             projectId, "artifact")) {
             try {
-                List<Map<String, String>> artifactInserts = new ArrayList<>();
-                List<Map<String, String>> artifactUpdates = new ArrayList<>();
+                List<Map<String, Object>> artifactInserts = new ArrayList<>();
+                List<Map<String, Object>> artifactUpdates = new ArrayList<>();
 
                 for (int i = 0; i < added.length(); i++) {
                     JSONObject e = added.getJSONObject(i);
-                    Map<String, String> artifact = new HashMap<>();
+                    Map<String, Object> artifact = new HashMap<>();
                     jmsAdded.put(e.getString(Sjm.SYSMLID));
 
                     if (e.has(Sjm.ELASTICID)) {
@@ -245,7 +245,7 @@ public class CommitUtil {
                     jmsUpdated.put(e.getString(Sjm.SYSMLID));
 
                     if (e.has(Sjm.ELASTICID)) {
-                        Map<String, String> updatedArtifact = new HashMap<>();
+                        Map<String, Object> updatedArtifact = new HashMap<>();
                         updatedArtifact.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
                         updatedArtifact.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
                         updatedArtifact.put(DELETED, "false");
@@ -259,9 +259,9 @@ public class CommitUtil {
                 try {//do node insert, updates, and containment edge updates
                     //do bulk delete edges for affected sysmlids here - delete containment, view and childview
                     sp = pgh.startTransaction();
-                    pgh.runBulkQueries(artifactInserts, ARTIFACTS);
-                    pgh.runBulkQueries(artifactUpdates, "artifactUpdates");
-                    pgh.updateBySysmlIds(ARTIFACTS, LASTCOMMIT, commitElasticId, deletedSysmlIds);
+                    pgh.runBatchQueries(artifactInserts, ARTIFACTS);
+                    pgh.runBatchQueries(artifactUpdates, "artifactUpdates");
+                    pgh.updateLastCommits(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                     nullParents = pgh.findNullParents();
@@ -337,22 +337,22 @@ public class CommitUtil {
             withChildViews, projectId, "element")) {
 
             try {
-                List<Map<String, String>> nodeInserts = new ArrayList<>();
-                List<Map<String, String>> edgeInserts = new ArrayList<>();
-                List<Map<String, String>> childEdgeInserts = new ArrayList<>();
-                List<Map<String, String>> nodeUpdates = new ArrayList<>();
+                List<Map<String, Object>> nodeInserts = new ArrayList<>();
+                List<Map<String, Object>> edgeInserts = new ArrayList<>();
+                List<Map<String, Object>> childEdgeInserts = new ArrayList<>();
+                List<Map<String, Object>> nodeUpdates = new ArrayList<>();
                 Set<String> uniqueEdge = new HashSet<>();
 
                 for (int i = 0; i < added.length(); i++) {
                     SerialJSONObject e = added.getJSONObject(i);
-                    Map<String, String> node = new HashMap<>();
+                    Map<String, Object> node = new HashMap<>();
                     jmsAdded.put(e.getString(Sjm.SYSMLID));
                     int nodeType = getNodeType(e).getValue();
 
                     if (e.has(Sjm.ELASTICID)) {
                         node.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
                         node.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
-                        node.put(NODETYPE, Integer.toString(nodeType));
+                        node.put(NODETYPE, nodeType);
                         node.put(INITIALCOMMIT, e.getString(Sjm.ELASTICID));
                         node.put(LASTCOMMIT, commitElasticId);
                         nodeInserts.add(node);
@@ -466,11 +466,11 @@ public class CommitUtil {
                         }
                     }
                     if (e.has(Sjm.ELASTICID)) {
-                        Map<String, String> updatedNode = new HashMap<>();
+                        Map<String, Object> updatedNode = new HashMap<>();
                         updatedNode.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
                         updatedNode.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
-                        updatedNode.put(NODETYPE, Integer.toString(getNodeType(e).getValue()));
-                        updatedNode.put(DELETED, "false");
+                        updatedNode.put(NODETYPE, getNodeType(e).getValue());
+                        updatedNode.put(DELETED, false);
                         updatedNode.put(LASTCOMMIT, commitElasticId);
                         nodeUpdates.add(updatedNode);
                     }
@@ -480,10 +480,10 @@ public class CommitUtil {
                     if (!pgh.edgeExists(e.first, e.second, DbEdgeTypes.CONTAINMENT)) {
                         String edgeTest = e.first + e.second + DbEdgeTypes.CONTAINMENT.getValue();
                         if (!uniqueEdge.contains(edgeTest)) {
-                            Map<String, String> edge = new HashMap<>();
+                            Map<String, Object> edge = new HashMap<>();
                             edge.put(PARENT, e.first);
                             edge.put(CHILD, e.second);
-                            edge.put(EDGETYPE, Integer.toString(DbEdgeTypes.CONTAINMENT.getValue()));
+                            edge.put(EDGETYPE, DbEdgeTypes.CONTAINMENT.getValue());
                             edgeInserts.add(edge);
                             uniqueEdge.add(edgeTest);
                         }
@@ -494,10 +494,10 @@ public class CommitUtil {
                     if (!pgh.edgeExists(e.first, e.second, DbEdgeTypes.VIEW)) {
                         String edgeTest = e.first + e.second + DbEdgeTypes.VIEW.getValue();
                         if (!uniqueEdge.contains(edgeTest)) {
-                            Map<String, String> edge = new HashMap<>();
+                            Map<String, Object> edge = new HashMap<>();
                             edge.put(PARENT, e.first);
                             edge.put(CHILD, e.second);
-                            edge.put(EDGETYPE, Integer.toString(DbEdgeTypes.VIEW.getValue()));
+                            edge.put(EDGETYPE, DbEdgeTypes.VIEW.getValue());
                             childEdgeInserts.add(edge);
                             uniqueEdge.add(edgeTest);
                         }
@@ -507,10 +507,10 @@ public class CommitUtil {
                     if (!pgh.edgeExists(e.first, e.second, DbEdgeTypes.CHILDVIEW)) {
                         String edgeTest = e.first + e.second + DbEdgeTypes.CHILDVIEW.getValue();
                         if (!uniqueEdge.contains(edgeTest)) {
-                            Map<String, String> edge = new HashMap<>();
+                            Map<String, Object> edge = new HashMap<>();
                             edge.put(PARENT, e.first);
                             edge.put(CHILD, e.second);
-                            edge.put(EDGETYPE, Integer.toString(DbEdgeTypes.CHILDVIEW.getValue()));
+                            edge.put(EDGETYPE, DbEdgeTypes.CHILDVIEW.getValue());
                             childEdgeInserts.add(edge);
                             uniqueEdge.add(edgeTest);
                         }
@@ -521,13 +521,14 @@ public class CommitUtil {
                 try {//do node insert, updates, and containment edge updates
                     //do bulk delete edges for affected sysmlids here - delete containment, view and childview
                     sp = pgh.startTransaction();
-                    pgh.runBulkQueries(nodeInserts, NODES);
-                    pgh.runBulkQueries(nodeUpdates, "updates");
-                    pgh.updateBySysmlIds(NODES, LASTCOMMIT, commitElasticId, deletedSysmlIds);
+                    pgh.runBatchQueries(nodeInserts, NODES);
+                    pgh.runBatchQueries(nodeUpdates, "updates");
+                    //pgh.updateBySysmlIds(NODES, LASTCOMMIT, commitElasticId, deletedSysmlIds);
+                    pgh.updateLastCommits(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                     sp = pgh.startTransaction();
-                    pgh.runBulkQueries(edgeInserts, EDGES);
+                    pgh.runBatchQueries(edgeInserts, EDGES);
                     pgh.commitTransaction();
                     nullParents = pgh.findNullParents();
                     if (nullParents != null) {
@@ -547,7 +548,7 @@ public class CommitUtil {
                 }
                 try {//view and childview edge updates
                     sp = pgh.startTransaction();
-                    pgh.runBulkQueries(childEdgeInserts, EDGES);
+                    pgh.runBatchQueries(childEdgeInserts, EDGES);
                     pgh.commitTransaction();
                     pgh.cleanEdges();
                 } catch (Exception e) {
@@ -755,9 +756,7 @@ public class CommitUtil {
                 jmsMsg.put("source", "mms");
                 sendJmsMsg(jmsMsg, TYPE_DELTA, null, projectSysmlid);
             } else {
-                Map<String, String> projectElastic = new HashMap<>();
-                projectElastic.put("elasticid", eProject.elasticId);
-                pgh.updateNode(projectSysmlid, projectElastic);
+                pgh.updateElasticId(projectSysmlid, eProject.elasticId);
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
