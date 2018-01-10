@@ -1,8 +1,15 @@
 # Model Management System
-**Alfresco version 5.1.g**
+**AMP for Alfresco (5.1.g)**
 
 Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
 ## Developer Setup
+
+### Dependencies
+* Elasticsearch 5.x
+* Postgresql 9.x
+
+### Optional Dependencies
+* ActiveMQ 5.X
 
 ### 1a. Using Intellij
 * Open Project with root of 'mms-ent'
@@ -62,7 +69,7 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
     * windows CMD e.g.: `psql -h localhost -p 5432 -U mms -d mms -v schema=public < C:\path\to\mms\repo\mms.sql`
 
 ### 3. Install and Configure ActiveMQ
-*   Download ActiveMQ
+*   Download ActiveMQ 5.X
 *   Install ActiveMQ
 *   Start ActiveMQ service
 
