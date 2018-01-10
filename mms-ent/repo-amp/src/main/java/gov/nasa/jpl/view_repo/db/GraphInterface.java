@@ -6,7 +6,6 @@ import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,11 +18,7 @@ public interface GraphInterface {
 
     void connect();
 
-    void connectConfig();
-
     void close();
-
-    void closeConfig();
 
     void setWorkspace(EmsScriptNode workspace);
 
@@ -41,19 +36,9 @@ public interface GraphInterface {
 
     void execUpdate(String query) throws SQLException;
 
-    int execUpdateWithCount(String query) throws SQLException;
-
     ResultSet execQuery(String query) throws SQLException;
 
-    int insert(String table, Map<String, String> values) throws SQLException;
-
-    void updateBySysmlIds(String table, String column, String value, List<String> sysmlIds) throws SQLException;
-
-    void runBulkQueries(List<String> queries, boolean withResults) throws SQLException;
-
-    void runBulkQueries(List<Map<String, String>> queries, String type) throws SQLException;
-
-    List<EdgeTypes> getEdgeTypes();
+    int insert(String table, Map<String, Object> values) throws SQLException;
 
     List<Map<String, String>> getOrganizations(String orgId);
 
@@ -69,11 +54,7 @@ public interface GraphInterface {
 
     List<Node> getNodesByType(DbNodeTypes type);
 
-    List<Node> getAllNodes();
-
     List<Map<String, Object>> getAllNodesWithLastCommitTimestamp();
-
-    boolean isMoved(String sysmlid, String owner);
 
     boolean isDeleted(String sysmlid);
 
@@ -81,13 +62,7 @@ public interface GraphInterface {
 
     boolean edgeExists(String parent, String child, DbEdgeTypes dbet);
 
-    Node getNodeFromElasticId(String elasticId);
-
-    List<String> getElasticIdsFromSysmlIds(List<String> sysmlids);
-
     List<String> getElasticIdsFromSysmlIds(List<String> sysmlids, boolean withDeleted);
-
-    Node getNode(int id);
 
     Node getNodeFromSysmlId(String sysmlId);
 
@@ -96,8 +71,6 @@ public interface GraphInterface {
     Set<String> getElasticIds();
 
     Set<String> getElasticIds(boolean withDeleted);
-
-    String getElasticIdForCommit(String commitId);
 
     String getElasticIdFromSysmlId(String sysmlId);
 
@@ -108,16 +81,6 @@ public interface GraphInterface {
     String getHeadCommitString();
 
     void insertNode(String elasticId, String sysmlId, DbNodeTypes type);
-
-    String createInsertNodeQuery(List<Map<String, String>> nodes);
-
-    String createUpdateNodeQuery(List<Map<String, String>> nodes);
-
-    String createInsertEdgeQuery(List<Map<String, String>> edges);
-
-    String createInsertEdgePropertyQuery(String parentSysmlId, String childSysmlId, DbEdgeTypes type, Map<String, String> properties);
-
-    int updateNode(String sysmlid, Map<String, String> values);
 
     void deleteNode(String sysmlId);
 
@@ -131,21 +94,9 @@ public interface GraphInterface {
 
     List<Map<String, String>> getAllCommits();
 
-    boolean isInitialCommit();
-
-    LinkedList<String> getRootParents(String sysmlId, DbEdgeTypes et);
-
     Set<Pair<String, String>> getImmediateParents(String sysmlId, DbEdgeTypes et);
 
-    Map<String, Set<String>> getImmediateParentRoots(String sysmlId, DbEdgeTypes et);
-
     String getImmediateParentOfType(String sysmlId, DbEdgeTypes et, Set<DbNodeTypes> dnts);
-
-    Set<String> getRootParents(String sysmlId, DbEdgeTypes et, int height);
-
-    Set<String> getBranchParents(String refId);
-
-    List<Pair<String, String>> getContainmentParents(String sysmlId, int height);
 
     Set<Pair<String, Integer>> getParentsOfType(String sysmlId, DbEdgeTypes dbet);
 
@@ -159,13 +110,9 @@ public interface GraphInterface {
 
     void deleteEdgesForNode(String sysmlId, boolean child, DbEdgeTypes edgeType);
 
-    void deleteEdges(String parentSysmlId, String childSysmlId, DbEdgeTypes dbet);
-
     int createOrganization(String orgId, String orgName) throws PSQLException;
 
     void createProjectDatabase(String projectId, String orgId, String name, String location);
-
-    void addProjectMount(String projectId, String mountId);
 
     void createBranchFromWorkspace(String childWorkspaceName, String workspaceName, String elasticId, String commitId, boolean isTag);
 
@@ -174,8 +121,6 @@ public interface GraphInterface {
     void setAsTag(String refId);
 
     void deleteRef(String id);
-
-    void deleteRefTables(String id);
 
     Pair<String, String> getRefElastic(String refId);
 
@@ -193,21 +138,7 @@ public interface GraphInterface {
 
     void updateRef(String refId, String refName, String elasticId, boolean isTag);
 
-    void insertTag(String workspaceName, String workspaceId);
-
-    List<String> filterNodesWithElastic(List<String> elasticrefs);
-
-    List<String> filterNodesByWorkspaceWithElastic(List<String> elasticrefs, String workspace);
-
-    List<String> filterNodesWithSysmlid(List<String> sysmlids);
-
-    List<String> filterNodesByWorkspaceWithSysmlid(List<String> sysmlids, String workspace);
-
-    List<String> filterNodesByWorkspace(List<String> sysmlids, String workspace, String column);
-
     boolean orgExists(String orgId);
-
-    boolean siteExists(String siteName);
 
     boolean refExists(String refId);
 
