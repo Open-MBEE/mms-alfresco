@@ -399,7 +399,8 @@ public class CommitUtil {
                     sp = pgh.startTransaction();
                     pgh.runBatchQueries(nodeInserts, NODES);
                     pgh.runBatchQueries(nodeUpdates, "updates");
-                    pgh.updateBySysmlIds(NODES, LASTCOMMIT, commitElasticId, deletedSysmlIds);
+                    //pgh.updateBySysmlIds(NODES, LASTCOMMIT, commitElasticId, deletedSysmlIds);
+                    pgh.updateLastCommits(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                     sp = pgh.startTransaction();
@@ -756,9 +757,7 @@ public class CommitUtil {
                 jmsMsg.put("source", "mms");
                 sendJmsMsg(jmsMsg, TYPE_DELTA, null, projectSysmlid);
             } else {
-                Map<String, String> projectElastic = new HashMap<>();
-                projectElastic.put("elasticid", eProject.elasticId);
-                pgh.updateNode(projectSysmlid, projectElastic);
+                pgh.updateElasticId(projectSysmlid, eProject.elasticId);
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {

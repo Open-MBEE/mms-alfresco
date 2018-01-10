@@ -55,11 +55,15 @@ public class PostgresHelper implements GraphInterface {
     public void connect(boolean config) {
         try {
             if (config) {
-                if (!this.connMap.containsKey("config") || this.connMap.get("config") == null || this.connMap.get("config").isClosed()) {
+                if (!this.connMap.containsKey("config") || this.connMap.get("config") == null || this.connMap
+                    .get("config").isClosed()) {
                     this.connMap.put("config", PostgresPool.getInstance(pgHost, pgName).getConnection());
                 }
-            } else if (!this.connMap.containsKey(project) || this.connMap.get(project) == null || this.connMap.get(project).isClosed()) {
-                this.connMap.put(project, PostgresPool.getInstance(this.projectProperties.get("location"), this.projectProperties.get("dbname")).getConnection());
+            } else if (!this.connMap.containsKey(project) || this.connMap.get(project) == null || this.connMap
+                .get(project).isClosed()) {
+                this.connMap.put(project, PostgresPool
+                    .getInstance(this.projectProperties.get("location"), this.projectProperties.get("dbname"))
+                    .getConnection());
             }
         } catch (SQLException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
@@ -110,7 +114,8 @@ public class PostgresHelper implements GraphInterface {
     private void getProjectProperties() {
         projectProperties.put("location", pgHost);
         projectProperties.put("dbname", "_" + project);
-        try (PreparedStatement query = getConn("config").prepareStatement("SELECT location FROM projects WHERE projectId = ?");) {
+        try (PreparedStatement query = getConn("config")
+            .prepareStatement("SELECT location FROM projects WHERE projectId = ?");) {
             query.setString(1, project);
             try (ResultSet rs = query.executeQuery()) {
                 if (rs.next() && !rs.getString(1).isEmpty()) {
@@ -153,7 +158,8 @@ public class PostgresHelper implements GraphInterface {
             }
 
             if (this.workspaceId.equals("")) {
-                try (PreparedStatement nquery = getConn().prepareStatement("SELECT refId FROM refs WHERE refName = ?")){
+                try (PreparedStatement nquery = getConn()
+                    .prepareStatement("SELECT refId FROM refs WHERE refName = ?")) {
                     nquery.setString(1, workspaceId);
                     try (ResultSet nrs = nquery.executeQuery()) {
                         if (nrs.next()) {
@@ -236,22 +242,6 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
-    public int execUpdateWithCount(String query) {
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("execUpdateWithCount: %s", query));
-        }
-        int count = 0;
-        try {
-            count = getConn().createStatement().executeUpdate(query);
-        } catch (SQLException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
-            }
-        }
-
-        return count;
-    }
-
     public ResultSet execQuery(String query) {
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("execQuery: %s", query));
@@ -294,7 +284,8 @@ public class PostgresHelper implements GraphInterface {
             columns.setLength(columns.length() - 1);
             vals.setLength(vals.length() - 1);
 
-            String query = String.format("INSERT INTO \"%s\" (%s) VALUES (%s) RETURNING id", table, columns.toString(), vals.toString());
+            String query = String
+                .format("INSERT INTO \"%s\" (%s) VALUES (%s) RETURNING id", table, columns.toString(), vals.toString());
 
             PreparedStatement statement = prepareStatement(query);
             for (int i = 0; i < columnList.size(); i++) {
@@ -321,25 +312,29 @@ public class PostgresHelper implements GraphInterface {
         return -1;
     }
 
-    //TODO: Use prepared statement here.
-    public void updateBySysmlIds(String table, String column, String value, List<String> sysmlIds) throws SQLException {
+    public void updateLastCommits(String value, List<String> sysmlIds) {
         if (sysmlIds == null || sysmlIds.isEmpty()) {
             return;
         }
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
-        List<String> queries = new ArrayList<>();
-        String queryStarter =
-            String.format("UPDATE \"%s\" SET %s = '%s' WHERE sysmlId IN ('", table + workspaceId, column, StringEscapeUtils.escapeSql(value));
-        String query = queryStarter;
+        String starter = String.format("UPDATE \"nodes%s\" SET lastcommit = ? WHERE sysmlId IN (", workspaceId);
+        StringBuilder query = new StringBuilder(starter);
         for (int i = 0; i < sysmlIds.size(); i++) {
-            query += sysmlIds.get(i) + "','";
+            query.append("?,");
             if (((i + 1) % limit) == 0 || i == (sysmlIds.size() - 1)) {
-                query = query.substring(0, query.length() - 2) + ");";
-                queries.add(query);
-                query = queryStarter;
+                query.setLength(query.length() - 1);
+                query.append(")");
+                List<Object> single = new LinkedList<>();
+                single.add(0, value);
+                for (int j = 0; j <= i; j++) {
+                    single.add(j + 1, sysmlIds.remove(j));
+                }
+                List<List<Object>> values = new ArrayList<>();
+                values.add(single);
+                executeBulkStatements(query.toString(), values);
+                query = new StringBuilder(starter);
             }
         }
-        runBulkQueries(queries, false);
     }
 
     public void runBatchQueries(List<Map<String, Object>> rows, String type) {
@@ -348,7 +343,9 @@ public class PostgresHelper implements GraphInterface {
 
         switch (type) {
             case "nodes":
-                query = String.format("INSERT INTO \"nodes%s\" (elasticId, sysmlId, lastcommit, initialcommit, nodeType) VALUES (?, ?, ?, ?, ?)", workspaceId);
+                query = String.format(
+                    "INSERT INTO \"nodes%s\" (elasticId, sysmlId, lastcommit, initialcommit, nodeType) VALUES (?, ?, ?, ?, ?)",
+                    workspaceId);
                 for (Map<String, Object> node : rows) {
                     List<Object> single = new LinkedList<>();
                     single.add(0, node.get(Sjm.ELASTICID));
@@ -360,7 +357,9 @@ public class PostgresHelper implements GraphInterface {
                 }
                 break;
             case "updates":
-                query = String.format("UPDATE \"nodes%s\" SET elasticId = ?, lastcommit = ?, nodeType = ?, deleted = ? WHERE sysmlId = ?", workspaceId);
+                query = String.format(
+                    "UPDATE \"nodes%s\" SET elasticId = ?, lastcommit = ?, nodeType = ?, deleted = ? WHERE sysmlId = ?",
+                    workspaceId);
                 for (Map<String, Object> node : rows) {
                     List<Object> single = new LinkedList<>();
                     single.add(0, node.get(Sjm.ELASTICID));
@@ -372,7 +371,9 @@ public class PostgresHelper implements GraphInterface {
                 }
                 break;
             case "edges":
-                query = String.format("INSERT INTO \"edges%1$s\" (parent, child, edgeType) VALUES ((SELECT id FROM \"nodes%1$s\" WHERE sysmlid = ?), (SELECT id FROM \"nodes%1$s\" WHERE sysmlid = ?), ?)", workspaceId);
+                query = String.format(
+                    "INSERT INTO \"edges%1$s\" (parent, child, edgeType) VALUES ((SELECT id FROM \"nodes%1$s\" WHERE sysmlid = ?), (SELECT id FROM \"nodes%1$s\" WHERE sysmlid = ?), ?)",
+                    workspaceId);
                 for (Map<String, Object> node : rows) {
                     List<Object> single = new LinkedList<>();
                     single.add(0, node.get("parent"));
@@ -390,26 +391,6 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
-    public void runBulkQueries(List<String> queries, boolean withResults) throws SQLException {
-        int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
-        String queryCache = "";
-        for (int i = 0; i < queries.size(); i++) {
-            queryCache += queries.get(i);
-            if (((i + 1) % limit) == 0 || i == (queries.size() - 1)) {
-                String storedInsert = String.format("%s", queryCache);
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("Query: %s", storedInsert));
-                }
-                if (withResults) {
-                    boolean rs = getConn().createStatement().execute(storedInsert);
-                } else {
-                    getConn().createStatement().executeUpdate(storedInsert);
-                }
-                queryCache = "";
-            }
-        }
-    }
-
     private Node resultSetToNode(ResultSet rs) throws SQLException {
         return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5), rs.getString(6),
             rs.getBoolean(7));
@@ -417,14 +398,15 @@ public class PostgresHelper implements GraphInterface {
 
     public List<Map<String, String>> getOrganizations(String orgId) {
         List<Map<String, String>> result = new ArrayList<>();
-        String query;
-        if (orgId == null) {
-            query = "SELECT id, orgId, orgName FROM organizations";
-        } else {
-            query = String.format("SELECT id, orgId, orgName FROM organizations WHERE orgId = '%s'", StringEscapeUtils.escapeSql(orgId));
-        }
         try {
-            ResultSet rs = getConn("config").createStatement().executeQuery(query);
+            PreparedStatement statement = null;
+            if (orgId == null) {
+                statement = getConn("config").prepareStatement("SELECT id, orgId, orgName FROM organizations");
+            } else {
+                statement = getConn("config").prepareStatement("SELECT id, orgId, orgName FROM organizations WHERE orgId = ?");
+                statement.setString(1, orgId);
+            }
+            ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 Map<String, String> org = new HashMap<>();
                 org.put("id", Integer.toString(rs.getInt(1)));
@@ -555,7 +537,8 @@ public class PostgresHelper implements GraphInterface {
         List<Node> result = new ArrayList<>();
 
         try {
-            PreparedStatement query = getConn().prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE nodetype = ?");
+            PreparedStatement query =
+                getConn().prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE nodetype = ?");
             query.setInt(1, type.getValue());
             ResultSet rs = query.executeQuery();
             while (rs.next()) {
@@ -605,7 +588,8 @@ public class PostgresHelper implements GraphInterface {
 
     public boolean isDeleted(String sysmlid) {
         try {
-            PreparedStatement query = getConn().prepareStatement("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ? AND deleted = true");
+            PreparedStatement query = getConn()
+                .prepareStatement("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ? AND deleted = true");
             query.setString(1, sysmlid);
             ResultSet rs = query.executeQuery();
             if (rs.next()) {
@@ -622,7 +606,8 @@ public class PostgresHelper implements GraphInterface {
 
     public boolean sysmlIdExists(String sysmlid) {
         try {
-            PreparedStatement query = getConn().prepareStatement("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ?");
+            PreparedStatement query =
+                getConn().prepareStatement("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ?");
             query.setString(1, sysmlid);
             ResultSet rs = query.executeQuery();
             return rs.next();
@@ -690,7 +675,8 @@ public class PostgresHelper implements GraphInterface {
                 query = getConn().prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ?");
                 query.setString(1, sysmlId);
             } else {
-                query = getConn().prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
+                query = getConn()
+                    .prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
                 query.setString(1, sysmlId);
                 query.setBoolean(2, false);
             }
@@ -853,7 +839,9 @@ public class PostgresHelper implements GraphInterface {
                 count++;
 
                 if (count >= limit || i == values.size() - 1) {
-                    logger.error("Statement: " + statement.toString());
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Statement: " + statement.toString());
+                    }
                     statement.executeBatch();
                     statement.clearBatch();
                     count = 0;
@@ -864,36 +852,13 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
-    public int updateNode(String sysmlid, Map<String, String> values) {
-
-        StringBuilder vals = new StringBuilder();
-
+    public int updateElasticId(String sysmlId, String elasticId) {
         try {
-            for (Map.Entry<String, String> entry : values.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                vals.append(key).append(" = ");
-
-                if (key.equals("nodetype")) {
-                    vals.append(value).append(",");
-                } else if (value != null) {
-                    vals.append("'").append(value).append("',");
-                } else {
-                    vals.append(value).append(",");
-                }
-            }
-
-            vals.setLength(vals.length() - 1);
-
-            //Possible SQL Injection?
-            String query = String
-                .format("UPDATE \"nodes%s\" SET %s WHERE sysmlid = '%s'", workspaceId, vals.toString(), sysmlid);
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("Query: " + query);
-            }
-
-            return execUpdateWithCount(query);
+            PreparedStatement statement = getConn()
+                .prepareStatement(String.format("UPDATE \"nodes%s\" SET elasticid = ? WHERE sysmlid = ?", workspaceId));
+            statement.setString(1, elasticId);
+            statement.setString(2, sysmlId);
+            return statement.executeUpdate();
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -904,7 +869,8 @@ public class PostgresHelper implements GraphInterface {
 
     public void deleteNode(String sysmlId) {
         try {
-            PreparedStatement query = getConn().prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = ? WHERE sysmlid = ?");
+            PreparedStatement query =
+                getConn().prepareStatement("UPDATE \"nodes" + workspaceId + "\" SET deleted = ? WHERE sysmlid = ?");
             query.setBoolean(1, true);
             query.setString(2, sysmlId);
             query.execute();
@@ -925,7 +891,9 @@ public class PostgresHelper implements GraphInterface {
         }
 
         try {
-            String query = String.format("INSERT INTO \"edges%1$s\" (parent, child, edgeType) VALUES ((SELECT id FROM \"nodes%1$s\" WHERE sysmlId = ?), (SELECT id FROM \"nodes%1$s\" WHERE sysmlId = ?), ?)", workspaceId);
+            String query = String.format(
+                "INSERT INTO \"edges%1$s\" (parent, child, edgeType) VALUES ((SELECT id FROM \"nodes%1$s\" WHERE sysmlId = ?), (SELECT id FROM \"nodes%1$s\" WHERE sysmlId = ?), ?)",
+                workspaceId);
             PreparedStatement statement = prepareStatement(query);
             statement.setString(1, parentSysmlId);
             statement.setString(2, childSysmlId);
@@ -945,7 +913,8 @@ public class PostgresHelper implements GraphInterface {
     public Map<String, String> getCommitAndTimestamp(String lookUp, String value) {
         Map<String, String> commit = new HashMap<>();
         try {
-            String query = String.format("SELECT elasticId, timestamp FROM commits WHERE %s = ?", StringEscapeUtils.escapeSql(lookUp));
+            String query = String
+                .format("SELECT elasticId, timestamp FROM commits WHERE %s = ?", StringEscapeUtils.escapeSql(lookUp));
 
             PreparedStatement statement = prepareStatement(query);
             statement.setString(1, value);
@@ -968,7 +937,8 @@ public class PostgresHelper implements GraphInterface {
     public Long getTimestamp(String lookUp, String value) {
         Long timestamp;
         try {
-            String query = String.format("SELECT timestamp FROM commits WHERE %s = ?", StringEscapeUtils.escapeSql(lookUp));
+            String query =
+                String.format("SELECT timestamp FROM commits WHERE %s = ?", StringEscapeUtils.escapeSql(lookUp));
 
             PreparedStatement statement = prepareStatement(query);
             statement.setString(1, value);
@@ -1075,7 +1045,7 @@ public class PostgresHelper implements GraphInterface {
         String result = null;
 
         Set<Pair<String, String>> immediateParents = getImmediateParents(sysmlId, et);
-        while (immediateParents.size() > 0) {
+        while (!immediateParents.isEmpty()) {
             String parentId = null;
             for (Pair<String, String> immediateParent : immediateParents) {
                 parentId = immediateParent.first;
@@ -1116,7 +1086,9 @@ public class PostgresHelper implements GraphInterface {
                 return result;
             }
 
-            String query = String.format("SELECT N.sysmlid, N.nodetype FROM \"nodes%s\" N JOIN (SELECT * FROM get_parents(?, ?, ?)) P ON N.id = P.id ORDER BY P.height", workspaceId);
+            String query = String.format(
+                "SELECT N.sysmlid, N.nodetype FROM \"nodes%s\" N JOIN (SELECT * FROM get_parents(?, ?, ?)) P ON N.id = P.id ORDER BY P.height",
+                workspaceId);
 
             PreparedStatement statement = prepareStatement(query);
             statement.setInt(1, n.getId());
@@ -1151,7 +1123,9 @@ public class PostgresHelper implements GraphInterface {
                 return null;
             }
 
-            String query = String.format("SELECT N.sysmlid, N.elasticid, N.nodetype FROM \"nodes%s\" N JOIN (SELECT * FROM get_parents(?, ?, ?)) P ON N.id = P.id ORDER BY P.height", workspaceId);
+            String query = String.format(
+                "SELECT N.sysmlid, N.elasticid, N.nodetype FROM \"nodes%s\" N JOIN (SELECT * FROM get_parents(?, ?, ?)) P ON N.id = P.id ORDER BY P.height",
+                workspaceId);
 
             PreparedStatement statement = prepareStatement(query);
             statement.setInt(1, n.getId());
@@ -1183,7 +1157,9 @@ public class PostgresHelper implements GraphInterface {
             if (n == null)
                 return result;
 
-            String query = String.format("SELECT sysmlId, elasticId FROM \"nodes%s\" WHERE id IN (SELECT id FROM get_children(?, ?, ?, ?))", workspaceId);
+            String query = String.format(
+                "SELECT sysmlId, elasticId FROM \"nodes%s\" WHERE id IN (SELECT id FROM get_children(?, ?, ?, ?))",
+                workspaceId);
 
             PreparedStatement statement = prepareStatement(query);
             statement.setInt(1, n.getId());
@@ -1212,7 +1188,9 @@ public class PostgresHelper implements GraphInterface {
             if (n == null)
                 return result;
 
-            String query = String.format("SELECT elasticId FROM \"nodes%s\" WHERE id IN (SELECT id FROM get_group_docs(?, ?, ?, ?, ?, ?))", workspaceId);
+            String query = String.format(
+                "SELECT elasticId FROM \"nodes%s\" WHERE id IN (SELECT id FROM get_group_docs(?, ?, ?, ?, ?, ?))",
+                workspaceId);
 
             PreparedStatement statement = prepareStatement(query);
             statement.setInt(1, n.getId());
@@ -1242,7 +1220,8 @@ public class PostgresHelper implements GraphInterface {
                 return;
             }
 
-            execUpdate("DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId() + " OR parent = " + n.getId());
+            execUpdate(
+                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId() + " OR parent = " + n.getId());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1259,7 +1238,9 @@ public class PostgresHelper implements GraphInterface {
             }
 
             String column = child ? "child" : "parent";
-            execUpdate("DELETE FROM \"edges" + workspaceId + "\" WHERE " + column + " = " + n.getId() + " AND edgeType = " + edgeType.getValue());
+            execUpdate(
+                "DELETE FROM \"edges" + workspaceId + "\" WHERE " + column + " = " + n.getId() + " AND edgeType = "
+                    + edgeType.getValue());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1270,7 +1251,8 @@ public class PostgresHelper implements GraphInterface {
     public List<String> findNullParents() {
         List<String> nullParents = new ArrayList<>();
         try {
-            ResultSet rs = execQuery("SELECT n.elasticId FROM nodes n INNER JOIN (SELECT * FROM edges WHERE edgeType = 1 and parent IS NULL) as e ON (n.id = e.child);");
+            ResultSet rs = execQuery(
+                "SELECT n.elasticId FROM nodes n INNER JOIN (SELECT * FROM edges WHERE edgeType = 1 and parent IS NULL) as e ON (n.id = e.child);");
             if (rs == null) {
                 return nullParents;
             }
@@ -1302,10 +1284,12 @@ public class PostgresHelper implements GraphInterface {
 
     public int createOrganization(String orgId, String orgName) throws PSQLException {
         int recordId = 0;
-        try (PreparedStatement query = getConn("config").prepareStatement("SELECT count(id) FROM organizations WHERE orgId = ?")) {
+        try (PreparedStatement query = getConn("config")
+            .prepareStatement("SELECT count(id) FROM organizations WHERE orgId = ?")) {
             query.setString(1, orgId);
             if (query.execute()) {
-                PreparedStatement insertOrg = getConn("config").prepareStatement("INSERT INTO organizations (orgId, orgName) VALUES (?,?)");
+                PreparedStatement insertOrg =
+                    getConn("config").prepareStatement("INSERT INTO organizations (orgId, orgName) VALUES (?,?)");
                 insertOrg.setString(1, orgId);
                 insertOrg.setString(2, orgName);
                 if (insertOrg.execute()) {
@@ -1334,7 +1318,8 @@ public class PostgresHelper implements GraphInterface {
     public void createProjectDatabase(String projectId, String orgId, String name, String location) {
         int organizationId = 0;
         try {
-            PreparedStatement query = getConn("config").prepareStatement("SELECT id FROM organizations WHERE orgId = ?");
+            PreparedStatement query =
+                getConn("config").prepareStatement("SELECT id FROM organizations WHERE orgId = ?");
             query.setString(1, orgId);
             ResultSet rs = query.executeQuery();
             if (rs.next()) {
@@ -1351,7 +1336,8 @@ public class PostgresHelper implements GraphInterface {
                 location = "";
             }
             if (organizationId > 0) {
-                PreparedStatement insertProject = getConn("config").prepareStatement("INSERT INTO projects (projectId, name, orgId, location) VALUES (?,?,?,?)");
+                PreparedStatement insertProject = getConn("config")
+                    .prepareStatement("INSERT INTO projects (projectId, name, orgId, location) VALUES (?,?,?,?)");
                 insertProject.setString(1, projectId);
                 insertProject.setString(2, name);
                 insertProject.setInt(3, organizationId);
@@ -1370,8 +1356,10 @@ public class PostgresHelper implements GraphInterface {
             this.projectProperties.put("dbname", "postgres");
             connect();
             getConn().createStatement().execute(String.format("CREATE DATABASE \"_%s\";", projectId));
-            getConn().createStatement().execute(String.format("GRANT ALL PRIVILEGES ON DATABASE \"_%s\" TO %s;", projectId, EmsConfig.get("pg.user")));
-            getConn().createStatement().execute(String.format("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO %s;", EmsConfig.get("pg.user")));
+            getConn().createStatement().execute(
+                String.format("GRANT ALL PRIVILEGES ON DATABASE \"_%s\" TO %s;", projectId, EmsConfig.get("pg.user")));
+            getConn().createStatement().execute(
+                String.format("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO %s;", EmsConfig.get("pg.user")));
         } catch (SQLException se) {
             // Catch Duplicate error and do nothing
         } catch (Exception e) {
@@ -1388,7 +1376,8 @@ public class PostgresHelper implements GraphInterface {
         try {
             setProject(projectId);
             // Test if tables exist already
-            ResultSet exists = execQuery("SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_class c WHERE c.relname = 'nodetypes' AND c.relkind = 'r')");
+            ResultSet exists = execQuery(
+                "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_class c WHERE c.relname = 'nodetypes' AND c.relkind = 'r')");
             if (exists.next()) {
                 if (exists.getBoolean(1)) {
                     return;
@@ -1641,7 +1630,8 @@ public class PostgresHelper implements GraphInterface {
 
     private void copyTable(String name, String toRef, String fromRef) {
         try {
-            execUpdate(String.format("INSERT INTO %1$s%2$s SELECT * FROM %1$s%3$s", name, sanitizeRefId(toRef), sanitizeRefId(fromRef)));
+            execUpdate(String.format("INSERT INTO %1$s%2$s SELECT * FROM %1$s%3$s", name, sanitizeRefId(toRef),
+                sanitizeRefId(fromRef)));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1651,7 +1641,8 @@ public class PostgresHelper implements GraphInterface {
 
     public boolean isTag(String refId) {
         try {
-            PreparedStatement statement = prepareStatement("SELECT tag FROM refs WHERE (refId = ? OR refName = ?) AND deleted = false");
+            PreparedStatement statement =
+                prepareStatement("SELECT tag FROM refs WHERE (refId = ? OR refName = ?) AND deleted = false");
             statement.setString(1, sanitizeRefId(refId));
             statement.setString(2, sanitizeRefId(refId));
             ResultSet rs = statement.executeQuery();
@@ -1669,12 +1660,15 @@ public class PostgresHelper implements GraphInterface {
 
     public void setAsTag(String refId) {
         try {
-            PreparedStatement statement = prepareStatement("UPDATE refs SET tag = true WHERE (refId = ? OR refName = ?) AND deleted = false");
+            PreparedStatement statement =
+                prepareStatement("UPDATE refs SET tag = true WHERE (refId = ? OR refName = ?) AND deleted = false");
             statement.setString(1, sanitizeRefId(refId));
             statement.setString(2, sanitizeRefId(refId));
             statement.executeUpdate();
 
-            execUpdate(String.format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s", sanitizeRefId(refId), EmsConfig.get("pg.user")));
+            execUpdate(String
+                .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s", sanitizeRefId(refId),
+                    EmsConfig.get("pg.user")));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1699,7 +1693,8 @@ public class PostgresHelper implements GraphInterface {
             refId = "master";
         }
         try {
-            PreparedStatement statement = prepareStatement("SELECT refId, elasticId FROM refs WHERE deleted = false AND refId = ?");
+            PreparedStatement statement =
+                prepareStatement("SELECT refId, elasticId FROM refs WHERE deleted = false AND refId = ?");
             statement.setString(1, sanitizeRefId(refId));
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
@@ -1718,11 +1713,13 @@ public class PostgresHelper implements GraphInterface {
             return null;
         }
         try {
-            PreparedStatement statement = prepareStatement("SELECT parent, timestamp FROM refs WHERE deleted = false AND refId = ?");
+            PreparedStatement statement =
+                prepareStatement("SELECT parent, timestamp FROM refs WHERE deleted = false AND refId = ?");
             statement.setString(1, sanitizeRefId(refId));
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
-                String checkForMaster = (rs.getString(1).equals("") && !refId.equals("master")) ? "master" : rs.getString(1);
+                String checkForMaster =
+                    (rs.getString(1).equals("") && !refId.equals("master")) ? "master" : rs.getString(1);
                 return new Pair<>(checkForMaster, rs.getTimestamp(2).getTime());
             }
 
@@ -1767,7 +1764,8 @@ public class PostgresHelper implements GraphInterface {
                 refIdString = "master";
             }
 
-            String query = "SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE (refId = ? OR refId = ?)";
+            String query =
+                "SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE (refId = ? OR refId = ?)";
             if (commitId != 0) {
                 query += " AND timestamp <= (SELECT timestamp FROM commits WHERE id = ?)";
             }
@@ -1792,7 +1790,8 @@ public class PostgresHelper implements GraphInterface {
                 result.add(commit);
             }
 
-            PreparedStatement parentStatement = prepareStatement("SELECT parent, parentCommit FROM refs WHERE refId = ? OR refId = ?");
+            PreparedStatement parentStatement =
+                prepareStatement("SELECT parent, parentCommit FROM refs WHERE refId = ? OR refId = ?");
             parentStatement.setString(1, refId);
             parentStatement.setString(2, refIdString);
 
@@ -1850,7 +1849,8 @@ public class PostgresHelper implements GraphInterface {
 
     public void updateRef(String refId, String refName, String elasticId, boolean isTag) {
         try {
-            PreparedStatement statement = prepareStatement("UPDATE refs SET refName = ?, elasticId = ?, tag = ? WHERE refId = ?");
+            PreparedStatement statement =
+                prepareStatement("UPDATE refs SET refName = ?, elasticId = ?, tag = ? WHERE refId = ?");
             statement.setString(1, refName);
             statement.setString(2, elasticId);
             statement.setBoolean(3, isTag);
@@ -1863,7 +1863,8 @@ public class PostgresHelper implements GraphInterface {
 
     public boolean orgExists(String orgId) {
         try {
-            PreparedStatement query = getConn("config").prepareStatement("SELECT count(id) FROM organizations WHERE orgId = ?");
+            PreparedStatement query =
+                getConn("config").prepareStatement("SELECT count(id) FROM organizations WHERE orgId = ?");
             query.setString(1, orgId);
             ResultSet rs = query.executeQuery();
             if (rs.next()) {
@@ -1913,7 +1914,8 @@ public class PostgresHelper implements GraphInterface {
         // SQL Injection Vulnerability avoidance tryhard
         String sanitizedDBName = StringEscapeUtils.escapeSql(databaseName);
         String query = "ALTER DATABASE  \"_" + sanitizedDBName + "\" CONNECTION LIMIT 0";
-        String query2 = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = \'_" + sanitizedDBName + "\'";
+        String query2 =
+            "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = \'_" + sanitizedDBName + "\'";
         String query3 = "DROP DATABASE \"_" + sanitizedDBName + "\";";
 
         try {
