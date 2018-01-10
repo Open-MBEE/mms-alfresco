@@ -26,18 +26,16 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
+import gov.nasa.jpl.view_repo.db.ElasticHelper;
+import gov.nasa.jpl.view_repo.db.PostgresHelper;
+
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -50,20 +48,20 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- *
- * @author han
+ * Created by dank on 12/19/17.
  */
-public class OrgPost extends AbstractJavaWebScript {
-    static Logger logger = Logger.getLogger(OrgPost.class);
+public class OrgDelete extends AbstractJavaWebScript {
+    static Logger logger = Logger.getLogger(OrgDelete.class);
 
-    public OrgPost() {
+    public OrgDelete() {
         super();
     }
 
-    public OrgPost(Repository repositoryHelper, ServiceRegistry registry) {
+    public OrgDelete(Repository repositoryHelper, ServiceRegistry registry) {
         super(repositoryHelper, registry);
     }
 
@@ -71,7 +69,7 @@ public class OrgPost extends AbstractJavaWebScript {
      * Webscript entry point
      */
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
-        OrgPost instance = new OrgPost(repository, getServices());
+        OrgDelete instance = new OrgDelete(repository, getServices());
         return instance.executeImplImpl(req, status, cache);
     }
 
@@ -79,48 +77,31 @@ public class OrgPost extends AbstractJavaWebScript {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         printHeader(user, logger, req);
         Timer timer = new Timer();
-        boolean restoredOrg = false;
 
         Map<String, Object> model = new HashMap<>();
 
         try {
             if (validateRequest(req, status)) {
-
-                JSONObject json = (JSONObject) req.parseContent();
-                JSONArray elementsArray = json != null ? json.optJSONArray("orgs") : null;
-                JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ?
-                    elementsArray.getJSONObject(0) :
-                    new JSONObject();
-
-                String orgId = projJson.getString(Sjm.SYSMLID);
-                String orgName = projJson.getString(Sjm.NAME);
-
+                PostgresHelper pgh = new PostgresHelper();
+                String orgId = getOrgId(req);
                 SiteInfo siteInfo = services.getSiteService().getSite(orgId);
-                if (siteInfo == null) {
-                    SearchService searcher = services.getSearchService();
-                    ResultSet result = searcher.query(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, "fts-alfresco", "name:" + orgId);
 
-                    if (result != null && result.length() > 0) {
-                        log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site restored.\n");
-                        services.getNodeService().restoreNode(result.getRow(0).getNodeRef(), null, null, null);
-                    } else {
-                        String sitePreset = "site-dashboard";
-                        String siteTitle = (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;
-                        String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
-                        if (!ShareUtils.constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
-                            log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create site.\n");
-                            logger.error(
-                                String.format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
-                        } else {
-                            log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site created.\n");
+                if (siteInfo != null) {
+                    if (!hasProjects(orgId)) {
+                        // Deleting from postgres needs to be attempted first, if it fails we need to bail or
+                        //  alfresco will delete the site
+                        if (pgh.deleteOrganization(orgId)){
+                            services.getSiteService().deleteSite(orgId);
+                            log(Level.INFO, HttpServletResponse.SC_OK, orgId + " Organization Delete");
                         }
                     }
-
-                    if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
-                        CommitUtil.sendOrganizationDelta(orgId, orgName, user);
+                    else {
+                        log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not delete organization, still has projects");
                     }
-
+                } else {
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not delete organization, organization doesn't exist");
                 }
+
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
@@ -141,6 +122,22 @@ public class OrgPost extends AbstractJavaWebScript {
      */
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         return checkRequestContent(req);
+    }
+
+    /**
+     * Determines whether an organization has projects. If it has projects then it will return true.
+     * @param orgId
+     * @return boolean
+     */
+    private boolean hasProjects(String orgId){
+        PostgresHelper pgh = new PostgresHelper();
+        List<Map<String, String>> orgs = pgh.getOrganizations(orgId);
+        if(orgs.size() > 0){
+            List<Map<String, Object>> projects = pgh.getProjects(orgs.get(0).get("orgId"));
+            if(projects != null)
+                return projects.size() > 0;
+        }
+        return false;
     }
 
 }
