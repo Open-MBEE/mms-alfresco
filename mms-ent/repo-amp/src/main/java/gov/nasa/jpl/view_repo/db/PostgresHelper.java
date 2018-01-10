@@ -321,20 +321,24 @@ public class PostgresHelper implements GraphInterface {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
         String starter = String.format("UPDATE \"nodes%s\" SET lastcommit = ? WHERE sysmlId IN (", workspaceId);
         StringBuilder query = new StringBuilder(starter);
-        for (int i = 0; i < sysmlIds.size(); i++) {
+        int count = 0;
+        int total = sysmlIds.size();
+        for (int i = 0; i < total; i++) {
             query.append("?,");
-            if (((i + 1) % limit) == 0 || i == (sysmlIds.size() - 1)) {
+            count++;
+            if (((i + 1) % limit) == 0 || i == (total - 1)) {
                 query.setLength(query.length() - 1);
                 query.append(")");
                 List<Object> single = new LinkedList<>();
                 single.add(0, value);
-                for (int j = 0; j <= i; j++) {
+                for (int j = 0; j < count; j++) {
                     single.add(j + 1, sysmlIds.remove(j));
                 }
                 List<List<Object>> values = new ArrayList<>();
                 values.add(single);
                 executeBulkStatements(query.toString(), values);
                 query = new StringBuilder(starter);
+                count = 0;
             }
         }
     }
