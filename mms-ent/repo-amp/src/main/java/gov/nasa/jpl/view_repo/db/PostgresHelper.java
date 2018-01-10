@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +16,6 @@ import java.util.Set;
 
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import gov.nasa.jpl.mbee.util.Pair;
@@ -290,18 +290,20 @@ public class PostgresHelper implements GraphInterface {
             PreparedStatement statement = prepareStatement(query);
             for (int i = 0; i < columnList.size(); i++) {
                 Object value = values.getOrDefault(columnList.get(i), null);
-                if (value != null) {
-                    if (value instanceof String) {
-                        statement.setString(i + 1, (String) value);
-                    } else if (value instanceof Integer) {
-                        statement.setInt(i + 1, (Integer) value);
-                    } else if (value instanceof Boolean) {
-                        statement.setBoolean(i + 1, (Boolean) value);
-                    }
+                if (value instanceof String) {
+                    statement.setString(i + 1, (String) value);
+                } else if (value instanceof Integer) {
+                    statement.setInt(i + 1, (Integer) value);
+                } else if (value instanceof Boolean) {
+                    statement.setBoolean(i + 1, (Boolean) value);
+                } else if (value == null) {
+                    statement.setNull(i + 1, Types.NULL);
                 }
             }
 
-            logger.debug(String.format("Query: %s", query));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("Query: %s", query));
+            }
             statement.execute();
             return 1;
         } catch (Exception e) {
@@ -837,6 +839,9 @@ public class PostgresHelper implements GraphInterface {
                         statement.setInt(j + 1, (Integer) val);
                     } else if (val instanceof Boolean) {
                         statement.setBoolean(j + 1, (Boolean) val);
+                    } else if (val == null) {
+                        //Unlike the insert method, this should never happen, but I guess it doesn't hurt
+                        statement.setNull(i + 1, Types.NULL);
                     }
                 }
                 statement.addBatch();
@@ -1023,8 +1028,9 @@ public class PostgresHelper implements GraphInterface {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
 
-            if (n == null)
+            if (n == null) {
                 return result;
+            }
 
             String query = "SELECT * FROM get_immediate_parents(?, ?, ?)";
 
@@ -1158,8 +1164,9 @@ public class PostgresHelper implements GraphInterface {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
 
-            if (n == null)
+            if (n == null) {
                 return result;
+            }
 
             String query = String.format(
                 "SELECT sysmlId, elasticId FROM \"nodes%s\" WHERE id IN (SELECT id FROM get_children(?, ?, ?, ?))",
@@ -1189,8 +1196,9 @@ public class PostgresHelper implements GraphInterface {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
 
-            if (n == null)
+            if (n == null) {
                 return result;
+            }
 
             String query = String.format(
                 "SELECT elasticId FROM \"nodes%s\" WHERE id IN (SELECT id FROM get_group_docs(?, ?, ?, ?, ?, ?))",
@@ -1964,5 +1972,21 @@ public class PostgresHelper implements GraphInterface {
 
     private String sanitizeRefId(String refId) {
         return StringEscapeUtils.escapeSql(refId.replace("-", "_").replaceAll("\\s+", ""));
+    }
+
+    public boolean deleteOrganization(String orgId) {
+        boolean orgDeleted = false;
+
+        try {
+            PreparedStatement query = getConn("config").prepareStatement("DELETE FROM organizations WHERE orgid = ?");
+            query.setString(1, orgId);
+            query.executeUpdate();
+            orgDeleted = true;
+        } catch(SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        closeConfig();
+
+        return orgDeleted;
     }
 }
