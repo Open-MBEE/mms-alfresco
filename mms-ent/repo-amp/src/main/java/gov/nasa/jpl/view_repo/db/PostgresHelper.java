@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -289,14 +290,14 @@ public class PostgresHelper implements GraphInterface {
             PreparedStatement statement = prepareStatement(query);
             for (int i = 0; i < columnList.size(); i++) {
                 Object value = values.getOrDefault(columnList.get(i), null);
-                if (value != null) {
-                    if (value instanceof String) {
-                        statement.setString(i + 1, (String) value);
-                    } else if (value instanceof Integer) {
-                        statement.setInt(i + 1, (Integer) value);
-                    } else if (value instanceof Boolean) {
-                        statement.setBoolean(i + 1, (Boolean) value);
-                    }
+                if (value instanceof String) {
+                    statement.setString(i + 1, (String) value);
+                } else if (value instanceof Integer) {
+                    statement.setInt(i + 1, (Integer) value);
+                } else if (value instanceof Boolean) {
+                    statement.setBoolean(i + 1, (Boolean) value);
+                } else if (value == null) {
+                    statement.setNull(i + 1, Types.NULL);
                 }
             }
 
@@ -834,6 +835,9 @@ public class PostgresHelper implements GraphInterface {
                         statement.setInt(j + 1, (Integer) val);
                     } else if (val instanceof Boolean) {
                         statement.setBoolean(j + 1, (Boolean) val);
+                    } else if (val == null) {
+                        //Unlike the insert method, this should never happen, but I guess it doesn't hurt
+                        statement.setNull(i + 1, Types.NULL);
                     }
                 }
                 statement.addBatch();
