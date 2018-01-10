@@ -15,7 +15,6 @@ import java.util.Set;
 
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import gov.nasa.jpl.mbee.util.Pair;
