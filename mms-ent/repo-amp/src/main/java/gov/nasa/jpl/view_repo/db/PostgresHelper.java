@@ -300,7 +300,9 @@ public class PostgresHelper implements GraphInterface {
                 }
             }
 
-            logger.debug(String.format("Query: %s", query));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("Query: %s", query));
+            }
             statement.execute();
             return 1;
         } catch (Exception e) {
@@ -1018,8 +1020,9 @@ public class PostgresHelper implements GraphInterface {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
 
-            if (n == null)
+            if (n == null) {
                 return result;
+            }
 
             String query = "SELECT * FROM get_immediate_parents(?, ?, ?)";
 
@@ -1153,8 +1156,9 @@ public class PostgresHelper implements GraphInterface {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
 
-            if (n == null)
+            if (n == null) {
                 return result;
+            }
 
             String query = String.format(
                 "SELECT sysmlId, elasticId FROM \"nodes%s\" WHERE id IN (SELECT id FROM get_children(?, ?, ?, ?))",
@@ -1184,8 +1188,9 @@ public class PostgresHelper implements GraphInterface {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
 
-            if (n == null)
+            if (n == null) {
                 return result;
+            }
 
             String query = String.format(
                 "SELECT elasticId FROM \"nodes%s\" WHERE id IN (SELECT id FROM get_group_docs(?, ?, ?, ?, ?, ?))",
@@ -1961,7 +1966,7 @@ public class PostgresHelper implements GraphInterface {
         return StringEscapeUtils.escapeSql(refId.replace("-", "_").replaceAll("\\s+", ""));
     }
 
-    public boolean deleteOrganization(String orgId){
+    public boolean deleteOrganization(String orgId) {
         boolean orgDeleted = false;
 
         try {
