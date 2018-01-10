@@ -5,8 +5,8 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 ## Developer Setup
 
 ### Dependencies
-* Elasticsearch 5.x
-* Postgresql 9.x
+* ElasticSearch 5.x
+* PostgreSQL 9.x
 
 ### Optional Dependencies
 * ActiveMQ 5.X
@@ -51,17 +51,17 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
         *   If it's not installed, download and install Java 8. Afterward, return to here and select Java 8.
 
 ## Install Dependencies
-### 1. Install and Configure Elastic Search
-*   Download Elasticsearch 5.X
-*   Install Elasticsearch
-*   Start Elasticsearch then run `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms-mappings.sh`
+### 1. Install and Configure ElasticSearch
+*   Download ElasticSearch 5.X
+*   Install ElasticSearch
+*   Start ElasticSearch then run `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms-mappings.sh`
 
-### 2. Install and Configure Postgresql
-*   Download Postgresql 9.x
-    * If using Postgresql as the database for Alfresco, Postgresl 9.3 is the latest supported version
-*   Install Postgresql
-*   Start Postgresql server
-*   Connect to the Postgresql server and:
+### 2. Install and Configure PostgreSQL
+*   Download PostgreSQL 9.x
+    * If using PostgreSQL as the database for Alfresco, PostgreSQL 9.3 is the latest supported version
+*   Install PostgreSQL
+*   Start PostgreSQL server
+*   Connect to the PostgreSQL server and:
     *  Create a `mms` user (referenced by pg.user in your `mms-ent/mms.properties` file)
        *  Ensure you set a password (referenced by pg.pass)
     *  Create a `mms` database ( referenced by pg.name)
@@ -90,7 +90,7 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 3. Enter **admin** for password
 
 ## Design Documentation
-### 1. MMS using ElaticSearch and PostgreSQL
+### 1. MMS using ElasticSearch and PostgreSQL
 
 -----
 
