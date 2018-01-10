@@ -42,12 +42,7 @@ import java.util.Set;
 import java.util.HashSet;
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.CommitUtil;
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
+import gov.nasa.jpl.view_repo.util.*;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -166,13 +161,13 @@ public class ArtifactPost extends AbstractJavaWebScript {
         String projectId = getProjectId(req);
         Map<String, Object> model = new HashMap<>();
         JSONObject newElementsObject = new JSONObject();
-        JSONObject results;
+        SerialJSONObject results;
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
 
         try {
-            JSONArray delta = new JSONArray();
+            SerialJSONArray delta = new SerialJSONArray();
             delta.put(postJson);
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
