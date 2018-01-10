@@ -58,6 +58,10 @@
         <property name="arguments" ref="jmsConnection"/>
     </bean>
 
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.CommitUtil.initHazelcastClient"/>
+    </bean>
+
     <!-- Definitions for sending active sync messages -->
     <bean id="jmsConnection" class="gov.nasa.jpl.view_repo.connections.JmsConnection">
     </bean>

@@ -380,6 +380,7 @@ public class PostgresHelper implements GraphInterface {
         if (orgId == null) {
             query = "SELECT id, orgId, orgName FROM organizations";
         } else {
+            orgId = this.sanitizeOrgId(orgId);
             query = String.format("SELECT id, orgId, orgName FROM organizations WHERE orgId = '%s'", orgId);
         }
         try {
@@ -1603,8 +1604,8 @@ public class PostgresHelper implements GraphInterface {
         }
 
         try {
-            if (location == null || location.isEmpty()) {
-                location = EmsConfig.get("pg.host");
+            if (location == null) {
+                location = "";
             }
             connectConfig();
             if (organizationId > 0) {
@@ -1966,7 +1967,7 @@ public class PostgresHelper implements GraphInterface {
 
     public void deleteRef(String id) {
         try {
-            execUpdate(String.format("UPDATE refs SET deleted = true WHERE refId = '%s'", id));
+            execUpdate(String.format("UPDATE refs SET deleted = true WHERE refId = '%s'", sanitizeRefId(id)));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1978,9 +1979,10 @@ public class PostgresHelper implements GraphInterface {
         if (id == null || id.isEmpty()) {
             return;
         }
+        String refId = sanitizeRefId(id);
         try {
-            execUpdate("DROP TABLE IF EXISTS \"nodes" + id + "\"");
-            execUpdate("DROP TABLE IF EXISTS \"edges" + id + "\"");
+            execUpdate("DROP TABLE IF EXISTS \"nodes" + refId + "\"");
+            execUpdate("DROP TABLE IF EXISTS \"edges" + refId + "\"");
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -2331,6 +2333,10 @@ public class PostgresHelper implements GraphInterface {
         return refId.replace("-", "_").replaceAll("\\s+", "");
     }
 
+    private String sanitizeOrgId(String orgId) {
+        return orgId.replaceAll("\\s+", "");
+    }
+
     public boolean isLocked() {
         try {
             connect();
@@ -2347,5 +2353,22 @@ public class PostgresHelper implements GraphInterface {
         }
 
         return false;
+    }
+
+    public boolean deleteOrganization(String orgId){
+        connectConfig();
+        boolean orgDeleted = false;
+
+//        orgId = sanitizeOrgId(orgId);
+        try {
+            String query = "DELETE FROM organizations WHERE orgid = \'" + orgId + "\'";
+            this.configConn.createStatement().executeUpdate(query);
+            orgDeleted = true;
+        } catch(SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        closeConfig();
+
+        return orgDeleted;
     }
 }

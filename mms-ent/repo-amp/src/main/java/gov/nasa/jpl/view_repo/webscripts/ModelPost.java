@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
@@ -131,7 +132,7 @@ public class ModelPost extends AbstractJavaWebScript {
     protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user,
         String contentType) {
         JSONObject newElementsObject = new JSONObject();
-        JSONObject results;
+        SerialJSONObject results;
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
         boolean overwriteJson = Boolean.parseBoolean(req.getParameter("overwrite"));
@@ -143,8 +144,7 @@ public class ModelPost extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         try {
-
-            JSONObject postJson = new JSONObject(req.getContent().getContent());
+            SerialJSONObject postJson = new SerialJSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
@@ -163,8 +163,8 @@ public class ModelPost extends AbstractJavaWebScript {
 
                 if (withChildViews) {
                     for (int i = 0; i < results.getJSONArray(NEWELEMENTS).length(); i++) {
-                        results.getJSONArray(NEWELEMENTS)
-                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i)));
+                        SerialJSONObject childViews = emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i));
+                        results.getJSONArray(NEWELEMENTS).replace(i, childViews);
                     }
                 }
 

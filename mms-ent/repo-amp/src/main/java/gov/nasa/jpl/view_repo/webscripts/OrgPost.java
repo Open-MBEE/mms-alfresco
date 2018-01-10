@@ -34,6 +34,10 @@ import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -75,6 +79,7 @@ public class OrgPost extends AbstractJavaWebScript {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         printHeader(user, logger, req);
         Timer timer = new Timer();
+        boolean restoredOrg = false;
 
         Map<String, Object> model = new HashMap<>();
 
@@ -84,29 +89,38 @@ public class OrgPost extends AbstractJavaWebScript {
                 JSONObject json = (JSONObject) req.parseContent();
                 JSONArray elementsArray = json != null ? json.optJSONArray("orgs") : null;
                 JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ?
-                                elementsArray.getJSONObject(0) :
-                                new JSONObject();
+                    elementsArray.getJSONObject(0) :
+                    new JSONObject();
 
                 String orgId = projJson.getString(Sjm.SYSMLID);
                 String orgName = projJson.getString(Sjm.NAME);
 
                 SiteInfo siteInfo = services.getSiteService().getSite(orgId);
                 if (siteInfo == null) {
-                    String sitePreset = "site-dashboard";
-                    String siteTitle = (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;
-                    String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
-                    if (!ShareUtils.constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
-                        log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create site.\n");
-                        logger.error(String.format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
+                    SearchService searcher = services.getSearchService();
+                    ResultSet result = searcher.query(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, "fts-alfresco", "name:" + orgId);
+
+                    if (result != null && result.length() > 0) {
+                        log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site restored.\n");
+                        services.getNodeService().restoreNode(result.getRow(0).getNodeRef(), null, null, null);
                     } else {
-                        log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site created.\n");
+                        String sitePreset = "site-dashboard";
+                        String siteTitle = (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;
+                        String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
+                        if (!ShareUtils.constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
+                            log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create site.\n");
+                            logger.error(
+                                String.format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
+                        } else {
+                            log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site created.\n");
+                        }
                     }
-                }
 
-                if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
-                    CommitUtil.sendOrganizationDelta(orgId, orgName, user);
-                }
+                    if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
+                        CommitUtil.sendOrganizationDelta(orgId, orgName, user);
+                    }
 
+                }
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);

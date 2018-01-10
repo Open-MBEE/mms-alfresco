@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>mms-share-amp</artifactId>
-    <name>MMS Alfresco Share AMP Module</name>
+    <name>Alfresco Share AMP Module</name>
     <packaging>amp</packaging>
-    <description>This is the MMS Share AMP (Alfresco Module Package)</description>
+    <description>This is a sample Alfresco Share AMP project, depended upon by the share WAR module</description>
 
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
         <artifactId>mms-ent</artifactId>
-        <version>3.2.1-SNAPSHOT</version>
+        <version>3.3.0-SNAPSHOT</version>
     </parent>
 
     <!--
@@ -21,21 +22,25 @@
         <!-- Defines the target WAR artifactId to run this amp, only used with the -Pamp-to-war switch
              Allowed values: alfresco | share. In this case it's configured to use OOTB share -->
         <app.amp.client.war.artifactId>share</app.amp.client.war.artifactId>
-
+        <dependency.surf.version>6.3</dependency.surf.version>
         <!-- Defines the log level used in log4j.properties -->
         <app.log.root.level>WARN</app.log.root.level>
-
-        <external-groupId>externalrepo_</external-groupId>
     </properties>
-
-    <repositories>
-        <!-- local repository -->
-        <repository>
-          <id>external-project-repo</id>
-          <url>file://${project.basedir}/external-repo</url>
-        </repository>
-    </repositories>
-
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.alfresco.surf</groupId>
+                <artifactId>spring-surf</artifactId>
+                <version>${dependency.surf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco.surf</groupId>
+                <artifactId>spring-surf-api</artifactId>
+                <version>${dependency.surf.version}</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <!-- Following dependencies are needed for compiling Java code in src/main/java;
          <scope>provided</scope> is inherited for each of the following;
          for more info, please refer to alfresco-platform-distribution POM -->
@@ -56,12 +61,13 @@
         </dependency>
 
         <!--===============================================================
-            The following dependencies are needed to be able to compile the
-            custom functional tests that are based on Page Objects (PO)
-            ===============================================================-->
+             The following dependencies are needed to be able to compile the
+             custom functional tests that are based on Page Objects (PO)
+             ===============================================================-->
 
         <!-- Bring in the Share Page Objects (PO) used in our functional tests.
-             It contains page objects such as LoginPage -->
+             It contains page objects such as LoginPage and it also brings
+             in selenium-grid and selenium. -->
         <dependency>
             <groupId>${alfresco.groupId}</groupId>
             <artifactId>share-po</artifactId>
@@ -77,8 +83,7 @@
             <classifier>tests</classifier>
             <scope>test</scope>
 
-            <!-- Exclude version 2.39.0 of selenium that does not work with latest FF browsers, we include
-               version 2.45 later on here -->
+            <!-- Exclude selenium as it is already brought in by share-po dependency above -->
             <exclusions>
                 <exclusion>
                     <groupId>org.seleniumhq.selenium</groupId>
@@ -103,12 +108,6 @@
                     <artifactId>hamcrest-core</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-          <groupId>${external-groupId}javascriptconsoleshare</groupId>
-          <artifactId>javascriptconsoleshare</artifactId>
-          <version>0.5</version>
         </dependency>
     </dependencies>
 
