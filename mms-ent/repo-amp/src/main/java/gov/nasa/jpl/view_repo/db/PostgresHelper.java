@@ -332,7 +332,7 @@ public class PostgresHelper implements GraphInterface {
                 List<Object> single = new LinkedList<>();
                 single.add(0, value);
                 for (int j = 0; j < count; j++) {
-                    single.add(j + 1, sysmlIds.remove(j));
+                    single.add(j + 1, sysmlIds.remove(0));
                 }
                 List<List<Object>> values = new ArrayList<>();
                 values.add(single);
