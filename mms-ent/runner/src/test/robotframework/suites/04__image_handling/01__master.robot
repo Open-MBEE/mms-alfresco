@@ -1,15 +1,17 @@
 *** Settings ***
 Documentation    Testing Workspaces Tags on Master
 Resource        ../resources.robot
+Library          RequestsLibrary
 
 *** Test Cases ***
 PostNewImage
 	[Documentation]		"Post a png image to mms"
 	[Tags]				images		critical		0401
-    ${image_file} =     Binary Data    ${CURDIR}${/}../../assets/mounts.png
-    &{headers}=         Create Dictionary    Content-Type=application/x-www-form-urlencoded
-    &{data} =           Create Dictionary    name=blah.png    contentType=blah    id=1234
-	${result} =			Post		url=${ROOT}/projects/PA/refs/master/artifacts/mounts		data=${data}		files=${image_file}		headers=${headers}
+	Create Session		mmstest  ${ROOT}
+    ${image_file} =     Binary Data	${CURDIR}${/}../../assets/mounts.png
+    ${files} =			Create Dictionary	file	${image_file}
+	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts/mounts		files=${files}
+	log to console		${result}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
