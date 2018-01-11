@@ -774,7 +774,7 @@ public class CommitUtil {
     }
 
     public static void processDocumentEdges(String sysmlid, String doc, List<Pair<String, String>> documentEdges) {
-        if (doc != null) {
+        if (doc != null && !doc.equals("")) {
             Matcher matcher = pattern.matcher(doc);
 
             while (matcher.find()) {
@@ -815,11 +815,13 @@ public class CommitUtil {
                             documentEdges.add(new Pair<>(sysmlId, (String) source));
                         }
                     }
-                    Matcher matcher = pattern.matcher(text);
-                    while (matcher.find()) {
-                        String mmseid = matcher.group(1);
-                        if (mmseid != null) {
-                            documentEdges.add(new Pair<>(sysmlId, mmseid));
+                    if (text.length() != 0) {
+                        Matcher matcher = pattern.matcher(text);
+                        while (matcher.find()) {
+                            String mmseid = matcher.group(1);
+                            if (mmseid != null) {
+                                documentEdges.add(new Pair<>(sysmlId, mmseid));
+                            }
                         }
                     }
                 } catch (JSONException ex) {
