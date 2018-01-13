@@ -16,3 +16,13 @@ SearchIncludingType
     ${compare_result} =     Compare JSON        ${TEST_NAME}
     Should Match Baseline       ${compare_result}
 
+SearchLiteral
+    [Documentation]     "Search for an element and return literal json from elastic."
+    [Tags]              search      critical        0702
+    ${post_json}        Get File        ${CURDIR}/../../JsonData/SearchQueryLiteral.json
+    ${result}           Post            url=${ROOT}/projects/PA/refs/master/search?literal=true      data=${post_json}       headers=&{REQ_HEADER}
+    Should Be Equal     ${result.status_code}       ${200}
+	${filter} =			Create List	 _id    _shards     _score  sort    took    _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+    Generate JSON           ${TEST_NAME}        ${result.json()}        ${filter}
+    ${compare_result} =     Compare JSON        ${TEST_NAME}
+    Should Match Baseline       ${compare_result}

@@ -434,6 +434,12 @@ public class ElasticHelper implements ElasticsearchInterface {
         return elements;
     }
 
+    public JSONObject searchLiteral(JSONObject queryJson) throws IOException {
+        Search search = new Search.Builder(queryJson.toString()).build();
+        SearchResult result = client.execute(search);
+        return new JSONObject(result.getJsonObject().toString());
+    }
+
     private static JSONObject removeWrapper(JSONObject jsonObject) {
         String eType = null;
         JSONObject result = new JSONObject();

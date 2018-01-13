@@ -134,10 +134,26 @@ public class CfIdsGet extends AbstractJavaWebScript {
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
-        return handleMountSearch(mountsJson, rootSysmlid);
+        Long depth = null;
+        String depthParam = req.getParameter("depth");
+        if (depthParam != null) {
+            try {
+                depth = Long.parseLong(depthParam);
+                if (depth < 0) {
+                    depth = 100000L;
+                }
+            } catch (NumberFormatException nfe) {
+                // don't do any recursion, ignore the depth
+                log(Level.WARN, HttpServletResponse.SC_BAD_REQUEST, "Bad depth specified, returning depth 0");
+            }
+        }
+        if (depth == null) {
+            depth = 5L;
+        }
+        return handleMountSearch(mountsJson, rootSysmlid, depth);
     }
 
-    protected JSONArray handleMountSearch(JSONObject mountsJson, String rootSysmlid)
+    protected JSONArray handleMountSearch(JSONObject mountsJson, String rootSysmlid, Long depth)
         throws SQLException, IOException {
         JSONArray result = null;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
@@ -147,7 +163,7 @@ public class CfIdsGet extends AbstractJavaWebScript {
                 log(Level.ERROR, HttpServletResponse.SC_GONE, "Element %s is deleted", rootSysmlid);
                 return new JSONArray();
             }
-            return emsNodeUtil.getChildrenIds(rootSysmlid, GraphInterface.DbEdgeTypes.VIEW, 20L);
+            return emsNodeUtil.getChildrenIds(rootSysmlid, GraphInterface.DbEdgeTypes.VIEW, depth);
         }
         if (!mountsJson.has(Sjm.MOUNTS)) {
             mountsJson = emsNodeUtil
@@ -156,7 +172,7 @@ public class CfIdsGet extends AbstractJavaWebScript {
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 
         for (int i = 0; i < mountsArray.length(); i++) {
-            result = handleMountSearch(mountsArray.getJSONObject(i), rootSysmlid);
+            result = handleMountSearch(mountsArray.getJSONObject(i), rootSysmlid, depth);
             if (result != null) {
                 return result;
             }
