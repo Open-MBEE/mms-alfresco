@@ -1,0 +1,1019 @@
+swagger: "2.0"
+basePath: "/alfresco/service"
+schemes:
+- "https"
+info:
+  description: "Model Management System (MMS) is a version control system for structured data. It exposes model information through RESTful web services that can be used for CRUD operations, branching, and tagging of the model repository."
+  version: "3.3.0"
+  title: "Model Management Service"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+tags:
+- name: "ticket"
+- name: "org"
+- name: "project"
+- name: "ref"
+- name: "element"
+- name: "other"
+security:
+- Basic: []
+- Ticket: []
+paths:
+  /api/login:
+    post:
+      tags:
+        - "ticket"
+      summary: "Create ticket"
+      description: ""
+      operationId: "postTicket"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        schema: 
+          $ref: "#/definitions/LoginRequest"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/LoginResponse"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+      security: []
+  /mms/login/ticket/{ticket_id}:
+    parameters:
+    - name: "ticket_id"
+      in: "path"
+      required: true
+      description: "ticket identifier"
+      type: string
+    get:
+      tags:
+        - "ticket"
+      summary: "Get ticket"
+      description: ""
+      operationId: "getTicket"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/TicketResponse"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /orgs:
+    get:
+      tags:
+      - "org"
+      summary: "Get all orgs"
+      description: ""
+      operationId: "getOrgs"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Orgs"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    post:
+      tags:
+      - "org"
+      summary: "Create and/or update org(s)"
+      description: ""
+      operationId: "postOrgs"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/Orgs"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Orgs"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /orgs/{org_id}:
+    parameters:
+    - name: "org_id"
+      in: "path"
+      required: true
+      description: "org identifier"
+      type: string
+    get:
+      tags:
+      - "org"
+      summary: "Get org"
+      description: ""
+      operationId: "getOrg"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Orgs"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    delete:
+      tags:
+      - "org"
+      summary: "Delete org"
+      description: ""
+      operationId: "deleteOrg"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Orgs"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /orgs/{org_id}/projects:
+    parameters:
+    - name: "org_id"
+      in: "path"
+      required: true
+      description: "org identifier"
+      type: string
+    get:
+      tags:
+      - "project"
+      summary: "Get all projects in org"
+      description: ""
+      operationId: "getProjectsByOrg"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Projects"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    post:
+      tags:
+      - "project"
+      summary: "Create and/or update project(s) in org"
+      description: ""
+      operationId: "postProjectsByOrg"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/Projects"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Projects"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects:
+    get:
+      tags:
+      - "project"
+      summary: "Get all projects"
+      description: ""
+      operationId: "getProjects"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Projects"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    post:
+      tags:
+      - "project"
+      summary: "Create and/or update project(s)"
+      description: ""
+      operationId: "postProjects"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/Projects"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Projects"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    get:
+      tags:
+      - "project"
+      summary: "Get project"
+      description: ""
+      operationId: "getProject"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Projects"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    delete:
+      tags:
+      - "project"
+      summary: "Delete project"
+      description: ""
+      operationId: "deleteProject"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Projects"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    get:
+      tags:
+      - "ref"
+      summary: "Get all refs in project"
+      description: ""
+      operationId: "getRefs"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Refs"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    post:
+      tags:
+      - "ref"
+      summary: "Create and/or update ref(s)"
+      description: ""
+      operationId: "postRefs"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/Refs"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Refs"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    get:
+      tags:
+      - "ref"
+      summary: "Get ref"
+      description: ""
+      operationId: "getRef"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Refs"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    delete:
+      tags:
+      - "ref"
+      summary: "Delete ref"
+      description: ""
+      operationId: "deleteRef"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Refs"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/history:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    get:
+      tags:
+      - "ref"
+      summary: "Get ref history"
+      description: ""
+      operationId: "getRefHistory"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Commits"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/elements:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    get:
+      tags:
+      - "element"
+      summary: "Get elements"
+      description: ""
+      operationId: "getElements"
+      parameters:
+      - in: "query"
+        name: "extended"
+        description: ""
+        type: "boolean"
+      - in: "query"
+        name: "commitId"
+        description: ""
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Elements"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    put:
+      tags:
+      - "element"
+      summary: "Get element(s) in batch"
+      description: ""
+      operationId: "getElementsInBatch"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/Elements"
+        required: true
+      - in: "query"
+        name: "depth"
+        description: ""
+        type: "integer"
+      - in: "query"
+        name: "extended"
+        description: ""
+        type: "boolean"
+      - in: "query"
+        name: "commitId"
+        description: ""
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Elements"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    delete:
+      tags:
+      - "element"
+      summary: "Delete element(s) in batch"
+      description: ""
+      operationId: "deleteElementsInBatch"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/Elements"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Elements"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    post:
+      tags:
+      - "element"
+      summary: "Create and/or update element(s)"
+      description: ""
+      operationId: "postElements"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/Elements"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Elements"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/elements/{element_id}:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    - name: "element_id"
+      in: "path"
+      required: true
+      description: "element identifier"
+      type: "string"
+    get:
+      tags:
+      - "element"
+      summary: "Get element"
+      description: ""
+      operationId: "getElement"
+      parameters:
+      - in: "query"
+        name: "depth"
+        description: ""
+        type: "integer"
+      - in: "query"
+        name: "extended"
+        description: ""
+        type: "boolean"
+      - in: "query"
+        name: "commitId"
+        description: ""
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Elements"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    delete:
+      tags:
+      - "element"
+      summary: "Delete element"
+      description: ""
+      operationId: "deleteElement"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Elements"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/elements/{element_id}/history:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    - name: "element_id"
+      in: "path"
+      required: true
+      description: "element identifier"
+      type: "string"
+    get:
+      tags:
+      - "element"
+      summary: "Get element history"
+      description: ""
+      operationId: "getElementHistory"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Commits"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/groups:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    get:
+      tags:
+      - "other"
+      summary: "Get groups"
+      description: ""
+      operationId: "getGroups"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Groups"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/mounts:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    get:
+      tags:
+      - "other"
+      summary: "Get mounts"
+      description: ""
+      operationId: "getMounts"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Mounts"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/documents:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    get:
+      tags:
+      - "other"
+      summary: "Get documents"
+      description: ""
+      operationId: "getDocuments"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Documents"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+responses:
+  OK:
+    description: "OK"
+  NotFound:
+    description: "The specified resource was not found"
+  Unauthorized:
+    description: "Unauthorized"
+  Forbidden:
+    description: "Forbidden"
+  InternalServerError:
+    description: "Internal server error"
+  Default:
+    description: "Unknown"
+definitions:
+  Org:
+    type: "object"
+    required:
+    - "id"
+    - "name"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+    additionalProperties:
+      type: "object"
+  Project:
+    type: "object"
+    required:
+    - "id"
+    - "name"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+      orgId:
+        type: "string"
+      type:
+        type: "string"
+        enum: ["Project"]
+        default: "Project"
+    additionalProperties:
+      type: "object"
+  Ref:
+    type: "object"
+    required:
+    - "id"
+    - "name"
+    - "type"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+      parentRefId:
+        type: "string"
+      type:
+        type: "string"
+        enum: ["Branch","Tag"]
+        default: "Branch"
+    additionalProperties:
+      type: "object"
+  Commit:
+    type: "object"
+    required:
+    - "id"
+    properties:
+      id:
+        type: "string"
+    additionalProperties:
+      type: "object"
+  Element:
+    type: "object"
+    required:
+    - "id"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+    additionalProperties:
+      type: "object"
+  Orgs:
+    type: "object"
+    required:
+    - "orgs"
+    properties:
+      orgs:
+        type: "array"
+        items:
+          $ref: "#/definitions/Org"
+  Projects:
+    type: "object"
+    required:
+    - "projects"
+    properties:
+      projects:
+        type: "array"
+        items:
+          $ref: "#/definitions/Project"
+  Refs:
+    type: "object"
+    required:
+    - "refs"
+    properties:
+      refs:
+        type: "array"
+        items:
+          $ref: "#/definitions/Ref"
+  Commits:
+    type: "object"
+    required:
+    - "commits"
+    properties:
+      commits:
+        type: "array"
+        items:
+          $ref: "#/definitions/Commit"
+  Elements:
+    type: "object"
+    required:
+    - "elements"
+    properties:
+      elements:
+        type: "array"
+        items:
+          $ref: "#/definitions/Element"
+  Groups:
+    type: "object"
+    required:
+    - "groups"
+    properties:
+      groups:
+        type: "array"
+        items:
+          $ref: "#/definitions/Element"
+  Mounts:
+    type: "object"
+    required:
+    - "mounts"
+    properties:
+      mounts:
+        type: "array"
+        items:
+          $ref: "#/definitions/Project"
+  Documents:
+    type: "object"
+    required:
+    - "documents"
+    properties:
+      documents:
+        type: "array"
+        items:
+          $ref: "#/definitions/Element"
+  LoginRequest:
+    type: "object"
+    required:
+    - "username"
+    - "password"
+    properties:
+      username:
+        type: "string"
+      password:
+        type: "string"
+  LoginResponse:
+    type: "object"
+    required:
+    - "data"
+    properties:
+      data:
+        $ref: "#/definitions/LoginResponseData"
+  LoginResponseData:
+    type: "object"
+    required:
+    - "ticket"
+    properties:
+      ticket:
+        type: "string"
+  TicketResponse:
+    type: "object"
+    required:
+    - "username"
+    - "first"
+    - "last"
+    properties:
+      username:
+        type: "string"
+      first:
+        type: "string"
+      last:
+        type: "string"
+securityDefinitions:
+  Basic:
+    type: "basic"
+  Ticket:
+    type: "apiKey"
+    name: "alf_ticket"
+    in: "query"
