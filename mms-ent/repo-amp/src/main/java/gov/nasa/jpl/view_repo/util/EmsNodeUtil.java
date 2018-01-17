@@ -1369,6 +1369,15 @@ public class EmsNodeUtil {
         }
     }
 
+    /**
+     * Searches a mount for specified elements at the specified commit. Modifies the foundElements passed in and returns
+     * the currently found elements.
+     * @param mountsJson Mount JSON
+     * @param elementsToFind List of elements to find
+     * @param foundElements Set of SysmlIDs of found elements
+     * @param commitId Commit Id to search for.
+     * @return JSONArray of found elements
+     */
     public static JSONArray searchMountAtCommit(JSONObject mountsJson, Set<String> elementsToFind, Set<String> foundElements, String commitId) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
