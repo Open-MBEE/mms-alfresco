@@ -1,6 +1,8 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1546,64 +1548,6 @@ public class EmsNodeUtil {
         return pgh.getImmediateParentOfType(sysmlId, edgeType, nodeTypes);
     }
 
-    private boolean isImageData(String value) {
-        if (value == null) {
-            return false;
-        }
-
-        Pattern p = Pattern.compile(
-            "(.*)<img[^>]*\\ssrc\\s*=\\\\\\s*[\\\"']data:image/([^;]*);\\s*base64\\s*,([^\\\"']*)[\\\"'][^>]*>(.*)",
-            Pattern.DOTALL);
-        Matcher m = p.matcher(value);
-
-        return m.matches();
-    }
-
-//    private String extractAndReplaceImageData(String value, String siteName) {
-//        if (value == null) {
-//            return null;
-//        }
-//        Pattern p = Pattern.compile(
-//            "(.*)<img[^>]*\\ssrc\\s*=\\\\\\s*[\\\"']data:image/([^;]*);\\s*base64\\s*,([^\\\"']*)[\\\"'][^>]*>(.*)",
-//            Pattern.DOTALL);
-//        while (true) {
-//            Matcher m = p.matcher(value);
-//            if (!m.matches()) {
-//                logger.debug(String.format("no match found for value=%s",
-//                    value.substring(0, Math.min(value.length(), 100)) + (value.length() > 100 ? " . . ." : "")));
-//                break;
-//            } else {
-//                logger.debug(String.format("match found for value=%s",
-//                    value.substring(0, Math.min(value.length(), 100)) + (value.length() > 100 ? " . . ." : "")));
-//                if (m.groupCount() != 4) {
-//                    logger.debug(String.format("Expected 4 match groups, got %s! %s", m.groupCount(), m));
-//                    break;
-//                }
-//                String extension = m.group(2);
-//                String content = m.group(3);
-//                String name = "img_" + System.currentTimeMillis();
-//
-//                // No need to pass a date since this is called in the context of
-//                // updating a node, so the time is the current time (which is
-//                // null).
-//                EmsScriptNode artNode = NodeUtil
-//                    .updateOrCreateArtifact(name, extension, content, null, siteName, projectId, this.workspaceName,
-//                        null, null, null, false);
-//                if (artNode == null || !artNode.exists()) {
-//                    logger.debug("Failed to pull out image data for value! " + value);
-//                    break;
-//                }
-//
-//                String url = artNode.getUrl();
-//                String link = "<img src=\\\"" + url + "\\\"/>";
-//                link = link.replace("/d/d/", "/alfresco/service/api/node/content/");
-//                value = m.group(1) + link + m.group(4);
-//            }
-//        }
-//
-//        return value;
-//    }
-
     public JSONObject getModelAtCommit(String commitId) {
         JSONObject result = new JSONObject();
         JSONObject pastElement = null;
@@ -1730,5 +1674,25 @@ public class EmsNodeUtil {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         return result;
+    }
+
+    public static String md5Hash(String str) {
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(str.getBytes());
+
+            for (byte data : md.digest()) {
+                String hex = Integer.toHexString(0xff & data);
+                if (hex.length() == 1) {
+                    sb.append('0');
+                }
+                sb.append(hex);
+            }
+        } catch (NoSuchAlgorithmException e) {
+            logger.error(e);
+        }
+        return sb.toString();
     }
 }

@@ -52,14 +52,11 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -73,7 +70,7 @@ import org.springframework.extensions.webscripts.servlet.FormData;
 
 
 public class ArtifactPost extends AbstractJavaWebScript {
-    static Logger logger = Logger.getLogger(ModelPost.class);
+    static Logger logger = Logger.getLogger(ArtifactPost.class);
 
     protected EmsScriptNode svgArtifact = null;
     protected EmsScriptNode pngArtifact = null;
@@ -115,11 +112,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
         printHeader(user, logger, req, true);
         Timer timer = new Timer();
 
-        Map<String, Object> result = new HashedMap();
-        Map<String, Object> alfrescoImage;
-        JSONObject writeToDb;
-        String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
+        Map<String, Object> result = new HashMap<>();
         JSONObject postJson = new JSONObject();
+        String imageId = getArtifactId(req);
 
         FormData formData = (FormData) req.parseContent();
         FormData.FormField[] fields = formData.getFields();
@@ -138,6 +133,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     postJson.put(name, value);
                     logger.debug("property name: " + name);
                 }
+            }
+            if (!imageId.isEmpty()) {
+                postJson.put(Sjm.SYSMLID, imageId);
             }
             postJson.put(Sjm.TYPE, "Artifact");
         } catch (Exception e) {
@@ -165,9 +163,10 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-
         try {
             SerialJSONArray delta = new SerialJSONArray();
+            postJson.put(Sjm.LOCATION, path);
+            postJson.put(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(content));
             delta.put(postJson);
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
@@ -179,7 +178,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
                 }
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
-                newElementsObject.put(Sjm.ELEMENTS, filterByPermission(results.getJSONArray(NEWELEMENTS), req));
+                newElementsObject.put(Sjm.ARTIFACTS, filterByPermission(results.getJSONArray(NEWELEMENTS), req));
                 newElementsObject.put(Sjm.COMMITID, commitId);
                 newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
                 newElementsObject.put(Sjm.CREATOR, user);
@@ -203,11 +202,16 @@ public class ArtifactPost extends AbstractJavaWebScript {
         return model;
     }
 
-    Boolean handleArtifactPost(final WebScriptRequest req, final Status status, String user,
+    boolean handleArtifactPost(final WebScriptRequest req, final Status status, String user,
         JSONObject postJson) {
 
         JSONObject resultJson = null;
         Map<String, Object> model = new HashMap<>();
+        boolean isSvg = false;
+        String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
+        if (!contentType.isEmpty() && postJson.optString(Sjm.CONTENTTYPE).isEmpty()) {
+            postJson.put(Sjm.CONTENTTYPE, contentType);
+        }
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -219,7 +223,10 @@ public class ArtifactPost extends AbstractJavaWebScript {
             try {
                 extension = FilenameUtils.getExtension(filename);
                 artifactId = postJson.getString(Sjm.SYSMLID);
-                path = projectId + "/refs/" + refId + "/" + artifactId + System.currentTimeMillis() + extension;
+                path = projectId + "/refs/" + refId + "/" + artifactId + System.currentTimeMillis() + "." + extension;
+                if (contentType.contains("svg") || postJson.optString(Sjm.CONTENTTYPE).contains("svg") || extension.contains("svg")) {
+                    isSvg = true;
+                }
                 // Create return json:
                 resultJson = new JSONObject();
                 resultJson.put("filename", filename);
@@ -240,7 +247,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                         model.put(Sjm.RES, createResponseJson());
                     } else {
                         resultJson.put("upload", svgArtifact);
-                        if (!NodeUtil.skipSvgToPng) {
+                        if (isSvg) {
                             try {
                                 Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
                                 pngPath = svgToPng(svgPath);

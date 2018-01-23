@@ -61,7 +61,7 @@ import gov.nasa.jpl.view_repo.db.Node;
  */
 public class ArtifactGet extends AbstractJavaWebScript {
 
-    static Logger logger = Logger.getLogger(ModelGet.class);
+    static Logger logger = Logger.getLogger(ArtifactGet.class);
 
     private static final String ARTIFACTID = "artifactId";
     private static final String COMMITID = "commitId";
