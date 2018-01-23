@@ -648,10 +648,19 @@ public class CommitUtil {
         return true;
     }
 
-    public static void sendOrganizationDelta(String orgId, String orgName, String user) throws PSQLException
+    public static void sendOrganizationDelta(String orgId, String orgName, JSONObject orgJson) throws PSQLException
     {
         PostgresHelper pgh = new PostgresHelper();
         pgh.createOrganization(orgId, orgName);
+        String defaultIndex = EmsConfig.get("elastic.index.element");
+        try {
+            ElasticHelper eh = new ElasticHelper();
+            eh.createIndex(defaultIndex);
+            orgJson.put(Sjm.ELASTICID, orgId);
+            eh.indexElement(orgJson, defaultIndex);
+        } catch (Exception e) {
+            logger.error(e);
+        }
     }
 
     public static void sendProjectDelta(JSONObject o, String orgId, String user) {

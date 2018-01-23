@@ -104,7 +104,7 @@ public class OrgPost extends AbstractJavaWebScript {
                 }
 
                 if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
-                    CommitUtil.sendOrganizationDelta(orgId, orgName, user);
+                    CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
                 }
 
             }
