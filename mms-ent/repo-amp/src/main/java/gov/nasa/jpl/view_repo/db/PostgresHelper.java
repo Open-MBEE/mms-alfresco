@@ -739,6 +739,48 @@ public class PostgresHelper implements GraphInterface {
         return null;
     }
 
+    public String getElasticIdFromSysmlIdArtifact(String sysmlId) {
+        if (logger.isDebugEnabled())
+            logger.debug("Getting ElasticId for: " + sysmlId);
+        Artifact artifact = getArtifactFromSysmlId(sysmlId);
+        if (artifact != null) {
+            return artifact.getElasticId();
+        }
+
+        return null;
+    }
+    public Artifact getArtifactFromSysmlId(String sysmlId) {
+        return getArtifactFromSysmlId(sysmlId, false);
+    }
+
+    public Artifact getArtifactFromSysmlId(String sysmlId, boolean withDeleted) {
+        try {
+            PreparedStatement query;
+            if (withDeleted) {
+                query = getConn().prepareStatement("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
+                query.setString(1, sysmlId);
+            } else {
+                query = getConn()
+                    .prepareStatement("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
+                query.setString(1, sysmlId);
+                query.setBoolean(2, false);
+            }
+
+            ResultSet rs = query.executeQuery();
+            if (rs.next()) {
+                return new Artifact(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5),
+                    rs.getString(6), rs.getBoolean(7));
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return null;
+    }
+
     public String insertCommit(String elasticId, DbCommitTypes type, String creator) {
         try {
             Map<String, Object> map = new HashMap<>();

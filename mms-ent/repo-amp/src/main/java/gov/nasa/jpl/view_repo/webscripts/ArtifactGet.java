@@ -65,6 +65,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
 
     private static final String ARTIFACTID = "artifactId";
     private static final String COMMITID = "commitId";
+    private static final String CONTENTTYPE = "contentType";
 
     public ArtifactGet() {
         super();
@@ -121,20 +122,6 @@ public class ArtifactGet extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
-        String extensionArg = accept.replaceFirst(".*/(\\w+).*", "$1");
-
-        if (!extensionArg.startsWith(".")) {
-            extensionArg = "." + extensionArg;
-        }
-
-        String extension = !extensionArg.equals("*") ? extensionArg : ".svg";  // Assume .svg if no extension provided
-        // Case One: Search on or before the commitId you branched from
-        // Case Two: Search by CommitId
-
-        if (!Utils.isNullOrEmpty(extension) && !extension.startsWith(".")) {
-            extension = "." + extension;
-        }
-
         if (validateRequest(req, status)) {
 
             try {
@@ -142,23 +129,20 @@ public class ArtifactGet extends AbstractJavaWebScript {
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-                if (artifactId != null) {
-                    int lastIndex = artifactId.lastIndexOf('/');
-                    if (artifactId.length() > (lastIndex + 1)) {
-                        artifactId = lastIndex != -1 ? artifactId.substring(lastIndex + 1) : artifactId;
-                        String filename = artifactId + extension;
-                        String commitId = (req.getParameter(COMMITID) != null) ? req.getParameter(COMMITID) : null;
-                        Long commitTimestamp = emsNodeUtil.getTimestampFromElasticId(commitId);
-                        JSONObject result = handleArtifactMountSearch(
-                            new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename,
-                            commitTimestamp);
-                        if (result != null) {
-                            model.put(Sjm.RES, new JSONObject().put("artifacts", new JSONArray().put(result)));
-                        } else {
-                            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
-                        }
+                String commitId = (req.getParameter(COMMITID) != null) ? req.getParameter(COMMITID) : null;
+                String contentType = (req.getParameter(CONTENTTYPE) != null) ? req.getParameter(CONTENTTYPE) : null;
+                if (artifactId != null && commitId == null) {
+                    //Long commitTimestamp = emsNodeUtil.getTimestampFromElasticId(commitId);
+                    JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+
+                    JSONObject result = handleMountSearch(mountsJson, artifactId);
+                    //                        JSONObject result = handleArtifactMountSearch(
+                    //                            new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename,
+                    //                            commitTimestamp);
+                    if (result != null) {
+                        model.put(Sjm.RES, new JSONObject().put("artifacts", new JSONArray().put(result)));
                     } else {
-                        log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid artifactId!\n");
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
                     }
                 } else {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "ArtifactId not supplied!\n");
@@ -223,7 +207,8 @@ public class ArtifactGet extends AbstractJavaWebScript {
         if (artifactNode != null) {
             if (timestamp != null) {
                 // Gets the url with the nearest timestamp to the given commit
-                NavigableMap<Long, org.alfresco.service.cmr.version.Version> versions = artifactNode.getVersionPropertyHistory();
+                NavigableMap<Long, org.alfresco.service.cmr.version.Version> versions =
+                    artifactNode.getVersionPropertyHistory();
                 nearest = emsNodeUtil.imageVersionBeforeTimestamp(versions, timestamp);
                 if (nearest != null) {
                     return new JSONObject().put("id", artifactNode.getSysmlId()).put("url",
@@ -276,5 +261,26 @@ public class ArtifactGet extends AbstractJavaWebScript {
             }
         }
         return null;
+    }
+
+    protected JSONObject handleMountSearch(JSONObject mountsJson, String rootSysmlid) throws SQLException, IOException {
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
+        JSONObject tmpElements = emsNodeUtil.getArtifactById(rootSysmlid);
+        if (tmpElements.length() > 0) {
+            return tmpElements;
+        }
+        if (!mountsJson.has(Sjm.MOUNTS)) {
+            mountsJson = emsNodeUtil
+                .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
+        }
+        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
+
+        for (int i = 0; i < mountsArray.length(); i++) {
+            tmpElements = handleMountSearch(mountsArray.getJSONObject(i), rootSysmlid);
+            if (tmpElements.length() > 0) {
+                return tmpElements;
+            }
+        }
+        return new JSONObject();
     }
 }

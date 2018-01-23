@@ -364,6 +364,18 @@ public class EmsNodeUtil {
         return children;
     }
 
+    public JSONObject getArtifactById(String sysmlid){
+        String artifact = pgh.getElasticIdFromSysmlIdArtifact(sysmlid);
+        if(artifact != null){
+            try {
+                return eh.getElementByElasticId(artifact, projectId);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return new JSONObject();
+    }
+
     public JSONArray getChildren(String sysmlid, DbEdgeTypes dbEdge, final Long maxDepth) {
         Set<String> children = new HashSet<>();
 
