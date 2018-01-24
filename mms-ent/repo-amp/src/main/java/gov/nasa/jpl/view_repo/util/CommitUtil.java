@@ -461,6 +461,10 @@ public class CommitUtil {
 
         jmsPayload.put("refs", jmsWorkspace);
 
+        if (!commitElasticId.isEmpty()) {
+            jmsPayload.put(Sjm.COMMITID, commitElasticId);
+        }
+
         return true;
     }
 
