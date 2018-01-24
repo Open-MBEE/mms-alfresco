@@ -90,15 +90,18 @@ public class EmsNodeUtil {
         for (Map<String, String> n : organizations) {
             try {
                 JSONObject current = eh.getElementByElasticId(n.get(ORG_ID), EmsConfig.get("elastic.index.element"));
-                orgs.put(current);
+                if (current != null) {
+                    orgs.put(current);
+                } else {
+                    JSONObject org = new JSONObject();
+                    org.put(Sjm.SYSMLID, n.get(ORG_ID));
+                    org.put(Sjm.NAME, n.get(ORG_NAME));
+                    orgs.put(org);
+                }
             } catch (IOException e) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("No organization element found, returning basic element: ", e);
+                    logger.debug("Elasticsearch Error: ", e);
                 }
-                JSONObject org = new JSONObject();
-                org.put(Sjm.SYSMLID, n.get(ORG_ID));
-                org.put(Sjm.NAME, n.get(ORG_NAME));
-                orgs.put(org);
             }
         }
         return orgs;
