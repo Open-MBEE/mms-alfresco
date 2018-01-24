@@ -156,15 +156,6 @@ public class SiteGet extends AbstractJavaWebScript {
 
             for (int i = 0; i < elements.length(); i++) {
                 JSONObject o = elements.getJSONObject(i);
-                JSONObject newo = new JSONObject();
-
-                if (o.has(Sjm.NAME)) {
-                    newo.put("_" + Sjm.NAME, o.getString(Sjm.NAME));
-                } else {
-                    newo.put("_" + Sjm.NAME, o.getString(Sjm.SYSMLID));
-                }
-
-                newo.put("_" + Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
 
                 for (Node n : siteNodes) {
                     if (n.getSysmlId().equals(o.getString(Sjm.SYSMLID))) {
@@ -176,16 +167,16 @@ public class SiteGet extends AbstractJavaWebScript {
                             sites.add(DbNodeTypes.SITEANDPACKAGE);
                             String parent = emsNodeUtil.getImmediateParentOfTypes(n.getSysmlId(),
                                 DbEdgeTypes.CONTAINMENT, sites);
-                            newo.put("_parentId", parent);
-                            newo.put("_link", siteUrl);
+                            o.put("_parentId", parent);
+                            o.put("_link", siteUrl);
                         } else {
-                            newo.put("_parentId", "null");
+                            o.put("_parentId", "null");
                         }
                     }
                 }
 
-                if (!alfs.contains(newo.getString("_" + Sjm.SYSMLID))) {
-                    json.put(newo);
+                if (!alfs.contains(o.getString(Sjm.SYSMLID))) {
+                    json.put(o);
                 }
             }
         } catch (Exception e) {
