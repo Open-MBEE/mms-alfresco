@@ -101,12 +101,17 @@ public class OrgPost extends AbstractJavaWebScript {
                     } else {
                         log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site created.\n");
                     }
+                    if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
+                        CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                    }
+                } else {
+                    JSONObject result = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                    if (result != null && result.optString(Sjm.SYSMLID) != null) {
+                        log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site updated.\n");
+                    } else {
+                        log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Organization Site update failed.\n");
+                    }
                 }
-
-                if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
-                    CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
-                }
-
             }
         } catch (JSONException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
@@ -115,6 +120,7 @@ public class OrgPost extends AbstractJavaWebScript {
         }
 
         status.setCode(responseStatus.getCode());
+
         model.put(Sjm.RES, createResponseJson());
 
         printFooter(user, logger, timer);
