@@ -540,13 +540,24 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public List<Node> getNodesByType(DbNodeTypes type) {
+        return getNodesByType(type, false);
+    }
+
+    public List<Node> getNodesByType(DbNodeTypes type, boolean withDeleted) {
         List<Node> result = new ArrayList<>();
 
         try {
-            PreparedStatement query =
-                getConn().prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE nodetype = ?");
-            query.setInt(1, type.getValue());
-            ResultSet rs = query.executeQuery();
+            PreparedStatement statement;
+            StringBuilder query = new StringBuilder("SELECT * FROM \"nodes" + workspaceId + "\" WHERE nodetype = ?");
+
+            if (!withDeleted) {
+                query.append(" AND deleted = false");
+            }
+
+            statement = getConn().prepareStatement(query.toString());
+            statement.setInt(1, type.getValue());
+
+            ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 result.add(resultSetToNode(rs));
             }
