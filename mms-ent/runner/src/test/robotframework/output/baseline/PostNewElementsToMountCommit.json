@@ -1,0 +1,31 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "MountCommit",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "mc1",
+            "isDerived": false,
+            "name": "test mount object",
+            "ownerId": "MountCommit",
+            "type": "Class"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "MountCommit",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "mc2",
+            "isDerived": false,
+            "name": "test mount object",
+            "ownerId": "MountCommit",
+            "type": "Class"
+        }
+    ]
+}
