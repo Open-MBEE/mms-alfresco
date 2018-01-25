@@ -1631,6 +1631,10 @@ public class PostgresHelper implements GraphInterface {
                 "CREATE TABLE edges%s (LIKE edges%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
                 childWorkspaceNameSanitized, workspaceId));
 
+            execUpdate(String.format(
+                "CREATE TABLE artifacts%s (LIKE artifacts%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
+                childWorkspaceNameSanitized, workspaceId));
+
             int commit = 0;
             if (commitId != null && !commitId.isEmpty()) {
                 Map<String, Object> commitObject = getCommit(commitId);
@@ -1643,6 +1647,7 @@ public class PostgresHelper implements GraphInterface {
 
             insertRef(childWorkspaceNameSanitized, workspaceName, commit, elasticId, isTag);
             copyTable("nodes", childWorkspaceNameSanitized, workspaceId);
+            copyTable("artifacts", childWorkspaceNameSanitized, workspaceId);
 
             if (commitId != null && !commitId.isEmpty()) {
                 execUpdate(String.format("UPDATE nodes%s SET deleted = true WHERE initialcommit IS NOT NULL",
