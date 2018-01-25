@@ -224,31 +224,6 @@
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>3.0.0</version>
             </plugin>
-            <!-- make sure fonts are copied correctly : alfresco munges woff files
-                maybe because of UTF-8 encoding? -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <!-- Copy the RAML API information into the scripts directory so it
-                            gets deployed -->
-                        <id>copy-api-resources</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <overwrite>true</overwrite>
-                            <outputDirectory>${basedir}/src/main/amp/web/scripts/raml</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/api/html</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>io.swagger</groupId>
                 <artifactId>swagger-codegen-maven-plugin</artifactId>
@@ -259,13 +234,35 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${basedir}/../../api/swagger.yaml</inputSpec>
-                            <language>java</language>
+                            <inputSpec>${basedir}/src/main/amp/web/mms/swagger-ui/mms.swagger.yaml</inputSpec>
+                            <language>html2</language>
                             <configOptions>
                                 <output>${project.build.directory}/generated-sources</output>
                             </configOptions>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-api-resources</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${project.build.directory}/amp/web/mms/swagger</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/generated-sources/swagger</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+
                 </executions>
             </plugin>
         </plugins>
