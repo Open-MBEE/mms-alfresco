@@ -117,9 +117,16 @@ public class OrgPost extends AbstractJavaWebScript {
                     }
 
                     if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
-                        CommitUtil.sendOrganizationDelta(orgId, orgName, user);
+                        CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
                     }
 
+                } else {
+                    JSONObject result = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                    if (result != null && result.optString(Sjm.SYSMLID) != null) {
+                        log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site updated.\n");
+                    } else {
+                        log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Organization Site update failed.\n");
+                    }
                 }
             }
         } catch (JSONException e) {
