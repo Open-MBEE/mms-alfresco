@@ -228,7 +228,6 @@ public class CommitUtil {
                         artifact.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
                         artifact.put(INITIALCOMMIT, e.getString(Sjm.ELASTICID));
                         artifact.put(LASTCOMMIT, commitElasticId);
-                        artifact.put(CONTENTTYPE, e.getString(Sjm.CONTENTTYPE));
                         artifactInserts.add(artifact);
                     }
                 }

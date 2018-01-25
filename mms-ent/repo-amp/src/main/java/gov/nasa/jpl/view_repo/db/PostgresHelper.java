@@ -362,6 +362,32 @@ public class PostgresHelper implements GraphInterface {
                     values.add(single);
                 }
                 break;
+            case "artifacts":
+                query = String.format(
+                    "INSERT INTO \"artifacts%s\" (elasticId, sysmlId, lastcommit, initialcommit) VALUES (?, ?, ?, ?)",
+                    workspaceId);
+                for (Map<String, Object> node : rows) {
+                    List<Object> single = new LinkedList<>();
+                    single.add(0, node.get(Sjm.ELASTICID));
+                    single.add(1, node.get(Sjm.SYSMLID));
+                    single.add(2, node.get("lastcommit"));
+                    single.add(3, node.get(Sjm.ELASTICID));
+                    values.add(single);
+                }
+                break;
+            case "artifactUpdates":
+                query = String.format(
+                    "UPDATE \"artifacts%s\" SET elasticId = ?, lastcommit = ?, deleted = ? WHERE sysmlId = ?",
+                    workspaceId);
+                for (Map<String, Object> node : rows) {
+                    List<Object> single = new LinkedList<>();
+                    single.add(0, node.get(Sjm.ELASTICID));
+                    single.add(1, node.get("lastcommit"));
+                    single.add(2, node.get("deleted"));
+                    single.add(3, node.get(Sjm.SYSMLID));
+                    values.add(single);
+                }
+                break;
             case "updates":
                 query = String.format(
                     "UPDATE \"nodes%s\" SET elasticId = ?, lastcommit = ?, nodeType = ?, deleted = ? WHERE sysmlId = ?",
@@ -1503,7 +1529,7 @@ public class PostgresHelper implements GraphInterface {
             execUpdate("CREATE INDEX refsIndex on refs(id)");
 
             execUpdate(
-                "CREATE TABLE artifacts(id bigserial primary key, elasticId text not null unique, contentType text not null, sysmlId text not null unique, lastCommit text, initialCommit text, deleted boolean default false);");
+                "CREATE TABLE artifacts(id bigserial primary key, elasticId text not null unique, sysmlId text not null unique, lastCommit text, initialCommit text, deleted boolean default false);");
             execUpdate("CREATE INDEX artifactIndex on artifacts(id);");
             execUpdate("CREATE INDEX sysmlArtifactIndex on artifacts(sysmlId);");
 

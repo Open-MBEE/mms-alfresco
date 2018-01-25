@@ -134,11 +134,16 @@ public class ArtifactGet extends AbstractJavaWebScript {
                 if (artifactId != null && commitId == null) {
                     //Long commitTimestamp = emsNodeUtil.getTimestampFromElasticId(commitId);
                     JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
-
-                    JSONObject result = handleMountSearch(mountsJson, artifactId);
-                    //                        JSONObject result = handleArtifactMountSearch(
-                    //                            new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId), filename,
-                    //                            commitTimestamp);
+                    JSONObject result = null;
+                    try {
+                        result = handleMountSearch(mountsJson, artifactId);
+                    } catch (SQLException e) {
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
+                        logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                    } catch (IOException e) {
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
+                        logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                    }
                     if (result != null) {
                         model.put(Sjm.RES, new JSONObject().put("artifacts", new JSONArray().put(result)));
                     } else {
