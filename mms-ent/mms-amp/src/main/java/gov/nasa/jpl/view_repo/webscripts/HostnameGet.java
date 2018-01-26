@@ -8,17 +8,15 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.JsonObject;
+
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-//import gov.nasa.jpl.view_repo.util.JSONArray;
 
 public class HostnameGet extends AbstractJavaWebScript {
 	static Logger logger = Logger.getLogger(HostnameGet.class);
@@ -40,31 +38,24 @@ public class HostnameGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
 		Map< String, Object > model = new HashMap<>();
-		JSONObject jsonObj = new JSONObject();
+		JsonObject jsonObj = new JsonObject();
 		SysAdminParams sysAdminParams = this.services.getSysAdminParams();
 
-		JSONObject alfrescoJson = new JSONObject();
-		try{
-			alfrescoJson.put("protocol", sysAdminParams.getAlfrescoProtocol());
-			alfrescoJson.put("host", sysAdminParams.getAlfrescoHost());
-			alfrescoJson.put("port", sysAdminParams.getAlfrescoPort());
+		JsonObject alfrescoJson = new JsonObject();
+		alfrescoJson.addProperty("protocol", sysAdminParams.getAlfrescoProtocol());
+		alfrescoJson.addProperty("host", sysAdminParams.getAlfrescoHost());
+		alfrescoJson.addProperty("port", sysAdminParams.getAlfrescoPort());
 
-			JSONObject shareJson = new JSONObject();
-			shareJson.put("protocol", sysAdminParams.getShareProtocol());
-			shareJson.put("host", sysAdminParams.getShareHost());
-			shareJson.put("port", sysAdminParams.getSharePort());
+		JsonObject shareJson = new JsonObject();
+		shareJson.addProperty("protocol", sysAdminParams.getShareProtocol());
+		shareJson.addProperty("host", sysAdminParams.getShareHost());
+		shareJson.addProperty("port", sysAdminParams.getSharePort());
 
-			jsonObj.put("alfresco", alfrescoJson);
-			jsonObj.put("share", shareJson);
+		jsonObj.add("alfresco", alfrescoJson);
+		jsonObj.add("share", shareJson);
 
-            model.put(Sjm.RES, jsonObj.toString(4));
-        } catch(JSONException js) {
-			status.setCode(Status.STATUS_NOT_FOUND);
-			status.setMessage("Cannot get host name information.");
-			status.setException(js);
-			status.setRedirect(true);
-		}
-
+		model.put(Sjm.RES, jsonObj.toString());
+		
 		printFooter(user, logger, timer);
 
 		return model;

@@ -47,6 +47,7 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 
 import org.alfresco.repo.model.Repository;
@@ -59,16 +60,20 @@ import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-//import gov.nasa.jpl.view_repo.util.JSONArray;
 
 // ASSUMPTIONS & Interesting things about the new model get
 // 1. always complete json for elements (no partial)
@@ -137,8 +142,8 @@ public class ModelPost extends AbstractJavaWebScript {
     }
 
     protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user, String contentType) {
-        JSONObject newElementsObject = new JSONObject();
-        JSONObject results;
+        JsonObject newElementsObject = new JsonObject();
+        JsonObject results;
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
         boolean overwriteJson = Boolean.parseBoolean(req.getParameter("overwrite"));
@@ -149,15 +154,18 @@ public class ModelPost extends AbstractJavaWebScript {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
+        JsonParser parser = new JsonParser();
         try {
-
-            JSONObject postJson = new JSONObject(req.getContent().getContent());
+            JsonElement postJsonElement = parser.parse(req.getContent().getContent());
+            JsonObject postJson = postJsonElement.isJsonNull() ? new JsonObject() :
+                postJsonElement.getAsJsonObject();
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
-            results = emsNodeUtil.processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, overwriteJson, this.requestSourceApplication);
+            results = emsNodeUtil.processPostJson(postJson.get(Sjm.ELEMENTS).getAsJsonArray(), 
+            		user, oldElasticIds, overwriteJson, this.requestSourceApplication);
 
-            String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
+            String commitId = results.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
 
             if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews)) {
                 if (!oldElasticIds.isEmpty()) {
@@ -166,19 +174,22 @@ public class ModelPost extends AbstractJavaWebScript {
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
 
                 if (withChildViews) {
-                    for (int i = 0; i < results.getJSONArray(NEWELEMENTS).length(); i++) {
-                        results.getJSONArray(NEWELEMENTS)
-                            .put(i, emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i)));
+                	JsonArray array = results.get(NEWELEMENTS).getAsJsonArray();
+                    for (int i = 0; i < array.size(); i++) {
+                    	array.set(i, emsNodeUtil.addChildViews(array.get(i).getAsJsonObject()));
                     }
                 }
 
-                newElementsObject.put(Sjm.ELEMENTS, extended ? emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray(NEWELEMENTS), req)) : filterByPermission(results.getJSONArray(NEWELEMENTS), req));
-                newElementsObject.put(Sjm.COMMITID, commitId);
-                newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
-                newElementsObject.put(Sjm.CREATOR, user);
+                newElementsObject.add(Sjm.ELEMENTS, extended ? 
+                		emsNodeUtil.addExtendedInformation(filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req)) 
+                		: filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req));
+                newElementsObject.addProperty(Sjm.COMMITID, commitId);
+                newElementsObject.addProperty(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
+                newElementsObject.addProperty(Sjm.CREATOR, user);
 
                 if (prettyPrint) {
-                    model.put(Sjm.RES, newElementsObject.toString(4));
+                	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    model.put(Sjm.RES, gson.toJson(newElementsObject));
                 } else {
                     model.put(Sjm.RES, newElementsObject);
                 }
@@ -200,7 +211,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
     protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user, String contentType) {
 
-        JSONObject resultJson = null;
+        JsonObject resultJson = null;
         String filename = null;
         Map<String, Object> model = new HashMap<>();
 
@@ -220,10 +231,10 @@ public class ModelPost extends AbstractJavaWebScript {
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        JSONObject project = emsNodeUtil.getProject(projectId);
-        siteName = project.optString("orgId", null);
+        JsonObject project = emsNodeUtil.getProject(projectId);
+        siteName = JsonUtil.getOptString(project, "orgId");
 
-        if (siteName != null && validateRequest(req, status)) {
+        if (!siteName.equals("") && validateRequest(req, status)) {
 
             try {
                 // Get the artifact name from the url:
@@ -245,12 +256,12 @@ public class ModelPost extends AbstractJavaWebScript {
                         filename = extension != null ? artifactId + extension : artifactId;
 
                         // Create return json:
-                        resultJson = new JSONObject();
-                        resultJson.put("filename", filename);
+                        resultJson = new JsonObject();
+                        resultJson.addProperty("filename", filename);
                         // TODO: want full path here w/ path to site also, but Doris does not use it,
                         //		 so leaving it as is.
-                        resultJson.put("path", path);
-                        resultJson.put("site", siteName);
+                        resultJson.addProperty("path", path);
+                        resultJson.addProperty("site", siteName);
 
                         // Update or create the artifact if possible:
                         if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
@@ -307,7 +318,7 @@ public class ModelPost extends AbstractJavaWebScript {
                     model.put(Sjm.RES, createResponseJson());
                 }
 
-            } catch (JSONException e) {
+            } catch (JsonParseException e) {
                 logger.error("Issues creating return JSON\\n");
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 model.put(Sjm.RES, createResponseJson());

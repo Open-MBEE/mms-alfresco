@@ -14,19 +14,17 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-//import org.json.JSONArray;
-import org.json.JSONException;
-//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONArray;
 
 /**
  * @author dank
@@ -71,27 +69,25 @@ public class HistoryGet extends ModelGet {
             logger.debug(user + " " + req.getURL());
         }
 
-        JSONObject top = new JSONObject();
-        JSONArray elementsJson = handleRequest(req);
+        JsonObject top = new JsonObject();
+        JsonArray elementsJson = handleRequest(req);
 
         try {
-            if (elementsJson.length() > 0) {
-                top.put(Sjm.COMMITS, elementsJson);
+            if (elementsJson.size() > 0) {
+                top.add(Sjm.COMMITS, elementsJson);
             } else {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
             }
 
             if (!Utils.isNullOrEmpty(response.toString()))
-                top.put("message", response.toString());
+                top.addProperty("message", response.toString());
 
-        } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
         status.setCode(responseStatus.getCode());
-        model.put(Sjm.RES, top.toString(4));
+        model.put(Sjm.RES, top.toString());
 
         printFooter(user, logger, timer);
         return model;
@@ -110,12 +106,12 @@ public class HistoryGet extends ModelGet {
      * @param req
      * @return
      */
-    private JSONArray handleRequest(WebScriptRequest req) {
+    private JsonArray handleRequest(WebScriptRequest req) {
         // REVIEW -- Why check for errors here if validate has already been
         // called? Is the error checking code different? Why?
 
         // Creates an empty JSONArray
-        JSONArray jsonHist = null;
+        JsonArray jsonHist = null;
         try {
             String[] idKeys = { "modelid", "elementid", "elementId" };
             String modelId = null;
@@ -129,7 +125,7 @@ public class HistoryGet extends ModelGet {
             if (modelId == null) {
                 logger.error("Model ID Null...");
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element");
-                return new JSONArray();
+                return new JsonArray();
             }
 
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), getRefId(req));

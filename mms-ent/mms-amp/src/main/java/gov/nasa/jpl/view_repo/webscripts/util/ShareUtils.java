@@ -17,11 +17,8 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-//import org.json.JSONObject;
 
-import gov.nasa.jpl.view_repo.util.JSONObject;
-//import gov.nasa.jpl.view_repo.util.JSONArray;
+import com.google.gson.JsonObject;
 
 public class ShareUtils {
     static Logger logger = Logger.getLogger(ShareUtils.class);
@@ -111,18 +108,12 @@ public class ShareUtils {
             return false;
         }
 
-        JSONObject json = new JSONObject();
-        try {
-            json.put("shortName", siteId);
-            json.put("sitePreset", sitePreset);
-            json.put("title", siteTitle);
-            json.put("description", siteDescription);
-            json.put("visibility", isPublic ? "PUBLIC" : "PRIVATE");
-        } catch ( JSONException e ) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-            logger.error( "Could not create JSON for site creation" );
-            return false;
-        }
+        JsonObject json = new JsonObject();
+        json.addProperty("shortName", siteId);
+        json.addProperty("sitePreset", sitePreset);
+        json.addProperty("title", siteTitle);
+        json.addProperty("description", siteDescription);
+        json.addProperty("visibility", isPublic ? "PUBLIC" : "PRIVATE");
 
         if (!makeSharePostCall(httpClient, CREATE_SITE_URL, json.toString(), CONTENT_TYPE_JSON,
                         "Create site with name: " + siteId, HttpStatus.SC_OK)) {

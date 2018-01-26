@@ -47,9 +47,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
-//import org.json.JSONArray;
-import org.json.JSONException;
-//import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -58,15 +55,20 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.actions.ActionUtil;
 import gov.nasa.jpl.view_repo.actions.HtmlToPdfActionExecuter;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONArray;
 
 public class HtmlToPdfPost extends AbstractJavaWebScript {
 	static Logger logger = Logger.getLogger(HtmlToPdfPost.class);
@@ -127,33 +129,31 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 	@Override
 	protected Map<String, Object> executeImplImpl(WebScriptRequest req,
 			Status status, Cache cache) {
-        String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        printHeader(user, logger, req);
-        Timer timer = new Timer();
-
-		Map<String, Object> model = new HashMap<>();
-
-		HtmlToPdfPost instance = new HtmlToPdfPost(repository, services);
-
-		JSONObject result = instance.saveAndStartAction(req, status);
-		appendResponseStatusInfo(instance);
-
-		status.setCode(responseStatus.getCode());
-		if (result == null) {
-			model.put(Sjm.RES, createResponseJson());
-		} else {
-			try {
-				if (!Utils.isNullOrEmpty(response.toString())) {
-					result.put("message", response.toString());
-				}
-				model.put(Sjm.RES, result);
-			} catch (JSONException e) {
-				logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-			}
-		}
-
-		printFooter(user, logger, timer);
-		return model;
+            String user = AuthenticationUtil.getFullyAuthenticatedUser();
+            printHeader(user, logger, req);
+            Timer timer = new Timer();
+            JsonObject result = null;
+            Map<String, Object> model = new HashMap<>();
+            
+            try {
+                HtmlToPdfPost instance = new HtmlToPdfPost(repository, services);
+                result = instance.saveAndStartAction(req, status);
+                appendResponseStatusInfo(instance);
+            } catch (IOException e) {
+                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error");
+            }
+            status.setCode(responseStatus.getCode());
+            if (result == null) {
+                model.put(Sjm.RES, createResponseJson());
+            } else {
+                if (!Utils.isNullOrEmpty(response.toString())) {
+                    result.addProperty("message", response.toString());
+                }
+                model.put(Sjm.RES, result);
+            }
+            
+            printFooter(user, logger, timer);
+            return model;
 	}
 
 	protected void setUserHomeSubDir(EmsScriptNode userHomeFolder, String docId)
@@ -971,33 +971,34 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
 	 * @param req
 	 * @param status
 	 */
-	private JSONObject saveAndStartAction(WebScriptRequest req, Status status) {
-		JSONObject postJson = null;
-		//EmsScriptNode workspace = getWorkspace(req);
-		JSONObject reqPostJson = (JSONObject) req.parseContent();
-		if (reqPostJson != null) {
-			postJson = reqPostJson;
-			if (reqPostJson.has("documents")) {
-				JSONArray documents = reqPostJson.getJSONArray("documents");
-				if (documents != null) {
-					JSONObject json = documents.getJSONObject(0);
-					String user = AuthenticationUtil.getRunAsUser();
-					EmsScriptNode userHomeFolder = getUserHomeFolder(user);
-
-					postJson = handleCreate(json, userHomeFolder, null, status);
-				}
-			}
-		}
-
-		return postJson;
+	private JsonObject saveAndStartAction(WebScriptRequest req, Status status) throws JsonParseException, IOException {
+            JsonObject postJson = null;
+            //EmsScriptNode workspace = getWorkspace(req);
+            JsonParser parser = new JsonParser();
+            JsonElement reqPostJsonElement = parser.parse(req.getContent().getContent());
+            JsonObject reqPostJson = reqPostJsonElement.isJsonNull() ? null : reqPostJsonElement.getAsJsonObject();
+            if (!reqPostJsonElement.isJsonNull()) {
+                postJson = reqPostJson;
+                if (reqPostJson.has("documents")) {
+                    JsonArray documents = reqPostJson.get("documents").getAsJsonArray();
+                    if (documents != null) {
+                        JsonObject json = documents.get(0).getAsJsonObject();
+                        String user = AuthenticationUtil.getRunAsUser();
+                        EmsScriptNode userHomeFolder = getUserHomeFolder(user);
+                        
+                        postJson = handleCreate(json, userHomeFolder, null, status);
+                    }
+                }
+            }
+            
+            return postJson;
 	}
 
-	private JSONObject handleCreate(JSONObject postJson, EmsScriptNode context, EmsScriptNode workspace, Status status)
-			throws JSONException {
+	private JsonObject handleCreate(JsonObject postJson, EmsScriptNode context, EmsScriptNode workspace, Status status) {
 		EmsScriptNode jobNode = null;
 
 		if (postJson.has("name")) {
-			String name = postJson.getString("name");
+			String name = postJson.get("name").getAsString();
 			if (ActionUtil.jobExists(context, name))
 				return postJson;
 
@@ -1026,25 +1027,25 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
      * @param postJson
 	 * @param workspace
 	 */
-	public void startAction(EmsScriptNode jobNode, JSONObject postJson, EmsScriptNode workspace) {
+	public void startAction(EmsScriptNode jobNode, JsonObject postJson, EmsScriptNode workspace) {
 		ActionService actionService = services.getActionService();
 		Action htmlToPdfAction = actionService.createAction(HtmlToPdfActionExecuter.NAME);
 		//htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_WORKSPACE, workspace);
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_DOCUMENT_ID, postJson.optString("docId"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TAG_ID, postJson.optString("tagId"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TIME_STAMP, postJson.optString("time"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_COVER, postJson.optString("cover"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_HTML, postJson.optString("html"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_HEADER, postJson.optString("header"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_FOOTER, postJson.optString("footer"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_DOC_NUM, postJson.optString("docNum"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_DISPLAY_TIME, postJson.optString("displayTime"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_CUSTOM_CSS, postJson.optString("customCss"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TOC, postJson.optString("toc"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TOF, postJson.optString("tof"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TOT, postJson.optString("tot"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_INDEX, postJson.optString("index"));
-		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_DISABLED_COVER_PAGE, postJson.optString("disabledCoverPage"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_DOCUMENT_ID, JsonUtil.getOptString(postJson, "docId"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TAG_ID, JsonUtil.getOptString(postJson, "tagId"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TIME_STAMP, JsonUtil.getOptString(postJson, "time"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_COVER, JsonUtil.getOptString(postJson, "cover"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_HTML, JsonUtil.getOptString(postJson, "html"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_HEADER, JsonUtil.getOptString(postJson, "header"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_FOOTER, JsonUtil.getOptString(postJson, "footer"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_DOC_NUM, JsonUtil.getOptString(postJson, "docNum"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_DISPLAY_TIME, JsonUtil.getOptString(postJson, "displayTime"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_CUSTOM_CSS, JsonUtil.getOptString(postJson, "customCss"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TOC, JsonUtil.getOptString(postJson, "toc"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TOF, JsonUtil.getOptString(postJson, "tof"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_TOT, JsonUtil.getOptString(postJson, "tot"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_INDEX, JsonUtil.getOptString(postJson, "index"));
+		htmlToPdfAction.setParameterValue(HtmlToPdfActionExecuter.PARAM_DISABLED_COVER_PAGE, JsonUtil.getOptString(postJson, "disabledCoverPage"));
 		services.getActionService().executeAction(htmlToPdfAction, jobNode.getNodeRef(), true, true);
 	}
 

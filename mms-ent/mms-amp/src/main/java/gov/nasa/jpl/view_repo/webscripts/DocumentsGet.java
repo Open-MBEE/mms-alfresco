@@ -11,18 +11,16 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-//import org.json.JSONArray;
-import org.json.JSONException;
-//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONArray;
 
 public class DocumentsGet extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(DocumentsGet.class);
@@ -61,13 +59,11 @@ public class DocumentsGet extends AbstractJavaWebScript {
             }
         }
 
-        JSONObject jsonObject = new JSONObject();
+        JsonObject jsonObject = new JsonObject();
 
         try {
-            jsonObject.put(Sjm.DOCUMENTS, filterByPermission(handleProducts(req), req));
+            jsonObject.add(Sjm.DOCUMENTS, filterByPermission(handleProducts(req), req));
             model.put(Sjm.RES, jsonObject.toString());
-        } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
@@ -82,7 +78,7 @@ public class DocumentsGet extends AbstractJavaWebScript {
         return model;
     }
 
-    private JSONArray handleProducts(WebScriptRequest req) throws JSONException {
+    private JsonArray handleProducts(WebScriptRequest req) {
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);

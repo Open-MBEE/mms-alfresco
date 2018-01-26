@@ -17,16 +17,14 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-//import org.json.JSONArray;
-import org.json.JSONException;
-//import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONArray;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 
 /**
  *
@@ -127,17 +125,14 @@ public class JmsConnection implements ConnectionInterface {
     /**
      * Changed method to synchronized to JMS message can be sent out with appropriate refId and projectIds
      * without race condition.
-     */ public synchronized boolean publish(JSONObject json, String eventType, String refId, String projectId) {
+     */ 
+    public synchronized boolean publish(JsonObject json, String eventType, String refId, String projectId) {
         boolean result = false;
-        try {
-            json.put("sequence", sequenceId++);
-            // don't do null check since null is applicable and want to reset
-            this.refId = refId;
-            this.projectId = projectId;
-            result = publishMessage(json.toString(), eventType);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        json.addProperty("sequence", sequenceId++);
+        // don't do null check since null is applicable and want to reset
+        this.refId = refId;
+        this.projectId = projectId;
+        result = publishMessage(json.toString(), eventType);
 
         return result;
     }
@@ -226,8 +221,8 @@ public class JmsConnection implements ConnectionInterface {
         this.projectId = projectId;
     }
 
-    @Override public JSONObject toJson() {
-        JSONArray connections = new JSONArray();
+    @Override public JsonObject toJson() {
+        JsonArray connections = new JsonArray();
 
         for (String eventType : getConnectionMap().keySet()) {
             ConnectionInfo ci = getConnectionMap().get(eventType);
@@ -236,21 +231,21 @@ public class JmsConnection implements ConnectionInterface {
                 getConnectionMap().put(eventType, ci);
             }
 
-            JSONObject connJson = new JSONObject();
-            connJson.put("uri", ci.uri);
-            connJson.put("connFactory", ci.connFactory);
-            connJson.put("ctxFactory", ci.ctxFactory);
-            connJson.put("password", ci.password);
-            connJson.put("username", ci.username);
-            connJson.put("destName", ci.destination);
-            connJson.put("destType", ci.destType.toString());
-            connJson.put("eventType", eventType);
+            JsonObject connJson = new JsonObject();
+            connJson.addProperty("uri", ci.uri);
+            connJson.addProperty("connFactory", ci.connFactory);
+            connJson.addProperty("ctxFactory", ci.ctxFactory);
+            connJson.addProperty("password", ci.password);
+            connJson.addProperty("username", ci.username);
+            connJson.addProperty("destName", ci.destination);
+            connJson.addProperty("destType", ci.destType.toString());
+            connJson.addProperty("eventType", eventType);
 
-            connections.put(connJson);
+            connections.add(connJson);
         }
 
-        JSONObject json = new JSONObject();
-        json.put("connections", connections);
+        JsonObject json = new JsonObject();
+        json.add("connections", connections);
 
         return json;
     }
@@ -258,11 +253,11 @@ public class JmsConnection implements ConnectionInterface {
     /**
      * Handle single and multiple connections embedded as connections array or not
      */
-    @Override public void ingestJson(JSONObject json) {
+    @Override public void ingestJson(JsonObject json) {
         if (json.has("connections")) {
-            JSONArray connections = json.getJSONArray("connections");
-            for (int ii = 0; ii < connections.length(); ii++) {
-                JSONObject connection = connections.getJSONObject(ii);
+            JsonArray connections = json.get("connections").getAsJsonArray();
+            for (int ii = 0; ii < connections.size(); ii++) {
+                JsonObject connection = connections.get(ii).getAsJsonObject();
                 ingestConnectionJson(connection);
             }
         } else {
@@ -270,10 +265,11 @@ public class JmsConnection implements ConnectionInterface {
         }
     }
 
-    public void ingestConnectionJson(JSONObject json) {
+    public void ingestConnectionJson(JsonObject json) {
         String eventType = null;
         if (json.has("eventType")) {
-            eventType = json.isNull("eventType") ? null : json.getString("eventType");
+            eventType = json.get("eventType").isJsonNull() ?
+                null : json.get("eventType").getAsString();
         }
         if (eventType == null) {
             eventType = CommitUtil.TYPE_DELTA;
@@ -287,28 +283,34 @@ public class JmsConnection implements ConnectionInterface {
         }
 
         if (json.has("uri")) {
-            ci.uri = json.isNull("uri") ? null : json.getString("uri");
+            ci.uri = json.get("uri").isJsonNull() ? 
+                            null : json.get("uri").getAsString();
         }
         if (json.has("connFactory")) {
-            ci.connFactory = json.isNull("connFactory") ? null : json.getString("connFactory");
+            ci.connFactory = json.get("connFactory").isJsonNull() ?
+                null : json.get("connFactory").getAsString();
         }
         if (json.has("ctxFactory")) {
-            ci.ctxFactory = json.isNull("ctxFactory") ? null : json.getString("ctxFactory");
+            ci.ctxFactory = json.get("ctxFactory").isJsonNull() ?
+                null : json.get("ctxFactory").getAsString();
         }
         if (json.has("password")) {
-            ci.password = json.isNull("password") ? null : json.getString("password");
+            ci.password = json.get("password").isJsonNull() ?
+                null : json.get("password").getAsString();
         }
         if (json.has("username")) {
-            ci.username = json.isNull("username") ? null : json.getString("username");
+            ci.username = json.get("username").isJsonNull() ?
+                null : json.get("username").getAsString();
         }
         if (json.has("destName")) {
-            ci.destination = json.isNull("destName") ? null : json.getString("destName");
+            ci.destination = json.get("destName").isJsonNull() ?
+                null : json.get("destName").getAsString();
         }
         if (json.has("destType")) {
-            if (json.isNull("destType")) {
+            if (json.get("destType").isJsonNull()) {
                 ci.destType = null;
             } else {
-                String type = json.getString("destType");
+                String type = json.get("destType").getAsString();
                 if (type.equalsIgnoreCase("topic")) {
                     ci.destType = DestinationType.TOPIC;
                 } else if (type.equalsIgnoreCase("queue")) {

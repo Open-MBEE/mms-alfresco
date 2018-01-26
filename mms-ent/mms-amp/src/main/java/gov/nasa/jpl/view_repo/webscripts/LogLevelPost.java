@@ -8,17 +8,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-//import org.json.JSONArray;
-import org.json.JSONException;
-//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONArray;
 
 /**
  * Utility service for setting log levels of specified classes on the fly
@@ -33,24 +31,24 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
 
         StringBuffer msg = new StringBuffer();
 
-        JSONObject response = new JSONObject();
+        JsonObject response = new JsonObject();
 
-        JSONArray requestJson;
-        try {
-            requestJson = (JSONArray) req.parseContent();
-        } catch (JSONException e) {
+        JsonArray requestJson;
+//        try {
+            requestJson = (JsonArray) req.parseContent();
+            /*} catch (JSONException e) {
             status.setCode(HttpServletResponse.SC_BAD_REQUEST);
-            response.put("msg", "JSON malformed");
+            response.addProperty("msg", "JSON malformed");
             result.put(Sjm.RES, response);
             return result;
         }
-
-        for (int ii = 0; ii < requestJson.length(); ii++) {
+*/
+        for (int ii = 0; ii < requestJson.size(); ii++) {
             boolean failed = false;
-            JSONObject json = requestJson.getJSONObject(ii);
+            JsonObject json = requestJson.get(ii).getAsJsonObject();
 
-            String className = json.getString("classname");
-            String level = json.getString("loglevel");
+            String className = json.get("classname").getAsString();
+            String level = json.get("loglevel").getAsString();
 
             try {
                 Logger classLogger = (Logger) getStaticValue(className, "logger");
@@ -61,14 +59,17 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
             }
 
             if (!failed) {
+                JsonArray logLevels = null;
                 if (!response.has("loglevels")) {
-                    response.put("loglevels", new JSONArray());
-                }
+                    logLevels = new JsonArray();
+                    response.add("loglevels", logLevels);
+                } else
+                    logLevels = response.get("loglevels").getAsJsonArray();
                 try {
-                    JSONObject levelObject = new JSONObject();
-                    levelObject.put("classname", className);
-                    levelObject.put("loglevel", level);
-                    response.getJSONArray("loglevels").put(levelObject);
+                    JsonObject levelObject = new JsonObject();
+                    levelObject.addProperty("classname", className);
+                    levelObject.addProperty("loglevel", level);
+                    logLevels.add(levelObject);
                 } catch (Exception e) {
                     logger.info(String.format("%s", LogUtil.getStackTrace(e)));
                     failed = true;
@@ -81,9 +82,9 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
         }
 
         if (msg.length() > 0) {
-            response.put("msg", msg.toString());
+            response.addProperty("msg", msg.toString());
         }
-        result.put(Sjm.RES, response.toString(4));
+        result.put(Sjm.RES, response.toString());
         status.setCode(HttpServletResponse.SC_OK);
 
         return result;

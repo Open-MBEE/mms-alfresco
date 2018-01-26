@@ -42,12 +42,13 @@ import org.alfresco.service.ServiceRegistry;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-//import org.json.JSONArray;
-import org.json.JSONException;
-//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
@@ -57,8 +58,6 @@ import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONArray;
 
 /**
  * @author gcgandhi
@@ -94,18 +93,18 @@ public class SiteGet extends AbstractJavaWebScript {
                 return model;
             }
         }
-        JSONObject json = null;
+        JsonObject json = null;
 
         try {
             if (validateRequest(req, status)) {
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
 
-                JSONArray jsonArray = handleSite(projectId, refId);
-                json = new JSONObject();
-                json.put("groups", jsonArray);
+                JsonArray jsonArray = handleSite(projectId, refId);
+                json = new JsonObject();
+                json.add("groups", jsonArray);
             }
-        } catch (JSONException e) {
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
@@ -131,10 +130,10 @@ public class SiteGet extends AbstractJavaWebScript {
      *
      * @throws IOException
      */
-    private JSONArray handleSite(String projectId, String refId)
+    private JsonArray handleSite(String projectId, String refId)
                     throws IOException {
 
-        JSONArray json = new JSONArray();
+        JsonArray json = new JsonArray();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
         ElasticHelper eh = new ElasticHelper();
@@ -151,25 +150,25 @@ public class SiteGet extends AbstractJavaWebScript {
             for (Node n : alfSites) {
                 alfs.add(n.getSysmlId());
             }
-            JSONArray elements = eh.getElementsFromElasticIds(ids, projectId);
+            JsonArray elements = eh.getElementsFromElasticIds(ids, projectId);
 
             if (logger.isDebugEnabled())
                 logger.debug("handleSite: " + elements);
 
-            for (int i = 0; i < elements.length(); i++) {
-                JSONObject o = elements.getJSONObject(i);
-                JSONObject newo = new JSONObject();
+            for (int i = 0; i < elements.size(); i++) {
+                JsonObject o = elements.get(i).getAsJsonObject();
+                JsonObject newo = new JsonObject();
 
                 if (o.has(Sjm.NAME)) {
-                    newo.put("_" + Sjm.NAME, o.getString(Sjm.NAME));
+                    newo.add("_" + Sjm.NAME, o.get(Sjm.NAME));
                 } else {
-                    newo.put("_" + Sjm.NAME, o.getString(Sjm.SYSMLID));
+                    newo.add("_" + Sjm.NAME, o.get(Sjm.SYSMLID));
                 }
 
-                newo.put("_" + Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
+                newo.add("_" + Sjm.SYSMLID, o.get(Sjm.SYSMLID));
 
                 for (Node n : siteNodes) {
-                    if (n.getSysmlId().equals(o.getString(Sjm.SYSMLID))) {
+                    if (n.getSysmlId().equals(o.get(Sjm.SYSMLID).getAsString())) {
                         if (n.getNodeType() == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                             String path = "path|/Sites/" + orgId + "/documentLibrary/" + projectId + "/" + n.getSysmlId();
                             String siteUrl = "/share/page/repository#filter=" + StringEscapeUtils.escapeHtml(path);
@@ -178,16 +177,16 @@ public class SiteGet extends AbstractJavaWebScript {
                             sites.add(DbNodeTypes.SITEANDPACKAGE);
                             String parent = emsNodeUtil.getImmediateParentOfTypes(n.getSysmlId(),
                                 DbEdgeTypes.CONTAINMENT, sites);
-                            newo.put("_parentId", parent);
-                            newo.put("_link", siteUrl);
+                            newo.addProperty("_parentId", parent);
+                            newo.addProperty("_link", siteUrl);
                         } else {
-                            newo.put("_parentId", "null");
+                            newo.addProperty("_parentId", "null");
                         }
                     }
                 }
 
-                if (!alfs.contains(newo.getString("_" + Sjm.SYSMLID))) {
-                    json.put(newo);
+                if (!alfs.contains(newo.get("_" + Sjm.SYSMLID).getAsString())) {
+                    json.add(newo);
                 }
             }
         } catch (Exception e) {

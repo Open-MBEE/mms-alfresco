@@ -1,9 +1,9 @@
 package gov.nasa.jpl.view_repo.db;
 
 import java.util.Map;
-//import org.json.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-//import gov.nasa.jpl.view_repo.util.JSONArray;
+import com.google.gson.JsonObject;
+
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 
 public class Edge {
 
@@ -45,12 +45,12 @@ public class Edge {
         return properties;
     }
 
-    public JSONObject toJson() {
-        JSONObject json = new JSONObject();
-        json.put("parent", this.parent);
-        json.put("child", this.child);
-        json.put("edgeType", this.edgeType);
-        json.put("properties", new JSONObject(this.properties));
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.addProperty("parent", this.parent);
+        json.addProperty("child", this.child);
+        json.addProperty("edgeType", this.edgeType);
+        json.add("properties", JsonUtil.fromMap(this.properties));
 
         return json;
     }

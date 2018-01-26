@@ -10,18 +10,19 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-//import org.json.JSONArray;
-import org.json.JSONException;
-//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONArray;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
@@ -63,7 +64,7 @@ public class WorkspacesGet extends AbstractJavaWebScript{
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject object = null;
+        JsonObject object = null;
         String projectId = getProjectId(req);
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
@@ -72,7 +73,7 @@ public class WorkspacesGet extends AbstractJavaWebScript{
             if (validateRequest(req, status)) {
                 object = handleWorkspace (projectId, req.getParameter( "deleted" ) != null);
             }
-        } catch (JSONException e) {
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
@@ -82,14 +83,15 @@ public class WorkspacesGet extends AbstractJavaWebScript{
         } else {
             try {
                 if (!Utils.isNullOrEmpty(response.toString())) {
-                    object.put("message", response.toString());
+                    object.addProperty("message", response.toString());
                 }
                 if (prettyPrint || accept.contains("webp")) {
-                    model.put(Sjm.RES, object.toString(4));
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    model.put(Sjm.RES, gson.toJson(object));
                 } else {
                     model.put(Sjm.RES, object);
                 }
-            } catch ( JSONException e ) {
+            } catch ( JsonParseException e ) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 model.put(Sjm.RES, createResponseJson());
             }
@@ -101,12 +103,12 @@ public class WorkspacesGet extends AbstractJavaWebScript{
         return model;
     }
 
-    protected JSONObject handleWorkspace (String projectId, boolean findDeleted) throws JSONException{
-        JSONObject json = new JSONObject();
-        JSONArray jArray = null;
+    protected JsonObject handleWorkspace (String projectId, boolean findDeleted) {
+        JsonObject json = new JsonObject();
+        JsonArray jArray = null;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
         jArray = emsNodeUtil.getRefsJson();
-        json.put("refs", jArray);
+        json.add("refs", jArray);
         return json;
     }
 

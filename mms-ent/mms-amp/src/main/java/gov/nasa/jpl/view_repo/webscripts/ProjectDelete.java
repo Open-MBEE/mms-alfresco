@@ -17,10 +17,11 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonParseException;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.LogUtil;
@@ -75,7 +76,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
                 dropDatabase(projectId);
                 deleteProjectFromProjectsTable(projectId);
             }
-        } catch (JSONException e) {
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response");
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);

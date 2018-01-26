@@ -1,11 +1,6 @@
 package gov.nasa.jpl.view_repo.db;
 
-import java.util.ArrayList;
-import java.util.List;
-
-//import org.json.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-//import gov.nasa.jpl.view_repo.util.JSONArray;
+import com.google.gson.JsonObject;
 
 public class Node {
 
@@ -73,12 +68,12 @@ public class Node {
         return isDeleted;
     }
 
-    public JSONObject toJson() {
-        JSONObject json = new JSONObject();
-        json.put("id", this.id);
-        json.put("sysmlId", this.sysmlId);
-        json.put("elasticId", this.elasticId);
-        json.put("nodeType", this.nodeType);
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.addProperty("id", this.id);
+        json.addProperty("sysmlId", this.sysmlId);
+        json.addProperty("elasticId", this.elasticId);
+        json.addProperty("nodeType", this.nodeType);
 
         return json;
     }

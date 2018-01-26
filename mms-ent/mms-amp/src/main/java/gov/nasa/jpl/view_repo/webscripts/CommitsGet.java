@@ -10,19 +10,17 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-//import org.json.JSONArray;
-import org.json.JSONException;
-//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONArray;
 
 /**
  * @author dank
@@ -62,8 +60,8 @@ public class CommitsGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject top = new JSONObject();
-        JSONArray elementJson = null;
+        JsonObject top = new JsonObject();
+        JsonArray elementJson = null;
 
         if (logger.isDebugEnabled()) {
             logger.debug(user + " " + req.getURL());
@@ -73,23 +71,21 @@ public class CommitsGet extends AbstractJavaWebScript {
         elementJson = handleRequest(req, projectId, "master");
 
         try {
-            if (elementJson.length() > 0) {
-                top.put("commits", elementJson);
+            if (elementJson.size() > 0) {
+                top.add("commits", elementJson);
             } else {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
             }
 
             if (!Utils.isNullOrEmpty(response.toString()))
-                top.put("message", response.toString());
+                top.addProperty("message", response.toString());
 
-        } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
         status.setCode(responseStatus.getCode());
-        model.put("res", top.toString(4));
+        model.put("res", top.toString());
 
         printFooter(user, logger, timer);
         return model;
@@ -108,10 +104,10 @@ public class CommitsGet extends AbstractJavaWebScript {
      * @param req
      * @return
      */
-    private JSONArray handleRequest(WebScriptRequest req, String projectId, String refId) {
+    private JsonArray handleRequest(WebScriptRequest req, String projectId, String refId) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        JSONArray commitJson = new JSONArray();
+        JsonArray commitJson = new JsonArray();
         String commitId = req.getServiceMatch().getTemplateVars().get(COMMIT_ID);
 
         if (commitId == null){
@@ -120,13 +116,13 @@ public class CommitsGet extends AbstractJavaWebScript {
         }
         logger.info("Commit ID " + commitId + " found");
 
-        JSONObject commitObject = emsNodeUtil.getCommitObject(commitId);
+        JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
 
         if (commitObject == null) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not insert into ElasticSearch");
         }
 
-        commitJson.put(commitObject);
+        commitJson.add(commitObject);
 
         return commitJson;
     }

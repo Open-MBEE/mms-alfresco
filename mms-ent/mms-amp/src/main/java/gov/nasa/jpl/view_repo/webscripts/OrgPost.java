@@ -28,6 +28,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
@@ -37,18 +38,19 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-//import org.json.JSONArray;
-import org.json.JSONException;
-//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONArray;
 
 /**
  *
@@ -80,23 +82,26 @@ public class OrgPost extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
+        JsonParser parser = new JsonParser();
         try {
             if (validateRequest(req, status)) {
 
-                JSONObject json = (JSONObject) req.parseContent();
-                JSONArray elementsArray = json != null ? json.optJSONArray("orgs") : null;
-                JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ?
-                                elementsArray.getJSONObject(0) :
-                                new JSONObject();
+                JsonElement jsonElement = parser.parse(req.getContent().getContent());
+                JsonObject json = (jsonElement.isJsonNull()) ? new JsonObject() :
+                    jsonElement.getAsJsonObject();
+                JsonArray elementsArray = JsonUtil.getOptArray(json, "orgs");
+                JsonObject projJson = (elementsArray.size() > 0) ?
+                                elementsArray.get(0).getAsJsonObject() :
+                                new JsonObject();
 
-                String orgId = projJson.getString(Sjm.SYSMLID);
-                String orgName = projJson.getString(Sjm.NAME);
+                String orgId = projJson.get(Sjm.SYSMLID).getAsString();
+                String orgName = projJson.get(Sjm.NAME).getAsString();
 
                 SiteInfo siteInfo = services.getSiteService().getSite(orgId);
                 if (siteInfo == null) {
                     String sitePreset = "site-dashboard";
-                    String siteTitle = (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;
-                    String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
+                    String siteTitle = json.has(Sjm.NAME) ? json.get(Sjm.NAME).getAsString() : orgName;
+                    String siteDescription = JsonUtil.getOptString(json, Sjm.DESCRIPTION);
                     if (!ShareUtils.constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
                         log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create site.\n");
                         logger.error(String.format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
@@ -110,7 +115,7 @@ public class OrgPost extends AbstractJavaWebScript {
                 }
 
             }
-        } catch (JSONException e) {
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);

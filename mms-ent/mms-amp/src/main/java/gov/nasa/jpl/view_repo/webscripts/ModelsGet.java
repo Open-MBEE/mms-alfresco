@@ -44,22 +44,25 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-//import org.json.JSONArray;
-import org.json.JSONException;
-//import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.mbee.util.Utils;
 
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.JSONObject;
-import gov.nasa.jpl.view_repo.util.JSONArray;
 
 /**
  * @author cinyoung
@@ -114,9 +117,9 @@ public class ModelsGet extends ModelGet {
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
         Map<String, Object> model = new HashMap<>();
-        JSONArray elementsJson = new JSONArray();
-        JSONArray errors = new JSONArray();
-        JSONObject result = new JSONObject();
+        JsonArray elementsJson = new JsonArray();
+        JsonArray errors = new JsonArray();
+        JsonObject result = new JsonObject();
 
         try {
 
@@ -124,48 +127,49 @@ public class ModelsGet extends ModelGet {
                 try {
                     Long depth = getDepthFromRequest(req);
                     result = handleRequest(req, depth);
-                    elementsJson = result.optJSONArray(Sjm.ELEMENTS);
-                } catch (JSONException e) {
+                    elementsJson = JsonUtil.getOptArray(result, Sjm.ELEMENTS);
+                } catch (JsonParseException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
                 }
             }
 
-            JSONObject top = new JSONObject();
-            if (elementsJson != null && elementsJson.length() > 0) {
-                JSONArray elements = filterByPermission(elementsJson, req);
-                if (elements.length() == 0) {
+            JsonObject top = new JsonObject();
+            if (elementsJson.size() > 0) {
+                JsonArray elements = filterByPermission(elementsJson, req);
+                if (elements.size() == 0) {
                     log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
                 }
 
-                top.put(Sjm.ELEMENTS, elements);
+                top.add(Sjm.ELEMENTS, elements);
 
-                JSONArray errorMessages = new JSONArray();
+                JsonArray errorMessages = new JsonArray();
                 for (String level : Sjm.ERRORLEVELS) {
-                    errors = result.optJSONArray(level);
-                    if (errors != null && errors.length() > 0) {
-                        for (int i = 0; i < errors.length(); i++) {
-                            JSONObject errorPayload = new JSONObject();
-                            errorPayload.put("code", HttpServletResponse.SC_NOT_FOUND);
-                            errorPayload.put(Sjm.SYSMLID, errors.get(i));
-                            errorPayload.put("message", String.format("Element %s was not found", errors.get(i)));
-                            errorPayload.put("severity", level);
-                            errorMessages.put(errorPayload);
+                    errors = JsonUtil.getOptArray(result, level);
+                    if (errors.size() > 0) {
+                        for (int i = 0; i < errors.size(); i++) {
+                            JsonObject errorPayload = new JsonObject();
+                            errorPayload.addProperty("code", HttpServletResponse.SC_NOT_FOUND);
+                            errorPayload.add(Sjm.SYSMLID, errors.get(i));
+                            errorPayload.addProperty("message", String.format("Element %s was not found", errors.get(i)));
+                            errorPayload.addProperty("severity", level);
+                            errorMessages.add(errorPayload);
                         }
                     }
                 }
 
-                if (errorMessages.length() > 0) {
-                    top.put("messages", errorMessages);
+                if (errorMessages.size() > 0) {
+                    top.add("messages", errorMessages);
                 }
 
                 if (prettyPrint || accept.contains("webp")) {
-                    model.put(Sjm.RES, top.toString(4));
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    model.put(Sjm.RES, gson.toJson(top));
                 } else {
                     model.put(Sjm.RES, top);
                 }
             } else {
                 log(Level.INFO, HttpServletResponse.SC_OK, "No elements found");
-                top.put(Sjm.ELEMENTS, new JSONArray());
+                top.add(Sjm.ELEMENTS, new JsonArray());
                 model.put(Sjm.RES, top);
             }
         } catch (Exception e) {
@@ -187,31 +191,34 @@ public class ModelsGet extends ModelGet {
      * @return
      * @throws IOException
      */
-    private JSONObject handleRequest(WebScriptRequest req, final Long maxDepth)
-        throws JSONException, IOException, SQLException {
-        JSONObject requestJson = (JSONObject) req.parseContent();
-        if (requestJson.has(Sjm.ELEMENTS)) {
-            JSONArray elementsToFindJson = requestJson.getJSONArray(Sjm.ELEMENTS);
+    private JsonObject handleRequest(WebScriptRequest req, final Long maxDepth)
+        throws JsonParseException, IOException, SQLException {
+        JsonParser parser = new JsonParser();
+        JsonElement requestJson = parser.parse(req.getContent().getContent());
+        if (!requestJson.isJsonNull() && requestJson.getAsJsonObject().has(Sjm.ELEMENTS)) {
+            JsonArray elementsToFindJson = requestJson.getAsJsonObject().get(Sjm.ELEMENTS).getAsJsonArray();
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
             boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
-            JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+            JsonObject mountsJson = new JsonObject();
+            mountsJson.addProperty(Sjm.SYSMLID, projectId);
+            mountsJson.addProperty(Sjm.REFID, refId);
 
-            JSONArray found = new JSONArray();
-            JSONObject result = new JSONObject();
+            JsonArray found = new JsonArray();
+            JsonObject result = new JsonObject();
 
             Set<String> uniqueElements = new HashSet<>();
-            for (int i = 0; i < elementsToFindJson.length(); i++) {
-                uniqueElements.add(elementsToFindJson.getJSONObject(i).getString(Sjm.SYSMLID));
+            for (int i = 0; i < elementsToFindJson.size(); i++) {
+                uniqueElements.add(elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
             }
             EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found);
-            result.put(Sjm.ELEMENTS, found);
-            result.put(Sjm.WARN, uniqueElements);
+            result.add(Sjm.ELEMENTS, found);
+            JsonUtil.addStringSet(result, Sjm.WARN, uniqueElements);
             return result;
         } else {
-            return new JSONObject();
+            return new JsonObject();
         }
     }
 }
