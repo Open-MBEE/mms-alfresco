@@ -150,7 +150,7 @@ public class ModelSearch extends ModelPost {
                     String eprojId = e.get(Sjm.PROJECTID).getAsString();
                     String erefId = e.get(Sjm.REFID).getAsString();
                     JsonObject ownere = null;
-                    if (e.get(Sjm.TYPE).equals("Property")) {
+                    if (e.get(Sjm.TYPE).getAsString().equals("Property")) {
                         ownere = getJsonBySysmlId(eprojId, erefId, e.get(Sjm.OWNERID).getAsString());
                     } else if (e.get(Sjm.TYPE).getAsString().equals("Slot")) {
                         ownere = getGrandOwnerJson(eprojId, erefId, e.get(Sjm.OWNERID).getAsString());

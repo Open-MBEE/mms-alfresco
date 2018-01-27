@@ -1184,7 +1184,7 @@ public class EmsNodeUtil {
         qid.add(JsonUtil.getOptString(o, Sjm.SYSMLID));
 
         while (o.has(Sjm.OWNERID) && !JsonUtil.getOptString(o, Sjm.OWNERID).equals("") 
-                        && !o.get(Sjm.OWNERID).equals("null")) {
+                        && !o.get(Sjm.OWNERID).getAsString().equals("null")) {
             String sysmlid = JsonUtil.getOptString(o, Sjm.OWNERID);
             JsonObject owner = elementMap.get(sysmlid);
             if (owner == null) {
