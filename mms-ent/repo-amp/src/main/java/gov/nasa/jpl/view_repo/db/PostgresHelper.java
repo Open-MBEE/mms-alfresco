@@ -976,11 +976,7 @@ public class PostgresHelper implements GraphInterface {
                 }
             }
         } catch (SQLException e) {
-            //logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-            SQLException current = e.getNextException();
-            SQLException next = current.getNextException();
-
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
 
