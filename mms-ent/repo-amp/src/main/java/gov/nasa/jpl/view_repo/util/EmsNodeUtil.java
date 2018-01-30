@@ -265,6 +265,25 @@ public class EmsNodeUtil {
         return elementsFromElastic;
     }
 
+    public JSONArray getArtifactsBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
+        List<String> elasticids = pgh.getElasticIdsFromSysmlIdsArtifacts(new ArrayList<>(sysmlids), withDeleted);
+        JSONArray elementsFromElastic = new JSONArray();
+        try {
+            elementsFromElastic = eh.getElementsFromElasticIds(elasticids, projectId);
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+
+        for (int i = 0; i < elementsFromElastic.length(); i++) {
+            JSONObject formatted = elementsFromElastic.getJSONObject(i);
+            formatted.put(Sjm.PROJECTID, this.projectId);
+            formatted.put(Sjm.REFID, this.workspaceName);
+            elementsFromElastic.put(i, withChildViews ? addChildViews(formatted) : formatted);
+        }
+
+        return elementsFromElastic;
+    }
+
     public JSONArray getNodeHistory(String sysmlId) {
         JSONArray nodeHistory = new JSONArray();
         try {
@@ -364,9 +383,9 @@ public class EmsNodeUtil {
         return children;
     }
 
-    public JSONObject getArtifactById(String sysmlid){
+    public JSONObject getArtifactById(String sysmlid) {
         String artifact = pgh.getElasticIdFromSysmlIdArtifact(sysmlid);
-        if(artifact != null){
+        if (artifact != null) {
             try {
                 return eh.getElementByElasticId(artifact, projectId);
             } catch (IOException e) {
@@ -521,8 +540,8 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public SerialJSONObject processPostJson(SerialJSONArray elements, String user, Set<String> oldElasticIds, boolean overwriteJson,
-        String src, String type) {
+    public SerialJSONObject processPostJson(SerialJSONArray elements, String user, Set<String> oldElasticIds,
+        boolean overwriteJson, String src, String type) {
 
         SerialJSONObject result = new SerialJSONObject();
 
@@ -547,7 +566,9 @@ public class EmsNodeUtil {
         Set<String> sysmlids = new HashSet<>();
         sysmlids.addAll(elementMap.keySet());
 
-        Map<String, JSONObject> existingMap = convertToMap(getNodesBySysmlids(sysmlids, false, true));
+        Map<String, JSONObject> existingMap = (!type.equals("Artifact")) ?
+            convertToMap(getNodesBySysmlids(sysmlids, false, true)) :
+            convertToMap(getArtifactsBySysmlids(sysmlids, false, true));
 
         for (int i = 0; i < elements.length(); i++) {
             SerialJSONObject o = elements.getJSONObject(i);
@@ -728,8 +749,9 @@ public class EmsNodeUtil {
     }
 
     private void reorderChildViews(SerialJSONObject element, SerialJSONArray newElements, SerialJSONArray addedElements,
-        SerialJSONArray updatedElements, SerialJSONArray deletedElements, SerialJSONArray commitAdded, SerialJSONArray commitUpdated,
-        SerialJSONArray commitDeleted, String commitId, String creator, String now, Set<String> oldElasticIds) {
+        SerialJSONArray updatedElements, SerialJSONArray deletedElements, SerialJSONArray commitAdded,
+        SerialJSONArray commitUpdated, SerialJSONArray commitDeleted, String commitId, String creator, String now,
+        Set<String> oldElasticIds) {
 
         if (!element.has(Sjm.CHILDVIEWS)) {
             return;
@@ -782,8 +804,9 @@ public class EmsNodeUtil {
                         childViewsSet.add(ownedAttribute.getString(Sjm.TYPEID));
                         try {
                             if (mountJson == null) {
-                                mountJson = new SerialJSONObject(getProjectWithFullMounts(ownedAttribute.optString(Sjm.PROJECTID),
-                                    ownedAttribute.optString(Sjm.REFID), null).toString());
+                                mountJson = new SerialJSONObject(
+                                    getProjectWithFullMounts(ownedAttribute.optString(Sjm.PROJECTID),
+                                        ownedAttribute.optString(Sjm.REFID), null).toString());
                             }
                             handleMountSearch(mountJson, false, false, 0L, childViewsSet, childViews);
                         } catch (Exception e) {
@@ -810,7 +833,8 @@ public class EmsNodeUtil {
                                         commitDeleted.put(newObj);
                                     }
                                     SerialJSONObject asi = new SerialJSONObject(emsNodeUtil
-                                        .getNodeBySysmlid(ownedAttribute.optString(Sjm.APPLIEDSTEREOTYPEINSTANCEID)).toString());
+                                        .getNodeBySysmlid(ownedAttribute.optString(Sjm.APPLIEDSTEREOTYPEINSTANCEID))
+                                        .toString());
                                     if (asi.optString(Sjm.SYSMLID, null) != null) {
                                         deletedElements.put(asi);
                                         oldElasticIds.add(asi.getString(Sjm.ELASTICID));
@@ -819,8 +843,9 @@ public class EmsNodeUtil {
                                         newObj.put(Sjm.ELASTICID, asi.getString(Sjm.ELASTICID));
                                         commitDeleted.put(newObj);
                                     }
-                                    SerialJSONObject association =
-                                        new SerialJSONObject(emsNodeUtil.getNodeBySysmlid(ownedAttribute.optString(Sjm.ASSOCIATIONID)).toString());
+                                    SerialJSONObject association = new SerialJSONObject(
+                                        emsNodeUtil.getNodeBySysmlid(ownedAttribute.optString(Sjm.ASSOCIATIONID))
+                                            .toString());
                                     if (association.optString(Sjm.SYSMLID, null) != null) {
                                         deletedElements.put(association);
                                         oldElasticIds.add(association.getString(Sjm.ELASTICID));
@@ -832,8 +857,8 @@ public class EmsNodeUtil {
                                     SerialJSONArray associationProps = association.optJSONArray(Sjm.OWNEDENDIDS);
                                     for (int k = 0; k < associationProps.length(); k++) {
                                         if (associationProps.optString(k, null) != null) {
-                                            SerialJSONObject assocProp =
-                                                new SerialJSONObject(emsNodeUtil.getNodeBySysmlid(associationProps.optString(k)).toString());
+                                            SerialJSONObject assocProp = new SerialJSONObject(
+                                                emsNodeUtil.getNodeBySysmlid(associationProps.optString(k)).toString());
                                             if (assocProp.optString(Sjm.SYSMLID, null) != null) {
                                                 deletedElements.put(assocProp);
                                                 oldElasticIds.add(assocProp.getString(Sjm.ELASTICID));

@@ -376,9 +376,9 @@ public class PostgresHelper implements GraphInterface {
                 }
                 break;
             case "artifactUpdates":
-                query = String.format(
-                    "UPDATE \"artifacts%s\" SET elasticId = ?, lastcommit = ?, deleted = ? WHERE sysmlId = ?",
-                    workspaceId);
+                query = String
+                    .format("UPDATE \"artifacts%s\" SET elasticId = ?, lastcommit = ?, deleted = ? WHERE sysmlId = ?",
+                        workspaceId);
                 for (Map<String, Object> node : rows) {
                     List<Object> single = new LinkedList<>();
                     single.add(0, node.get(Sjm.ELASTICID));
@@ -435,7 +435,8 @@ public class PostgresHelper implements GraphInterface {
             if (orgId == null) {
                 statement = getConn("config").prepareStatement("SELECT id, orgId, orgName FROM organizations");
             } else {
-                statement = getConn("config").prepareStatement("SELECT id, orgId, orgName FROM organizations WHERE orgId = ?");
+                statement =
+                    getConn("config").prepareStatement("SELECT id, orgId, orgName FROM organizations WHERE orgId = ?");
                 statement.setString(1, orgId);
             }
             ResultSet rs = statement.executeQuery();
@@ -696,6 +697,55 @@ public class PostgresHelper implements GraphInterface {
         return elasticIds;
     }
 
+    public List<String> getElasticIdsFromSysmlIdsArtifacts(List<String> sysmlids, boolean withDeleted) {
+        List<String> elasticIds = new ArrayList<>();
+        if (sysmlids == null || sysmlids.isEmpty())
+            return elasticIds;
+
+        try {
+            String query = String.format("SELECT elasticid FROM \"artifacts%s\" WHERE sysmlid IN (%s)", workspaceId,
+                "'" + String.join("','", sysmlids) + "'");
+            if (!withDeleted) {
+                query += "AND deleted = false";
+            }
+            ResultSet rs = execQuery(query);
+            while (rs.next()) {
+                elasticIds.add(rs.getString(1));
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return elasticIds;
+    }
+
+    public List<String> getElasticIdsFromSysmlIdsArtifact(List<String> sysmlids, boolean withDeleted) {
+        List<String> elasticIds = new ArrayList<>();
+        if (sysmlids == null || sysmlids.isEmpty())
+            return elasticIds;
+
+        try {
+            String query = String.format("SELECT elasticid FROM \"artifacts%s\" WHERE sysmlid IN (%s)", workspaceId,
+                "'" + String.join("','", sysmlids) + "'");
+            if (!withDeleted) {
+                query += "AND deleted = false";
+            }
+            ResultSet rs = execQuery(query);
+            while (rs.next()) {
+                elasticIds.add(rs.getString(1));
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return elasticIds;
+    }
+
+
     public Node getNodeFromSysmlId(String sysmlId) {
         return getNodeFromSysmlId(sysmlId, false);
     }
@@ -775,6 +825,7 @@ public class PostgresHelper implements GraphInterface {
 
         return null;
     }
+
     public Artifact getArtifactFromSysmlId(String sysmlId) {
         return getArtifactFromSysmlId(sysmlId, false);
     }
@@ -786,8 +837,8 @@ public class PostgresHelper implements GraphInterface {
                 query = getConn().prepareStatement("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
                 query.setString(1, sysmlId);
             } else {
-                query = getConn()
-                    .prepareStatement("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
+                query = getConn().prepareStatement(
+                    "SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
                 query.setString(1, sysmlId);
                 query.setBoolean(2, false);
             }
@@ -925,7 +976,11 @@ public class PostgresHelper implements GraphInterface {
                 }
             }
         } catch (SQLException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+            //logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            SQLException current = e.getNextException();
+            SQLException next = current.getNextException();
+
         }
     }
 
@@ -2086,7 +2141,7 @@ public class PostgresHelper implements GraphInterface {
             query.setString(1, orgId);
             query.executeUpdate();
             orgDeleted = true;
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
         closeConfig();

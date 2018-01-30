@@ -247,7 +247,7 @@ public class CommitUtil {
                         Map<String, Object> updatedArtifact = new HashMap<>();
                         updatedArtifact.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
                         updatedArtifact.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
-                        updatedArtifact.put(DELETED, "false");
+                        updatedArtifact.put(DELETED, false);
                         updatedArtifact.put(LASTCOMMIT, commitElasticId);
                         artifactUpdates.add(updatedArtifact);
                     }

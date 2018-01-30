@@ -10,8 +10,8 @@ PostNewImage
 	Create Session		mmstest  ${ROOT}
     ${image_file} =		Binary Data	${CURDIR}${/}../../assets/mounts.png
     ${files} =			Create Dictionary	file	${image_file}
-    ${data} =			Create Dictionary	contentType=image/png
-	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts/mounts		data=${data}		files=${files}
+    ${data} =			Create Dictionary	contentType=image/png	id=mounts
+	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts		data=${data}		files=${files}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
@@ -25,8 +25,8 @@ PostNewVersionOfImage
 	Create Session		mmstest  ${ROOT}
     ${image_file} =		Binary Data	${CURDIR}${/}../../assets/mounts.png
     ${files} =			Create Dictionary	file	${image_file}
-    ${data} =			Create Dictionary	contentType=image/png
-	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts/mounts		data=${data}		files=${files}
+    ${data} =			Create Dictionary	contentType=image/png	id=mounts
+	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts		data=${data}		files=${files}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
