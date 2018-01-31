@@ -395,6 +395,7 @@ public class EmsNodeUtil {
         return new JSONObject();
     }
 
+
     public JSONArray getChildren(String sysmlid, DbEdgeTypes dbEdge, final Long maxDepth) {
         Set<String> children = new HashSet<>();
 

@@ -52,6 +52,7 @@ public class ElasticHelper implements ElasticsearchInterface {
 
     private static final String ELEMENT = "element";
     private static final String COMMIT = "commit";
+    private static final String ARTIFACT = "artifact";
 
     public void init(String elasticHost) {
 
@@ -105,7 +106,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      */
     public JSONObject getElementByElasticId(String id, String index) throws IOException {
         // Cannot use method for commit type
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(ELEMENT).build();
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(ARTIFACT).build();
 
         JestResult result = client.execute(get);
 
