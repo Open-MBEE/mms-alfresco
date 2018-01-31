@@ -445,7 +445,7 @@ public class ModelGet extends AbstractJavaWebScript {
 
         if (!mountsJson.has(Sjm.MOUNTS)) {
             EmsNodeUtil emsNodeUtil =
-                new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
+                new EmsNodeUtil(mountsJson.getString(Sjm.PROJECTID), mountsJson.getString(Sjm.REFID));
             mountsJson = emsNodeUtil
                 .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
         }

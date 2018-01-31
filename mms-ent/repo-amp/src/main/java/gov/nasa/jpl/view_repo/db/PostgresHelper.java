@@ -845,8 +845,8 @@ public class PostgresHelper implements GraphInterface {
 
             ResultSet rs = query.executeQuery();
             if (rs.next()) {
-                return new Artifact(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5),
-                    rs.getString(6), rs.getBoolean(7));
+                return new Artifact(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
+                    rs.getBoolean(6));
             } else {
                 return null;
             }
