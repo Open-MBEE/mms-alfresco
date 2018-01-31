@@ -106,7 +106,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      */
     public JSONObject getElementByElasticId(String id, String index) throws IOException {
         // Cannot use method for commit type
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(ARTIFACT).build();
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(ELEMENT).build();
 
         JestResult result = client.execute(get);
 
@@ -119,6 +119,26 @@ public class ElasticHelper implements ElasticsearchInterface {
         return null;
     }
 
+    /**
+     * Gets the JSON document of element type using a elastic _id (1)
+     *
+     * @param id _id elasticsearch property          (2)
+     * @return JSONObject o or null
+     */
+    public JSONObject getElementByElasticIdArtifact(String id, String index) throws IOException {
+        // Cannot use method for commit type
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(ARTIFACT).build();
+
+        JestResult result = client.execute(get);
+
+        if (result.isSucceeded()) {
+            JSONObject o = new JSONObject(result.getJsonObject().get("_source").toString());
+            o.put(Sjm.ELASTICID, result.getJsonObject().get("_id").getAsString());
+            return o;
+        }
+
+        return null;
+    }
     /**
      * Returns the commit history of a element                           (1)
      * <p> Returns a JSONArray of objects that look this:

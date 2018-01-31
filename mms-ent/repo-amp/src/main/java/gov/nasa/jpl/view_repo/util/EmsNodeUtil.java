@@ -387,7 +387,7 @@ public class EmsNodeUtil {
         String artifact = pgh.getElasticIdFromSysmlIdArtifact(sysmlid);
         if (artifact != null) {
             try {
-                return eh.getElementByElasticId(artifact, projectId);
+                return eh.getElementByElasticIdArtifact(artifact, projectId);
             } catch (IOException e) {
                 e.printStackTrace();
             }
