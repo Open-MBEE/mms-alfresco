@@ -39,7 +39,12 @@ GetImage
 	[Tags]				images		critical		0403
 	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/master/artifacts/mounts		headers=&{PNG_GET_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${image_url} =		requests.Get Image Url		${result.json()}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _timestamp		 _inRefIds		 upload		 location
+    Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+    Sleep				${POST_DELAY_INDEXING}
+    ${image_elastic} =		Get Image Id		${result.json()}
+    ${compare_result} =		Compare JSON		${TEST_NAME}
+    Should Match Baseline		${compare_result}
 	Set Global Variable	  ${image_url}
 
 PostNewElementForImageVersion
@@ -56,14 +61,14 @@ PostNewElementForImageVersion
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-#GetVersionedImage
-#	[Documentation]		"get /projects/PA/refs/master/elements/mounts"
-#	[Tags]				images		critical		0405
-#	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/master/elements/mounts?commitId=${image_commit_master}		headers=&{PNG_GET_HEADER}
-#	Should Be Equal		${result.status_code}		${200}
-#	${image_versioned_url} =		Get Image Url		${result.json()}
-#	Set Global Variable	  ${image_versioned_url}
-#	Should Not Be Equal   ${image_versioned_url}    ${image_url}
+GetVersionedImage
+	[Documentation]		"get /projects/PA/refs/master/elements/mounts"
+	[Tags]				images		critical		0405
+	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/master/artifacts/mounts?commitId=${image_commit_master}		headers=&{PNG_GET_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${image_versioned_url} =		Get Image Id		${result.json()}
+	Set Global Variable	  ${image_versioned_url}
+	Should Not Be Equal   ${image_versioned_url}    ${image_elastic}
 #
 #PostNewBranchForImage
 #	[Documentation]		"Post new branch to PA"

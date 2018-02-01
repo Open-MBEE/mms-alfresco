@@ -195,10 +195,19 @@ public class EmsNodeUtil {
         }
         return new JSONObject();
     }
+    public JSONObject getArtifactByArtifactAndCommitId(String commitId, String sysmlid) {
+        try {
+            return eh.getArtifactByCommitId(commitId, sysmlid, projectId);
+        } catch (IOException e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return new JSONObject();
+    }
 
     public Node getById(String sysmlId) {
         return pgh.getNodeFromSysmlId(sysmlId, true);
     }
+
 
     public Boolean commitContainsElement(String elementId, String commitId) {
         try {

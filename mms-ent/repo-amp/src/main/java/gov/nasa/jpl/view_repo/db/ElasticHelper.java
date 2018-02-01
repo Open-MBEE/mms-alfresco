@@ -260,6 +260,37 @@ public class ElasticHelper implements ElasticsearchInterface {
 
     }
 
+    public JSONObject getArtifactByCommitId(String elasticId, String sysmlid, String index) throws IOException {
+        JSONArray filter = new JSONArray();
+        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.COMMITID, elasticId)));
+        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.SYSMLID, sysmlid)));
+
+        JSONObject boolQuery = new JSONObject();
+        boolQuery.put("filter", filter);
+
+        JSONObject queryJson = new JSONObject().put("query", new JSONObject().put("bool", boolQuery));
+        // should passes a json array that is the terms array from above
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Search Query %s", queryJson.toString()));
+        }
+
+        Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
+            .addType(ARTIFACT).build();
+        SearchResult result = client.execute(search);
+
+        if (result.isSucceeded()) {
+            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+            if (hits.size() > 0) {
+                JSONObject o = new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
+                o.put(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id").getAsString());
+                return o;
+            }
+        }
+        return null;
+
+    }
+
     /**
      * A paginated search for a list of elasticsearch _id's, returns empty JSONArray if passed empty list  (1)
      *

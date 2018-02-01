@@ -1,0 +1,16 @@
+{
+    "artifacts": [
+        {
+            "_creator": "admin",
+            "_elasticId": "22ab7b0d-b222-4cf0-b2c9-23d4b2881557",
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "checksum": "6a0eed482662e51c8175caae110418d0",
+            "contentType": "image/png",
+            "id": "mounts",
+            "ownerId": "holding_bin_PA",
+            "type": "Artifact"
+        }
+    ]
+}

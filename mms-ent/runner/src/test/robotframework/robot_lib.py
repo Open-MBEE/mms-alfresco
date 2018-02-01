@@ -210,6 +210,10 @@ def compare_json(test_name):  # , json_object, filters):
                 with open(robot_dir + "/output/results/{}.json".format(test_name.replace(' ', ''))) as result_file:
                     baseline_json = json.load(baseline_file)
                     result_json = json.load(result_file)
+                    # for element in baseline_json:
+                    #     del element['_elasticId']
+                    # for element in result_json:
+                    #     del element['_elasticId']
             except:
                 print("Failed to open the results json")
     except:
@@ -533,6 +537,9 @@ def binary_data(filename):
 
 def get_image_url(jsonObject):
     return jsonObject["artifacts"][0]["url"]
+
+def get_image_id(jsonObject):
+    return jsonObject["artifacts"][0]["_elasticId"]
 
 def get_commit_id(results):
     """
