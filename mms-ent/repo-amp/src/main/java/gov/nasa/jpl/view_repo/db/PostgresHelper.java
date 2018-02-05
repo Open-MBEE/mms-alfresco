@@ -1776,6 +1776,10 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public List<Map<String, Object>> getRefsCommits(String refId, int commitId) {
+        return getRefsCommits(refId, commitId, 0);
+    }
+
+    public List<Map<String, Object>> getRefsCommits(String refId, int commitId, int limit) {
 
         List<Map<String, Object>> result = new ArrayList<>();
         try {
@@ -1787,10 +1791,17 @@ public class PostgresHelper implements GraphInterface {
                 refIdString = "master";
             }
 
+            int commitColNum = 0;
+            int limitColNum = 0;
             String query =
                 "SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE (refId = ? OR refId = ?)";
             if (commitId != 0) {
                 query += " AND timestamp <= (SELECT timestamp FROM commits WHERE id = ?)";
+                commitColNum = 3;
+            }
+            if (limit != 0) {
+                query += " LIMIT ?";
+                limitColNum = commitColNum == 3 ? 4 : 3;
             }
             query += " ORDER BY timestamp DESC";
 
@@ -1798,7 +1809,10 @@ public class PostgresHelper implements GraphInterface {
             statement.setString(1, refId);
             statement.setString(2, refIdString);
             if (commitId != 0) {
-                statement.setInt(3, commitId);
+                statement.setInt(commitColNum, commitId);
+            }
+            if (limit != 0) {
+                statement.setInt(limitColNum, limit);
             }
 
             ResultSet rs = statement.executeQuery();
