@@ -103,8 +103,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         try {
             if (validateRequest(req, status)) {
                 JsonElement reqJsonElement = parser.parse(req.getContent().getContent());
-                JsonObject reqJson = reqJsonElement.isJsonNull() ? new JsonObject() :
-                    reqJsonElement.getAsJsonObject();
+                JsonObject reqJson = reqJsonElement.getAsJsonObject();
                 String projectId = getProjectId(req);
                 JsonObject ozero = reqJson.get("refs").getAsJsonArray().get(0).getAsJsonObject();
                 String sourceWorkspaceParam = JsonUtil.getOptString(ozero, "parentRefId");
@@ -118,6 +117,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             } else {
                 statusCode = HttpServletResponse.SC_FORBIDDEN;
             }
+        } catch (IllegalStateException e) { 
+        	log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to get object from JSON request");
         } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {

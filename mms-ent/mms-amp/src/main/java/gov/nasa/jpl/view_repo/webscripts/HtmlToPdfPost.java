@@ -975,20 +975,22 @@ public class HtmlToPdfPost extends AbstractJavaWebScript {
             JsonObject postJson = null;
             //EmsScriptNode workspace = getWorkspace(req);
             JsonParser parser = new JsonParser();
-            JsonElement reqPostJsonElement = parser.parse(req.getContent().getContent());
-            JsonObject reqPostJson = reqPostJsonElement.isJsonNull() ? null : reqPostJsonElement.getAsJsonObject();
-            if (!reqPostJsonElement.isJsonNull()) {
-                postJson = reqPostJson;
-                if (reqPostJson.has("documents")) {
-                    JsonArray documents = reqPostJson.get("documents").getAsJsonArray();
-                    if (documents != null) {
-                        JsonObject json = documents.get(0).getAsJsonObject();
-                        String user = AuthenticationUtil.getRunAsUser();
-                        EmsScriptNode userHomeFolder = getUserHomeFolder(user);
-                        
-                        postJson = handleCreate(json, userHomeFolder, null, status);
-                    }
-                }
+            try {
+            	JsonElement reqPostJsonElement = parser.parse(req.getContent().getContent());
+            	JsonObject reqPostJson = reqPostJsonElement.getAsJsonObject();
+            	postJson = reqPostJson;
+            	if (reqPostJson.has("documents")) {
+            		JsonArray documents = reqPostJson.get("documents").getAsJsonArray();
+            		if (documents != null) {
+            			JsonObject json = documents.get(0).getAsJsonObject();
+            			String user = AuthenticationUtil.getRunAsUser();
+            			EmsScriptNode userHomeFolder = getUserHomeFolder(user);
+            			
+            			postJson = handleCreate(json, userHomeFolder, null, status);
+            		}
+            	}
+            } catch (IllegalStateException e) {
+            	throw new JsonParseException("unable to parse JSON content");
             }
             
             return postJson;

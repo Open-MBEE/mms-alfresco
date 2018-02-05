@@ -87,8 +87,7 @@ public class OrgPost extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
 
                 JsonElement jsonElement = parser.parse(req.getContent().getContent());
-                JsonObject json = (jsonElement.isJsonNull()) ? new JsonObject() :
-                    jsonElement.getAsJsonObject();
+                JsonObject json = jsonElement.getAsJsonObject();
                 JsonArray elementsArray = JsonUtil.getOptArray(json, "orgs");
                 JsonObject projJson = (elementsArray.size() > 0) ?
                                 elementsArray.get(0).getAsJsonObject() :
@@ -115,6 +114,9 @@ public class OrgPost extends AbstractJavaWebScript {
                 }
 
             }
+        } catch (IllegalStateException e) {
+        	// get this when trying to turn JsonElement to a JsonObject, but no object was found
+        	log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "incorrect JSON from request");
         } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {

@@ -410,6 +410,9 @@ public class ElasticHelper implements ElasticsearchInterface {
                 		.build())
                 .getId();
         }
+        if (result.elasticId == null)
+        	throw new IOException("Unable to index node in elasticsearch");
+        
         k.addProperty(Sjm.ELASTICID, result.elasticId);
         result.current = k;
 
