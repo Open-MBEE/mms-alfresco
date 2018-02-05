@@ -285,8 +285,13 @@ public class EmsNodeUtil {
     }
 
     public JSONArray getRefHistory(String refId) {
+        return getRefHistory(refId, null, 0);
+    }
+
+    public JSONArray getRefHistory(String refId, String commitId, int limit) {
         JSONArray result = new JSONArray();
-        List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId);
+        int cId = pgh.getCommitId(commitId);
+        List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId, cId, limit);
         for (int i = 0; i < refCommits.size(); i++) {
             Map<String, Object> refCommit = refCommits.get(i);
             JSONObject commit = new JSONObject();
