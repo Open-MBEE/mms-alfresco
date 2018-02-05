@@ -930,6 +930,26 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
+    public int getCommitId(String commitId) {
+        if (commitId == null) {
+            return 0;
+        }
+        try {
+            PreparedStatement statement = prepareStatement("SELECT id FROM commits WHERE elasticid = ?");
+            statement.setString(1, commitId);
+            ResultSet rs = statement.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return 0;
+    }
+
     public Map<String, String> getCommitAndTimestamp(String lookUp, String value) {
         Map<String, String> commit = new HashMap<>();
         try {
@@ -1780,6 +1800,10 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public List<Map<String, Object>> getRefsCommits(String refId, int commitId, int limit) {
+        return getRefsCommits(refId, commitId, limit, 0);
+    }
+
+    public List<Map<String, Object>> getRefsCommits(String refId, int commitId, int limit, int count) {
 
         List<Map<String, Object>> result = new ArrayList<>();
         try {
@@ -1818,13 +1842,16 @@ public class PostgresHelper implements GraphInterface {
             ResultSet rs = statement.executeQuery();
 
             while (rs.next()) {
-                Map<String, Object> commit = new HashMap<>();
-                commit.put(Sjm.SYSMLID, rs.getString(1));
-                commit.put(Sjm.CREATOR, rs.getString(2));
-                commit.put(Sjm.CREATED, rs.getTimestamp(3));
-                commit.put("refId", rs.getString(4));
-                commit.put("commitType", rs.getString(5));
-                result.add(commit);
+                if (limit == 0 || count < limit) {
+                    Map<String, Object> commit = new HashMap<>();
+                    commit.put(Sjm.SYSMLID, rs.getString(1));
+                    commit.put(Sjm.CREATOR, rs.getString(2));
+                    commit.put(Sjm.CREATED, rs.getTimestamp(3));
+                    commit.put("refId", rs.getString(4));
+                    commit.put("commitType", rs.getString(5));
+                    result.add(commit);
+                    count++;
+                }
             }
 
             PreparedStatement parentStatement =
@@ -1833,16 +1860,16 @@ public class PostgresHelper implements GraphInterface {
             parentStatement.setString(2, refIdString);
 
             rs = parentStatement.executeQuery();
-            if (rs.next() && rs.getInt(2) != 0) {
+            if (rs.next() && rs.getInt(2) != 0 && (limit == 0 || count < limit)) {
                 String nextRefId = rs.getString(1);
-                result.addAll(getRefsCommits(nextRefId, rs.getInt(2)));
+                result.addAll(getRefsCommits(nextRefId, rs.getInt(2), limit, count));
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
             close();
         }
-        return result;
+        return limit > 0 ? result.subList(0, limit) : result;
     }
 
     public List<Pair<String, String>> getTags() {

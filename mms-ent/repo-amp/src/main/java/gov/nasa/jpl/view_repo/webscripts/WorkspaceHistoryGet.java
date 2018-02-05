@@ -91,13 +91,15 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript {
         JSONArray commits = new JSONArray();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
         String limit = req.getParameter("limit");
-        int limitVal = limit == null || limit.isEmpty() ? 0 : Integer.parseInt(limit);
+        String commitId = req.getParameter("commitId");
         String timestamp = req.getParameter("maxTimestamp");
+
+        int limitVal = limit == null || limit.isEmpty() ? 0 : Integer.parseInt(limit);
 
         if (timestamp != null && !timestamp.isEmpty()) {
             commits = emsNodeUtil.getNearestCommitFromTimestamp(timestamp, commits);
         } else {
-            commits = emsNodeUtil.getRefHistory(refId, limitVal);
+            commits = emsNodeUtil.getRefHistory(refId, commitId, limitVal);
         }
         json.put("commits", commits);
         return json;
