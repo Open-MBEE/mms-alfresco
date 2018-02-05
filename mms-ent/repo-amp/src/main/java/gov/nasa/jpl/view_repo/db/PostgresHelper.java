@@ -1871,7 +1871,7 @@ public class PostgresHelper implements GraphInterface {
         } finally {
             close();
         }
-        return limit > 0 ? result.subList(0, limit) : result;
+        return result;
     }
 
     public List<Pair<String, String>> getTags() {
