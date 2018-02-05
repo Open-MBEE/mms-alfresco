@@ -19,9 +19,17 @@ PostNewImage
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
+GetFirstVerisonOfImage
+	[Documentation]		"get /projects/PA/refs/master/artifacts/mounts"
+	[Tags]				images		critical		0402
+	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/master/artifacts/mounts		headers=&{PNG_GET_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${image_elastic} =		Get Image Id		${result.json()}
+	Set Global Variable	  ${image_elastic}
+
 PostNewVersionOfImage
 	[Documentation]		"Post a update to a existing image."
-	[Tags]				images		critical		0402
+	[Tags]				images		critical		0403
 	Create Session		mmstest  ${ROOT}
     ${image_file} =		Binary Data	${CURDIR}${/}../../assets/mounts.png
     ${files} =			Create Dictionary	file	${image_file}
@@ -36,20 +44,26 @@ PostNewVersionOfImage
 
 GetImage
 	[Documentation]		"get /projects/PA/refs/master/artifacts/mounts"
-	[Tags]				images		critical		0403
+	[Tags]				images		critical		0404
 	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/master/artifacts/mounts		headers=&{PNG_GET_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _timestamp		 _inRefIds		 upload		 location
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _timestamp		 _inRefIds		 upload		 location		 _elasticId
     Generate JSON		${TEST_NAME}		${result.json()}		${filter}
     Sleep				${POST_DELAY_INDEXING}
-    ${image_elastic} =		Get Image Id		${result.json()}
     ${compare_result} =		Compare JSON		${TEST_NAME}
     Should Match Baseline		${compare_result}
-	Set Global Variable	  ${image_url}
+
+GetSecondVerisonOfImage
+	[Documentation]		"get /projects/PA/refs/master/artifacts/mounts"
+	[Tags]				images		critical		0405
+	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/master/artifacts/mounts		headers=&{PNG_GET_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${image_elastic_later} =		Get Image Id		${result.json()}
+	Set Global Variable	  ${image_elastic_later}
 
 PostNewElementForImageVersion
 	[Documentation]		"Post elements to get commitId after new version of image is created."
-	[Tags]				images		critical		0404
+	[Tags]				images		critical		0406
 	${post_json} =		Get File		${CURDIR}/../../JsonData/ImageAfterCommit.json
 	${result} =			requests.Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
@@ -63,12 +77,12 @@ PostNewElementForImageVersion
 
 GetVersionedImage
 	[Documentation]		"get /projects/PA/refs/master/elements/mounts"
-	[Tags]				images		critical		0405
+	[Tags]				images		critical		0407
 	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/master/artifacts/mounts?commitId=${image_commit_master}		headers=&{PNG_GET_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${image_versioned_url} =		Get Image Id		${result.json()}
-	Set Global Variable	  ${image_versioned_url}
-	Should Not Be Equal   ${image_versioned_url}    ${image_elastic}
+	Set Global Variable	  ${image_elastic_later}
+	Should Not Be Equal   ${image_elastic_later}    ${image_elastic}
 #
 #PostNewBranchForImage
 #	[Documentation]		"Post new branch to PA"

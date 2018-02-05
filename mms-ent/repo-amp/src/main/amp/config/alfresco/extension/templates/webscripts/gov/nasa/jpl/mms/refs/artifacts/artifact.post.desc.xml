@@ -3,7 +3,7 @@
 <webscript>
     <shortname>post elements</shortname>
     <description>
-        post elements
+        post artifacts
     </description>
     <url>/projects/{projectId}/refs/{refId}/artifacts</url>
     <url>/projects/{projectId}/refs/{refId}/artifacts/{artifactId}</url>

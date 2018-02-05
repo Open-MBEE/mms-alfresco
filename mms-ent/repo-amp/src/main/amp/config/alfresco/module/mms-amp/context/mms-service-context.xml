@@ -210,13 +210,13 @@
         <property name="repositoryHelper" ref="repositoryHelper"/>
         <property name="services" ref="ServiceRegistry"/>
     </bean>
-    <bean id="webscript.gov.nasa.jpl.mms.refs.artifacts.artifact.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.artifacts.artifacts.get"
           class="gov.nasa.jpl.view_repo.webscripts.ArtifactsGet" parent="webscript"
           singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
-    <bean id="webscript.gov.nasa.jpl.mms.refs.artifact.artifact.get"
+    <bean id="webscript.gov.nasa.jpl.mms.refs.artifacts.artifact.get"
           class="gov.nasa.jpl.view_repo.webscripts.ArtifactGet" parent="webscript"
           singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />

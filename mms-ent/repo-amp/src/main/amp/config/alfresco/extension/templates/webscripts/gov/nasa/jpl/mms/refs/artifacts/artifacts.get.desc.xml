@@ -3,7 +3,7 @@
 <webscript>
     <shortname>post elements</shortname>
     <description>
-        post elements
+        get multiple artifacts
     </description>
     <url>/projects/{projectId}/refs/{refId}/artifacts</url>
     <format default="json">argument</format>
