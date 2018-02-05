@@ -1823,11 +1823,13 @@ public class PostgresHelper implements GraphInterface {
                 query += " AND timestamp <= (SELECT timestamp FROM commits WHERE id = ?)";
                 commitColNum = 3;
             }
+
+            query += " ORDER BY timestamp DESC";
+
             if (limit != 0) {
                 query += " LIMIT ?";
                 limitColNum = commitColNum == 3 ? 4 : 3;
             }
-            query += " ORDER BY timestamp DESC";
 
             PreparedStatement statement = prepareStatement(query);
             statement.setString(1, refId);
