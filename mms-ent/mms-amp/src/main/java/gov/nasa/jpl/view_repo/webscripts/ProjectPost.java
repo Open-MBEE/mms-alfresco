@@ -94,8 +94,7 @@ public class ProjectPost extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
 
                 JsonElement jsonElement = parser.parse(req.getContent().getContent());
-                JsonObject json = jsonElement.isJsonNull() ? new JsonObject() :
-                        jsonElement.getAsJsonObject();
+                JsonObject json = jsonElement.getAsJsonObject();
                 JsonArray elementsArray = JsonUtil.getOptArray(json, "projects");
                 JsonObject projJson = (elementsArray.size() > 0) ? elementsArray.get(0).getAsJsonObject() : new JsonObject();
 
@@ -137,6 +136,8 @@ public class ProjectPost extends AbstractJavaWebScript {
                 }
 
             }
+        } catch (IllegalStateException e) { 
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
         } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {

@@ -1,5 +1,6 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +14,10 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
@@ -27,65 +31,75 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
     static Logger logger = Logger.getLogger(LogLevelPost.class);
 
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
+        int statusCode = HttpServletResponse.SC_OK;
         Map<String, Object> result = new HashMap<String, Object>();
 
         StringBuffer msg = new StringBuffer();
 
         JsonObject response = new JsonObject();
 
-        JsonArray requestJson;
-//        try {
-            requestJson = (JsonArray) req.parseContent();
-            /*} catch (JSONException e) {
-            status.setCode(HttpServletResponse.SC_BAD_REQUEST);
-            response.addProperty("msg", "JSON malformed");
-            result.put(Sjm.RES, response);
-            return result;
-        }
-*/
-        for (int ii = 0; ii < requestJson.size(); ii++) {
-            boolean failed = false;
-            JsonObject json = requestJson.get(ii).getAsJsonObject();
+        JsonParser parser = new JsonParser();
+        try {
+            JsonElement reqJsonElement = parser.parse(req.getContent().getContent());
+            JsonArray requestJson = reqJsonElement.getAsJsonArray();
 
-            String className = json.get("classname").getAsString();
-            String level = json.get("loglevel").getAsString();
+            for (int ii = 0; ii < requestJson.size(); ii++) {
+                boolean failed = false;
+                JsonObject json = requestJson.get(ii).getAsJsonObject();
 
-            try {
-                Logger classLogger = (Logger) getStaticValue(className, "logger");
-                classLogger.setLevel(Level.toLevel(level));
-            } catch (Exception e) {
-                logger.info(String.format("%s", LogUtil.getStackTrace(e)));
-                failed = true;
-            }
+                String className = json.get("classname").getAsString();
+                String level = json.get("loglevel").getAsString();
 
-            if (!failed) {
-                JsonArray logLevels = null;
-                if (!response.has("loglevels")) {
-                    logLevels = new JsonArray();
-                    response.add("loglevels", logLevels);
-                } else
-                    logLevels = response.get("loglevels").getAsJsonArray();
                 try {
-                    JsonObject levelObject = new JsonObject();
-                    levelObject.addProperty("classname", className);
-                    levelObject.addProperty("loglevel", level);
-                    logLevels.add(levelObject);
+                    Logger classLogger = (Logger) getStaticValue(className, "logger");
+                    classLogger.setLevel(Level.toLevel(level));
                 } catch (Exception e) {
                     logger.info(String.format("%s", LogUtil.getStackTrace(e)));
                     failed = true;
                 }
-            }
 
-            if (failed) {
-                msg.append(String.format("could not update: %s=%s", className, level));
+                if (!failed) {
+                    JsonArray logLevels = null;
+                    if (!response.has("loglevels")) {
+                        logLevels = new JsonArray();
+                        response.add("loglevels", logLevels);
+                    } else
+                        logLevels = response.get("loglevels").getAsJsonArray();
+                    try {
+                        JsonObject levelObject = new JsonObject();
+                        levelObject.addProperty("classname", className);
+                        levelObject.addProperty("loglevel", level);
+                        logLevels.add(levelObject);
+                    } catch (Exception e) {
+                        logger.info(String.format("%s", LogUtil.getStackTrace(e)));
+                        failed = true;
+                    }
+                }
+
+                if (failed) {
+                    msg.append(String.format("could not update: %s=%s", className, level));
+                }
             }
-        }
+        } catch (IllegalStateException e) {
+            statusCode = HttpServletResponse.SC_BAD_REQUEST;
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            msg.append("Unable to convert request to JsonArray");
+        } catch (JsonSyntaxException e) {
+            statusCode = HttpServletResponse.SC_BAD_REQUEST;
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            msg.append("Unable to parse request as Json");
+		} catch (IOException e) {
+            statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            msg.append("Unable to retrieve request content");
+		}
 
         if (msg.length() > 0) {
             response.addProperty("msg", msg.toString());
         }
+        
         result.put(Sjm.RES, response.toString());
-        status.setCode(HttpServletResponse.SC_OK);
+        status.setCode(statusCode);
 
         return result;
     }

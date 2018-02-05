@@ -157,8 +157,7 @@ public class ModelPost extends AbstractJavaWebScript {
         JsonParser parser = new JsonParser();
         try {
             JsonElement postJsonElement = parser.parse(req.getContent().getContent());
-            JsonObject postJson = postJsonElement.isJsonNull() ? new JsonObject() :
-                postJsonElement.getAsJsonObject();
+            JsonObject postJson = postJsonElement.getAsJsonObject();
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
@@ -200,8 +199,12 @@ public class ModelPost extends AbstractJavaWebScript {
                 model.put(Sjm.RES, createResponseJson());
             }
 
+        } catch (IllegalStateException e) {
+        	log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
+            model.put(Sjm.RES, createResponseJson());
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            model.put(Sjm.RES, createResponseJson());
         }
 
         status.setCode(responseStatus.getCode());
@@ -209,7 +212,8 @@ public class ModelPost extends AbstractJavaWebScript {
         return model;
     }
 
-    protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user, String contentType) {
+    protected Map<String, Object> handleArtifactPost(final WebScriptRequest req, final Status status, String user, 
+    		String contentType) {
 
         JsonObject resultJson = null;
         String filename = null;

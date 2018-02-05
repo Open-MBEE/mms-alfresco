@@ -262,7 +262,7 @@ public class EmsNodeUtil {
             JsonObject formatted = elementsFromElastic.get(i).getAsJsonObject();
             formatted.addProperty(Sjm.PROJECTID, this.projectId);
             formatted.addProperty(Sjm.REFID, this.workspaceName);
-            elementsFromElastic.add(withChildViews ? addChildViews(formatted) : formatted);
+            elementsFromElastic.set(i, withChildViews ? addChildViews(formatted) : formatted);
         }
 
         return elementsFromElastic;
@@ -694,7 +694,7 @@ public class EmsNodeUtil {
             JsonArray childViews = new JsonArray();
             JsonArray ownedAttributes = JsonUtil.getOptArray(o, Sjm.OWNEDATTRIBUTEIDS);
             Set<String> ownedAttributeSet = new HashSet<>();
-            if (ownedAttributes != null && ownedAttributes.size() > 0) {
+            if (ownedAttributes.size() > 0) {
                 for (int j = 0; j < ownedAttributes.size(); j++) {
                     ownedAttributeSet.add(ownedAttributes.get(j).getAsString());
                 }
@@ -703,13 +703,15 @@ public class EmsNodeUtil {
             JsonArray ownedAttributesJSON = getNodesBySysmlids(ownedAttributeSet);
             Map<String, JsonObject> ownedAttributesMap = new HashMap<>();
             for (int i = 0; i < ownedAttributesJSON.size(); i++) {
-                JsonObject ownedAttribute = JsonUtil.getOptObject(ownedAttributesJSON, i);
+            	//originally had optJSONObject, but then it wouldn't have the SYSMLID key in the next line
+            	// if the optional empty object is returned
+                JsonObject ownedAttribute = ownedAttributesJSON.get(i).getAsJsonObject();
                 ownedAttributesMap.put(ownedAttribute.get(Sjm.SYSMLID).getAsString(), ownedAttribute);
             }
-            if (ownedAttributes != null && ownedAttributes.size() > 0) {
+            if (ownedAttributes.size() > 0) {
                 for (int j = 0; j < ownedAttributes.size(); j++) {
-                    if (ownedAttributesMap.containsKey(ownedAttributes.get(j))) {
-                        JsonObject ownedAttribute = ownedAttributesMap.get(ownedAttributes.get(j));
+                    if (ownedAttributesMap.containsKey(ownedAttributes.get(j).getAsString())) {
+                        JsonObject ownedAttribute = ownedAttributesMap.get(ownedAttributes.get(j).getAsString());
                         if (ownedAttribute != null && ownedAttribute.get(Sjm.TYPE).getAsString().equals("Property")) {
                             if (!JsonUtil.getOptString(ownedAttribute, Sjm.TYPEID).equals("")) {
                                 JsonObject childView = new JsonObject();
