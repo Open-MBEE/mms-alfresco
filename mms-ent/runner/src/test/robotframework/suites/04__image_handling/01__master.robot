@@ -80,9 +80,11 @@ GetVersionedImage
 	[Tags]				images		critical		0407
 	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/master/artifacts/mounts?commitId=${image_commit_master}		headers=&{PNG_GET_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${image_versioned_url} =		Get Image Id		${result.json()}
+	${filter} =			Create List	 nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified
+    Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${image_versioned} =		Get Image Id		${result.json()}
 	Set Global Variable	  ${image_elastic_later}
-	Should Not Be Equal   ${image_elastic_later}    ${image_elastic}
+	Should Not Be Equal   ${image_elastic_later}    ${image_versioned}
 #
 #PostNewBranchForImage
 #	[Documentation]		"Post new branch to PA"

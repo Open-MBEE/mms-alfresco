@@ -122,7 +122,7 @@ public class ArtifactsGet extends ArtifactGet {
                 try {
                     Long depth = getDepthFromRequest(req);
                     result = handleRequest(req, depth);
-                    elementsJson = result.optJSONArray(Sjm.ELEMENTS);
+                    elementsJson = result.optJSONArray(Sjm.ARTIFACTS);
                 } catch (JSONException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
                 }
@@ -135,7 +135,7 @@ public class ArtifactsGet extends ArtifactGet {
                     log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
                 }
 
-                top.put(Sjm.ELEMENTS, elements);
+                top.put(Sjm.ARTIFACTS, elements);
 
                 JSONArray errorMessages = new JSONArray();
                 for (String level : Sjm.ERRORLEVELS) {
@@ -163,7 +163,7 @@ public class ArtifactsGet extends ArtifactGet {
                 }
             } else {
                 log(Level.INFO, HttpServletResponse.SC_OK, "No elements found");
-                top.put(Sjm.ELEMENTS, new JSONArray());
+                top.put(Sjm.ARTIFACTS, new JSONArray());
                 model.put(Sjm.RES, top);
             }
         } catch (Exception e) {
