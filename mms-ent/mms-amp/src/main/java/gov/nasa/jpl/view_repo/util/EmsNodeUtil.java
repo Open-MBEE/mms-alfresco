@@ -22,6 +22,7 @@ import java.util.TimeZone;
 import org.apache.log4j.Logger;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -1449,6 +1450,16 @@ public class EmsNodeUtil {
                 val = toMap(value.getAsJsonObject());
             } else if (value.isJsonNull()) {
                 val = null;
+            } else if (value.isJsonPrimitive()) {
+                JsonPrimitive primitive = value.getAsJsonPrimitive();
+                if (primitive.isBoolean())
+                    val = primitive.getAsBoolean();
+                else if (primitive.isString())
+                    val = primitive.getAsString();
+                else if (primitive.isNumber())
+                    val = primitive.getAsNumber();
+                else
+                    val = (Object) primitive;
             } else
             	val = (Object) value;
             map.put(key, val);
@@ -1467,8 +1478,19 @@ public class EmsNodeUtil {
                 val = toList(value.getAsJsonArray());
             } else if (value.isJsonObject()) {
                 val = toMap(value.getAsJsonObject());
-            } else if (value.isJsonNull())
+            } else if (value.isJsonNull()) {
             	val = null;
+            } else if (value.isJsonPrimitive()) {
+                JsonPrimitive primitive = value.getAsJsonPrimitive();
+                if (primitive.isBoolean())
+                    val = primitive.getAsBoolean();
+                else if (primitive.isString())
+                    val = primitive.getAsString();
+                else if (primitive.isNumber())
+                    val = primitive.getAsNumber();
+                else
+                    val = (Object) primitive;
+            }
             else
             	val = (Object) value;
             list.add(val);

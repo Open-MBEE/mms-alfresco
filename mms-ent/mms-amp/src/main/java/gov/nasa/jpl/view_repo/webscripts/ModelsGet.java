@@ -150,7 +150,7 @@ public class ModelsGet extends ModelGet {
                             JsonObject errorPayload = new JsonObject();
                             errorPayload.addProperty("code", HttpServletResponse.SC_NOT_FOUND);
                             errorPayload.add(Sjm.SYSMLID, errors.get(i));
-                            errorPayload.addProperty("message", String.format("Element %s was not found", errors.get(i)));
+                            errorPayload.addProperty("message", String.format("Element %s was not found", errors.get(i).getAsString()));
                             errorPayload.addProperty("severity", level);
                             errorMessages.add(errorPayload);
                         }
