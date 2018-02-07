@@ -82,28 +82,14 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
     }
 
     protected ReadableByteChannel getDirectReadableChannel() {
-        ReadableByteChannel channel = null;
-        try {
-            if (!this.exists() && logger.isDebugEnabled()) {
-                logger.debug("JSON does not exist");
-            } else {
-            	// TODO: fix this to read json
-            	byte [] array = new byte[0];
-                channel = Channels.newChannel(new ByteArrayInputStream(array));
+        if (!this.exists() && logger.isDebugEnabled()) {
+            logger.debug("JSON does not exist");
+        } else {
+            try (ReadableByteChannel channel = Channels.newChannel(new ByteArrayInputStream(this.json))) {
                 return channel;
-            }
-        } catch (ContentIOException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Failed to open json channel: " + this, e);
-            }
-        } finally {
-            try {
-                if (channel != null) {
-                    channel.close();
-                }
             } catch (IOException e) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Error: ", e);
+                    logger.debug("Failed to convert json to input stream: " + this, e);
                 }
             }
         }

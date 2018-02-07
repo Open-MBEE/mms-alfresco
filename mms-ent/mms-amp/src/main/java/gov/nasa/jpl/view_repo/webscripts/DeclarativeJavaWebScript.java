@@ -100,6 +100,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             String projectId = req.getServiceMatch().getTemplateVars().get(PROJECT_ID);
             Boolean perm = hasPermission(req, res);
             res.setHeader("Access-Control-Allow-Origin", "*");
+            res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, HEAD, OPTIONS");
             if (projectId == null || (perm != null && perm)) {
                 model = executeImpl(req, status, cache);
             } else {
