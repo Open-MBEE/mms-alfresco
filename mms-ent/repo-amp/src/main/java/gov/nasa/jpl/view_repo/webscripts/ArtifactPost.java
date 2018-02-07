@@ -79,7 +79,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
     protected String extension = null;
     protected String content = null;
     protected String siteName = null;
-    protected String path = null;
+    //protected String path = null;
     protected EmsScriptNode workspace = null;
     protected Path pngPath = null;
 
@@ -157,6 +157,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         final Status status) {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
+        String orgId = getOrgId(req);
         Map<String, Object> model = new HashMap<>();
         JSONObject newElementsObject = new JSONObject();
         SerialJSONObject results;
@@ -164,8 +165,14 @@ public class ArtifactPost extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         try {
+            EmsScriptNode siteNode = EmsScriptNode.getSiteNode(orgId);
+            EmsScriptNode artifactNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
+            String url = artifactNode.getUrl();
+            if (url != null) {
+                postJson.put(Sjm.LOCATION , url.replace("/d/d/", "/service/api/node/content/"));
+            }
             SerialJSONArray delta = new SerialJSONArray();
-            postJson.put(Sjm.LOCATION, path);
+            //postJson.put(Sjm.LOCATION, path);
             postJson.put(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(content));
             delta.put(postJson);
             this.populateSourceApplicationFromJson(postJson);
@@ -207,7 +214,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         JSONObject resultJson = null;
         Map<String, Object> model = new HashMap<>();
-        boolean isSvg = false;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
         if (!contentType.isEmpty() && postJson.optString(Sjm.CONTENTTYPE).isEmpty()) {
             postJson.put(Sjm.CONTENTTYPE, contentType);
@@ -223,17 +229,15 @@ public class ArtifactPost extends AbstractJavaWebScript {
             try {
                 extension = FilenameUtils.getExtension(filename);
                 artifactId = postJson.getString(Sjm.SYSMLID);
-                path = projectId + "/refs/" + refId + "/" + artifactId + System.currentTimeMillis() + "." + extension;
-                if (contentType.contains("svg") || postJson.optString(Sjm.CONTENTTYPE).contains("svg") || extension.contains("svg")) {
-                    isSvg = true;
-                }
+                //path = projectId + "/refs/" + refId + "/" + artifactId + System.currentTimeMillis() + "." + extension;
+
                 // Create return json:
                 resultJson = new JSONObject();
                 resultJson.put("filename", filename);
                 // TODO: want full path here w/ path to site also, but Doris does not use it,
                 //		 so leaving it as is.
-                resultJson.put("path", path);
-                resultJson.put("site", siteName);
+                //resultJson.put("path", path);
+                //resultJson.put("site", siteName);
 
                 // Update or create the artifact if possible:
                 if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
@@ -245,36 +249,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     if (svgArtifact == null) {
                         logger.error("Was not able to create the artifact!\n");
                         model.put(Sjm.RES, createResponseJson());
-                    } else {
-                        resultJson.put("upload", svgArtifact);
-                        if (isSvg) {
-                            try {
-                                Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
-                                pngPath = svgToPng(svgPath);
-
-                                try {
-                                    pngArtifact = NodeUtil
-                                        .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName, projectId, refId,
-                                            null, response, null, false);
-                                } catch (Throwable ex) {
-                                    throw new Exception("Failed to convert SVG to PNG!\n");
-                                }
-
-                                if (pngArtifact == null) {
-                                    logger.error("Failed to convert SVG to PNG!\n");
-                                } else {
-                                    synchSvgAndPngVersions(svgArtifact, pngArtifact);
-                                }
-                                Files.deleteIfExists(svgPath);
-                                Files.deleteIfExists(pngPath);
-                            } catch (IOException e) {
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("Failed to convert image", e);
-                                }
-                            } catch (Throwable ex) {
-                                logger.error("Failed to convert SVG to PNG!\n");
-                            }
-                        }
                     }
                 } else {
                     logger.error("artifactId not supplied!\\n");

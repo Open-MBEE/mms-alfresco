@@ -110,54 +110,54 @@ GetOrginalImage
 	${image_org} =		Get Image Id		${result.json()}
 	Set Global Variable	  ${image_org}
 	Should Be Equal   ${image_org}    ${image_elastic}
-#
-#PostNewBranchForImage
-#	[Documentation]		"Post new branch to PA"
-#	[Tags]				images		critical		0406
-#	${post_json} =		Get File		${CURDIR}/../../JsonData/NewImageBranch.json
-#	${result} =			requests.Post		url=${ROOT}/projects/PA/refs		data=${post_json}		headers=&{REQ_HEADER}
-#	Should Be Equal		${result.status_code}		${200}
-#	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 location
-#	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-#	Sleep				${POST_DELAY_INDEXING}
-#	${compare_result} =		Compare JSON		${TEST_NAME}
-#	Should Match Baseline		${compare_result}
-#
-#GetImageFromParent
-#	[Documentation]		"Get image from parent branch (image get url should use child branch's ref and it should return the image from parent ref)"
-#	[Tags]				images		critical		0407
-#	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/imagebranch/elements/mounts		headers=&{PNG_GET_HEADER}
-#	Should Be Equal		${result.status_code}		${200}
-#	${image_child_url} =		Get Image Url		${result.json()}
-#	Set Global Variable	  ${image_child_url}
-#	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 location
-#	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-#	Should Be Equal	  ${image_child_url}    ${image_versioned_url}
-#
-#PostAnotherVersionOfParentImage
-#	[Documentation]		"post new image to parent ref so parent ref has new version of image"
-#	[Tags]				images		critical		0408
-#	Create Session		mmstest  ${ROOT}
-#    ${image_file} =     Binary Data	${CURDIR}${/}../../assets/mounts.png
-#    ${files} =			Create Dictionary	file	${image_file}
-#    ${data} =			Create Dictionary	id=410	contentType=image/png
-#    ${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts/mounts		data=${data}		files=${files}
-#	Should Be Equal		${result.status_code}		${200}
-#	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location
-#	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-#	Sleep				${POST_DELAY_INDEXING}
-#	${compare_result} =		Compare JSON		${TEST_NAME}
-#	Should Match Baseline		${compare_result}
-#
-#GetChildImageUrl
-#	[Documentation]		"get image from child branch again, should be the same as getImageFromParent (should not give back latest version of image in parent ref)"
-#	[Tags]				images		critical		0409
-#	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/imagebranch/elements/mounts		headers=&{PNG_GET_HEADER}
-#	Should Be Equal		${result.status_code}		${200}
-#	${image_child_versioned_url} =		Get Image Url		${result.json()}
-#	Set Global Variable	  ${image_url}
-#	Should Be Equal	  ${image_child_url}    ${image_child_versioned_url}
-#
+
+PostNewBranchForImage
+	[Documentation]		"Post new branch to PA"
+	[Tags]				images		critical		0408
+	${post_json} =		Get File		${CURDIR}/../../JsonData/NewImageBranch.json
+	${result} =			requests.Post		url=${ROOT}/projects/PA/refs		data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 location
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+GetImageFromParent
+	[Documentation]		"Get image from parent branch (image get url should use child branch's ref and it should return the image from parent ref)"
+	[Tags]				images		critical		0409
+	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/imagebranch/artifacts/mounts		headers=&{PNG_GET_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${image_child_id} =		Get Image id		${result.json()}
+	Set Global Variable	  ${image_child_id}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 location
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Should Be Equal	  ${image_child_id}    ${image_versioned}
+
+PostAnotherVersionOfParentImage
+	[Documentation]		"post version of image to parent ref so parent ref has new version of image"
+	[Tags]				images		critical		0410
+	Create Session		mmstest  ${ROOT}
+    ${image_file} =     Binary Data	${CURDIR}${/}../../assets/mounts.png
+    ${files} =			Create Dictionary	file	${image_file}
+    ${data} =			Create Dictionary	id=mounts	contentType=image/png
+    ${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts/mounts		data=${data}		files=${files}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+GetChildImageUrl
+	[Documentation]		"get image from child branch again, should be the same as getImageFromParent (should not give back latest version of image in parent ref)"
+	[Tags]				images		critical		0411
+	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/imagebranch/elements/mounts		headers=&{PNG_GET_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${image_child_versioned_url} =		Get Image Url		${result.json()}
+	Set Global Variable	  ${image_url}
+	Should Be Equal	  ${image_child_id}    ${image_versioned}
+
 #PostImageToMountedProject
 #	[Documentation]		"post new image to mount to find from PA"
 #	[Tags]				images		critical		0410
