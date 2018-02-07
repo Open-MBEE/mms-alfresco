@@ -1178,9 +1178,12 @@ public class EmsNodeUtil {
         qn.add(o.optString("name"));
         qid.add(o.optString(Sjm.SYSMLID));
 
+        List<String> seen = new ArrayList<>();
+
         while (o.has(Sjm.OWNERID) && o.optString(Sjm.OWNERID, null) != null && !o.getString(Sjm.OWNERID)
-            .equals("null")) {
+            .equals("null") && !seen.contains(o.getString(Sjm.OWNERID))) {
             String sysmlid = o.optString(Sjm.OWNERID);
+            seen.add(sysmlid);
             JSONObject owner = elementMap.get(sysmlid);
             if (owner == null) {
                 if (cache.containsKey(sysmlid)) {
