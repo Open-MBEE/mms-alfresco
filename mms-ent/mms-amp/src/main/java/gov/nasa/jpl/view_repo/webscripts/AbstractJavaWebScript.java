@@ -365,7 +365,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     }
 
     protected void printFooter(String user, Logger logger, Timer timer) {
-        logger.info(String.format("%s %s", user, timer));
+        logger.info(String.format("%d %s %s", getResponseStatus().getCode(), user, timer));
     }
 
     protected void printHeader(String user, Logger logger, WebScriptRequest req) {
