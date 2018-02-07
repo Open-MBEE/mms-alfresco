@@ -155,17 +155,8 @@ public class SiteGet extends AbstractJavaWebScript {
             if (logger.isDebugEnabled())
                 logger.debug("handleSite: " + elements);
 
-            for (int i = 0; i < elements.size(); i++) {
+            for (int i = 0; i < elements.length(); i++) {
                 JsonObject o = elements.get(i).getAsJsonObject();
-                JsonObject newo = new JsonObject();
-
-                if (o.has(Sjm.NAME)) {
-                    newo.add("_" + Sjm.NAME, o.get(Sjm.NAME));
-                } else {
-                    newo.add("_" + Sjm.NAME, o.get(Sjm.SYSMLID));
-                }
-
-                newo.add("_" + Sjm.SYSMLID, o.get(Sjm.SYSMLID));
 
                 for (Node n : siteNodes) {
                     if (n.getSysmlId().equals(o.get(Sjm.SYSMLID).getAsString())) {
@@ -177,16 +168,16 @@ public class SiteGet extends AbstractJavaWebScript {
                             sites.add(DbNodeTypes.SITEANDPACKAGE);
                             String parent = emsNodeUtil.getImmediateParentOfTypes(n.getSysmlId(),
                                 DbEdgeTypes.CONTAINMENT, sites);
-                            newo.addProperty("_parentId", parent);
-                            newo.addProperty("_link", siteUrl);
+                            o.addProperty("_parentId", parent);
+                            o.addProperty("_link", siteUrl);
                         } else {
-                            newo.addProperty("_parentId", "null");
+                            o.addProperty("_parentId", "null");
                         }
                     }
                 }
 
-                if (!alfs.contains(newo.get("_" + Sjm.SYSMLID).getAsString())) {
-                    json.add(newo);
+                if (!alfs.contains(o.get(Sjm.SYSMLID).getAsString())) {
+                    json.add(o);
                 }
             }
         } catch (Exception e) {

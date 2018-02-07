@@ -1,0 +1,9 @@
+{
+    "orgs": [
+        {
+            "id": "initorg",
+            "name": "Initial Organization",
+            "anyprop": "Any Value"
+        }
+    ]
+}

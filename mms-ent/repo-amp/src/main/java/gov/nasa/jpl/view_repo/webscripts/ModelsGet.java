@@ -200,6 +200,8 @@ public class ModelsGet extends ModelGet {
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
+            String commitId = req.getParameter(Sjm.COMMITID.replace("_",""));
+
             boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
             JsonObject mountsJson = new JsonObject();
@@ -213,7 +215,7 @@ public class ModelsGet extends ModelGet {
             for (int i = 0; i < elementsToFindJson.size(); i++) {
                 uniqueElements.add(elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
             }
-            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found);
+            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found, commitId);
             result.add(Sjm.ELEMENTS, found);
             JsonUtil.addStringSet(result, Sjm.WARN, uniqueElements);
             return result;

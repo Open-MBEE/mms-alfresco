@@ -60,7 +60,8 @@ public class ElasticHelper implements ElasticsearchInterface {
                 new HttpClientConfig.Builder(elasticHost).defaultSchemeForDiscoveredNodes("https").multiThreaded(true)
                     .readTimeout(readTimeout).build());
         } else {
-            factory.setHttpClientConfig(new HttpClientConfig.Builder(elasticHost).readTimeout(readTimeout).multiThreaded(true).build());
+            factory.setHttpClientConfig(
+                new HttpClientConfig.Builder(elasticHost).readTimeout(readTimeout).multiThreaded(true).build());
         }
         client = factory.getObject();
         logger.warn(String
@@ -88,12 +89,10 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param index name of the index to create           (2)
      */
     public void createIndex(String index) throws IOException {
-        boolean indexExists = client.execute(new IndicesExists.Builder(index.toLowerCase().replaceAll("\\s+", ""))
-        		.build())
-        		.isSucceeded();
+        boolean indexExists =
+            client.execute(new IndicesExists.Builder(index.toLowerCase().replaceAll("\\s+", "")).build()).isSucceeded();
         if (!indexExists) {
-            client.execute(new CreateIndex.Builder(index.toLowerCase().replaceAll("\\s+",""))
-            		.build());
+            client.execute(new CreateIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build());
         }
     }
 
@@ -105,9 +104,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      */
     public JsonObject getElementByElasticId(String id, String index) throws IOException {
         // Cannot use method for commit type
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+",""), id)
-        		.type(ELEMENT)
-        		.build();
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(ELEMENT).build();
 
         JestResult result = client.execute(get);
 
@@ -242,10 +239,8 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param id _id elasticsearch property          (2)
      * @return JSONObject o or null
      */
-    public JsonObject getCommitByElasticId(String id, String index) throws IOException {
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+",""), id)
-        		.type(COMMIT)
-        		.build();
+    public JSONObject getCommitByElasticId(String id, String index) throws IOException {
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(COMMIT).build();
 
         JestResult result = client.execute(get);
 
@@ -287,10 +282,8 @@ public class ElasticHelper implements ElasticsearchInterface {
             logger.debug(String.format("Search Query %s", queryJson.toString()));
         }
 
-        Search search = new Search.Builder(queryJson.toString())
-        		.addIndex(index.toLowerCase().replaceAll("\\s+",""))
-        		.addType(ELEMENT)
-        		.build();
+        Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
+            .addType(ELEMENT).build();
         SearchResult result = client.execute(search);
 
         if (!result.isSucceeded() && result.getResponseCode() != 404) {
@@ -360,7 +353,7 @@ public class ElasticHelper implements ElasticsearchInterface {
                     elements.add(o);
                 }
             } else if (result != null && !result.isSucceeded()) {
-            	throw new IOException(String.format("Search failed:%s", result.getErrorMessage()));
+                throw new IOException(String.format("Search failed:%s", result.getErrorMessage()));
             }
             count += termLimit;
         }
@@ -395,19 +388,11 @@ public class ElasticHelper implements ElasticsearchInterface {
             result.sysmlid = k.get(Sjm.SYSMLID).getAsString();
         }
         if (k.has(Sjm.ELASTICID)) {
-            result.elasticId = client.execute(
-                new Index.Builder(k.toString())
-                .id(k.get(Sjm.ELASTICID).getAsString())
-                .index(index.toLowerCase().replaceAll("\\s+",""))
-                .type(eType)
-                .build())
-                .getId();
+            result.elasticId = client.execute(new Index.Builder(k.toString()).id(k.getString(Sjm.ELASTICID))
+                .index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build()).getId();
         } else {
-            result.elasticId =
-                client.execute(new Index.Builder(k.toString())
-                		.index(index.toLowerCase().replaceAll("\\s+",""))
-                		.type(eType)
-                		.build())
+            result.elasticId = client.execute(
+                new Index.Builder(k.toString()).index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build())
                 .getId();
         }
         if (result.elasticId == null)
@@ -434,11 +419,8 @@ public class ElasticHelper implements ElasticsearchInterface {
 
     public boolean updateElement(String id, JsonObject payload, String index) throws IOException {
 
-        client.execute(new Update.Builder(payload.toString())
-        		.id(id)
-        		.index(index.toLowerCase().replaceAll("\\s+",""))
-        		.type(ELEMENT)
-        		.build());
+        client.execute(new Update.Builder(payload.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", ""))
+            .type(ELEMENT).build());
 
         return true;
     }
@@ -450,7 +432,8 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param operation    checks for CRUD operation, does not delete documents
      * @return ElasticResult e
      */
-    public boolean bulkIndexElements(JsonArray bulkElements, String operation, boolean refresh, String index) throws IOException {
+    public boolean bulkIndexElements(JSONArray bulkElements, String operation, boolean refresh, String index, String type)
+        throws IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         // BulkableAction is generic
         ArrayList<BulkableAction> actions = new ArrayList<>();
@@ -465,8 +448,8 @@ public class ElasticHelper implements ElasticsearchInterface {
                 		.build());
                 currentList.add(curr);
             }
-            if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.size() - 1)) {
-                BulkResult result = insertBulk(actions, refresh, index.toLowerCase().replaceAll("\\s+",""));
+            if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.length() - 1)) {
+                BulkResult result = insertBulk(actions, refresh, index.toLowerCase().replaceAll("\\s+", ""), type);
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
@@ -481,18 +464,19 @@ public class ElasticHelper implements ElasticsearchInterface {
         return true;
     }
 
-    public boolean bulkUpdateElements(Set<String> elements, String payload, String index) throws IOException {
+    public boolean bulkUpdateElements(Set<String> elements, String payload, String index, String type)
+        throws IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         ArrayList<BulkableAction> actions = new ArrayList<>();
         JsonArray currentList = new JsonArray();
 
         int i = 0;
-        for (String id: elements) {
+        for (String id : elements) {
             actions.add(new Update.Builder(payload).id(id).build());
             currentList.add(id);
 
             if ((((i + 1) % limit) == 0 && i != 0) || i == (elements.size() - 1)) {
-                BulkResult result = insertBulk(actions, false, index.toLowerCase().replaceAll("\\s+",""));
+                BulkResult result = insertBulk(actions, false, index.toLowerCase().replaceAll("\\s+", ""), type);
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Update Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
@@ -513,15 +497,13 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param actions (2)
      * @return returns result of bulk index
      */
-    private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh, String index) throws IOException {
-        Bulk bulk = new Bulk.Builder()
-        		.defaultIndex(index)
-        		.defaultType(ELEMENT)
-        		.addAction(actions)
-        		.setParameter(Parameters.REFRESH, refresh).
-        		build();
+    private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh, String index, String type)
+        throws JSONException, IOException {
+        Bulk bulk = new Bulk.Builder().defaultIndex(index).defaultType(type).addAction(actions)
+            .setParameter(Parameters.REFRESH, refresh).build();
         return client.execute(bulk);
     }
+
     // :TODO has to be set to accept multiple indexes as well.  Will need VE changes
     public JsonArray search(JsonObject queryJson) throws IOException {
         if (logger.isDebugEnabled()) {
@@ -572,22 +554,17 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param ids
      * @return JSONObject Result
      */
-    public JsonObject bulkDeleteByType(String type, ArrayList<String> ids, String index){
+    public JSONObject bulkDeleteByType(String type, ArrayList<String> ids, String index) {
         JestResult result = null;
         try {
             ArrayList<Delete> deleteList = new ArrayList<>();
 
-            for(String commitId : ids){
-                deleteList.add(new Delete.Builder(commitId)
-                		.type(type)
-                		.index(index.toLowerCase().replaceAll("\\s+","")).
-                		build());
+            for (String commitId : ids) {
+                deleteList.add(
+                    new Delete.Builder(commitId).type(type).index(index.toLowerCase().replaceAll("\\s+", "")).build());
             }
-            Bulk bulk = new Bulk.Builder()
-            		.defaultIndex(index.toLowerCase().replaceAll("\\s+",""))
-            		.defaultIndex(type)
-            		.addAction(deleteList)
-            		.build();
+            Bulk bulk = new Bulk.Builder().defaultIndex(index.toLowerCase().replaceAll("\\s+", "")).defaultIndex(type)
+                .addAction(deleteList).build();
 
             result = client.execute(bulk);
 
@@ -606,6 +583,7 @@ public class ElasticHelper implements ElasticsearchInterface {
 
     /**
      * Performs a delete by query on ElasticSearch using the given field and id.
+     *
      * @param field
      * @param projectId
      * @return JSON Response
@@ -641,11 +619,13 @@ public class ElasticHelper implements ElasticsearchInterface {
     /**
      * Search elasticsearch for an element based on the sysmlids provided and timestamp. Elasticsearch will find all elements matching
      * the sysmlid then filter and sort by timestamp. If the element doesn't exist at the timestamp it will return null.
+     *
      * @param sysmlId
      * @param timestamp
      * @return
      */
-    public JsonObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds, String index) {
+    public JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds,
+        String index) {
         // Create filter array
         int count = 0;
         while (count < refsCommitIds.size()) {
@@ -689,9 +669,8 @@ public class ElasticHelper implements ElasticsearchInterface {
             // Add size limit
             query.addProperty("size", "1");
 
-            Search search = new Search.Builder(query.toString())
-            		.addIndex(index.toLowerCase().replaceAll("\\s+", ""))
-            		.build();
+            Search search =
+                new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", "")).build();
             SearchResult result;
             try {
                 result = client.execute(search);
@@ -734,9 +713,9 @@ public class ElasticHelper implements ElasticsearchInterface {
 
             queryWrapper.add("query", query);
 
-            Search search = new Search.Builder(queryWrapper.toString())
-            		.addIndex(index.toLowerCase().replaceAll("\\s+", ""))
-            		.build();
+            Search search =
+                new Search.Builder(queryWrapper.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
+                    .build();
 
             try {
                 SearchResult result = client.execute(search);

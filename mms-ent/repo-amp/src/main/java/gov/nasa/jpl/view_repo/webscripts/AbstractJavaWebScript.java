@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
@@ -451,6 +452,17 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      */
     protected void populateSourceApplicationFromJson(JsonObject postJson) {
         requestSourceApplication = JsonUtil.getOptString(postJson, "source");
+    }
+
+    /**
+     * This needs to be called with the incoming JSON request to populate the local source
+     * variable that is used in the sendDeltas call.
+     *
+     * @param postJson
+     * @throws JSONException
+     */
+    protected void populateSourceApplicationFromJson(SerialJSONObject postJson) throws JSONException {
+        requestSourceApplication = postJson.optString("source");
     }
 
     /**

@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -52,6 +53,8 @@ public class ProjectDelete extends AbstractJavaWebScript {
 
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
+        JSONArray projects = new JSONArray();
         printHeader(user, logger, req);
         Timer timer = new Timer();
 
@@ -61,6 +64,10 @@ public class ProjectDelete extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
 
                 String projectId = getProjectId(req);
+                JSONObject project = emsNodeUtil.getProject(projectId);
+                if (project != null) {
+                    projects.put(project);
+                }
 
                 // Delete the site from share
                 deleteProjectSiteFolder(projectId);
@@ -82,7 +89,17 @@ public class ProjectDelete extends AbstractJavaWebScript {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
-        model.put(Sjm.RES, createResponseJson());
+        if(projects.length() == 0){
+            model.put(Sjm.RES, createResponseJson());
+        } else {
+            JSONObject json = new JSONObject();
+            json.put(Sjm.PROJECTS, projects);
+            if (prettyPrint) {
+                model.put(Sjm.RES, json.toString(4));
+            } else {
+                model.put(Sjm.RES, json);
+            }
+        }
         status.setCode(responseStatus.getCode());
 
         printFooter(user, logger, timer);

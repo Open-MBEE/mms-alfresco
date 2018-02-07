@@ -1,0 +1,9 @@
+{
+    "projects": [
+        {
+            "id": "MountCommit",
+            "name": "mount test project MountCommit",
+            "type": "Project"
+        }
+    ]
+}

@@ -1,6 +1,8 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -93,10 +95,21 @@ public class EmsNodeUtil {
         JsonArray orgs = new JsonArray();
         List<Map<String, String>> organizations = pgh.getOrganizations(orgId);
         for (Map<String, String> n : organizations) {
-            JsonObject org = new JsonObject();
-            org.addProperty(Sjm.SYSMLID, n.get(ORG_ID));
-            org.addProperty(Sjm.NAME, n.get(ORG_NAME));
-            orgs.add(org);
+            try {
+                JSONObject current = eh.getElementByElasticId(n.get(ORG_ID), EmsConfig.get("elastic.index.element"));
+                if (current != null) {
+                    orgs.put(current);
+                } else {
+                    JSONObject org = new JSONObject();
+                    org.put(Sjm.SYSMLID, n.get(ORG_ID));
+                    org.put(Sjm.NAME, n.get(ORG_NAME));
+                    orgs.put(org);
+                }
+            } catch (IOException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Elasticsearch Error: ", e);
+                }
+            }
         }
         return orgs;
     }
@@ -255,6 +268,7 @@ public class EmsNodeUtil {
         JsonArray elementsFromElastic = new JsonArray();
         try {
             elementsFromElastic = eh.getElementsFromElasticIds(elasticids, projectId);
+
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -554,17 +568,6 @@ public class EmsNodeUtil {
                 o.addProperty(Sjm.SYSMLID, sysmlid);
             }
 
-            String content = o.toString();
-            if (isImageData(content)) {
-                content = extractAndReplaceImageData(content, organization);
-                JsonParser parser = new JsonParser();
-                try {
-                   o = parser.parse(content).getAsJsonObject();
-                } catch (JsonSyntaxException e) {
-                    // pass
-                }
-            }
-
             boolean added = !existingMap.containsKey(sysmlid);
             boolean updated = false;
             if (!added) {
@@ -602,6 +605,7 @@ public class EmsNodeUtil {
                 .equalsIgnoreCase("null")) {
                 o.addProperty(Sjm.OWNERID, holdingBinSysmlid);
             }
+
             reorderChildViews(o, newElements, addedElements, updatedElements, deletedElements, commitAdded,
                 commitUpdated, commitDeleted, commitId, user, date, oldElasticIds);
 
@@ -614,6 +618,10 @@ public class EmsNodeUtil {
                 JsonObject newObj = new JsonObject();
                 newObj.add(Sjm.SYSMLID, o.get(Sjm.SYSMLID));
                 newObj.add(Sjm.ELASTICID, o.get(Sjm.ELASTICID));
+                // this for the artifact object, has extra key...
+                if (type.equals("Artifact")) {
+                    newObj.put(Sjm.CONTENTTYPE, o.getString(Sjm.CONTENTTYPE));
+                }
                 commitAdded.add(newObj);
             } else if (updated) {
                 logger.debug("ELEMENT UPDATED!");
@@ -645,6 +653,7 @@ public class EmsNodeUtil {
         commit.addProperty(Sjm.CREATED, date);
         commit.addProperty(Sjm.PROJECTID, projectId);
         commit.addProperty(Sjm.SOURCE, src);
+        commit.put(Sjm.TYPE, type);
 
 
         result.add("commit", commit);
@@ -665,7 +674,7 @@ public class EmsNodeUtil {
                                + ".add(params.refId)} else {ctx._source."
                                + Sjm.INREFIDS + " = [params.refId]}");
             params.addProperty("refId", this.workspaceName);
-            eh.bulkUpdateElements(elasticIds, script.toString(), projectId);
+            eh.bulkUpdateElements(elasticIds, script.toString(), projectId, "element");
         } catch (IOException ex) {
             // This catch left intentionally blank
         }
@@ -763,7 +772,7 @@ public class EmsNodeUtil {
             }
         }
 
-        ownedAttributes = getNodesBySysmlids(oldOwnedAttributeSet);
+        ownedAttributes = new SerialJSONArray(getNodesBySysmlids(oldOwnedAttributeSet).toString());
 
         Map<String, String> createProps = new HashMap<>();
         List<String> notAViewList = new ArrayList<>();
@@ -1346,6 +1355,12 @@ public class EmsNodeUtil {
     public static void handleMountSearch(JsonObject mountsJson, boolean extended, boolean extraDocs,
         final Long maxDepth, Set<String> elementsToFind, JsonArray result) throws IOException {
 
+        handleMountSearch(mountsJson, extended, extraDocs, maxDepth, elementsToFind, result, null);
+    }
+
+    public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs,
+        final Long maxDepth, Set<String> elementsToFind, JSONArray result, String commitId) throws IOException {
+        boolean checkDeleted = commitId != null;
         if (elementsToFind.isEmpty() || mountsJson == null) {
             return;
         }
@@ -1388,10 +1403,35 @@ public class EmsNodeUtil {
         }
         JsonArray mountsArray = mountsJson.get(Sjm.MOUNTS).getAsJsonArray();
 
-        for (int i = 0; i < mountsArray.size(); i++) {
-            handleMountSearch(mountsArray.get(i).getAsJsonObject(), extended, extraDocs, 
-                            maxDepth, elementsToFind, result);
+        for (int i = 0; i < mountsArray.length(); i++) {
+            handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result, commitId);
         }
+    }
+
+    /**
+     * Searches a mount for specified elements at the specified commit. Modifies the foundElements passed in and returns
+     * the currently found elements.
+     * @param mountsJson Mount JSON
+     * @param elementsToFind List of elements to find
+     * @param foundElements Set of SysmlIDs of found elements
+     * @param commitId Commit Id to search for.
+     * @return JSONArray of found elements
+     */
+    public static JSONArray searchMountAtCommit(JSONObject mountsJson, Set<String> elementsToFind, Set<String> foundElements, String commitId) {
+
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
+        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, true);
+        JSONArray curFound = new JSONArray();
+
+        for (int index = 0; index < nodeList.length(); index++) {
+            String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
+            JSONObject obj = emsNodeUtil.getElementAtCommit(id, commitId);
+            if (obj != null) {
+                curFound.put(obj);
+                foundElements.add(id);
+            }
+        }
+        return curFound;
     }
 
     public List<Node> getSites(boolean sites, boolean sitepackages) {
@@ -1468,7 +1508,7 @@ public class EmsNodeUtil {
         return map;
     }
 
-    private static List<Object> toList(JsonArray array) {
+    public static List<Object> toList(JsonArray array) {
         List<Object> list = new ArrayList<>();
 
         for (int i = 0; i < array.size(); i++) {
@@ -1602,69 +1642,10 @@ public class EmsNodeUtil {
         return pgh.getImmediateParentOfType(sysmlId, edgeType, nodeTypes);
     }
 
-    private boolean isImageData(String value) {
-        if (value == null) {
-            return false;
-        }
-
-        Pattern p = Pattern.compile(
-            "(.*)<img[^>]*\\ssrc\\s*=\\\\\\s*[\\\"']data:image/([^;]*);\\s*base64\\s*,([^\\\"']*)[\\\"'][^>]*>(.*)",
-            Pattern.DOTALL);
-        Matcher m = p.matcher(value);
-
-        return m.matches();
-    }
-
-    private String extractAndReplaceImageData(String value, String siteName) {
-        if (value == null) {
-            return null;
-        }
-
-        Pattern p = Pattern.compile(
-            "(.*)<img[^>]*\\ssrc\\s*=\\\\\\s*[\\\"']data:image/([^;]*);\\s*base64\\s*,([^\\\"']*)[\\\"'][^>]*>(.*)",
-            Pattern.DOTALL);
-        while (true) {
-            Matcher m = p.matcher(value);
-            if (!m.matches()) {
-                logger.debug(String.format("no match found for value=%s",
-                    value.substring(0, Math.min(value.length(), 100)) + (value.length() > 100 ? " . . ." : "")));
-                break;
-            } else {
-                logger.debug(String.format("match found for value=%s",
-                    value.substring(0, Math.min(value.length(), 100)) + (value.length() > 100 ? " . . ." : "")));
-                if (m.groupCount() != 4) {
-                    logger.debug(String.format("Expected 4 match groups, got %s! %s", m.groupCount(), m));
-                    break;
-                }
-                String extension = m.group(2);
-                String content = m.group(3);
-                String name = "img_" + System.currentTimeMillis();
-
-                // No need to pass a date since this is called in the context of
-                // updating a node, so the time is the current time (which is
-                // null).
-                EmsScriptNode artNode = NodeUtil
-                    .updateOrCreateArtifact(name, extension, content, null, siteName, projectId, this.workspaceName,
-                        null, null, null, false);
-                if (artNode == null || !artNode.exists()) {
-                    logger.debug("Failed to pull out image data for value! " + value);
-                    break;
-                }
-
-                String url = artNode.getUrl();
-                String link = "<img src=\\\"" + url + "\\\"/>";
-                link = link.replace("/d/d/", "/alfresco/service/api/node/content/");
-                value = m.group(1) + link + m.group(4);
-            }
-        }
-
-        return value;
-    }
-
-    public JsonObject getModelAtCommit(String commitId) {
-        JsonObject result = new JsonObject();
-        JsonObject pastElement = null;
-        JsonArray elements = new JsonArray();
+    public JSONObject getModelAtCommit(String commitId) {
+        JSONObject result = new JSONObject();
+        JSONObject pastElement = null;
+        JSONArray elements = new JSONArray();
         ArrayList<String> refsCommitsIds = new ArrayList<>();
 
         Map<String, Object> commit = pgh.getCommit(commitId);
@@ -1789,5 +1770,25 @@ public class EmsNodeUtil {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         return result;
+    }
+
+    public static String md5Hash(String str) {
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(str.getBytes());
+
+            for (byte data : md.digest()) {
+                String hex = Integer.toHexString(0xff & data);
+                if (hex.length() == 1) {
+                    sb.append('0');
+                }
+                sb.append(hex);
+            }
+        } catch (NoSuchAlgorithmException e) {
+            logger.error(e);
+        }
+        return sb.toString();
     }
 }
