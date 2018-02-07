@@ -901,6 +901,20 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
+    public void deleteArtifact(String sysmlId) {
+        try {
+            PreparedStatement query =
+                getConn().prepareStatement("UPDATE \"artifacts" + workspaceId + "\" SET deleted = ? WHERE sysmlid = ?");
+            query.setBoolean(1, true);
+            query.setString(2, sysmlId);
+            query.execute();
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+    }
+
     public void insertEdge(String parentSysmlId, String childSysmlId, DbEdgeTypes edgeType) {
 
         if (parentSysmlId == null || childSysmlId == null || parentSysmlId.isEmpty() || childSysmlId.isEmpty()) {
@@ -1272,6 +1286,23 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
+    public void deleteEdgesForArtifact(String sysmlId) {
+        try {
+            Node n = getNodeFromSysmlId(sysmlId);
+
+            if (n == null) {
+                return;
+            }
+
+            execUpdate(
+                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId() + " OR parent = " + n.getId());
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+    }
+
     public void deleteEdgesForNode(String sysmlId, boolean child, DbEdgeTypes edgeType) {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
@@ -1461,6 +1492,11 @@ public class PostgresHelper implements GraphInterface {
             execUpdate("CREATE INDEX refsIndex on refs(id)");
 
             execUpdate(
+                "CREATE TABLE artifacts(id bigserial primary key, elasticId text not null unique, contentType text not null, sysmlId text not null unique, lastCommit text, initialCommit text, deleted boolean default false);");
+            execUpdate("CREATE INDEX artifactIndex on artifacts(id);");
+            execUpdate("CREATE INDEX sysmlArtifactIndex on artifacts(sysmlId);");
+
+            execUpdate(
                 "CREATE OR REPLACE FUNCTION insert_edge(text, text, text, integer)\n" + "  returns integer as $$\n"
                     + "  begin\n" + "    execute '\n"
                     + "      insert into ' || (format('edges%s', $3)) || ' (parent, child, edgeType) values((select id from ' || format('nodes%s',$3) || ' where sysmlId = ''' || $1 || '''), (select id from ' || format('nodes%s', $3) || ' where sysmlId = ''' || $2 || '''), ' || $4 || ');';\n"
@@ -1626,6 +1662,10 @@ public class PostgresHelper implements GraphInterface {
                 "CREATE TABLE edges%s (LIKE edges%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
                 childWorkspaceNameSanitized, workspaceId));
 
+            execUpdate(String.format(
+                "CREATE TABLE artifacts%s (LIKE artifacts%s INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
+                childWorkspaceNameSanitized, workspaceId));
+
             int commit = 0;
             if (commitId != null && !commitId.isEmpty()) {
                 Map<String, Object> commitObject = getCommit(commitId);
@@ -1638,6 +1678,7 @@ public class PostgresHelper implements GraphInterface {
 
             insertRef(childWorkspaceNameSanitized, workspaceName, commit, elasticId, isTag);
             copyTable("nodes", childWorkspaceNameSanitized, workspaceId);
+            copyTable("artifacts", childWorkspaceNameSanitized, workspaceId);
 
             if (commitId != null && !commitId.isEmpty()) {
                 execUpdate(String.format("UPDATE nodes%s SET deleted = true WHERE initialcommit IS NOT NULL",

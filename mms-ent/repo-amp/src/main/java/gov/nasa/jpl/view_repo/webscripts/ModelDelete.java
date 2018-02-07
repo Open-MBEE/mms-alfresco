@@ -78,7 +78,7 @@ public class ModelDelete extends AbstractJavaWebScript {
     }
 
     protected JSONObject handleRequest(WebScriptRequest req, final Status status, String user) throws JSONException, IOException {
-        JSONObject result = new JSONObject();
+        SerialJSONObject result = new SerialJSONObject();
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
         JSONObject res = new JSONObject();
@@ -147,7 +147,7 @@ public class ModelDelete extends AbstractJavaWebScript {
             commit.put(Sjm.CREATOR, user);
             commit.put(Sjm.CREATED, date);
             result.put("commit", commit);
-            if (CommitUtil.sendDeltas(result, projectId, refId, requestSourceApplication, services, false)) {
+            if (CommitUtil.sendDeltas(result, projectId, refId, requestSourceApplication, services, false, false)) {
                 if (!elasticIds.isEmpty()) {
                     emsNodeUtil.updateElasticRemoveRefs(elasticIds);
                 }

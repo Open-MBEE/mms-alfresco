@@ -35,6 +35,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -227,7 +228,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                     dstWs.setProperty("cm:title", newWorkspaceId + "_" + srcId);
                     dstWs.setProperty("cm:name", dstWs.getName());
 
-                    CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
+                    CommitUtil.sendBranch(projectId, new SerialJSONObject(srcJson.toString()), new SerialJSONObject(wsJson.toString()), elasticId, isTag,
                         jsonObject != null ? jsonObject.optString("source") : null, commitId, services);
 
                     finalWorkspace = dstWs;

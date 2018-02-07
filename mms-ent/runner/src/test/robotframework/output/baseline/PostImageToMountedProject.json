@@ -1,5 +1,17 @@
 {
-    "filename": "imagemounts.png",
-    "path": "PB/refs/master/",
-    "site": "initorg"
+    "_creator": "admin",
+    "artifacts": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PB",
+            "_refId": "master",
+            "checksum": "25e47f8a59066c4efdac3ad1d6c5a1f1",
+            "contentType": "image/png",
+            "id": "imagemounts",
+            "ownerId": "holding_bin_PB",
+            "type": "Artifact"
+        }
+    ]
 }
