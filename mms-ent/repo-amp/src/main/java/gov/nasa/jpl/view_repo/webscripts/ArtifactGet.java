@@ -124,9 +124,9 @@ public class ArtifactGet extends AbstractJavaWebScript {
                     log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
                 }
                 if (commitJson != null && commitJson.length() > 0) {
-                    top.put(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
+                    top.put(Sjm.ARTIFACTS, filterByPermission(commitJsonToArray, req));
                 }
-                if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+                if (top.has(Sjm.ARTIFACTS) && top.getJSONArray(Sjm.ARTIFACTS).length() < 1) {
                     log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
                 }
                 status.setCode(responseStatus.getCode());
@@ -359,7 +359,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
 
         if (!mountsJson.has(Sjm.MOUNTS)) {
             EmsNodeUtil emsNodeUtil =
-                new EmsNodeUtil(mountsJson.getString(Sjm.PROJECTID), mountsJson.getString(Sjm.REFID));
+                new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
             mountsJson = emsNodeUtil
                 .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
         }
