@@ -1697,27 +1697,21 @@ public class EmsNodeUtil {
         return pastElement == null ? new JSONObject() : pastElement;
     }
 
-    public JSONArray getNearestCommitFromTimestamp(String timestamp, JSONArray commits) {
+    public JSONArray getNearestCommitFromTimestamp(String timestamp, int limit) {
         Date requestedTime = null;
+        Map<String, String> commit = null;
         try {
-            requestedTime = requestedTime = df.parse(timestamp);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        for (int i = 0; i < commits.length(); i++) {
-            JSONObject current = commits.getJSONObject(i);
-            Date currentTime;
-            try {
-                currentTime = df.parse(current.getString(Sjm.CREATED));
-                if (requestedTime.getTime() >= currentTime.getTime()) {
-                    return new JSONArray().put(current);
-                }
-            } catch (Exception e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
-                }
+            requestedTime = df.parse(timestamp);
+            commit = pgh.getCommitAndTimestamp("timestamp", requestedTime.toString(), "<", limit);
+            if (commit != null) {
+                return new JSONArray(eh.getCommitByElasticId(commit.get("elasticId"), projectId));
+            }
+        } catch (ParseException | IOException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
             }
         }
+
         return new JSONArray();
     }
 

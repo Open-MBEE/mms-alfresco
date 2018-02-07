@@ -951,13 +951,30 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public Map<String, String> getCommitAndTimestamp(String lookUp, String value) {
+        return getCommitAndTimestamp(lookUp, value, "=");
+    }
+
+    public Map<String, String> getCommitAndTimestamp(String lookUp, String value, String operator) {
+        return getCommitAndTimestamp(lookUp, value, operator, 0);
+    }
+
+    public Map<String, String> getCommitAndTimestamp(String lookUp, String value, String operator, int limit) {
         Map<String, String> commit = new HashMap<>();
         try {
-            String query = String
-                .format("SELECT elasticId, timestamp FROM commits WHERE %s = ?", StringEscapeUtils.escapeSql(lookUp));
+            StringBuilder query = new StringBuilder(String
+                .format("SELECT elasticId, timestamp FROM commits WHERE %s %s ?", StringEscapeUtils.escapeSql(lookUp), operator));
 
-            PreparedStatement statement = prepareStatement(query);
+            if (limit > 0) {
+                query.append(" LIMIT ?");
+            }
+
+            PreparedStatement statement = prepareStatement(query.toString());
             statement.setString(1, value);
+
+            if (limit > 0) {
+                statement.setInt(2, limit);
+            }
+
             ResultSet rs = statement.executeQuery();
 
             if (rs.next()) {
