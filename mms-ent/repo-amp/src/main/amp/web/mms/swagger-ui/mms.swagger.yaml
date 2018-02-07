@@ -1,7 +1,5 @@
 swagger: "2.0"
 basePath: "/alfresco/service"
-schemes:
-- "https"
 info:
   description: "Model Management System (MMS) is a version control system for structured data. It exposes model information through RESTful web services that can be used for CRUD operations, branching, and tagging of the model repository."
   version: "3.3.0"
@@ -31,7 +29,7 @@ paths:
       - in: "body"
         name: "body"
         description: ""
-        schema: 
+        schema:
           $ref: "#/definitions/LoginRequest"
         required: true
       responses:

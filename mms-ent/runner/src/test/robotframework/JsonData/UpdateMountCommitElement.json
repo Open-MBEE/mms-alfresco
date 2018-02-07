@@ -1,0 +1,12 @@
+{
+    "elements": [
+        {
+            "isDerived": false,
+            "documentation": "Update to MC1 element",
+            "ownerId": "MountCommit",
+            "type": "Class",
+            "name": "test mount object",
+            "id": "mc1"
+        }
+    ]
+}

@@ -62,6 +62,7 @@ if [[ "$OSTYPE" == "darwin" ]]; then
     dropdb -U $dbuser _PB
     dropdb -U $dbuser _PC
     dropdb -U $dbuser _PD
+    dropdb -U $dbuser _MountCommit
     dropdb -U $dbuser _CollaboratorProject
     dropdb -U $dbuser $usedb
     createdb -U $dbuser $usedb
@@ -104,6 +105,14 @@ EOD
 
         $EXPECT <<EOD
 log_user 0
+spawn dropdb -U $dbuser _MountCommit
+expect "*Password*"
+send "$password\r"
+expect eof
+EOD
+
+        $EXPECT <<EOD
+log_user 0
 spawn dropdb -U $dbuser _CollaboratorProject
 expect "*Password*"
 send "$password\r"
@@ -139,6 +148,7 @@ EOD
         dropdb -U $dbuser _PB
         dropdb -U $dbuser _PC
         dropdb -U $dbuser _PD
+        dropdb -U $dbuser _MountCommit
         dropdb -U $dbuser _CollaboratorProject
         dropdb -U $dbuser $usedb
         createdb -U $dbuser $usedb

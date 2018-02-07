@@ -114,7 +114,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         Map<String, Object> result = new HashMap<>();
         JSONObject postJson = new JSONObject();
-        //String imageId = getArtifactId(req);
+        String imageId = getArtifactId(req);
 
         FormData formData = (FormData) req.parseContent();
         FormData.FormField[] fields = formData.getFields();
@@ -134,9 +134,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     logger.debug("property name: " + name);
                 }
             }
-//            if (!imageId.isEmpty()) {
-//                postJson.put(Sjm.SYSMLID, imageId);
-//            }
+            if (imageId != null && !imageId.isEmpty()) {
+                postJson.put(Sjm.SYSMLID, imageId);
+            }
             postJson.put(Sjm.TYPE, "Artifact");
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));

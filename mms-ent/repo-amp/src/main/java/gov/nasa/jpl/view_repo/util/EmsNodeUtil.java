@@ -90,10 +90,21 @@ public class EmsNodeUtil {
         JSONArray orgs = new JSONArray();
         List<Map<String, String>> organizations = pgh.getOrganizations(orgId);
         for (Map<String, String> n : organizations) {
-            JSONObject org = new JSONObject();
-            org.put(Sjm.SYSMLID, n.get(ORG_ID));
-            org.put(Sjm.NAME, n.get(ORG_NAME));
-            orgs.put(org);
+            try {
+                JSONObject current = eh.getElementByElasticId(n.get(ORG_ID), EmsConfig.get("elastic.index.element"));
+                if (current != null) {
+                    orgs.put(current);
+                } else {
+                    JSONObject org = new JSONObject();
+                    org.put(Sjm.SYSMLID, n.get(ORG_ID));
+                    org.put(Sjm.NAME, n.get(ORG_NAME));
+                    orgs.put(org);
+                }
+            } catch (IOException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Elasticsearch Error: ", e);
+                }
+            }
         }
         return orgs;
     }
@@ -260,6 +271,7 @@ public class EmsNodeUtil {
         JSONArray elementsFromElastic = new JSONArray();
         try {
             elementsFromElastic = eh.getElementsFromElasticIds(elasticids, projectId);
+
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -304,8 +316,13 @@ public class EmsNodeUtil {
     }
 
     public JSONArray getRefHistory(String refId) {
+        return getRefHistory(refId, null, 0);
+    }
+
+    public JSONArray getRefHistory(String refId, String commitId, int limit) {
         JSONArray result = new JSONArray();
-        List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId);
+        int cId = pgh.getCommitId(commitId);
+        List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId, cId, limit);
         for (int i = 0; i < refCommits.size(); i++) {
             Map<String, Object> refCommit = refCommits.get(i);
             JSONObject commit = new JSONObject();
@@ -1208,9 +1225,12 @@ public class EmsNodeUtil {
         qn.add(o.optString("name"));
         qid.add(o.optString(Sjm.SYSMLID));
 
+        List<String> seen = new ArrayList<>();
+
         while (o.has(Sjm.OWNERID) && o.optString(Sjm.OWNERID, null) != null && !o.getString(Sjm.OWNERID)
-            .equals("null")) {
+            .equals("null") && !seen.contains(o.getString(Sjm.OWNERID))) {
             String sysmlid = o.optString(Sjm.OWNERID);
+            seen.add(sysmlid);
             JSONObject owner = elementMap.get(sysmlid);
             if (owner == null) {
                 if (cache.containsKey(sysmlid)) {
@@ -1363,32 +1383,42 @@ public class EmsNodeUtil {
 
         return element;
     }
-
     public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs,
         final Long maxDepth, Set<String> elementsToFind, JSONArray result) throws IOException {
 
+        handleMountSearch(mountsJson, extended, extraDocs, maxDepth, elementsToFind, result, null);
+    }
+
+    public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs,
+        final Long maxDepth, Set<String> elementsToFind, JSONArray result, String commitId) throws IOException {
+        boolean checkDeleted = commitId != null;
         if (elementsToFind.isEmpty() || mountsJson == null) {
             return;
         }
+
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
-        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind);
+        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, checkDeleted);
         Set<String> foundElements = new HashSet<>();
         JSONArray curFound = new JSONArray();
-        for (int index = 0; index < nodeList.length(); index++) {
-            String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
-            if (maxDepth != 0) {
-                JSONArray children = emsNodeUtil.getChildren(id, maxDepth);
-                for (int i = 0; i < children.length(); i++) {
-                    String cid = children.getJSONObject(i).getString(Sjm.SYSMLID);
-                    if (foundElements.contains(cid)) {
-                        continue;
+        if (commitId != null){
+            curFound = searchMountAtCommit(mountsJson, elementsToFind, foundElements, commitId);
+        } else {
+            for (int index = 0; index < nodeList.length(); index++) {
+                String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
+                if (maxDepth != 0) {
+                    JSONArray children = emsNodeUtil.getChildren(id, maxDepth);
+                    for (int i = 0; i < children.length(); i++) {
+                        String cid = children.getJSONObject(i).getString(Sjm.SYSMLID);
+                        if (foundElements.contains(cid)) {
+                            continue;
+                        }
+                        curFound.put(children.getJSONObject(i));
+                        foundElements.add(cid);
                     }
-                    curFound.put(children.getJSONObject(i));
-                    foundElements.add(cid);
+                } else {
+                    curFound.put(nodeList.getJSONObject(index));
+                    foundElements.add(id);
                 }
-            } else {
-                curFound.put(nodeList.getJSONObject(index));
-                foundElements.add(id);
             }
         }
         curFound = extended ?
@@ -1408,8 +1438,34 @@ public class EmsNodeUtil {
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 
         for (int i = 0; i < mountsArray.length(); i++) {
-            handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result);
+            handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result, commitId);
         }
+    }
+
+    /**
+     * Searches a mount for specified elements at the specified commit. Modifies the foundElements passed in and returns
+     * the currently found elements.
+     * @param mountsJson Mount JSON
+     * @param elementsToFind List of elements to find
+     * @param foundElements Set of SysmlIDs of found elements
+     * @param commitId Commit Id to search for.
+     * @return JSONArray of found elements
+     */
+    public static JSONArray searchMountAtCommit(JSONObject mountsJson, Set<String> elementsToFind, Set<String> foundElements, String commitId) {
+
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
+        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, true);
+        JSONArray curFound = new JSONArray();
+
+        for (int index = 0; index < nodeList.length(); index++) {
+            String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
+            JSONObject obj = emsNodeUtil.getElementAtCommit(id, commitId);
+            if (obj != null) {
+                curFound.put(obj);
+                foundElements.add(id);
+            }
+        }
+        return curFound;
     }
 
     public List<Node> getSites(boolean sites, boolean sitepackages) {
