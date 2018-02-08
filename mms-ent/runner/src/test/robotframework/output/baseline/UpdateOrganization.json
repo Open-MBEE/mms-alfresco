@@ -1,3 +1,16 @@
 {
-    "message": "[INFO]: Organization Initial Organization Site updated.[INFO]: Organization A New Organization within update Site created."
+    "orgs": [
+        {
+            "_elasticId": "initorg",
+            "anyprop": "Any Value",
+            "id": "initorg",
+            "name": "Initial Organization"
+        },
+        {
+            "_elasticId": "multiorg",
+            "anotherprop": "Another Value",
+            "id": "multiorg",
+            "name": "A New Organization within update"
+        }
+    ]
 }

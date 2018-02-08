@@ -1,3 +1,11 @@
 {
-    "message": "[INFO]: Project folder created."
+    "projects": [
+        {
+            "_creator": "admin",
+            "_modifier": "admin",
+            "id": "MountCommit",
+            "name": "mount test project MountCommit",
+            "type": "Project"
+        }
+    ]
 }

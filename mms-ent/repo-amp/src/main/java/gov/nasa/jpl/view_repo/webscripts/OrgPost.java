@@ -153,7 +153,10 @@ public class OrgPost extends AbstractJavaWebScript {
 
         JSONObject response = new JSONObject();
         response.put(Sjm.ORGS, success);
-        response.put("failed", failure);
+
+        if (failure.length() > 0) {
+            response.put("failed", failure);
+        }
 
         status.setCode(responseStatus.getCode());
         model.put(Sjm.RES, response);

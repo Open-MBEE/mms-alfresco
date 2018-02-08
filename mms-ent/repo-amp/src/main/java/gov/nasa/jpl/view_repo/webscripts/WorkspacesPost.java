@@ -96,6 +96,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
         int statusCode = HttpServletResponse.SC_OK;
         JSONObject json = null;
+
+        JSONArray success = new JSONArray();
+        JSONArray failure = new JSONArray();
+
         try {
             if (validateRequest(req, status)) {
                 JSONObject reqJson = (JSONObject) req.parseContent();
@@ -112,6 +116,11 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
                         json = createWorkSpace(projectId, sourceWorkspaceParam, newName, commitId, reqJson, user, status);
                         statusCode = status.getCode();
+                        if (statusCode == HttpServletResponse.SC_OK) {
+                            success.put(json);
+                        } else {
+                            failure.put(json);
+                        }
                     }
                 } else {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request");
@@ -124,7 +133,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
-        if (json == null) {
+        if (success.length() == 0 && failure.length() == 0) {
             model.put(Sjm.RES, createResponseJson());
         } else {
             try {
@@ -132,9 +141,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                     json.put("message", response.toString());
                 }
                 JSONObject resultRefs = new JSONObject();
-                JSONArray refsList = new JSONArray();
-                refsList.put(json);
-                resultRefs.put("refs", refsList);
+                resultRefs.put("refs", success);
+                if (failure.length() > 0) {
+                    resultRefs.put("failed", failure);
+                }
                 model.put(Sjm.RES, resultRefs);
             } catch (JSONException e) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));

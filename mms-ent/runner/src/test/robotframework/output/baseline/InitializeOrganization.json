@@ -1,3 +1,9 @@
 {
-    "message": "[INFO]: Organization Initial Organization Site created."
+    "orgs": [
+        {
+            "_elasticId": "initorg",
+            "id": "initorg",
+            "name": "Initial Organization"
+        }
+    ]
 }

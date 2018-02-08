@@ -117,6 +117,13 @@ public class ProjectPost extends AbstractJavaWebScript {
                                 } else {
                                     responseStatus.setCode(updateOrCreateProject(projJson, projectId));
                                 }
+
+                                if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
+                                    success.put(projJson);
+                                } else {
+                                    failure.put(projJson);
+                                }
+
                             } else {
                                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
                                 // This should not happen, since the Organization should be created before a Project is posted
@@ -146,10 +153,18 @@ public class ProjectPost extends AbstractJavaWebScript {
 
         JSONObject response = new JSONObject();
         response.put(Sjm.PROJECTS, success);
-        response.put("failed", failure);
+
+        if (failure.length() > 0) {
+            response.put("failed", failure);
+        }
 
         status.setCode(responseStatus.getCode());
-        model.put(Sjm.RES, createResponseJson());
+
+        if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
+            model.put(Sjm.RES, response);
+        } else {
+            model.put(Sjm.RES, createResponseJson());
+        }
 
         printFooter(user, logger, timer);
 
