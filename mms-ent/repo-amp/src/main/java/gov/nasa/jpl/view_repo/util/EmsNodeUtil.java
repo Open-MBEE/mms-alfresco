@@ -1681,14 +1681,14 @@ public class EmsNodeUtil {
         return pastElement == null ? new JSONObject() : pastElement;
     }
 
-    public JSONArray getNearestCommitFromTimestamp(String timestamp, int limit) {
+    public JSONArray getNearestCommitFromTimestamp(String refId, String timestamp, int limit) {
         Date requestedTime;
         List<Map<String, Object>> commits;
         JSONArray response = new JSONArray();
         try {
             requestedTime = df.parse(timestamp);
             Timestamp time = new Timestamp(requestedTime.getTime());
-            commits = pgh.getRefsCommits(this.workspaceName, time, limit);
+            commits = pgh.getRefsCommits(refId, time, limit);
             if (commits.size() > 0) {
                 for (int i = 0; i < commits.size(); i++) {
                     Map<String, Object> refCommit = commits.get(i);
