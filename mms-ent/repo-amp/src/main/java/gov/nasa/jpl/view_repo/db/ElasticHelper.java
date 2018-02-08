@@ -239,7 +239,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param id _id elasticsearch property          (2)
      * @return JSONObject o or null
      */
-    public JSONObject getCommitByElasticId(String id, String index) throws IOException {
+    public JsonObject getCommitByElasticId(String id, String index) throws IOException {
         Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(COMMIT).build();
 
         JestResult result = client.execute(get);
@@ -388,7 +388,7 @@ public class ElasticHelper implements ElasticsearchInterface {
             result.sysmlid = k.get(Sjm.SYSMLID).getAsString();
         }
         if (k.has(Sjm.ELASTICID)) {
-            result.elasticId = client.execute(new Index.Builder(k.toString()).id(k.getString(Sjm.ELASTICID))
+            result.elasticId = client.execute(new Index.Builder(k.toString()).id(k.get(Sjm.ELASTICID).getAsString())
                 .index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build()).getId();
         } else {
             result.elasticId = client.execute(
@@ -432,7 +432,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param operation    checks for CRUD operation, does not delete documents
      * @return ElasticResult e
      */
-    public boolean bulkIndexElements(JSONArray bulkElements, String operation, boolean refresh, String index, String type)
+    public boolean bulkIndexElements(JsonArray bulkElements, String operation, boolean refresh, String index, String type)
         throws IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         // BulkableAction is generic
@@ -448,7 +448,7 @@ public class ElasticHelper implements ElasticsearchInterface {
                 		.build());
                 currentList.add(curr);
             }
-            if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.length() - 1)) {
+            if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.size() - 1)) {
                 BulkResult result = insertBulk(actions, refresh, index.toLowerCase().replaceAll("\\s+", ""), type);
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
@@ -498,7 +498,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @return returns result of bulk index
      */
     private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh, String index, String type)
-        throws JSONException, IOException {
+        throws IOException {
         Bulk bulk = new Bulk.Builder().defaultIndex(index).defaultType(type).addAction(actions)
             .setParameter(Parameters.REFRESH, refresh).build();
         return client.execute(bulk);
@@ -554,7 +554,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param ids
      * @return JSONObject Result
      */
-    public JSONObject bulkDeleteByType(String type, ArrayList<String> ids, String index) {
+    public JsonObject bulkDeleteByType(String type, ArrayList<String> ids, String index) {
         JestResult result = null;
         try {
             ArrayList<Delete> deleteList = new ArrayList<>();
@@ -624,7 +624,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param timestamp
      * @return
      */
-    public JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds,
+    public JsonObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds,
         String index) {
         // Create filter array
         int count = 0;

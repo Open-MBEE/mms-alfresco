@@ -4,7 +4,6 @@ import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.apache.log4j.Logger;
-import org.springframework.util.StreamUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -19,7 +18,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 
 public class JsonContentReader extends AbstractContentReader implements ContentReader {
 
@@ -85,7 +83,7 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
         if (!this.exists() && logger.isDebugEnabled()) {
             logger.debug("JSON does not exist");
         } else {
-            try (ReadableByteChannel channel = Channels.newChannel(new ByteArrayInputStream(this.json))) {
+            try (ReadableByteChannel channel = Channels.newChannel(new ByteArrayInputStream(this.json.toString().getBytes()))) {
                 return channel;
             } catch (IOException e) {
                 if (logger.isDebugEnabled()) {

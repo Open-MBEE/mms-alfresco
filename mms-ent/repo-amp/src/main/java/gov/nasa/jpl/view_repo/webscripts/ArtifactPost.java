@@ -55,11 +55,14 @@ import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
@@ -113,7 +116,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> result = new HashMap<>();
-        JSONObject postJson = new JSONObject();
+        JsonObject postJson = new JsonObject();
         String imageId = getArtifactId(req);
 
         FormData formData = (FormData) req.parseContent();
@@ -130,14 +133,14 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 } else {
                     String name = field.getName();
                     String value = field.getValue();
-                    postJson.put(name, value);
+                    postJson.addProperty(name, value);
                     logger.debug("property name: " + name);
                 }
             }
             if (imageId != null && !imageId.isEmpty()) {
-                postJson.put(Sjm.SYSMLID, imageId);
+                postJson.addProperty(Sjm.SYSMLID, imageId);
             }
-            postJson.put(Sjm.TYPE, "Artifact");
+            postJson.addProperty(Sjm.TYPE, "Artifact");
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -153,38 +156,39 @@ public class ArtifactPost extends AbstractJavaWebScript {
         return result;
     }
 
-    protected Map<String, Object> processArtifactDelta(final WebScriptRequest req, String user, JSONObject postJson,
+    protected Map<String, Object> processArtifactDelta(final WebScriptRequest req, String user, JsonObject postJson,
         final Status status) {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         Map<String, Object> model = new HashMap<>();
-        JSONObject newElementsObject = new JSONObject();
-        SerialJSONObject results;
+        JsonObject newElementsObject = new JsonObject();
+        JsonObject results;
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         try {
-            SerialJSONArray delta = new SerialJSONArray();
-            postJson.put(Sjm.LOCATION, path);
-            postJson.put(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(content));
-            delta.put(postJson);
+            JsonArray delta = new JsonArray();
+            postJson.addProperty(Sjm.LOCATION, path);
+            postJson.addProperty(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(content));
+            delta.add(postJson);
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
             results = emsNodeUtil
                 .processPostJson(delta, user, oldElasticIds, false, this.requestSourceApplication, Sjm.ARTIFACT);
-            String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
+            String commitId = results.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
             if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, false, true)) {
                 if (!oldElasticIds.isEmpty()) {
                     emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
                 }
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
-                newElementsObject.put(Sjm.ARTIFACTS, filterByPermission(results.getJSONArray(NEWELEMENTS), req));
-                newElementsObject.put(Sjm.COMMITID, commitId);
-                newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
-                newElementsObject.put(Sjm.CREATOR, user);
+                newElementsObject.add(Sjm.ARTIFACTS, filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req));
+                newElementsObject.addProperty(Sjm.COMMITID, commitId);
+                newElementsObject.addProperty(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
+                newElementsObject.addProperty(Sjm.CREATOR, user);
 
                 if (prettyPrint) {
-                    model.put(Sjm.RES, newElementsObject.toString(4));
+                	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    model.put(Sjm.RES, gson.toJson(newElementsObject));
                 } else {
                     model.put(Sjm.RES, newElementsObject);
                 }
@@ -203,91 +207,83 @@ public class ArtifactPost extends AbstractJavaWebScript {
     }
 
     boolean handleArtifactPost(final WebScriptRequest req, final Status status, String user,
-        JSONObject postJson) {
+        JsonObject postJson) {
 
-        JSONObject resultJson = null;
+        JsonObject resultJson = null;
         Map<String, Object> model = new HashMap<>();
         boolean isSvg = false;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
-        if (!contentType.isEmpty() && postJson.optString(Sjm.CONTENTTYPE).isEmpty()) {
-            postJson.put(Sjm.CONTENTTYPE, contentType);
+        if (!contentType.isEmpty() && JsonUtil.getOptString(postJson, Sjm.CONTENTTYPE).isEmpty()) {
+            postJson.addProperty(Sjm.CONTENTTYPE, contentType);
         }
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        JSONObject project = emsNodeUtil.getProject(projectId);
-        siteName = project.optString("orgId", null);
+        JsonObject project = emsNodeUtil.getProject(projectId);
+        siteName = JsonUtil.getOptString(project, "orgId");
 
-        if (siteName != null && validateRequest(req, status)) {
-            try {
-                extension = FilenameUtils.getExtension(filename);
-                artifactId = postJson.getString(Sjm.SYSMLID);
-                path = projectId + "/refs/" + refId + "/" + artifactId + System.currentTimeMillis() + "." + extension;
-                if (contentType.contains("svg") || postJson.optString(Sjm.CONTENTTYPE).contains("svg") || extension.contains("svg")) {
-                    isSvg = true;
-                }
-                // Create return json:
-                resultJson = new JSONObject();
-                resultJson.put("filename", filename);
-                // TODO: want full path here w/ path to site also, but Doris does not use it,
-                //		 so leaving it as is.
-                resultJson.put("path", path);
-                resultJson.put("site", siteName);
+        if (!siteName.isEmpty() && validateRequest(req, status)) {
+        	extension = FilenameUtils.getExtension(filename);
+        	artifactId = postJson.get(Sjm.SYSMLID).getAsString();
+        	path = projectId + "/refs/" + refId + "/" + artifactId + System.currentTimeMillis() + "." + extension;
+        	if (contentType.contains("svg") || JsonUtil.getOptString(postJson, Sjm.CONTENTTYPE).contains("svg") || extension.contains("svg")) {
+        		isSvg = true;
+        	}
+        	// Create return json:
+        	resultJson = new JsonObject();
+        	resultJson.addProperty("filename", filename);
+        	// TODO: want full path here w/ path to site also, but Doris does not use it,
+        	//		 so leaving it as is.
+        	resultJson.addProperty("path", path);
+        	resultJson.addProperty("site", siteName);
 
-                // Update or create the artifact if possible:
-                if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
+        	// Update or create the artifact if possible:
+        	if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
 
-                    svgArtifact = NodeUtil
-                        .updateOrCreateArtifact(artifactId, extension, null, content, siteName, projectId, refId, null,
-                            response, null, false);
+        		svgArtifact = NodeUtil
+        				.updateOrCreateArtifact(artifactId, extension, null, content, siteName, projectId, refId, null,
+        						response, null, false);
 
-                    if (svgArtifact == null) {
-                        logger.error("Was not able to create the artifact!\n");
-                        model.put(Sjm.RES, createResponseJson());
-                    } else {
-                        resultJson.put("upload", svgArtifact);
-                        if (isSvg) {
-                            try {
-                                Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
-                                pngPath = svgToPng(svgPath);
+        		if (svgArtifact == null) {
+        			logger.error("Was not able to create the artifact!\n");
+        			model.put(Sjm.RES, createResponseJson());
+        		} else {
+        			resultJson.addProperty("upload", svgArtifact.toString());
+        			if (isSvg) {
+        				try {
+        					Path svgPath = saveSvgToFilesystem(artifactId, extension, content);
+        					pngPath = svgToPng(svgPath);
 
-                                try {
-                                    pngArtifact = NodeUtil
-                                        .updateOrCreateArtifactPng(svgArtifact, pngPath, siteName, projectId, refId,
-                                            null, response, null, false);
-                                } catch (Throwable ex) {
-                                    throw new Exception("Failed to convert SVG to PNG!\n");
-                                }
+        					try {
+        						pngArtifact = NodeUtil
+        								.updateOrCreateArtifactPng(svgArtifact, pngPath, siteName, projectId, refId,
+        										null, response, null, false);
+        					} catch (Throwable ex) {
+        						throw new Exception("Failed to convert SVG to PNG!\n");
+        					}
 
-                                if (pngArtifact == null) {
-                                    logger.error("Failed to convert SVG to PNG!\n");
-                                } else {
-                                    synchSvgAndPngVersions(svgArtifact, pngArtifact);
-                                }
-                                Files.deleteIfExists(svgPath);
-                                Files.deleteIfExists(pngPath);
-                            } catch (IOException e) {
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("Failed to convert image", e);
-                                }
-                            } catch (Throwable ex) {
-                                logger.error("Failed to convert SVG to PNG!\n");
-                            }
-                        }
-                    }
-                } else {
-                    logger.error("artifactId not supplied!\\n");
-                    model.put(Sjm.RES, createResponseJson());
-                }
+        					if (pngArtifact == null) {
+        						logger.error("Failed to convert SVG to PNG!\n");
+        					} else {
+        						synchSvgAndPngVersions(svgArtifact, pngArtifact);
+        					}
+        					Files.deleteIfExists(svgPath);
+        					Files.deleteIfExists(pngPath);
+        				} catch (IOException e) {
+        					if (logger.isDebugEnabled()) {
+        						logger.debug("Failed to convert image", e);
+        					}
+        				} catch (Throwable ex) {
+        					logger.error("Failed to convert SVG to PNG!\n");
+        				}
+        			}
+        		}
+        	} else {
+        		logger.error("artifactId not supplied!\\n");
+        		model.put(Sjm.RES, createResponseJson());
+        	}
 
-            } catch (JSONException e)
-
-            {
-                logger.error("Issues creating return JSON\\n");
-                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                model.put(Sjm.RES, createResponseJson());
-            }
         } else {
             logger.error("Invalid request, no sitename specified or no content provided!\\n");
             model.put(Sjm.RES, createResponseJson());

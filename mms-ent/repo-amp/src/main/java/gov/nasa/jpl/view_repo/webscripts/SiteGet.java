@@ -155,7 +155,7 @@ public class SiteGet extends AbstractJavaWebScript {
             if (logger.isDebugEnabled())
                 logger.debug("handleSite: " + elements);
 
-            for (int i = 0; i < elements.length(); i++) {
+            for (int i = 0; i < elements.size(); i++) {
                 JsonObject o = elements.get(i).getAsJsonObject();
 
                 for (Node n : siteNodes) {

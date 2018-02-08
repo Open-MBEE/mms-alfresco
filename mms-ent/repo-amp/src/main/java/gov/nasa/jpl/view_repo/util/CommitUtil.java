@@ -104,7 +104,7 @@ public class CommitUtil {
         }
     }
 
-    public static DbNodeTypes getNodeType(JSONObject e) {
+    public static DbNodeTypes getNodeType(JsonObject e) {
 
         String type = e.get(Sjm.TYPE).getAsString().toLowerCase();
 
@@ -163,8 +163,8 @@ public class CommitUtil {
         return element.has(Sjm.ISSITE) && element.get(Sjm.ISSITE).getAsBoolean();
     }
 
-    private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh, String index, String type) {
-        if (elements.length() > 0) {
+    private static boolean bulkElasticEntry(JsonArray elements, String operation, boolean refresh, String index, String type) {
+        if (elements.size() > 0) {
             try {
                 boolean bulkEntry = eh.bulkIndexElements(elements, operation, refresh, index, type);
                 if (!bulkEntry) {
@@ -179,7 +179,7 @@ public class CommitUtil {
         return true;
     }
 
-    private static boolean isPartProperty(JsonObject e) {
+    public static boolean isPartProperty(JsonObject e) {
         if (!e.has(Sjm.TYPE) || !e.get(Sjm.TYPE).getAsString().equals("Property")) {
             return false;
         }
@@ -196,8 +196,8 @@ public class CommitUtil {
         return false;
     }
 
-    private static boolean processArtifactDeltasForDb(JSONObject delta, String projectId, String refId,
-        JSONObject jmsPayload) {
+    private static boolean processArtifactDeltasForDb(JsonObject delta, String projectId, String refId,
+        JsonObject jmsPayload) {
         PostgresHelper pgh = new PostgresHelper();
         pgh.setProject(projectId);
         pgh.setWorkspace(refId);
@@ -221,36 +221,36 @@ public class CommitUtil {
                 List<Map<String, Object>> artifactInserts = new ArrayList<>();
                 List<Map<String, Object>> artifactUpdates = new ArrayList<>();
 
-                for (int i = 0; i < added.length(); i++) {
-                    JSONObject e = added.getJSONObject(i);
+                for (int i = 0; i < added.size(); i++) {
+                    JsonObject e = added.get(i).getAsJsonObject();
                     Map<String, Object> artifact = new HashMap<>();
-                    jmsAdded.put(e.getString(Sjm.SYSMLID));
+                    jmsAdded.add(e.get(Sjm.SYSMLID).getAsString());
 
                     if (e.has(Sjm.ELASTICID)) {
-                        artifact.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
-                        artifact.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
-                        artifact.put(INITIALCOMMIT, e.getString(Sjm.ELASTICID));
+                        artifact.put(Sjm.ELASTICID, e.get(Sjm.ELASTICID).getAsString());
+                        artifact.put(Sjm.SYSMLID, e.get(Sjm.SYSMLID).getAsString());
+                        artifact.put(INITIALCOMMIT, e.get(Sjm.ELASTICID).getAsString());
                         artifact.put(LASTCOMMIT, commitElasticId);
-                        artifact.put(CONTENTTYPE, e.getString(Sjm.CONTENTTYPE));
+                        artifact.put(CONTENTTYPE, e.get(Sjm.CONTENTTYPE).getAsString());
                         artifactInserts.add(artifact);
                     }
                 }
 
-                for (int i = 0; i < deleted.length(); i++) {
-                    JSONObject e = deleted.getJSONObject(i);
-                    jmsDeleted.put(e.getString(Sjm.SYSMLID));
-                    pgh.deleteArtifact(e.getString(Sjm.SYSMLID));
-                    deletedSysmlIds.add(e.getString(Sjm.SYSMLID));
+                for (int i = 0; i < deleted.size(); i++) {
+                    JsonObject e = deleted.get(i).getAsJsonObject();
+                    jmsDeleted.add(e.get(Sjm.SYSMLID).getAsString());
+                    pgh.deleteArtifact(e.get(Sjm.SYSMLID).getAsString());
+                    deletedSysmlIds.add(e.get(Sjm.SYSMLID).getAsString());
                 }
 
-                for (int i = 0; i < updated.length(); i++) {
-                    JSONObject e = updated.getJSONObject(i);
-                    jmsUpdated.put(e.getString(Sjm.SYSMLID));
+                for (int i = 0; i < updated.size(); i++) {
+                    JsonObject e = updated.get(i).getAsJsonObject();
+                    jmsUpdated.add(e.get(Sjm.SYSMLID).getAsString());
 
                     if (e.has(Sjm.ELASTICID)) {
                         Map<String, Object> updatedArtifact = new HashMap<>();
-                        updatedArtifact.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
-                        updatedArtifact.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
+                        updatedArtifact.put(Sjm.ELASTICID, e.get(Sjm.ELASTICID).getAsString());
+                        updatedArtifact.put(Sjm.SYSMLID, e.get(Sjm.SYSMLID).getAsString());
                         updatedArtifact.put(DELETED, "false");
                         updatedArtifact.put(LASTCOMMIT, commitElasticId);
                         artifactUpdates.add(updatedArtifact);
@@ -301,17 +301,17 @@ public class CommitUtil {
             return false;
         }
 
-        jmsWorkspace.put("addedElements", jmsAdded);
-        jmsWorkspace.put("updatedElements", jmsUpdated);
-        jmsWorkspace.put("deletedElements", jmsDeleted);
+        jmsWorkspace.add("addedElements", jmsAdded);
+        jmsWorkspace.add("updatedElements", jmsUpdated);
+        jmsWorkspace.add("deletedElements", jmsDeleted);
 
-        jmsPayload.put("refs", jmsWorkspace);
+        jmsPayload.add("refs", jmsWorkspace);
 
         return true;
 
     }
 
-    private static boolean processDeltasForDb(SerialJSONObject delta, String projectId, String refId, JSONObject jmsPayload,
+    private static boolean processDeltasForDb(JsonObject delta, String projectId, String refId, JsonObject jmsPayload,
         boolean withChildViews, ServiceRegistry services) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
@@ -319,17 +319,17 @@ public class CommitUtil {
         pgh.setProject(projectId);
         pgh.setWorkspace(refId);
 
-        SerialJSONArray added = delta.optJSONArray("addedElements");
-        SerialJSONArray updated = delta.optJSONArray("updatedElements");
-        SerialJSONArray deleted = delta.optJSONArray("deletedElements");
+        JsonArray added = JsonUtil.getOptArray(delta, "addedElements");
+        JsonArray updated = JsonUtil.getOptArray(delta, "updatedElements");
+        JsonArray deleted = JsonUtil.getOptArray(delta, "deletedElements");
 
-        String creator = delta.getJSONObject("commit").getString(Sjm.CREATOR);
-        String commitElasticId = delta.getJSONObject("commit").getString(Sjm.ELASTICID);
+        String creator = delta.get("commit").getAsJsonObject().get(Sjm.CREATOR).getAsString();
+        String commitElasticId = delta.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
 
-        SerialJSONObject jmsWorkspace = new SerialJSONObject();
-        SerialJSONArray jmsAdded = new SerialJSONArray();
-        SerialJSONArray jmsUpdated = new SerialJSONArray();
-        SerialJSONArray jmsDeleted = new SerialJSONArray();
+        JsonObject jmsWorkspace = new JsonObject();
+        JsonArray jmsAdded = new JsonArray();
+        JsonArray jmsUpdated = new JsonArray();
+        JsonArray jmsDeleted = new JsonArray();
 
         List<String> deletedSysmlIds = new ArrayList<>();
         List<Pair<String, String>> addEdges = new ArrayList<>();
@@ -348,14 +348,14 @@ public class CommitUtil {
 
                 for (int i = 0; i < added.size(); i++) {
                     JsonObject e = added.get(i).getAsJsonObject();
-                    Map<String, String> node = new HashMap<>();
+                    Map<String, Object> node = new HashMap<>();
                     jmsAdded.add(e.get(Sjm.SYSMLID).getAsString());
                     int nodeType = getNodeType(e).getValue();
 
                     if (e.has(Sjm.ELASTICID)) {
                         node.put(Sjm.ELASTICID, e.get(Sjm.ELASTICID).getAsString());
                         node.put(Sjm.SYSMLID, e.get(Sjm.SYSMLID).getAsString());
-                        node.put(NODETYPE, Integer.toString(nodeType));
+                        node.put(NODETYPE, nodeType);
                         node.put(INITIALCOMMIT, e.get(Sjm.ELASTICID).getAsString());
                         node.put(LASTCOMMIT, commitElasticId);
                         nodeInserts.add(node);
@@ -402,17 +402,17 @@ public class CommitUtil {
                     }
                 }
 
-                for (int i = 0; i < deleted.length(); i++) {
-                    SerialJSONObject e = deleted.getJSONObject(i);
-                    jmsDeleted.put(e.getString(Sjm.SYSMLID));
-                    pgh.deleteEdgesForNode(e.getString(Sjm.SYSMLID));
-                    pgh.deleteNode(e.getString(Sjm.SYSMLID));
-                    deletedSysmlIds.add(e.getString(Sjm.SYSMLID));
+                for (int i = 0; i < deleted.size(); i++) {
+                    JsonObject e = deleted.get(i).getAsJsonObject();
+                    jmsDeleted.add(e.get(Sjm.SYSMLID).getAsString());
+                    pgh.deleteEdgesForNode(e.get(Sjm.SYSMLID).getAsString());
+                    pgh.deleteNode(e.get(Sjm.SYSMLID).getAsString());
+                    deletedSysmlIds.add(e.get(Sjm.SYSMLID).getAsString());
                 }
 
-                for (int i = 0; i < updated.length(); i++) {
-                    SerialJSONObject e = updated.getJSONObject(i);
-                    jmsUpdated.put(e.getString(Sjm.SYSMLID));
+                for (int i = 0; i < updated.size(); i++) {
+                    JsonObject e = updated.get(i).getAsJsonObject();
+                    jmsUpdated.add(e.get(Sjm.SYSMLID).getAsString());
                     int nodeType = getNodeType(e).getValue();
                     pgh.deleteEdgesForNode(e.get(Sjm.SYSMLID).getAsString(), true, DbEdgeTypes.CONTAINMENT);
                     pgh.deleteEdgesForNode(e.get(Sjm.SYSMLID).getAsString(), false, DbEdgeTypes.VIEW);
@@ -459,7 +459,7 @@ public class CommitUtil {
                         }
                     }
                     if (e.has(Sjm.ELASTICID)) {
-                        Map<String, String> updatedNode = new HashMap<>();
+                        Map<String, Object> updatedNode = new HashMap<>();
                         updatedNode.put(Sjm.ELASTICID, e.get(Sjm.ELASTICID).getAsString());
                         updatedNode.put(Sjm.SYSMLID, e.get(Sjm.SYSMLID).getAsString());
                         updatedNode.put(NODETYPE, getNodeType(e).getValue());
@@ -611,14 +611,14 @@ public class CommitUtil {
     /**
      * Send off the deltas to various endpoints
      *
-     * @param deltaJson JSONObject of the deltas to be published
+     * @param deltaJson JsonObject of the deltas to be published
      * @param projectId String of the project Id to post to
      * @param source    Source of the delta (e.g., MD, EVM, whatever, only necessary for MD so it can
      *                  ignore)
      * @return true if publish completed
      * @throws JSONException
      */
-    public static boolean sendDeltas(SerialJSONObject deltaJson, String projectId, String workspaceId, String source,
+    public static boolean sendDeltas(JsonObject deltaJson, String projectId, String workspaceId, String source,
         ServiceRegistry services, boolean withChildViews, boolean isArtifact) {
 
         JsonObject jmsPayload = new JsonObject();
@@ -647,14 +647,14 @@ public class CommitUtil {
         return true;
     }
 
-    public static JSONObject sendOrganizationDelta(String orgId, String orgName, JSONObject orgJson) throws PSQLException {
+    public static JsonObject sendOrganizationDelta(String orgId, String orgName, JsonObject orgJson) throws PSQLException {
         PostgresHelper pgh = new PostgresHelper();
         pgh.createOrganization(orgId, orgName);
         String defaultIndex = EmsConfig.get("elastic.index.element");
         try {
             ElasticHelper eh = new ElasticHelper();
             eh.createIndex(defaultIndex);
-            orgJson.put(Sjm.ELASTICID, orgId);
+            orgJson.addProperty(Sjm.ELASTICID, orgId);
             ElasticResult result = eh.indexElement(orgJson, defaultIndex);
             return result.current;
         } catch (Exception e) {
@@ -777,21 +777,21 @@ public class CommitUtil {
     }
 
     // make sure only one branch is made at a time
-    public static synchronized JSONObject sendBranch(String projectId, SerialJSONObject src, SerialJSONObject created,
+    public static synchronized JsonObject sendBranch(String projectId, JsonObject src, JsonObject created,
         String elasticId, Boolean isTag, String source, ServiceRegistry services) {
         return sendBranch(projectId, src, created, elasticId, isTag, source, null, services);
     }
 
     // make sure only one branch is made at a time
-    public static synchronized JSONObject sendBranch(String projectId, SerialJSONObject src, SerialJSONObject created,
+    public static synchronized JsonObject sendBranch(String projectId, JsonObject src, JsonObject created,
         String elasticId, Boolean isTag, String source, String commitId, ServiceRegistry services) {
         // FIXME: need to include branch in commit history
-        SerialJSONObject branchJson = new SerialJSONObject();
+        JsonObject branchJson = new JsonObject();
 
-        branchJson.put("source", source);
+        branchJson.addProperty("source", source);
         logger.info("SrcJSON in sendBranch: " + src.toString());
-        String srcId = src.getString(Sjm.SYSMLID);
-        String createdId = created.getString(Sjm.SYSMLID);
+        String srcId = src.get(Sjm.SYSMLID).getAsString();
+        String createdId = created.get(Sjm.SYSMLID).getAsString();
 
         NodeRef person = services.getPersonService().getPersonOrNull(JsonUtil.getOptString(created, Sjm.CREATOR));
         if (person != null) {
@@ -814,13 +814,13 @@ public class CommitUtil {
         return branchJson;
     }
 
-    public static boolean sendJmsMsg(JSONObject json, String eventType, String refId, String projectId) {
+    public static boolean sendJmsMsg(JsonObject json, String eventType, String refId, String projectId) {
         boolean status = false;
         if (jmsConnection != null) {
             status = jmsConnection.publish(json, eventType, refId, projectId);
             if (logger.isDebugEnabled()) {
                 String msg = "Event: " + eventType + ", RefId: " + refId + ", ProjectId: " + projectId + "\n";
-                msg += "JSONObject: " + json;
+                msg += "JsonObject: " + json;
                 logger.debug(msg);
             }
         } else {
@@ -934,7 +934,7 @@ public class CommitUtil {
         }
     }
 
-    public static void processInstanceSpecificationSpecificationJson(String sysmlId, SerialJSONObject iss,
+    public static void processInstanceSpecificationSpecificationJson(String sysmlId, JsonObject iss,
         List<Pair<String, String>> documentEdges) {
         if (iss != null) {
             if (iss.has("value") && iss.has("type") && iss.get("type").getAsString().equals("LiteralString")) {
@@ -975,10 +975,10 @@ public class CommitUtil {
             }
             if (key.equals(keyMatch)) {
                 result.add(value);
-            } else if (value instanceof JSONObject) {
-                result.addAll(findKeyValueInJsonObject((SerialJSONObject) value, keyMatch, text));
-            } else if (value instanceof JSONArray) {
-                result.addAll(findKeyValueInJsonArray((SerialJSONArray) value, keyMatch, text));
+            } else if (value instanceof JsonObject) {
+                result.addAll(findKeyValueInJsonObject((JsonObject) value, keyMatch, text));
+            } else if (value instanceof JsonArray) {
+                result.addAll(findKeyValueInJsonArray((JsonArray) value, keyMatch, text));
             }
         }
         return result;

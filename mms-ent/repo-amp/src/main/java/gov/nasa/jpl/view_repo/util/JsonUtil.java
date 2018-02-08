@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -68,6 +69,11 @@ public class JsonUtil {
 	
 	public static JsonObject deepCopy(JsonObject obj) {
 		return (JsonObject)deepCopy((JsonElement)obj);
+	}
+	
+	public static JsonObject buildFromString(String str) {
+        JsonParser parser = new JsonParser();
+        return parser.parse(str).getAsJsonObject();
 	}
 	
 	public static JsonObject addStringList(JsonObject obj, String key, List<String> values) {

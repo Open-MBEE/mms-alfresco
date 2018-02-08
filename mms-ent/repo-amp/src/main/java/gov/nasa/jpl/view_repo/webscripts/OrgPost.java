@@ -29,7 +29,6 @@ package gov.nasa.jpl.view_repo.webscripts;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
 import org.alfresco.repo.model.Repository;
@@ -37,7 +36,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
@@ -83,7 +81,6 @@ public class OrgPost extends AbstractJavaWebScript {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         printHeader(user, logger, req);
         Timer timer = new Timer();
-        boolean restoredOrg = false;
 
         Map<String, Object> model = new HashMap<>();
 
@@ -111,8 +108,8 @@ public class OrgPost extends AbstractJavaWebScript {
                         services.getNodeService().restoreNode(result.getRow(0).getNodeRef(), null, null, null);
                     } else {
                         String sitePreset = "site-dashboard";
-                        String siteTitle = (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;
-                        String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
+                        String siteTitle = (json.has(Sjm.NAME)) ? json.get(Sjm.NAME).getAsString() : orgName;
+                        String siteDescription = JsonUtil.getOptString(json, Sjm.DESCRIPTION);
                         if (!ShareUtils.constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
                             log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create site.\n");
                             logger.error(
@@ -127,8 +124,8 @@ public class OrgPost extends AbstractJavaWebScript {
                     }
 
                 } else {
-                    JSONObject result = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
-                    if (result != null && result.optString(Sjm.SYSMLID) != null) {
+                    JsonObject result = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                    if (result != null && !JsonUtil.getOptString(result, Sjm.SYSMLID).isEmpty()) {
                         log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site updated.\n");
                     } else {
                         log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Organization Site update failed.\n");
