@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1698,21 +1699,30 @@ public class EmsNodeUtil {
     }
 
     public JSONArray getNearestCommitFromTimestamp(String timestamp, int limit) {
-        Date requestedTime = null;
-        Map<String, String> commit = null;
+        Date requestedTime;
+        List<Map<String, Object>> commits;
+        JSONArray response = new JSONArray();
         try {
             requestedTime = df.parse(timestamp);
-            commit = pgh.getCommitAndTimestamp("timestamp", requestedTime.toString(), "<", limit);
-            if (commit != null) {
-                return new JSONArray(eh.getCommitByElasticId(commit.get("elasticId"), projectId));
+            Timestamp time = new Timestamp(requestedTime.getTime());
+            commits = pgh.getRefsCommits(this.workspaceName, time, limit);
+            if (commits.size() > 0) {
+                for (int i = 0; i < commits.size(); i++) {
+                    Map<String, Object> refCommit = commits.get(i);
+                    JSONObject commit = new JSONObject();
+                    commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
+                    commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
+                    commit.put(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
+                    response.put(commit);
+                }
             }
-        } catch (ParseException | IOException e) {
+        } catch (ParseException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
             }
         }
 
-        return new JSONArray();
+        return response;
     }
 
     public JSONObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
