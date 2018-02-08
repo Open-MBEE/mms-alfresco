@@ -454,7 +454,7 @@ public class ModelGet extends AbstractJavaWebScript {
             EmsNodeUtil nodeUtil = new EmsNodeUtil(mountsArray.getJSONObject(i).getString(Sjm.SYSMLID),
                 mountsArray.getJSONObject(i).getString(Sjm.REFID));
             if (nodeUtil.getById(rootSysmlid) != null) {
-                JSONArray nearestCommit = nodeUtil.getNearestCommitFromTimestamp(timestamp, 1);
+                JSONArray nearestCommit = nodeUtil.getNearestCommitFromTimestamp(mountsArray.getJSONObject(i).getString(Sjm.REFID), timestamp, 1);
                 if (nearestCommit.length() > 0) {
                     JSONObject elementObject =
                         nodeUtil.getElementAtCommit(rootSysmlid, nearestCommit.getJSONObject(0).getString(Sjm.SYSMLID));
