@@ -97,7 +97,7 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript {
         int limitVal = limit == null || limit.isEmpty() ? 0 : Integer.parseInt(limit);
 
         if (timestamp != null && !timestamp.isEmpty()) {
-            commits = emsNodeUtil.getNearestCommitFromTimestamp(timestamp, limitVal);
+            commits = emsNodeUtil.getNearestCommitFromTimestamp(refId, timestamp, limitVal);
         } else {
             commits = emsNodeUtil.getRefHistory(refId, commitId, limitVal);
         }

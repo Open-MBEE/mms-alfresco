@@ -1845,19 +1845,22 @@ public class PostgresHelper implements GraphInterface {
 
             StringBuilder query =
                 new StringBuilder("SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE (refId = ? OR refId = ?)");
+
             if (commitId != 0) {
                 query.append(" AND timestamp <= (SELECT timestamp FROM commits WHERE id = ?)");
                 commitColNum = 3;
-            } else if (commitId == 0 && timestamp != null) {
+            }
+
+            if (timestamp != null) {
                 query.append(" AND date_trunc('milliseconds', timestamp) <= ?");
-                timestampColNum = 3;
+                timestampColNum = commitColNum == 3 ? 4 : 3;
             }
 
             query.append(" ORDER BY timestamp DESC");
 
             if (limit != 0) {
                 query.append(" LIMIT ?");
-                limitColNum = (commitColNum == 3 || timestampColNum == 3) ? 4 : 3;
+                limitColNum = (commitColNum == 3 || timestampColNum >= 3) ? (timestampColNum == 4 ? 5 : 4) : 3;
             }
 
             PreparedStatement statement = prepareStatement(query.toString());
