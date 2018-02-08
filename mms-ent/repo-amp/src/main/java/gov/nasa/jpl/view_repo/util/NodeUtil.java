@@ -320,9 +320,9 @@ public class NodeUtil {
         Status status, boolean ignoreName) {
 
         EmsScriptNode artifactNode;
-        String myType = Utils.isNullOrEmpty(type) ? "svg" : type;
-        String finalType = myType.startsWith(".") ? myType.substring(1) : myType;
-        String artifactId = name + System.currentTimeMillis() + "." + finalType;
+//        String myType = Utils.isNullOrEmpty(type) ? "svg" : type;
+//        String finalType = myType.startsWith(".") ? myType.substring(1) : myType;
+        //String artifactId = name + System.currentTimeMillis() + "." + type;
 
         byte[] content = (base64content == null) ? null : DatatypeConverter.parseBase64Binary(base64content);
 
@@ -346,7 +346,7 @@ public class NodeUtil {
 
         // No need to update if the checksum and name match (even if it is in a
         // parent branch):
-        if (matchingNode != null && (ignoreName || matchingNode.getSysmlId().equals(artifactId))) {
+        if (matchingNode != null && (ignoreName || matchingNode.getSysmlId().equals(name))) {
             return matchingNode;
         }
 
@@ -365,15 +365,15 @@ public class NodeUtil {
         }
 
         // find or create node:
-        artifactNode = subfolder.childByNamePath("/" + artifactId);
+        artifactNode = subfolder.childByNamePath("/" + name);
 
         // Node wasnt found, so create one:
         if (artifactNode == null) {
-            artifactNode = subfolder.createNode(artifactId, "cm:content");
+            artifactNode = subfolder.createNode(name, "cm:content");
         }
 
         if (artifactNode == null || !artifactNode.exists()) {
-            Debug.err("Failed to create new artifact " + artifactId + "!\n");
+            Debug.err("Failed to create new artifact " + name + "!\n");
             return null;
         }
 
@@ -387,10 +387,10 @@ public class NodeUtil {
             artifactNode.addAspect(Acm.ACM_IDENTIFIABLE);
         }
 
-        artifactNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
+        artifactNode.createOrUpdateProperty(Acm.CM_TITLE, name);
         artifactNode.createOrUpdateProperty("cm:isIndexed", true);
         artifactNode.createOrUpdateProperty("cm:isContentIndexed", false);
-        artifactNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
+        artifactNode.createOrUpdateProperty(Acm.ACM_ID, name);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Creating artifact with indexing: " + artifactNode.getProperty("cm:isIndexed"));
@@ -402,7 +402,7 @@ public class NodeUtil {
         writer.putContent(contentStream);
 
         ContentData contentData = writer.getContentData();
-        contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(finalType));
+        contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(type));
         if (base64content == null) {
             contentData = ContentData.setEncoding(contentData, "UTF-8");
         }

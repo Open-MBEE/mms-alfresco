@@ -157,7 +157,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
         final Status status) {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
-        String orgId = getOrgId(req);
         Map<String, Object> model = new HashMap<>();
         JSONObject newElementsObject = new JSONObject();
         SerialJSONObject results;
@@ -165,12 +164,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         try {
-            EmsScriptNode siteNode = EmsScriptNode.getSiteNode(orgId);
-            EmsScriptNode artifactNode = siteNode.childByNamePath("/" + projectId + "/refs/" + refId + "/" + filename);
-            String url = artifactNode.getUrl();
-            if (url != null) {
-                postJson.put(Sjm.LOCATION , url.replace("/d/d/", "/service/api/node/content/"));
-            }
             SerialJSONArray delta = new SerialJSONArray();
             //postJson.put(Sjm.LOCATION, path);
             postJson.put(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(content));
@@ -241,15 +234,21 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
                 // Update or create the artifact if possible:
                 if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
-
+                    String alfrescoId = artifactId + System.currentTimeMillis() + "." + extension;
                     svgArtifact = NodeUtil
-                        .updateOrCreateArtifact(artifactId, extension, null, content, siteName, projectId, refId, null,
+                        .updateOrCreateArtifact(alfrescoId, extension, null, content, siteName, projectId, refId, null,
                             response, null, false);
 
                     if (svgArtifact == null) {
                         logger.error("Was not able to create the artifact!\n");
                         model.put(Sjm.RES, createResponseJson());
+                    }else{
+                        String url = svgArtifact.getUrl();
+                        if (url != null) {
+                            postJson.put(Sjm.LOCATION , url.replace("/d/d/", "/service/api/node/content/"));
+                        }
                     }
+
                 } else {
                     logger.error("artifactId not supplied!\\n");
                     model.put(Sjm.RES, createResponseJson());
