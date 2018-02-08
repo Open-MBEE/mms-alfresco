@@ -330,7 +330,7 @@ public class NodeUtil {
             content = strContent.getBytes(Charset.forName("UTF-8"));
         }
 
-        long cs = EmsScriptNode.getChecksum(content);
+        //long cs = EmsScriptNode.getChecksum(content);
 
         // see if image already exists by looking up by checksum
         //ArrayList<NodeRef> refs = findNodeRefsByType("" + cs, SearchType.CHECKSUM.prefix, false, workspace, dateTime,
@@ -346,9 +346,10 @@ public class NodeUtil {
 
         // No need to update if the checksum and name match (even if it is in a
         // parent branch):
-        if (matchingNode != null && (ignoreName || matchingNode.getSysmlId().equals(name))) {
-            return matchingNode;
-        }
+        // previous artifact vs current...have to look up previous artifact
+//        if (matchingNode != null && (ignoreName || matchingNode.getSysmlId().equals(name))) {
+//            return matchingNode;
+//        }
 
         EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
 
@@ -411,11 +412,11 @@ public class NodeUtil {
         // if only version, save dummy version so snapshots can reference
         // versioned images - need to check against 1 since if someone
         // deleted previously a "dead" version is left in its place
-        Object[] versionHistory = artifactNode.getEmsVersionHistory();
-
-        if (versionHistory == null || versionHistory.length <= 1) {
-            artifactNode.createVersion("creating the version history", false);
-        }
+//        Object[] versionHistory = artifactNode.getEmsVersionHistory();
+//
+//        if (versionHistory == null || versionHistory.length <= 1) {
+//            artifactNode.createVersion("creating the version history", false);
+//        }
         return artifactNode;
     }
 
