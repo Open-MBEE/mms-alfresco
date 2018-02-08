@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1697,28 +1698,31 @@ public class EmsNodeUtil {
         return pastElement == null ? new JSONObject() : pastElement;
     }
 
-    public JSONArray getNearestCommitFromTimestamp(String timestamp, JSONArray commits) {
-        Date requestedTime = null;
+    public JSONArray getNearestCommitFromTimestamp(String timestamp, int limit) {
+        Date requestedTime;
+        List<Map<String, Object>> commits;
+        JSONArray response = new JSONArray();
         try {
-            requestedTime = requestedTime = df.parse(timestamp);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        for (int i = 0; i < commits.length(); i++) {
-            JSONObject current = commits.getJSONObject(i);
-            Date currentTime;
-            try {
-                currentTime = df.parse(current.getString(Sjm.CREATED));
-                if (requestedTime.getTime() >= currentTime.getTime()) {
-                    return new JSONArray().put(current);
-                }
-            } catch (Exception e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            requestedTime = df.parse(timestamp);
+            Timestamp time = new Timestamp(requestedTime.getTime());
+            commits = pgh.getRefsCommits(this.workspaceName, time, limit);
+            if (commits.size() > 0) {
+                for (int i = 0; i < commits.size(); i++) {
+                    Map<String, Object> refCommit = commits.get(i);
+                    JSONObject commit = new JSONObject();
+                    commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
+                    commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
+                    commit.put(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
+                    response.put(commit);
                 }
             }
+        } catch (ParseException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
-        return new JSONArray();
+
+        return response;
     }
 
     public JSONObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
