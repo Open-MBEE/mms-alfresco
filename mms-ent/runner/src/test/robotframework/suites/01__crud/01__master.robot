@@ -67,7 +67,7 @@ ProjectCreation
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreation.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 commitId
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -290,7 +290,7 @@ ResurrectDeleteOrg
 	${result} =			Post		url=${ROOT}/orgs			data=${post_json}		headers=&{REQ_HEADER}
 	Sleep				${POST_DELAY_INDEXING}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
