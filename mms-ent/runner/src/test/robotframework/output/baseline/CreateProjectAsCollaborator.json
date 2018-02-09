@@ -1,3 +1,11 @@
 {
-    "message": "[INFO]: Project folder created."
+    "projects": [
+        {
+            "_creator": "Collaborator",
+            "_modifier": "Collaborator",
+            "id": "CollaboratorProject",
+            "name": "Collaborator Project",
+            "type": "Project"
+        }
+    ]
 }

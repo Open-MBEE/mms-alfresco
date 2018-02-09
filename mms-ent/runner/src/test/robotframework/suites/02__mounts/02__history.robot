@@ -9,7 +9,7 @@ ProjectCreationForMountsCommit
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreationForMountCommit.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
