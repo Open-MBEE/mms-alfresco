@@ -57,8 +57,6 @@ public class PandocConverter {
 
         String command = String.format("%s -o %s/%s.%s", this.pandocExec, PANDOC_DATA_DIR, this.outputFile, this.outputFormat.getFormatName());
 
-        System.out.println("[Pandoc Command String] " + command);
-
         int status;
 
         try {
