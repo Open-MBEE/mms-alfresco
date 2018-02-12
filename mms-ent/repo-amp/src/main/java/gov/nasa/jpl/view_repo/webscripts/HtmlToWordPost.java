@@ -160,7 +160,11 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
             if (artifact == null) {
                 logger.error("Failed to create HTML to Docx artifact in Alfresco.");
             } else {
+                binFile.close();
                 bSuccess = true;
+                if(!file.delete()){
+                    logger.error(String.format("Failed to delete the temp file %s",filename));
+                }
             }
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
