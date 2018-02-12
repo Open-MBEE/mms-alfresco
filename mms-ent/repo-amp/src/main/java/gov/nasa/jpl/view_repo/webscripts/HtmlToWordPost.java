@@ -84,9 +84,13 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
             JSONObject project = emsNodeUtil.getProject(projectId);
             String siteName = project.optString("orgId", null);
 
-            if (!createWordDoc(result, docName, siteName, projectId, refId)) {
-                result = null;
+            result.put("filename", String.format("%s.%s", docName, PandocConverter.OutputFormat.DOCX.getFormatName()));
+            if (createWordDoc(result, docName, siteName, projectId, refId)) {
+                result.put("status", "Conversion succeeded.");
+            } else {
+                result.put("status", "Conversion failed.");
             }
+            result.remove("html");
 
         } else {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Job name not specified");
@@ -154,16 +158,16 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
             encodedBase64 = new String(Base64.getEncoder().encode(content));
 
             EmsScriptNode artifact = NodeUtil
-                .updateOrCreateArtifact(filename, PandocConverter.OutputFormat.DOCX.getFormatName(), encodedBase64, null, siteName,
-                    projectId, refId, null, response, null, false);
+                .updateOrCreateArtifact(filename, PandocConverter.OutputFormat.DOCX.getFormatName(), encodedBase64,
+                    null, siteName, projectId, refId, null, response, null, false);
 
             if (artifact == null) {
                 logger.error("Failed to create HTML to Docx artifact in Alfresco.");
             } else {
                 binFile.close();
                 bSuccess = true;
-                if(!file.delete()){
-                    logger.error(String.format("Failed to delete the temp file %s",filename));
+                if (!file.delete()) {
+                    logger.error(String.format("Failed to delete the temp file %s", filename));
                 }
             }
         } catch (Exception e) {
