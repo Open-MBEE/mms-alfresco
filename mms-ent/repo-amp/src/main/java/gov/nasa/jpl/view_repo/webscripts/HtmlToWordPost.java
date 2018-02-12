@@ -77,12 +77,14 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
         String docName = req.getServiceMatch().getTemplateVars().get("documentName");
 
         if (result != null && result.has("name")) {
-            if (!docName.contains(".docx"))
-                docName += ".docx";
 
+            String projectId = getProjectId(req);
+            String refId = getRefId(req);
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            JSONObject project = emsNodeUtil.getProject(projectId);
+            String siteName = project.optString("orgId", null);
 
-            if (createWordDoc(result, docName)) {
-            } else {
+            if (!createWordDoc(result, docName, siteName, projectId, refId)) {
                 result = null;
             }
 
@@ -137,7 +139,8 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
             pandocConverter.convert(postJson.optString("html"));
             bSuccess = true;
         } catch (Exception e) {
-            log(Level.INFO, e.getMessage());
+            logger.error(String.format("%s", e.getMessage()));
+            return bSuccess;
         }
 
         String encodedBase64;
@@ -151,10 +154,10 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
             encodedBase64 = new String(Base64.getEncoder().encode(content));
 
             EmsScriptNode artifact = NodeUtil
-                .updateOrCreateArtifact(filename.replace(".docx", ""), filePath, encodedBase64, null, siteName,
+                .updateOrCreateArtifact(filename, PandocConverter.OutputFormat.DOCX.getFormatName(), encodedBase64, null, siteName,
                     projectId, refId, null, response, null, false);
 
-            if(artifact == null){
+            if (artifact == null) {
                 logger.error("Failed to create HTML to Docx artifact in Alfresco.");
             } else {
                 bSuccess = true;
