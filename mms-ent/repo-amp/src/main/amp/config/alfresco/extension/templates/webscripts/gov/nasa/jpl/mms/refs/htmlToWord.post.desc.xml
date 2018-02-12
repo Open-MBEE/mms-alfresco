@@ -1,0 +1,11 @@
+<webscript>
+    <shortname>post HTML to be converted to Word Document</shortname>
+    <description>
+        post HTML to be converted to Word document
+    </description>
+    <url>/projects/{projectId}/refs/{refId}/documents/{documentId}/htmlToWord/{documentName}</url>
+    <format default="json">argument</format>
+    <authentication>user</authentication>
+    <transaction>required</transaction>
+    <family>MMS REST API</family>
+ </webscript>
