@@ -141,10 +141,9 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
         // Convert HTML to Word Doc
         try {
             pandocConverter.convert(postJson.optString("html"));
-            bSuccess = true;
         } catch (Exception e) {
             logger.error(String.format("%s", e.getMessage()));
-            return bSuccess;
+            return false;
         }
 
         String encodedBase64;
