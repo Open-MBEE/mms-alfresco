@@ -16,6 +16,18 @@ InitializeOrganization
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
+UpdateOrganization
+	[Documentation]		"Update an organization. ID: initorg, name: initorg"
+	[Tags]				crud		critical		0118
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/UpdateOrganization.json
+	${result} =			Post		url=${ROOT}/orgs			data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
 BadOrganization
 	[Documentation]		"Try to create an organization with bad request"
 	[Tags]				crud		critical		0101a
@@ -48,7 +60,7 @@ ProjectCreation
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreation.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 commitId
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -260,7 +272,7 @@ DeleteOrgWithNoProject
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-	Sleep				${POST_DELAY_INDEXING}
+	Sleep				${BRANCH_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
@@ -271,7 +283,7 @@ ResurrectDeleteOrg
 	${result} =			Post		url=${ROOT}/orgs			data=${post_json}		headers=&{REQ_HEADER}
 	Sleep				${POST_DELAY_INDEXING}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}

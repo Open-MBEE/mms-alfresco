@@ -3,8 +3,8 @@
         {
             "_creator": "admin",
             "_modifier": "admin",
-            "id": "PD",
-            "name": "mount test projectPD",
+            "id": "MountCommit",
+            "name": "mount test project MountCommit",
             "type": "Project"
         }
     ]

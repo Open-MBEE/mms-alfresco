@@ -92,6 +92,21 @@
             <artifactId>jsonevent-layout</artifactId>
             <version>1.7</version>
         </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-codegen-maven-plugin</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>2.7.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp</groupId>
+            <artifactId>logging-interceptor</artifactId>
+            <version>2.7.5</version>
+        </dependency>
         <!-- apache chemistry opencmis CLIENT -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
@@ -214,14 +229,29 @@
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>3.0.0</version>
             </plugin>
-            <!-- make sure fonts are copied correctly : alfresco munges woff files
-                maybe because of UTF-8 encoding? -->
+            <plugin>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-codegen-maven-plugin</artifactId>
+                <version>2.2.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${basedir}/src/main/amp/web/mms/swagger-ui/mms.swagger.yaml</inputSpec>
+                            <language>html2</language>
+                            <configOptions>
+                                <output>${project.build.directory}/generated-sources</output>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <!-- Copy the RAML API information into the scripts directory so it
-                            gets deployed -->
                         <id>copy-api-resources</id>
                         <phase>compile</phase>
                         <goals>
@@ -229,14 +259,15 @@
                         </goals>
                         <configuration>
                             <overwrite>true</overwrite>
-                            <outputDirectory>${basedir}/src/main/amp/web/scripts/raml</outputDirectory>
+                            <outputDirectory>${project.build.directory}/amp/web/mms/swagger</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${basedir}/api/html</directory>
+                                    <directory>${project.build.directory}/generated-sources/swagger</directory>
                                 </resource>
                             </resources>
                         </configuration>
                     </execution>
+
                 </executions>
             </plugin>
         </plugins>

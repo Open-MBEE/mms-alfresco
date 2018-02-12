@@ -134,7 +134,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     logger.debug("property name: " + name);
                 }
             }
-            if (!imageId.isEmpty()) {
+            if (imageId != null && !imageId.isEmpty()) {
                 postJson.put(Sjm.SYSMLID, imageId);
             }
             postJson.put(Sjm.TYPE, "Artifact");
