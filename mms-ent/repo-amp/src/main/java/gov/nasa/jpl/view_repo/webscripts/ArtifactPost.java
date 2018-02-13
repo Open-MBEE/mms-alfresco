@@ -25,6 +25,11 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -105,8 +110,8 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 logger.debug("field.getName(): " + field.getName());
                 if (field.getName().equals("file") && field.getIsFile()) {
                     filename = field.getFilename();
-                    content = field.getContent().getContent();
-                    //content = binaryContent.toString();
+                    Object binaryContent = req.getContent().getContent();
+                    content = binaryContent.toString();
                     logger.debug("filename: " + filename);
                     logger.debug("content: " + content);
                 } else {

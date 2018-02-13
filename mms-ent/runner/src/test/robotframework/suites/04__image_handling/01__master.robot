@@ -8,7 +8,7 @@ PostNewImage
 	[Documentation]		"Post a png image to mms"
 	[Tags]				images		critical		0401
 	Create Session		mmstest  ${ROOT}
-    ${image_file} =		Binary Data	${CURDIR}${/}../../assets/mounts.png
+    ${image_file} =		Binary Data	${CURDIR}${/}../../assets/gnome.png
     ${files} =			Create Dictionary	file	${image_file}
     ${data} =			Create Dictionary	contentType=image/png	id=mounts
 	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts		data=${data}		files=${files}
@@ -45,7 +45,7 @@ PostNewVersionOfImage
 	[Documentation]		"Post a update to a existing image."
 	[Tags]				images		critical		0403
 	Create Session		mmstest  ${ROOT}
-    ${image_file} =		Binary Data	${CURDIR}${/}../../assets/mounts.png
+    ${image_file} =		Binary Data	${CURDIR}${/}../../assets/gnome.png
     ${files} =			Create Dictionary	file	${image_file}
     ${data} =			Create Dictionary	contentType=image/png	id=mounts
 	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts		data=${data}		files=${files}
@@ -138,7 +138,7 @@ PostAnotherVersionOfParentImage
 	[Documentation]		"post version of image to parent ref so parent ref has new version of image"
 	[Tags]				images		critical		0410
 	Create Session		mmstest  ${ROOT}
-    ${image_file} =     Binary Data	${CURDIR}${/}../../assets/mounts.png
+    ${image_file} =     Binary Data	${CURDIR}${/}../../assets/gnome.png
     ${files} =			Create Dictionary	file	${image_file}
     ${data} =			Create Dictionary	id=mounts	contentType=image/png
     ${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts/mounts		data=${data}		files=${files}
