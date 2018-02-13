@@ -69,7 +69,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
     private Boolean isTag;
     private String srcId;
     private String createdString;
-    private JsonObject branchJson = new JsonObject();
+    private SerialJSONObject branchJson = null;
 
     private transient Timer timer;
     private transient ElasticHelper eh;
@@ -96,8 +96,9 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         timer = new Timer();
 
         JsonObject created = JsonUtil.buildFromString(createdString);
-
-        branchJson.addProperty("source", source);
+        JsonObject bJson = new JsonObject();
+        bJson.addProperty("source", source);
+        //branchJson.put("source", source);
 
         boolean hasCommit = (commitId != null && !commitId.isEmpty());
         boolean success = false;
@@ -174,21 +175,26 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
             //Do nothing
         }
 
+        branchJson = new SerialJSONObject(bJson.toString());
         done();
 
         if (success && isTag && hasCommit) {
             pgh.setAsTag(created.get(Sjm.SYSMLID).getAsString());
         }
 
-        branchJson.add("createdRef", created);
-        return branchJson;
+        //branchJson.put("createdRef", created);
+        bJson.add("createdRef", created);
+        branchJson = new SerialJSONObject(bJson.toString());
+        return bJson;
     }
 
     public void done() {
-        CommitUtil.sendJmsMsg(branchJson, TYPE_BRANCH, srcId, projectId);
-        JSONObject created = new JSONObject(createdString);
-        String body = String.format("Branch %s started by %s has finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), this.timer);
-        String subject = String.format("Branch %s has finished at %s", created.getString(Sjm.SYSMLID), this.timer);
+        CommitUtil.sendJmsMsg(branchJson.getJSONObject(), TYPE_BRANCH, srcId, projectId);
+        JsonObject created = JsonUtil.buildFromString(createdString);
+        
+        String body = String.format("Branch %s started by %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(), 
+                        JsonUtil.getOptString(created, Sjm.CREATOR), this.timer);
+        String subject = String.format("Branch %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(), this.timer);
 
         if (author != null) {
             try {
