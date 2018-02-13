@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
@@ -271,7 +272,6 @@ public class EmsNodeUtil {
         JSONArray elementsFromElastic = new JSONArray();
         try {
             elementsFromElastic = eh.getElementsFromElasticIds(elasticids, projectId);
-
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -604,12 +604,6 @@ public class EmsNodeUtil {
                 sysmlid = createId();
                 o.put(Sjm.SYSMLID, sysmlid);
             }
-
-            //String content = o.toString();
-            //if (isImageData(content)) {
-            //    content = extractAndReplaceImageData(content, organization);
-            //    o = new SerialJSONObject(content);
-            //}
 
             boolean added = !existingMap.containsKey(sysmlid);
             boolean updated = false;
@@ -1383,6 +1377,7 @@ public class EmsNodeUtil {
 
         return element;
     }
+
     public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs,
         final Long maxDepth, Set<String> elementsToFind, JSONArray result) throws IOException {
 
@@ -1733,28 +1728,31 @@ public class EmsNodeUtil {
         return pastElement == null ? new JSONObject() : pastElement;
     }
 
-    public JSONArray getNearestCommitFromTimestamp(String timestamp, JSONArray commits) {
-        Date requestedTime = null;
+    public JSONArray getNearestCommitFromTimestamp(String refId, String timestamp, int limit) {
+        Date requestedTime;
+        List<Map<String, Object>> commits;
+        JSONArray response = new JSONArray();
         try {
-            requestedTime = requestedTime = df.parse(timestamp);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        for (int i = 0; i < commits.length(); i++) {
-            JSONObject current = commits.getJSONObject(i);
-            Date currentTime;
-            try {
-                currentTime = df.parse(current.getString(Sjm.CREATED));
-                if (requestedTime.getTime() >= currentTime.getTime()) {
-                    return new JSONArray().put(current);
-                }
-            } catch (Exception e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            requestedTime = df.parse(timestamp);
+            Timestamp time = new Timestamp(requestedTime.getTime());
+            commits = pgh.getRefsCommits(refId, time, limit);
+            if (commits.size() > 0) {
+                for (int i = 0; i < commits.size(); i++) {
+                    Map<String, Object> refCommit = commits.get(i);
+                    JSONObject commit = new JSONObject();
+                    commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
+                    commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
+                    commit.put(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
+                    response.put(commit);
                 }
             }
+        } catch (ParseException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
-        return new JSONArray();
+
+        return response;
     }
 
     public JSONObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
