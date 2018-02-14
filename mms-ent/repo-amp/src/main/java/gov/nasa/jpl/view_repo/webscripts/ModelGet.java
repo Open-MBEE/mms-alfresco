@@ -283,7 +283,8 @@ public class ModelGet extends AbstractJavaWebScript {
         mountsJson.addProperty(Sjm.SYSMLID, projectId);
         mountsJson.addProperty(Sjm.REFID, refId);
         // convert commitId to timestamp
-        String commit = emsNodeUtil.getCommitObject(commitId).get(Sjm.CREATED).getAsString();
+        JsonObject commitObj = emsNodeUtil.getCommitObject(commitId);
+        String commit = JsonUtil.getOptString(commitObj, Sjm.CREATED);
         try {
             return handleMountSearchForCommits(mountsJson, elementId, commit);
         } catch (Exception e) {

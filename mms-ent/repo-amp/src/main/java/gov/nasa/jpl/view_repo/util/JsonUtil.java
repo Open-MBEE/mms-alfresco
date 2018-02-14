@@ -105,25 +105,25 @@ public class JsonUtil {
 	}
 	
     public static JsonArray getOptArray(JsonObject obj, String name) {
-        if (!obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
             return new JsonArray();
         return obj.get(name).getAsJsonArray();
     }
 
     public static JsonObject getOptObject(JsonObject obj, String name) {
-        if (!obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
             return new JsonObject();
         return obj.get(name).getAsJsonObject();
     }
 
     public static String getOptString(JsonObject obj, String name) {
-	    if (!obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+	    if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
 	        return "";
 	    return obj.get(name).getAsString();
 	}
     
     public static String getOptString(JsonObject obj, String name, String option) {
-	    if (!obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+	    if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
 	        return option;
 	    return obj.get(name).getAsString();
 	}

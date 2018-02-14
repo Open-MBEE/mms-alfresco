@@ -669,10 +669,9 @@ public class EmsNodeUtil {
             script.add("script", inline);
             script.add("params", params);
             inline.addProperty("inline", "if(ctx._source.containsKey(\""
-                               + Sjm.INREFIDS + "\")){ctx._source." 
-                               + Sjm.INREFIDS
-                               + ".add(params.refId)} else {ctx._source."
-                               + Sjm.INREFIDS + " = [params.refId]}");
+                    + Sjm.INREFIDS + "\")){ctx._source." 
+                    + Sjm.INREFIDS
+                    + ".removeAll([params.refId])}");
             params.addProperty("refId", this.workspaceName);
             eh.bulkUpdateElements(elasticIds, script.toString(), projectId, "element");
         } catch (IOException ex) {

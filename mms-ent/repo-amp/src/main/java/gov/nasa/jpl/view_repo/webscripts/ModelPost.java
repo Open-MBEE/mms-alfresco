@@ -151,6 +151,7 @@ public class ModelPost extends AbstractJavaWebScript {
 
         JsonParser parser = new JsonParser();
         try {
+        	logger.debug(String.format("Post Data: '%s'", req.getContent().getContent()));
             JsonElement postJsonElement = parser.parse(req.getContent().getContent());
             JsonObject postJson = postJsonElement.getAsJsonObject();
             this.populateSourceApplicationFromJson(postJson);
