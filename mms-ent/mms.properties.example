@@ -44,11 +44,6 @@ jms.destination=master
 jms.uri=tcp://localhost:61616
 
 #Pandoc Settings
-
-#Pandoc Settings
-pandoc.output.dir=/tmp
-pandoc.output.filename=tmp.output
-pandoc.exec=/usr/local/bin/pandoc
 pandoc.output.dir=/tmp
 pandoc.output.filename=tmp.output
 pandoc.exec=/usr/local/bin/pandoc
