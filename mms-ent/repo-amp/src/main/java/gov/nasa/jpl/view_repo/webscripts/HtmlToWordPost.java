@@ -2,21 +2,13 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.actions.ActionUtil;
 import gov.nasa.jpl.view_repo.actions.PandocConverter;
 import gov.nasa.jpl.view_repo.util.*;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.TempFileProvider;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,27 +17,14 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HtmlToWordPost extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(HtmlToWordPost.class);
-
-    protected String dirRoot = "/mnt/alf_data/temp/";
-    protected String userHomeSubDirName; // format: docId_time
-    protected EmsScriptNode nodeUserHomeSubDir;
-
-    protected UUID guid = UUID.randomUUID();
-
-    // filesystem working directory
-    protected String fsWorkingDir; // format: dirRoot + "[USER_ID]/[GUID]
-
-    private String user, storeName, nodeId, filename;
 
     public HtmlToWordPost() {
         super();

@@ -1,5 +1,7 @@
 package gov.nasa.jpl.view_repo.actions;
 
+import gov.nasa.jpl.view_repo.util.EmsConfig;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,10 +12,10 @@ import java.io.OutputStream;
  * @since 3.2.2
  */
 public class PandocConverter {
-    private String pandocExec;
+    private String pandocExec = EmsConfig.get("pandoc.exec");
     private OutputFormat outputFormat;
-    private String outputFile = "tmp.output";
-    public static final String PANDOC_DATA_DIR = "/tmp";
+    private String outputFile = EmsConfig.get("pandoc.output.filename");
+    public static final String PANDOC_DATA_DIR = EmsConfig.get("pandoc.output.dir");
 
 
     public enum OutputFormat {
@@ -31,10 +33,8 @@ public class PandocConverter {
 
     }
 
-
     public PandocConverter(String outputFileName) {
         // Get the full path for Pandoc executable
-        this.pandocExec = "/usr/local/bin/pandoc";
         if (outputFileName != null) {
             this.outputFile = outputFileName;
         }
@@ -55,7 +55,8 @@ public class PandocConverter {
 
     public void convert(String inputString) {
 
-        String command = String.format("%s -o %s/%s.%s", this.pandocExec, PANDOC_DATA_DIR, this.outputFile, this.outputFormat.getFormatName());
+        String command = String.format("%s -o %s/%s.%s", this.pandocExec, PANDOC_DATA_DIR, this.outputFile,
+            this.outputFormat.getFormatName());
 
         int status;
 
@@ -76,6 +77,5 @@ public class PandocConverter {
             throw new RuntimeException(
                 "Conversion failed with status code: " + status + ". Command executed: " + command);
         }
-
     }
 }
