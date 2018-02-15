@@ -190,8 +190,11 @@ public class ElasticHelper implements ElasticsearchInterface {
         if (result.isSucceeded() && result.getTotal() > 0) {
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
             for (int i = 0; i < hits.size(); i++) {
-                JsonObject o = hits.get(i).getAsJsonObject().getAsJsonObject("_source");
+            	JsonObject o = new JsonObject();
+                JsonObject record = hits.get(i).getAsJsonObject().getAsJsonObject("_source");
                 o.addProperty(Sjm.SYSMLID, hits.get(i).getAsJsonObject().get("_id").getAsString());
+                o.add(Sjm.CREATED, record.get(Sjm.CREATED));
+                o.add(Sjm.CREATOR, record.get(Sjm.CREATOR));
                 array.add(o);
             }
         } else if (!result.isSucceeded()) {
