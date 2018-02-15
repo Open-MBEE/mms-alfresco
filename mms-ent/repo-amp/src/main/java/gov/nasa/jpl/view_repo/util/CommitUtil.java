@@ -240,9 +240,7 @@ public class CommitUtil {
                     }
 
                     String doc = e.optString(Sjm.DOCUMENTATION);
-                    if (doc != null && !doc.equals("")) {
-                        processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
-                    }
+                    processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
 
                     if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                         createOrUpdateSiteChar(e, projectId, refId, services);
@@ -253,15 +251,11 @@ public class CommitUtil {
                     }
                     if (e.has(Sjm.CONTENTS)) {
                         JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
-                        if (contents != null) {
-                            processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
-                        }
+                        processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                     } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
                         JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
-                        if (iss != null) {
-                            processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
-                            processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
-                        }
+                        processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
+                        processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                     }
                     if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
                         JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
@@ -302,9 +296,8 @@ public class CommitUtil {
                         addEdges.add(p);
                     }
                     String doc = e.optString(Sjm.DOCUMENTATION);
-                    if (doc != null && !doc.equals("")) {
-                        processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
-                    }
+                    processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
+
 
                     if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                         createOrUpdateSiteChar(e, projectId, refId, services);
@@ -315,15 +308,11 @@ public class CommitUtil {
                     }
                     if (e.has(Sjm.CONTENTS)) {
                         JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
-                        if (contents != null) {
-                            processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
-                        }
+                        processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
                     } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
                         JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
-                        if (iss != null) {
-                            processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
-                            processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
-                        }
+                        processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
+                        processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
                     }
                     if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
                         JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
@@ -461,6 +450,10 @@ public class CommitUtil {
 
         jmsPayload.put("refs", jmsWorkspace);
 
+        if (!commitElasticId.isEmpty()) {
+            jmsPayload.put(Sjm.COMMITID, commitElasticId);
+        }
+
         return true;
     }
 
@@ -492,24 +485,20 @@ public class CommitUtil {
             }
 
             String doc = e.optString(Sjm.DOCUMENTATION);
-            if (doc != null && !doc.equals("")) {
-                processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
-            }
+            processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
+
             String type = e.optString(Sjm.TYPE);
             if (type.equals("Slot") || type.equals("Property") || type.equals("Port")) {
                 processValueEdges(e, viewEdges);
             }
             if (e.has(Sjm.CONTENTS)) {
                 JSONObject contents = e.optJSONObject(Sjm.CONTENTS);
-                if (contents != null) {
-                    processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
-                }
+                processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
             } else if (e.has(Sjm.SPECIFICATION) && nodeType == DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
                 JSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
-                if (iss != null) {
-                    processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
-                    processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
-                }
+                processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
+                processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
+
             }
             if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
                 JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
@@ -648,10 +637,22 @@ public class CommitUtil {
         return true;
     }
 
-    public static void sendOrganizationDelta(String orgId, String orgName, String user) throws PSQLException
+    public static JSONObject sendOrganizationDelta(String orgId, String orgName, JSONObject orgJson) throws PSQLException
     {
         PostgresHelper pgh = new PostgresHelper();
         pgh.createOrganization(orgId, orgName);
+        String defaultIndex = EmsConfig.get("elastic.index.element");
+        try {
+            ElasticHelper eh = new ElasticHelper();
+            eh.createIndex(defaultIndex);
+            orgJson.put(Sjm.ELASTICID, orgId);
+            ElasticResult result = eh.indexElement(orgJson, defaultIndex);
+            return result.current;
+        } catch (Exception e) {
+            logger.error(e);
+        }
+
+        return null;
     }
 
     public static void sendProjectDelta(JSONObject o, String orgId, String user) {
@@ -1059,7 +1060,7 @@ public class CommitUtil {
     }
 
     public static void processDocumentEdges(String sysmlid, String doc, List<Pair<String, String>> documentEdges) {
-        if (doc != null && !doc.equals("")) {
+        if (doc != null && doc.length() != 0) {
             Matcher matcher = pattern.matcher(doc);
 
             while (matcher.find()) {
