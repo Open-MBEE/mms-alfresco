@@ -409,13 +409,13 @@ public class EmsNodeUtil {
         return new JSONArray();
     }
 
-    public JSONArray search(JSONObject query) {
+    public JSONObject search(JSONObject query) {
         try {
             return eh.search(query);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return new JSONArray();
+        return new JSONObject();
     }
 
     public JSONArray addExtraDocs(JSONArray elements) {
