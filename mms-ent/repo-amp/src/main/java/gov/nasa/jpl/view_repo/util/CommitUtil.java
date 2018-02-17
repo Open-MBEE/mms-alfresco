@@ -899,7 +899,7 @@ public class CommitUtil {
         }
         for (int i = 0; i < slotValues.size(); i++) {
             JsonObject val = JsonUtil.getOptObject(slotValues, i);
-            if (val != null && JsonUtil.getOptString(val, Sjm.TYPE).equals("LiteralString")) {
+            if (JsonUtil.getOptString(val, Sjm.TYPE).equals("LiteralString")) {
                 processDocumentEdges(element.get(Sjm.SYSMLID).getAsString(), 
                                 JsonUtil.getOptString(val, "value"), edges);
             }
@@ -959,26 +959,32 @@ public class CommitUtil {
                         }
                     }
                 } catch (JsonSyntaxException ex) {
-                    //case if value string isn't actually a serialized jsonobject
+                	logger.warn(String.format("unable to parse json in element %s", sysmlId));
                 }
             }
         }
     }
 
+    public static Set<Object> findKeyValueInJsonElement(JsonElement jelem, String keyMatch, StringBuilder text) {
+    	if (jelem.isJsonObject())
+    		return findKeyValueInJsonObject(jelem.getAsJsonObject(), keyMatch, text);
+    	else if (jelem.isJsonArray())
+    		return findKeyValueInJsonArray(jelem.getAsJsonArray(), keyMatch, text);
+    	return new HashSet<>();
+    }
+    
     public static Set<Object> findKeyValueInJsonObject(JsonObject json, String keyMatch, StringBuilder text) {
         Set<Object> result = new HashSet<>();
         for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
             String key = entry.getKey();
-            Object value = json.get(key);
+            JsonElement value = entry.getValue();
             if (key.equals("text")) {
-                text.append(value);
+                text.append(value.getAsString());
             }
             if (key.equals(keyMatch)) {
-                result.add(value);
-            } else if (value instanceof JsonObject) {
-                result.addAll(findKeyValueInJsonObject((JsonObject) value, keyMatch, text));
-            } else if (value instanceof JsonArray) {
-                result.addAll(findKeyValueInJsonArray((JsonArray) value, keyMatch, text));
+                result.add(value.getAsString());
+            } else {
+                result.addAll(findKeyValueInJsonElement(value, keyMatch, text));
             }
         }
         return result;
@@ -988,11 +994,7 @@ public class CommitUtil {
         Set<Object> result = new HashSet<>();
 
         for (int ii = 0; ii < jsonArray.size(); ii++) {
-            if (jsonArray.get(ii).isJsonObject()) {
-                result.addAll(findKeyValueInJsonObject((JsonObject) jsonArray.get(ii), keyMatch, text));
-            } else if (jsonArray.get(ii).isJsonArray()) {
-                result.addAll(findKeyValueInJsonArray((JsonArray) jsonArray.get(ii), keyMatch, text));
-            }
+        	result.addAll(findKeyValueInJsonElement(jsonArray.get(ii), keyMatch, text));
         }
 
         return result;

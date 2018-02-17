@@ -10,12 +10,9 @@ import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
 import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -150,8 +147,8 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
             JsonObject params = new JsonObject();
             script.add("script", inline);
             script.add("params", params);
-            inline.addProperty("inline", "if(ctx._source.containsKey(\""
-                               + Sjm.INREFIDS + "\")){ctx._source." 
+            inline.addProperty("inline", "if(ctx._source.containsKey('"
+                               + Sjm.INREFIDS + "')){ctx._source." 
                                + Sjm.INREFIDS
                                + ".add(params.refId)} else {ctx._source."
                                + Sjm.INREFIDS + " = [params.refId]}");
