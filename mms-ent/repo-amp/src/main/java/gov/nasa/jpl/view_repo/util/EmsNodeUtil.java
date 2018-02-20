@@ -519,7 +519,9 @@ public class EmsNodeUtil {
             if (!extended) {
                 if (sysmlId == null) {
                     String groupId = pgh.getGroup(doc.get(Sjm.SYSMLID).getAsString());
-                    doc.addProperty(Sjm.SITECHARACTERIZATIONID, groupId);
+                    if (groupId != null) {
+                        doc.addProperty(Sjm.SITECHARACTERIZATIONID, groupId);
+                    }
                 } else {
                     if (!sysmlId.equals(projectId)) {
                         doc.addProperty(Sjm.SITECHARACTERIZATIONID, sysmlId);
@@ -1343,7 +1345,10 @@ public class EmsNodeUtil {
                 element.addProperty(Sjm.QUALIFIEDID, current.get(Sjm.QUALIFIEDID));
             }
             if (current.containsKey(Sjm.SITECHARACTERIZATIONID)) {
-                element.addProperty(Sjm.SITECHARACTERIZATIONID, current.get(Sjm.SITECHARACTERIZATIONID));
+                String siteId = current.get(Sjm.SITECHARACTERIZATIONID);
+                if (siteId != null) {
+                    element.addProperty(Sjm.SITECHARACTERIZATIONID, siteId);
+                }
             }
         }
 

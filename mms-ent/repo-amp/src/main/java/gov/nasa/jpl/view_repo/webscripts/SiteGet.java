@@ -170,8 +170,6 @@ public class SiteGet extends AbstractJavaWebScript {
                                 DbEdgeTypes.CONTAINMENT, sites);
                             o.addProperty("_parentId", parent);
                             o.addProperty("_link", siteUrl);
-                        } else {
-                            o.addProperty("_parentId", "null");
                         }
                     }
                 }

@@ -58,13 +58,15 @@ public class JsonUtil {
 			for (int i=0; i<array.size(); ++i)
 				newarray.add(deepCopy(array.get(i)));
 			return newarray;
-		}
-		JsonObject copyFrom = element.getAsJsonObject();
-		JsonObject o = new JsonObject();
-		for (Map.Entry<String, JsonElement> elem : copyFrom.entrySet())  {
+		} else if (element.isJsonObject()) {
+                    JsonObject copyFrom = element.getAsJsonObject();
+                    JsonObject o = new JsonObject();
+                    for (Map.Entry<String, JsonElement> elem : copyFrom.entrySet())  {
 			o.add(elem.getKey(), deepCopy(elem.getValue()));
-		}
-		return o;
+                    }
+                    return o;
+                }
+		return element;
 	}
 	
 	public static JsonObject deepCopy(JsonObject obj) {
