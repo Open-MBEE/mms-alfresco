@@ -425,11 +425,11 @@ public class ElasticHelper implements ElasticsearchInterface {
     }
 
     // :TODO has to be set to accept multiple indexes as well.  Will need VE changes
-    public JSONArray search(JSONObject queryJson) throws IOException {
+    public JSONObject search(JSONObject queryJson) throws IOException {
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("Search Query %s", queryJson.toString()));
         }
-
+        JSONObject top = new JSONObject();
         JSONArray elements = new JSONArray();
 
         Search search = new Search.Builder(queryJson.toString()).build();
@@ -444,8 +444,12 @@ public class ElasticHelper implements ElasticsearchInterface {
                 elements.put(o);
             }
         }
-
-        return elements;
+        top.put("elements", elements);
+        if (result.getJsonObject().has("aggregations")) {
+            JSONObject aggs = new JSONObject(result.getJsonObject().getAsJsonObject("aggregations").toString());
+            top.put("aggregations", aggs);
+        }
+        return top;
     }
 
     public JSONObject searchLiteral(JSONObject queryJson) throws IOException {
