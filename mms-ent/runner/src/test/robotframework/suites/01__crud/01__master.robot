@@ -4,6 +4,13 @@ Resource		../resources.robot
 Suite Setup	 Purge Results Directory
 
 *** Test Cases ***
+StartDebug
+	[Documentation]		"Start Debug Levels"
+	[Tags]				crud		critical		0100
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/Debug.json
+	${result} =			Post		url=${ROOT}/loglevel			data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+
 InitializeOrganization
 	[Documentation]		"Initialize MMS with an organization. ID: initorg, name: initorg"
 	[Tags]				crud		critical		0101

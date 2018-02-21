@@ -148,9 +148,12 @@ public class ModelPost extends AbstractJavaWebScript {
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
+
+            String comment = postJson.optString(Sjm.COMMENT);
+
             results = emsNodeUtil
                 .processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, overwriteJson,
-                    this.requestSourceApplication, Sjm.ELEMENT);
+                    this.requestSourceApplication, comment, Sjm.ELEMENT);
 
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
 
@@ -171,6 +174,9 @@ public class ModelPost extends AbstractJavaWebScript {
                 newElementsObject.put(Sjm.ELEMENTS, extended ?
                     emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray(NEWELEMENTS), req)) :
                     filterByPermission(results.getJSONArray(NEWELEMENTS), req));
+                if (results.has("rejectedElements")) {
+                    newElementsObject.put(Sjm.REJECTED, results.getJSONArray("rejectedElements"));
+                }
                 newElementsObject.put(Sjm.COMMITID, commitId);
                 newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
                 newElementsObject.put(Sjm.CREATOR, user);

@@ -228,4 +228,12 @@
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
+
+    <bean
+        id="webscript.gov.nasa.jpl.mms.refs.htmlToWord.post"
+        class="gov.nasa.jpl.view_repo.webscripts.HtmlToWordPost" parent="webscript"
+        singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
 </beans>

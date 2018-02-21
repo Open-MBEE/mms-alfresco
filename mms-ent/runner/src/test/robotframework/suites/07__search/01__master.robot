@@ -26,3 +26,14 @@ SearchLiteral
     Generate JSON           ${TEST_NAME}        ${result.json()}        ${filter}
     ${compare_result} =     Compare JSON        ${TEST_NAME}
     Should Match Baseline       ${compare_result}
+
+SearchWithAgg
+    [Documentation]     "Search for an element with aggregations."
+    [Tags]              search      critical        0703
+    ${post_json}        Get File        ${CURDIR}/../../JsonData/SearchQueryWithAgg.json
+    ${result}           Post            url=${ROOT}/projects/PA/refs/master/search      data=${post_json}       headers=&{REQ_HEADER}
+    Should Be Equal     ${result.status_code}       ${200}
+	${filter} =			Create List	 _id    _shards     _score  sort    took    _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+    Generate JSON           ${TEST_NAME}        ${result.json()}        ${filter}
+    ${compare_result} =     Compare JSON        ${TEST_NAME}
+    Should Match Baseline       ${compare_result}

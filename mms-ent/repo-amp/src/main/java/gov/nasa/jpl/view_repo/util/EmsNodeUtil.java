@@ -220,7 +220,6 @@ public class EmsNodeUtil {
         return pgh.getNodeFromSysmlId(sysmlId, true);
     }
 
-
     public Boolean commitContainsElement(String elementId, String commitId) {
         try {
             return eh.checkForElasticIdInCommit(elementId, commitId, projectId);
@@ -325,10 +324,14 @@ public class EmsNodeUtil {
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId, cId, limit);
         for (int i = 0; i < refCommits.size(); i++) {
             Map<String, Object> refCommit = refCommits.get(i);
+            JSONObject commitJson = getCommitObject(refCommit.get(Sjm.SYSMLID).toString());
             JSONObject commit = new JSONObject();
             commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
             commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
             commit.put(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
+            if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
+                commit.put(Sjm.COMMENT, commitJson.getString(Sjm.COMMENT));
+            }
             result.put(commit);
         }
 
@@ -450,13 +453,13 @@ public class EmsNodeUtil {
         return new JSONArray();
     }
 
-    public JSONArray search(JSONObject query) {
+    public JSONObject search(JSONObject query) {
         try {
             return eh.search(query);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return new JSONArray();
+        return new JSONObject();
     }
 
     public JSONArray addExtraDocs(JSONArray elements) {
@@ -569,6 +572,11 @@ public class EmsNodeUtil {
 
     public SerialJSONObject processPostJson(SerialJSONArray elements, String user, Set<String> oldElasticIds,
         boolean overwriteJson, String src, String type) {
+        return processPostJson(elements, user, oldElasticIds, overwriteJson, src, "", type);
+    }
+
+    public SerialJSONObject processPostJson(SerialJSONArray elements, String user, Set<String> oldElasticIds,
+        boolean overwriteJson, String src, String comment, String type) {
 
         SerialJSONObject result = new SerialJSONObject();
 
@@ -616,10 +624,6 @@ public class EmsNodeUtil {
                 }
             }
 
-            if (!added && !updated) {
-                rejectedElements.put(o);
-            }
-
             // pregenerate the elasticId
             o.put(Sjm.ELASTICID, UUID.randomUUID().toString());
             o.put(Sjm.COMMITID, commitId);
@@ -658,6 +662,7 @@ public class EmsNodeUtil {
                     newObj.put(Sjm.CONTENTTYPE, o.getString(Sjm.CONTENTTYPE));
                 }
                 commitAdded.put(newObj);
+                newElements.put(o);
             } else if (updated) {
                 logger.debug("ELEMENT UPDATED!");
                 updatedElements.put(o);
@@ -668,11 +673,11 @@ public class EmsNodeUtil {
                 parent.put(Sjm.SYSMLID, sysmlid);
                 parent.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
                 commitUpdated.put(parent);
+                newElements.put(o);
             } else {
+                rejectedElements.put(o);
                 logger.debug("ELEMENT CONFLICT!");
             }
-
-            newElements.put(o);
         }
 
         result.put("addedElements", addedElements);
@@ -689,6 +694,9 @@ public class EmsNodeUtil {
         commit.put(Sjm.PROJECTID, projectId);
         commit.put(Sjm.SOURCE, src);
         commit.put(Sjm.TYPE, type);
+        if (!comment.isEmpty()) {
+            commit.put(Sjm.COMMENT, comment);
+        }
 
 
         result.put("commit", commit);
@@ -1221,8 +1229,8 @@ public class EmsNodeUtil {
 
         List<String> seen = new ArrayList<>();
 
-        while (o.has(Sjm.OWNERID) && o.optString(Sjm.OWNERID, null) != null && !o.getString(Sjm.OWNERID)
-            .equals("null") && !seen.contains(o.getString(Sjm.OWNERID))) {
+        while (o.has(Sjm.OWNERID) && o.optString(Sjm.OWNERID, null) != null && !o.getString(Sjm.OWNERID).equals("null")
+            && !seen.contains(o.getString(Sjm.OWNERID))) {
             String sysmlid = o.optString(Sjm.OWNERID);
             seen.add(sysmlid);
             JSONObject owner = elementMap.get(sysmlid);
@@ -1395,7 +1403,7 @@ public class EmsNodeUtil {
         JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, checkDeleted);
         Set<String> foundElements = new HashSet<>();
         JSONArray curFound = new JSONArray();
-        if (commitId != null){
+        if (commitId != null) {
             curFound = searchMountAtCommit(mountsJson, elementsToFind, foundElements, commitId);
         } else {
             for (int index = 0; index < nodeList.length(); index++) {
@@ -1433,20 +1441,23 @@ public class EmsNodeUtil {
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 
         for (int i = 0; i < mountsArray.length(); i++) {
-            handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result, commitId);
+            handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result,
+                commitId);
         }
     }
 
     /**
      * Searches a mount for specified elements at the specified commit. Modifies the foundElements passed in and returns
      * the currently found elements.
-     * @param mountsJson Mount JSON
+     *
+     * @param mountsJson     Mount JSON
      * @param elementsToFind List of elements to find
-     * @param foundElements Set of SysmlIDs of found elements
-     * @param commitId Commit Id to search for.
+     * @param foundElements  Set of SysmlIDs of found elements
+     * @param commitId       Commit Id to search for.
      * @return JSONArray of found elements
      */
-    public static JSONArray searchMountAtCommit(JSONObject mountsJson, Set<String> elementsToFind, Set<String> foundElements, String commitId) {
+    public static JSONArray searchMountAtCommit(JSONObject mountsJson, Set<String> elementsToFind,
+        Set<String> foundElements, String commitId) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
         JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, true);
@@ -1739,10 +1750,14 @@ public class EmsNodeUtil {
             if (commits.size() > 0) {
                 for (int i = 0; i < commits.size(); i++) {
                     Map<String, Object> refCommit = commits.get(i);
+                    JSONObject commitJson = getCommitObject(refCommit.get(Sjm.SYSMLID).toString());
                     JSONObject commit = new JSONObject();
                     commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
                     commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
                     commit.put(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
+                    if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
+                        commit.put(Sjm.COMMENT, commitJson.getString(Sjm.COMMENT));
+                    }
                     response.put(commit);
                 }
             }

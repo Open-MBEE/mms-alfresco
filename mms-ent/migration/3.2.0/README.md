@@ -31,7 +31,7 @@ delete from alf_child_assoc where parent_node_id in (select id from alf_node whe
 delete from alf_child_assoc where child_node_id in (select id from alf_node where type_qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0')));
 delete from alf_node_aspects where node_id in (select id from alf_node where type_qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0')));
 delete from alf_node_aspects where qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0')));
-delete from alf_node_assoc where type_qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0'));
+delete from alf_node_assoc where target_node_id in (select id from alf_node where type_qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0')));
 delete from alf_node where type_qname_id in (select id from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0'));
 delete from alf_qname where ns_id = (select id from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0');
 delete from alf_namespace where uri = 'http://jpl.nasa.gov/model/view/1.0';
