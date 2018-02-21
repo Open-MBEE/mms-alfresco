@@ -224,8 +224,8 @@
     </bean>
 
     <bean
-        id="webscript.gov.nasa.jpl.mms.refs.htmlToWord.post"
-        class="gov.nasa.jpl.view_repo.webscripts.HtmlToWordPost" parent="webscript"
+        id="webscript.gov.nasa.jpl.mms.refs.htmlConverter.post"
+        class="gov.nasa.jpl.view_repo.webscripts.HtmlConverterPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />

@@ -23,14 +23,14 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HtmlToWordPost extends AbstractJavaWebScript {
-    static Logger logger = Logger.getLogger(HtmlToWordPost.class);
+public class HtmlConverterPost extends AbstractJavaWebScript {
+    static Logger logger = Logger.getLogger(HtmlConverterPost.class);
 
-    public HtmlToWordPost() {
+    public HtmlConverterPost() {
         super();
     }
 
-    public HtmlToWordPost(Repository repositoryHelper, ServiceRegistry registry) {
+    public HtmlConverterPost(Repository repositoryHelper, ServiceRegistry registry) {
         super(repositoryHelper, registry);
     }
 
@@ -39,7 +39,7 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
     }
 
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
-        HtmlToWordPost instance = new HtmlToWordPost(repository, services);
+        HtmlConverterPost instance = new HtmlConverterPost(repository, services);
         return instance.executeImplImpl(req, status, cache);
     }
 
@@ -50,7 +50,7 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
-        HtmlToWordPost instance = new HtmlToWordPost(repository, services);
+        HtmlConverterPost instance = new HtmlConverterPost(repository, services);
 
         JSONObject result = instance.getHtmlJson(req);
         String docName = req.getServiceMatch().getTemplateVars().get("documentName");
@@ -63,8 +63,9 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
             JSONObject project = emsNodeUtil.getProject(projectId);
             String siteName = project.optString("orgId", null);
 
-            result.put("filename", String.format("%s.%s", docName, PandocConverter.OutputFormat.DOCX.getFormatName()));
-            if (createWordDoc(result, docName, siteName, projectId, refId)) {
+            String format = result.getString("format");
+            result.put("filename", String.format("%s.%s", docName, format));
+            if (createWordDoc(result, docName, siteName, projectId, refId, format)) {
                 result.put("status", "Conversion succeeded.");
             } else {
                 result.put("status", "Conversion failed.");
@@ -112,13 +113,18 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
     }
 
     private boolean createWordDoc(JSONObject postJson, String filename, String siteName, String projectId,
-        String refId) {
+        String refId, String format) {
 
-        PandocConverter pandocConverter = new PandocConverter(filename);
+        PandocConverter pandocConverter = new PandocConverter(filename, format);
+
+
         String filePath = PandocConverter.PANDOC_DATA_DIR + "/" + pandocConverter.getOutputFile();
         boolean bSuccess = false;
         // Convert HTML to Word Doc
         try {
+            if (postJson.has("css")) {
+                pandocConverter.setCustomCss(postJson.getString("css"));
+            }
             pandocConverter.convert(postJson.optString("html"));
         } catch (Exception e) {
             logger.error(String.format("%s", e.getMessage()));
@@ -136,7 +142,7 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
             encodedBase64 = new String(Base64.getEncoder().encode(content));
 
             EmsScriptNode artifact = NodeUtil
-                .updateOrCreateArtifact(filename, PandocConverter.OutputFormat.DOCX.getFormatName(), encodedBase64,
+                .updateOrCreateArtifact(filename, format, encodedBase64,
                     null, siteName, projectId, refId, null, response, null, false);
 
             if (artifact == null) {
