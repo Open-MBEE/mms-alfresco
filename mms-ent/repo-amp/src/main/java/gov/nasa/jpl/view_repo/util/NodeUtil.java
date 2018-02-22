@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -391,19 +392,20 @@ public class NodeUtil {
 
     public static EmsScriptNode updateOrCreateArtifact(Path pngPath, String orgId, String projectId, String refId, boolean ignoreName) {
 
-        byte[] content = null;
-
-        try {
-            Files.exists(pngPath);
-            content = Files.readAllBytes(pngPath);
-        } catch (NullArgumentException | IOException e) {
-            logger.error(LogUtil.getStackTrace(e));
-            return null;
-        }
+//        byte[] content = null;
+//
+//        try {
+//            Files.exists(pngPath);
+//            content = Files.readAllBytes(pngPath);
+//        } catch (NullArgumentException | IOException e) {
+//            logger.error(LogUtil.getStackTrace(e));
+//            return null;
+//        }
 
         EmsScriptNode pngNode;
         String finalType = "png";
         String artifactId = pngPath.getFileName().toString();
+        File content = pngPath.toFile();
 
         EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
 
@@ -452,8 +454,8 @@ public class NodeUtil {
 
         ContentWriter writer =
             services.getContentService().getWriter(pngNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
-        InputStream contentStream = new ByteArrayInputStream(content);
-        writer.putContent(contentStream);
+        //InputStream contentStream = new ByteArrayInputStream(content);
+        writer.putContent(content);
 
         ContentData contentData = writer.getContentData();
         contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(finalType));
