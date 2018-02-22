@@ -87,6 +87,7 @@ public class CommitUtil {
     public static void initHazelcastClient() {
         if (hzInstance == null) {
             Config config = new Config();
+            config.getNetworkConfig().setPort(5901).setPortAutoIncrement(true);
             hzInstance = Hazelcast.newHazelcastInstance(config);
         }
     }

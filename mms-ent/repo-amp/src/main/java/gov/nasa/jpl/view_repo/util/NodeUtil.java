@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -17,6 +18,7 @@ import javax.transaction.UserTransaction;
 import javax.xml.bind.DatatypeConverter;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -327,29 +329,8 @@ public class NodeUtil {
         byte[] content = (base64content == null) ? null : DatatypeConverter.parseBase64Binary(base64content);
 
         if (content == null && strContent != null) {
-            content = strContent.getBytes(Charset.forName("UTF-8"));
+            content = strContent.getBytes();
         }
-
-        //long cs = EmsScriptNode.getChecksum(content);
-
-        // see if image already exists by looking up by checksum
-        //ArrayList<NodeRef> refs = findNodeRefsByType("" + cs, SearchType.CHECKSUM.prefix, false, workspace, dateTime,
-        //               false, false, services, false);
-
-        //List<EmsScriptNode> nodeList = EmsScriptNode.toEmsScriptNodeList(refs, services, response, status);
-
-        EmsScriptNode matchingNode = null;
-
-        //if (nodeList != null && nodeList.size() > 0) {
-        //    matchingNode = nodeList.iterator().next();
-        //}
-
-        // No need to update if the checksum and name match (even if it is in a
-        // parent branch):
-        // previous artifact vs current...have to look up previous artifact
-//        if (matchingNode != null && (ignoreName || matchingNode.getSysmlId().equals(name))) {
-//            return matchingNode;
-//        }
 
         EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
 
@@ -400,67 +381,29 @@ public class NodeUtil {
         ContentWriter writer =
             services.getContentService().getWriter(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
         InputStream contentStream = new ByteArrayInputStream(content);
+        String mimetype = MimetypeMap.MIMETYPE_IMAGE_PNG;
+        writer.setMimetype(mimetype);
         writer.putContent(contentStream);
+        writer.guessEncoding();
 
-        ContentData contentData = writer.getContentData();
-        contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(type));
-        if (base64content == null) {
-            contentData = ContentData.setEncoding(contentData, "UTF-8");
-        }
-        services.getNodeService().setProperty(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
-
-        // if only version, save dummy version so snapshots can reference
-        // versioned images - need to check against 1 since if someone
-        // deleted previously a "dead" version is left in its place
-//        Object[] versionHistory = artifactNode.getEmsVersionHistory();
-//
-//        if (versionHistory == null || versionHistory.length <= 1) {
-//            artifactNode.createVersion("creating the version history", false);
-//        }
         return artifactNode;
     }
 
-    public static EmsScriptNode updateOrCreateArtifactPng(EmsScriptNode svgNode, Path pngPath, String orgId,
-        String projectId, String refId, Date dateTime, StringBuffer response, Status status, boolean ignoreName)
-        throws Throwable {
-        if (svgNode == null) {
-            throw new NullArgumentException("SVG script node");
-        }
-        if (!Files.exists(pngPath)) {
-            throw new NullArgumentException("PNG path");
+    public static EmsScriptNode updateOrCreateArtifact(Path pngPath, String orgId, String projectId, String refId, boolean ignoreName) {
+
+        byte[] content = null;
+
+        try {
+            Files.exists(pngPath);
+            content = Files.readAllBytes(pngPath);
+        } catch (NullArgumentException | IOException e) {
+            logger.error(LogUtil.getStackTrace(e));
+            return null;
         }
 
         EmsScriptNode pngNode;
         String finalType = "png";
         String artifactId = pngPath.getFileName().toString();
-
-        byte[] content = Files.readAllBytes(pngPath);
-        long cs = EmsScriptNode.getChecksum(content);
-
-        // see if image already exists by looking up by checksum
-        //ArrayList<NodeRef> refs = findNodeRefsByType("" + cs,
-        //		SearchType.CHECKSUM.prefix, false, workspace, dateTime, false,
-        //		false, services, false);
-        // ResultSet existingArtifacts =
-        // NodeUtil.findNodeRefsByType( "" + cs, SearchType.CHECKSUM,
-        // services );
-        // Set< EmsScriptNode > nodeSet = toEmsScriptNodeSet( existingArtifacts
-        // );
-        //List<EmsScriptNode> nodeList = EmsScriptNode.toEmsScriptNodeList(refs,
-        //		services, response, status);
-        // existingArtifacts.close();
-
-        EmsScriptNode matchingNode = null;
-
-        //if (nodeList != null && nodeList.size() > 0) {
-        //	matchingNode = nodeList.iterator().next();
-        //}
-
-        // No need to update if the checksum and name match (even if it is in a
-        // parent branch):
-        if (matchingNode != null && (ignoreName || matchingNode.getSysmlId().equals(artifactId))) {
-            return matchingNode;
-        }
 
         EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
 
@@ -516,15 +459,6 @@ public class NodeUtil {
         contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(finalType));
         contentData = ContentData.setEncoding(contentData, "UTF-8");
         services.getNodeService().setProperty(pngNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
-
-		/*
-        Object[] versionHistory = pngNode.getEmsVersionHistory();
-
-        if ( versionHistory == null || versionHistory.length <= 1 ) {
-            pngNode.makeSureNodeRefIsNotFrozen();
-            pngNode.createVersion( "creating the version history", false );
-        }
-        */
 
         return pngNode;
     }

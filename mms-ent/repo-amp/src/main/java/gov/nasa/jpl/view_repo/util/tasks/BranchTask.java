@@ -143,6 +143,11 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                 "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
                     + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
                 .put("params", new SerialJSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("inRefId update: " + payload);
+            }
+
             eh.bulkUpdateElements(elementsToUpdate, payload, projectId, "element");
             created.put("status", "created");
 

@@ -26,27 +26,37 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.mbee.util.FileUtils;
 import gov.nasa.jpl.view_repo.util.*;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -69,6 +79,8 @@ public class ArtifactPost extends AbstractJavaWebScript {
     //protected String path = null;
     protected EmsScriptNode workspace = null;
     protected Path pngPath = null;
+    protected String mimeType = null;
+    protected String encoding = null;
 
     private final String NEWELEMENTS = "newElements";
 
@@ -110,9 +122,16 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 logger.debug("field.getName(): " + field.getName());
                 if (field.getName().equals("file") && field.getIsFile()) {
                     filename = field.getFilename();
-                    Object binaryContent = req.getContent().getContent();
-                    content = binaryContent.toString();
+                    Content tempContent = field.getContent();
+                    mimeType = tempContent.getMimetype();
+                    encoding = tempContent.getEncoding();
+
+                    pngPath = saveToFilesystem(filename, field.getInputStream());
+                    content = new String(Files.readAllBytes(pngPath));
+
                     logger.debug("filename: " + filename);
+                    logger.debug("mimetype: " + mimeType);
+                    logger.debug("encoding: " + encoding);
                     logger.debug("content: " + content);
                 } else {
                     String name = field.getName();
@@ -127,6 +146,8 @@ public class ArtifactPost extends AbstractJavaWebScript {
             postJson.put(Sjm.TYPE, "Artifact");
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        } catch (Throwable t) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(t)));
         }
 
         // Would ideally be a transaction, :TODO the image has to be successfully posted before the json is post to the db
@@ -225,14 +246,18 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     String alfrescoId = artifactId + System.currentTimeMillis() + "." + extension;
                     // check against checksum first, md5hash(content), if matching return the previous version
 
-                    svgArtifact = NodeUtil
-                        .updateOrCreateArtifact(alfrescoId, extension, null, content, siteName, projectId, refId, null,
-                            response, null, false);
+                    if (pngPath == null) {
+                        svgArtifact = NodeUtil
+                            .updateOrCreateArtifact(alfrescoId, extension, null, content, siteName, projectId, refId,
+                                null, response, null, false);
+                    } else {
+                        svgArtifact = NodeUtil.updateOrCreateArtifact(pngPath, siteName, projectId, refId, false);
+                    }
 
                     if (svgArtifact == null) {
                         logger.error("Was not able to create the artifact!\n");
                         model.put(Sjm.RES, createResponseJson());
-                    }else{
+                    } else {
                         String url = svgArtifact.getUrl();
                         if (url != null) {
                             postJson.put(Sjm.LOCATION , url.replace("/d/d/", "/service/api/node/content/"));
@@ -240,7 +265,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     }
 
                 } else {
-                    logger.error("artifactId not supplied!\\n");
+                    logger.error("artifactId not supplied or content is empty!");
                     model.put(Sjm.RES, createResponseJson());
                 }
 
@@ -263,6 +288,26 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         return true;
     }
+
+        protected static Path saveToFilesystem(String filename, InputStream content) throws Throwable {
+            File tempDir = TempFileProvider.getTempDir();
+            Path filePath = Paths.get(tempDir.getAbsolutePath(), filename);
+            File file = new File(filePath.toString());
+
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                file.mkdirs();
+                int i = 0;
+                byte[] b = new byte[1024];
+                while ((i = content.read(b)) != -1) {
+                    out.write(b, 0, i);
+                }
+                out.flush();
+                out.close();
+                return filePath;
+            } catch (Throwable ex) {
+                throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
+            }
+        }
 
 //    protected static Path saveSvgToFilesystem(String artifactId, String extension, String content) throws Throwable {
 //        byte[] svgContent = content.getBytes(Charset.forName("UTF-8"));
