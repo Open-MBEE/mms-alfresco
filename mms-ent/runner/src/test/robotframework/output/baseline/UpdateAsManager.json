@@ -7,11 +7,11 @@
             "_modifier": "Manager",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "something",
-            "id": "300",
+            "documentation": "else",
+            "id": "301",
             "isDerived": false,
-            "name": "this name is updated",
-            "ownerId": "holding_bin_PA",
+            "name": "this name is also updated",
+            "ownerId": "300",
             "type": "Property",
             "value": [
                 {
@@ -19,18 +19,19 @@
                     "type": "LiteralString"
                 }
             ]
-        },
+        }
+    ],
+    "rejected": [
         {
             "_creator": "admin",
-            "_editable": true,
             "_modifier": "Manager",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "else",
-            "id": "301",
+            "documentation": "something",
+            "id": "300",
             "isDerived": false,
-            "name": "this name is also updated",
-            "ownerId": "300",
+            "name": "this name is updated",
+            "ownerId": "holding_bin_PA",
             "type": "Property",
             "value": [
                 {
