@@ -104,7 +104,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
         printHeader(user, logger, req);
         Timer timer = new Timer();
 
-        Map<String, Object> model = new HashedMap();
+        Map<String, Object> model = new HashMap();
         JSONObject top = new JSONObject();
 
         String[] accepts = req.getHeaderValues("Accept");
