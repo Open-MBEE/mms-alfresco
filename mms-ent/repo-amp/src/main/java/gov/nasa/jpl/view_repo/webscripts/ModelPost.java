@@ -184,7 +184,8 @@ public class ModelPost extends AbstractJavaWebScript {
                 newElementsObject.add(Sjm.ELEMENTS, extended ? 
                                       emsNodeUtil.addExtendedInformation(filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req)) 
                                       : filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req));
-                if (results.has("rejectedElements")) {
+                if (results.has("rejectedElements") 
+                		&& results.get("rejectedElements").getAsJsonArray().size() > 0) {
                     newElementsObject.add(Sjm.REJECTED, results.get("rejectedElements"));
                 }
                 newElementsObject.addProperty(Sjm.COMMITID, commitId);

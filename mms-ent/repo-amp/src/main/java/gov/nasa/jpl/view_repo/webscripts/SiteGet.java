@@ -168,7 +168,9 @@ public class SiteGet extends AbstractJavaWebScript {
                             sites.add(DbNodeTypes.SITEANDPACKAGE);
                             String parent = emsNodeUtil.getImmediateParentOfTypes(n.getSysmlId(),
                                 DbEdgeTypes.CONTAINMENT, sites);
-                            o.addProperty("_parentId", parent);
+                            if (parent != null) {
+                            	o.addProperty("_parentId", parent);
+                            }
                             o.addProperty("_link", siteUrl);
                         }
                     }

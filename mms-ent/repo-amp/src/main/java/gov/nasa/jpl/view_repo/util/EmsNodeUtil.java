@@ -307,7 +307,7 @@ public class EmsNodeUtil {
             JsonObject commit = new JsonObject();
             commit.addProperty(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID).toString());
             commit.addProperty(Sjm.CREATOR, refCommit.get(Sjm.CREATOR).toString());
-            commit.addProperty(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED).toString()));
+            commit.addProperty(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
             if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
                 commit.add(Sjm.COMMENT, commitJson.get(Sjm.COMMENT));
             }
