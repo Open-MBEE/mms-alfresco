@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -409,7 +410,8 @@ public class PostgresHelper implements GraphInterface {
             if (orgId == null) {
                 statement = getConn("config").prepareStatement("SELECT id, orgId, orgName FROM organizations");
             } else {
-                statement = getConn("config").prepareStatement("SELECT id, orgId, orgName FROM organizations WHERE orgId = ?");
+                statement =
+                    getConn("config").prepareStatement("SELECT id, orgId, orgName FROM organizations WHERE orgId = ?");
                 statement.setString(1, orgId);
             }
             ResultSet rs = statement.executeQuery();
@@ -944,14 +946,52 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
+    public int getCommitId(String commitId) {
+        if (commitId == null) {
+            return 0;
+        }
+        try {
+            PreparedStatement statement = prepareStatement("SELECT id FROM commits WHERE elasticid = ?");
+            statement.setString(1, commitId);
+            ResultSet rs = statement.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return 0;
+    }
+
     public Map<String, String> getCommitAndTimestamp(String lookUp, String value) {
+        return getCommitAndTimestamp(lookUp, value, "=");
+    }
+
+    public Map<String, String> getCommitAndTimestamp(String lookUp, String value, String operator) {
+        return getCommitAndTimestamp(lookUp, value, operator, 0);
+    }
+
+    public Map<String, String> getCommitAndTimestamp(String lookUp, String value, String operator, int limit) {
         Map<String, String> commit = new HashMap<>();
         try {
-            String query = String
-                .format("SELECT elasticId, timestamp FROM commits WHERE %s = ?", StringEscapeUtils.escapeSql(lookUp));
+            StringBuilder query = new StringBuilder(String
+                .format("SELECT elasticId, timestamp FROM commits WHERE %s %s ?", StringEscapeUtils.escapeSql(lookUp),
+                    operator));
 
-            PreparedStatement statement = prepareStatement(query);
+            if (limit > 0) {
+                query.append(" LIMIT ?");
+            }
+
+            PreparedStatement statement = prepareStatement(query.toString());
             statement.setString(1, value);
+
+            if (limit > 0) {
+                statement.setInt(2, limit);
+            }
+
             ResultSet rs = statement.executeQuery();
 
             if (rs.next()) {
@@ -1818,6 +1858,18 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public List<Map<String, Object>> getRefsCommits(String refId, int commitId) {
+        return getRefsCommits(refId, commitId, 0);
+    }
+
+    public List<Map<String, Object>> getRefsCommits(String refId, int commitId, int limit) {
+        return getRefsCommits(refId, commitId, null, limit, 0);
+    }
+
+    public List<Map<String, Object>> getRefsCommits(String refId, Timestamp timestamp, int limit) {
+        return getRefsCommits(refId, 0, timestamp, limit, 0);
+    }
+
+    public List<Map<String, Object>> getRefsCommits(String refId, int commitId, Timestamp timestamp, int limit, int count) {
 
         List<Map<String, Object>> result = new ArrayList<>();
         try {
@@ -1829,30 +1881,56 @@ public class PostgresHelper implements GraphInterface {
                 refIdString = "master";
             }
 
-            String query =
-                "SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE (refId = ? OR refId = ?)";
-            if (commitId != 0) {
-                query += " AND timestamp <= (SELECT timestamp FROM commits WHERE id = ?)";
-            }
-            query += " ORDER BY timestamp DESC";
+            int commitColNum = 0;
+            int limitColNum = 0;
+            int timestampColNum = 0;
 
-            PreparedStatement statement = prepareStatement(query);
+            StringBuilder query =
+                new StringBuilder("SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE (refId = ? OR refId = ?)");
+
+            if (commitId != 0) {
+                query.append(" AND timestamp <= (SELECT timestamp FROM commits WHERE id = ?)");
+                commitColNum = 3;
+            }
+
+            if (timestamp != null) {
+                query.append(" AND date_trunc('milliseconds', timestamp) <= ?");
+                timestampColNum = commitColNum == 3 ? 4 : 3;
+            }
+
+            query.append(" ORDER BY timestamp DESC");
+
+            if (limit != 0) {
+                query.append(" LIMIT ?");
+                limitColNum = (commitColNum == 3 || timestampColNum >= 3) ? (timestampColNum == 4 ? 5 : 4) : 3;
+            }
+
+            PreparedStatement statement = prepareStatement(query.toString());
             statement.setString(1, refId);
             statement.setString(2, refIdString);
             if (commitId != 0) {
-                statement.setInt(3, commitId);
+                statement.setInt(commitColNum, commitId);
+            }
+            if (timestampColNum != 0) {
+                statement.setTimestamp(timestampColNum, timestamp);
+            }
+            if (limit != 0) {
+                statement.setInt(limitColNum, limit);
             }
 
             ResultSet rs = statement.executeQuery();
 
             while (rs.next()) {
-                Map<String, Object> commit = new HashMap<>();
-                commit.put(Sjm.SYSMLID, rs.getString(1));
-                commit.put(Sjm.CREATOR, rs.getString(2));
-                commit.put(Sjm.CREATED, rs.getTimestamp(3));
-                commit.put("refId", rs.getString(4));
-                commit.put("commitType", rs.getString(5));
-                result.add(commit);
+                if (limit == 0 || count < limit) {
+                    Map<String, Object> commit = new HashMap<>();
+                    commit.put(Sjm.SYSMLID, rs.getString(1));
+                    commit.put(Sjm.CREATOR, rs.getString(2));
+                    commit.put(Sjm.CREATED, rs.getTimestamp(3));
+                    commit.put("refId", rs.getString(4));
+                    commit.put("commitType", rs.getString(5));
+                    result.add(commit);
+                    count++;
+                }
             }
 
             PreparedStatement parentStatement =
@@ -1861,9 +1939,9 @@ public class PostgresHelper implements GraphInterface {
             parentStatement.setString(2, refIdString);
 
             rs = parentStatement.executeQuery();
-            if (rs.next() && rs.getInt(2) != 0) {
+            if (rs.next() && rs.getInt(2) != 0 && (limit == 0 || count < limit)) {
                 String nextRefId = rs.getString(1);
-                result.addAll(getRefsCommits(nextRefId, rs.getInt(2)));
+                result.addAll(getRefsCommits(nextRefId, rs.getInt(2), timestamp, limit, count));
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -2035,7 +2113,7 @@ public class PostgresHelper implements GraphInterface {
             query.setString(1, orgId);
             query.executeUpdate();
             orgDeleted = true;
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
         closeConfig();

@@ -9,7 +9,7 @@ ProjectCreationForMountsPB
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreationForMountsPB.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -21,7 +21,7 @@ ProjectCreationForMountsPC
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreationForMountsPC.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -33,7 +33,7 @@ ProjectCreationForMountsPD
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreationForMountsPD.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}

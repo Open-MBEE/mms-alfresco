@@ -104,9 +104,7 @@ public class ModelSearch extends ModelPost {
                 JsonObject result = eh.searchLiteral(json);
                 model.put(Sjm.RES, result.toString());
             } else {
-                JsonObject top = new JsonObject();
-                JsonArray elementsJson = executeSearchRequest(req, json);
-                top.add("elements", elementsJson);
+                JsonObject top = executeSearchRequest(req, json);
 
                 if (!Utils.isNullOrEmpty(response.toString())) {
                     top.addProperty("message", response.toString());
@@ -128,9 +126,8 @@ public class ModelSearch extends ModelPost {
         return model;
     }
 
-    private JsonArray executeSearchRequest(WebScriptRequest req, JsonObject json) throws IOException {
-
-        JsonArray elements = new JsonArray();
+    private JsonObject executeSearchRequest(WebScriptRequest req, JsonObject json) throws IOException {
+        JsonObject top = new JsonObject();
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -138,7 +135,8 @@ public class ModelSearch extends ModelPost {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         boolean checkIfPropOrSlot = Boolean.parseBoolean(req.getParameter("checkType"));
         try {
-            JsonArray elasticResult = emsNodeUtil.search(json);
+            top = emsNodeUtil.search(json);
+            JsonArray elasticResult = top.get("elements").getAsJsonArray();
             elasticResult = filterByPermission(elasticResult, req);
             Map<String, JsonArray> bins = new HashMap<>();
             JsonArray finalResult = new JsonArray();
@@ -181,11 +179,12 @@ public class ModelSearch extends ModelPost {
                 util.addExtendedInformation(entry.getValue());
                 util.addExtraDocs(entry.getValue());
             }
-            return finalResult;
+            top.add("elements", finalResult);
+            return top;
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return elements;
+        return top;
     }
 
     /**

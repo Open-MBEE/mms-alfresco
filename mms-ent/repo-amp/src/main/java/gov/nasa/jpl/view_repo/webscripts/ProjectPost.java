@@ -89,6 +89,9 @@ public class ProjectPost extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
+        JsonArray success = new JsonArray();
+        JsonArray failure = new JsonArray();
+
         JsonParser parser = new JsonParser();
         try {
             if (validateRequest(req, status)) {
@@ -96,45 +99,56 @@ public class ProjectPost extends AbstractJavaWebScript {
                 JsonElement jsonElement = parser.parse(req.getContent().getContent());
                 JsonObject json = jsonElement.getAsJsonObject();
                 JsonArray elementsArray = JsonUtil.getOptArray(json, "projects");
-                JsonObject projJson = (elementsArray.size() > 0) ? elementsArray.get(0).getAsJsonObject() : new JsonObject();
-
                 String orgId = getOrgId(req);
 
-                // We are now getting the project id from the json object, but
-                // leaving the check from the request
-                // for backwards compatibility:
-                String projectId = projJson.has(Sjm.SYSMLID) ? projJson.get(Sjm.SYSMLID).getAsString() : getProjectId(req);
-                if (validateProjectId(projectId)) {
+                if (elementsArray.size() > 0) {
+                    for (int i = 0; i < elementsArray.size(); i++) {
+                        JsonObject projJson = elementsArray.get(i).getAsJsonObject();
+                        String projectId = projJson.has(Sjm.SYSMLID) ? projJson.get(Sjm.SYSMLID).getAsString() : getProjectId(req);
+                        if (validateProjectId(projectId)) {
 
-                    if (orgId == null) {
-                        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
-                        orgId = emsNodeUtil.getOrganizationFromProject(projectId);
-                    }
+                            if (orgId == null) {
+                                EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
+                                orgId = emsNodeUtil.getOrganizationFromProject(projectId);
+                            }
 
-                    SiteInfo siteInfo = services.getSiteService().getSite(orgId);
-                    if (siteInfo != null) {
+                            SiteInfo siteInfo = services.getSiteService().getSite(orgId);
+                            if (siteInfo != null) {
 
-                        CommitUtil.sendProjectDelta(projJson, orgId, user);
+                                CommitUtil.sendProjectDelta(projJson, orgId, user);
 
-                        if (projectId != null && !projectId.equals(NO_SITE_ID)) {
-                            responseStatus.setCode(updateOrCreateProject(projJson, projectId, orgId));
+                                if (projectId != null && !projectId.equals(NO_SITE_ID)) {
+                                    responseStatus.setCode(updateOrCreateProject(projJson, projectId, orgId));
+                                } else {
+                                    responseStatus.setCode(updateOrCreateProject(projJson, projectId));
+                                }
+
+                                if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
+                                    success.add(projJson);
+                                } else {
+                                    failure.add(projJson);
+                                }
+
+                            } else {
+                                EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
+                                // This should not happen, since the Organization should be created before a Project is posted
+                                if (emsNodeUtil.orgExists(orgId)) {
+                                    log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied");
+                                } else {
+                                    log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                        "Organization does not exist");
+                                }
+                                failure.add(projJson);
+                            }
                         } else {
-                            responseStatus.setCode(updateOrCreateProject(projJson, projectId));
-                        }
-                    } else {
-                        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
-                        // This should not happen, since the Organization should be created before a Project is posted
-                        if (emsNodeUtil.orgExists(orgId)) {
-                            log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied");
-                        } else {
-                            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Organization does not exist");
+                            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
+                                String.format("Invalid Project Id '%s' from client", projectId));
+                            failure.add(projJson);
                         }
                     }
                 } else {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, String.format("Invalid Project Id '%s' from client",
-                        projectId));
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request");
                 }
-
             }
         } catch (IllegalStateException e) { 
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
@@ -144,8 +158,20 @@ public class ProjectPost extends AbstractJavaWebScript {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
+        JsonObject response = new JsonObject();
+        response.add(Sjm.PROJECTS, success);
+
+        if (failure.size() > 0) {
+            response.add("failed", failure);
+        }
+
         status.setCode(responseStatus.getCode());
-        model.put(Sjm.RES, createResponseJson());
+
+        if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
+            model.put(Sjm.RES, response);
+        } else {
+            model.put(Sjm.RES, createResponseJson());
+        }
 
         printFooter(user, logger, timer);
 

@@ -369,9 +369,7 @@ public class CommitUtil {
                     }
 
                     String doc = JsonUtil.getOptString(e, Sjm.DOCUMENTATION);
-                    if (!doc.equals("")) {
-                        processDocumentEdges(e.get(Sjm.SYSMLID).getAsString(), doc, viewEdges);
-                    }
+                    processDocumentEdges(e.get(Sjm.SYSMLID).getAsString(), doc, viewEdges);
 
                     if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                         createOrUpdateSiteChar(e, projectId, refId, services);
@@ -424,9 +422,7 @@ public class CommitUtil {
                         addEdges.add(p);
                     }
                     String doc = JsonUtil.getOptString(e, Sjm.DOCUMENTATION);
-                    if (!doc.equals("")) {
-                        processDocumentEdges(e.get(Sjm.SYSMLID).getAsString(), doc, viewEdges);
-                    }
+                    processDocumentEdges(e.get(Sjm.SYSMLID).getAsString(), doc, viewEdges);
 
                     if (nodeType == DbNodeTypes.SITEANDPACKAGE.getValue()) {
                         createOrUpdateSiteChar(e, projectId, refId, services);
@@ -907,7 +903,7 @@ public class CommitUtil {
     }
 
     public static void processDocumentEdges(String sysmlid, String doc, List<Pair<String, String>> documentEdges) {
-        if (doc != null && !doc.equals("")) {
+        if (doc != null && !doc.isEmpty()) {
             Matcher matcher = pattern.matcher(doc);
 
             while (matcher.find()) {

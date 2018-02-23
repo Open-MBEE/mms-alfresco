@@ -157,9 +157,13 @@ public class ModelPost extends AbstractJavaWebScript {
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
+
+            String comment = JsonUtil.getOptString(postJson, Sjm.COMMENT);
+
             results = emsNodeUtil
                 .processPostJson(postJson.get(Sjm.ELEMENTS).getAsJsonArray(), 
-            		user, oldElasticIds, overwriteJson, this.requestSourceApplication, Sjm.ELEMENT);
+                                 user, oldElasticIds, overwriteJson,
+                                 this.requestSourceApplication, comment, Sjm.ELEMENT);
 
             String commitId = results.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
 
@@ -178,8 +182,11 @@ public class ModelPost extends AbstractJavaWebScript {
                 }
 
                 newElementsObject.add(Sjm.ELEMENTS, extended ? 
-                		emsNodeUtil.addExtendedInformation(filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req)) 
-                		: filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req));
+                                      emsNodeUtil.addExtendedInformation(filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req)) 
+                                      : filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req));
+                if (results.has("rejectedElements")) {
+                    newElementsObject.add(Sjm.REJECTED, results.get("rejectedElements"));
+                }
                 newElementsObject.addProperty(Sjm.COMMITID, commitId);
                 newElementsObject.addProperty(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
                 newElementsObject.addProperty(Sjm.CREATOR, user);

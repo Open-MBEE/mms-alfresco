@@ -1,9 +1,9 @@
 {
     "_creator": "admin",
-    "elements": [
+    "elements": [],
+    "rejected": [
         {
             "_creator": "admin",
-            "_editable": true,
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
@@ -22,7 +22,6 @@
         },
         {
             "_creator": "admin",
-            "_editable": true,
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",

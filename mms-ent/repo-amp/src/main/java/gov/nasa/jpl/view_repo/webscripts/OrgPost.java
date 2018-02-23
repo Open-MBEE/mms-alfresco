@@ -84,65 +84,89 @@ public class OrgPost extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
+        JsonArray success = new JsonArray();
+        JsonArray failure = new JsonArray();
         JsonParser parser = new JsonParser();
+        
         try {
             if (validateRequest(req, status)) {
 
                 JsonElement jsonElement = parser.parse(req.getContent().getContent());
                 JsonObject json = jsonElement.getAsJsonObject();
                 JsonArray elementsArray = JsonUtil.getOptArray(json, "orgs");
-                JsonObject projJson = (elementsArray.size() > 0) ?
-                                elementsArray.get(0).getAsJsonObject() :
-                                new JsonObject();
+                if (elementsArray.size() > 0) {
+                    for (int i = 0; i < elementsArray.size(); i++) {
+                        JsonObject projJson = elementsArray.get(i).getAsJsonObject();
 
-                String orgId = projJson.get(Sjm.SYSMLID).getAsString();
-                String orgName = projJson.get(Sjm.NAME).getAsString();
+                        String orgId = projJson.get(Sjm.SYSMLID).getAsString();
+                        String orgName = projJson.get(Sjm.NAME).getAsString();
 
-                SiteInfo siteInfo = services.getSiteService().getSite(orgId);
-                if (siteInfo == null) {
-                    SearchService searcher = services.getSearchService();
-                    ResultSet result = searcher.query(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, "fts-alfresco", "name:" + orgId);
+                        SiteInfo siteInfo = services.getSiteService().getSite(orgId);
+                        if (siteInfo == null) {
+                            SearchService searcher = services.getSearchService();
+                            ResultSet result =
+                                searcher.query(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, "fts-alfresco", "name:" + orgId);
 
-                    if (result != null && result.length() > 0) {
-                        log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site restored.\n");
-                        services.getNodeService().restoreNode(result.getRow(0).getNodeRef(), null, null, null);
-                    } else {
-                        String sitePreset = "site-dashboard";
-                        String siteTitle = (json.has(Sjm.NAME)) ? json.get(Sjm.NAME).getAsString() : orgName;
-                        String siteDescription = JsonUtil.getOptString(json, Sjm.DESCRIPTION);
-                        if (!ShareUtils.constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
-                            log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create site.\n");
-                            logger.error(
-                                String.format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
+                            if (result != null && result.length() > 0) {
+                                log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site restored.\n");
+                                services.getNodeService().restoreNode(result.getRow(0).getNodeRef(), null, null, null);
+                            } else {
+                                String sitePreset = "site-dashboard";
+                                String siteTitle =
+                                    (json != null && json.has(Sjm.NAME)) ? json.get(Sjm.NAME).getAsString() : orgName;
+                                String siteDescription = JsonUtil.getOptString(json, Sjm.DESCRIPTION);
+                                if (!ShareUtils
+                                    .constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
+                                    log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                        "Failed to create site.\n");
+                                    logger.error(String
+                                        .format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
+                                    failure.add(projJson);
+                                } else {
+                                    log(Level.INFO, HttpServletResponse.SC_OK, "Organization " + orgName + " Site created.\n");
+                                }
+                            }
+
+                            if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
+                                JsonObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                                success.add(res);
+                            }
+
                         } else {
-                            log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site created.\n");
+                            JsonObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                            if (res != null && !JsonUtil.getOptString(res, Sjm.SYSMLID).isEmpty()) {
+                                log(Level.INFO, HttpServletResponse.SC_OK, "Organization " + orgName + " Site updated.\n");
+                                success.add(res);
+                            } else {
+                                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
+                                    "Organization " + orgName + " Site update failed.\n");
+                                failure.add(res);
+                            }
                         }
                     }
-
-                    if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
-                        CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
-                    }
-
                 } else {
-                    JsonObject result = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
-                    if (result != null && !JsonUtil.getOptString(result, Sjm.SYSMLID).isEmpty()) {
-                        log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site updated.\n");
-                    } else {
-                        log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Organization Site update failed.\n");
-                    }
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request");
                 }
             }
         } catch (IllegalStateException e) {
-        	// get this when trying to turn JsonElement to a JsonObject, but no object was found
-        	log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "incorrect JSON from request");
+            // get this when trying to turn JsonElement to a JsonObject, but no object was found
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "incorrect JSON from request");
         } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
+        JsonObject response = new JsonObject();
+        response.add(Sjm.ORGS, success);
+
+        if (failure.size() > 0) {
+            response.add("failed", failure);
+        }
+
         status.setCode(responseStatus.getCode());
-        model.put(Sjm.RES, createResponseJson());
+        model.put(Sjm.RES, response);
+
 
         printFooter(user, logger, timer);
 

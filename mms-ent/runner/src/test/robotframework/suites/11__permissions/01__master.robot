@@ -138,7 +138,7 @@ CreateProjectAsCollaborator
     ${result} =         Post            url=http://Collaborator:password@${SERVER}/alfresco/service/orgs/initorg/projects        data=${post_json}       headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	Sleep				${POST_DELAY_INDEXING}
-	${filter} =			Create List	 commitId
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}

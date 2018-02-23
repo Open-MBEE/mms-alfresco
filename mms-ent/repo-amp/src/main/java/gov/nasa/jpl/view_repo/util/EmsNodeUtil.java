@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
@@ -268,7 +269,6 @@ public class EmsNodeUtil {
         JsonArray elementsFromElastic = new JsonArray();
         try {
             elementsFromElastic = eh.getElementsFromElasticIds(elasticids, projectId);
-
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -294,14 +294,23 @@ public class EmsNodeUtil {
     }
 
     public JsonArray getRefHistory(String refId) {
+        return getRefHistory(refId, null, 0);
+    }
+
+    public JsonArray getRefHistory(String refId, String commitId, int limit) {
         JsonArray result = new JsonArray();
-        List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId);
+        int cId = pgh.getCommitId(commitId);
+        List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId, cId, limit);
         for (int i = 0; i < refCommits.size(); i++) {
             Map<String, Object> refCommit = refCommits.get(i);
+            JsonObject commitJson = getCommitObject(refCommit.get(Sjm.SYSMLID).toString());
             JsonObject commit = new JsonObject();
             commit.addProperty(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID).toString());
             commit.addProperty(Sjm.CREATOR, refCommit.get(Sjm.CREATOR).toString());
-            commit.addProperty(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
+            commit.addProperty(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED).toString()));
+            if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
+                commit.add(Sjm.COMMENT, commitJson.get(Sjm.COMMENT));
+            }
             result.add(commit);
         }
 
@@ -410,13 +419,13 @@ public class EmsNodeUtil {
         return new JsonArray();
     }
 
-    public JsonArray search(JsonObject query) {
+    public JsonObject search(JsonObject query) {
         try {
             return eh.search(query);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return new JsonArray();
+        return new JsonObject();
     }
 
     public JsonArray addExtraDocs(JsonArray elements) {
@@ -534,8 +543,13 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public JsonObject processPostJson(JsonArray elements, String user, Set<String> oldElasticIds, boolean overwriteJson,
-        String src, String type) {
+    public JsonObject processPostJson(JsonArray elements, String user, Set<String> oldElasticIds,
+        boolean overwriteJson, String src, String type) {
+        return processPostJson(elements, user, oldElasticIds, overwriteJson, src, "", type);
+    }
+
+    public JsonObject processPostJson(JsonArray elements, String user, Set<String> oldElasticIds,
+        boolean overwriteJson, String src, String comment, String type) {
 
         JsonObject result = new JsonObject();
 
@@ -581,10 +595,6 @@ public class EmsNodeUtil {
                 }
             }
 
-            if (!added && !updated) {
-                rejectedElements.add(o);
-            }
-
             // pregenerate the elasticId
             o.addProperty(Sjm.ELASTICID, UUID.randomUUID().toString());
             o.addProperty(Sjm.COMMITID, commitId);
@@ -625,21 +635,22 @@ public class EmsNodeUtil {
                     newObj.add(Sjm.CONTENTTYPE, o.get(Sjm.CONTENTTYPE));
                 }
                 commitAdded.add(newObj);
+                newElements.add(o);
             } else if (updated) {
                 logger.debug("ELEMENT UPDATED!");
                 updatedElements.add(o);
 
                 JsonObject parent = new JsonObject();
                 parent.add("previousElasticId", existingMap.get(sysmlid).get(Sjm.ELASTICID));
-                oldElasticIds.add(existingMap.get(sysmlid).get(Sjm.ELASTICID).getAsString());
+                oldElasticIds.add(existingMap.get(sysmlid).getAsJsonObject().get(Sjm.ELASTICID).getAsString());
                 parent.addProperty(Sjm.SYSMLID, sysmlid);
                 parent.add(Sjm.ELASTICID, o.get(Sjm.ELASTICID));
                 commitUpdated.add(parent);
+                newElements.add(o);
             } else {
+                rejectedElements.add(o);
                 logger.debug("ELEMENT CONFLICT!");
             }
-
-            newElements.add(o);
         }
 
         result.add("addedElements", addedElements);
@@ -656,7 +667,9 @@ public class EmsNodeUtil {
         commit.addProperty(Sjm.PROJECTID, projectId);
         commit.addProperty(Sjm.SOURCE, src);
         commit.addProperty(Sjm.TYPE, type);
-
+        if (!comment.isEmpty()) {
+            commit.addProperty(Sjm.COMMENT, comment);
+        }
 
         result.add("commit", commit);
 
@@ -740,8 +753,8 @@ public class EmsNodeUtil {
     }
 
     private void reorderChildViews(JsonObject element, JsonArray newElements, JsonArray addedElements,
-        JsonArray updatedElements, JsonArray deletedElements, JsonArray commitAdded, JsonArray commitUpdated,
-        JsonArray commitDeleted, String commitId, String creator, String now, Set<String> oldElasticIds) {
+                                   JsonArray updatedElements, JsonArray deletedElements, JsonArray commitAdded, JsonArray commitUpdated,
+                                   JsonArray commitDeleted, String commitId, String creator, String now, Set<String> oldElasticIds) {
 
         if (!element.has(Sjm.CHILDVIEWS)) {
             return;
@@ -1195,7 +1208,7 @@ public class EmsNodeUtil {
         qn.add(JsonUtil.getOptString(o, "name"));
         qid.add(JsonUtil.getOptString(o, Sjm.SYSMLID));
 
-        while (o.has(Sjm.OWNERID) && !JsonUtil.getOptString(o, Sjm.OWNERID).equals("") 
+        while (o.has(Sjm.OWNERID) && !JsonUtil.getOptString(o, Sjm.OWNERID).isEmpty() 
                         && !o.get(Sjm.OWNERID).getAsString().equals("null")) {
             String sysmlid = JsonUtil.getOptString(o, Sjm.OWNERID);
             JsonObject owner = elementMap.get(sysmlid);
@@ -1372,21 +1385,25 @@ public class EmsNodeUtil {
         JsonArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind);
         Set<String> foundElements = new HashSet<>();
         JsonArray curFound = new JsonArray();
-        for (int index = 0; index < nodeList.size(); index++) {
-            String id = nodeList.get(index).getAsJsonObject().get(Sjm.SYSMLID).getAsString();
-            if (maxDepth != 0) {
-                JsonArray children = emsNodeUtil.getChildren(id, maxDepth);
-                for (int i = 0; i < children.size(); i++) {
-                    String cid = children.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString();
-                    if (foundElements.contains(cid)) {
-                        continue;
+        if (commitId != null) {
+            curFound = searchMountAtCommit(mountsJson, elementsToFind, foundElements, commitId);
+        } else {
+            for (int index = 0; index < nodeList.size(); index++) {
+                String id = nodeList.get(index).getAsJsonObject().get(Sjm.SYSMLID).getAsString();
+                if (maxDepth != 0) {
+                    JsonArray children = emsNodeUtil.getChildren(id, maxDepth);
+                    for (int i = 0; i < children.size(); i++) {
+                        String cid = children.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString();
+                        if (foundElements.contains(cid)) {
+                            continue;
+                        }
+                        curFound.add(children.get(i));
+                        foundElements.add(cid);
                     }
-                    curFound.add(children.get(i));
-                    foundElements.add(cid);
+                } else {
+                    curFound.add(nodeList.get(index));
+                    foundElements.add(id);
                 }
-            } else {
-                curFound.add(nodeList.get(index));
-                foundElements.add(id);
             }
         }
         curFound = extended ?
@@ -1414,13 +1431,15 @@ public class EmsNodeUtil {
     /**
      * Searches a mount for specified elements at the specified commit. Modifies the foundElements passed in and returns
      * the currently found elements.
-     * @param mountsJson Mount JSON
+     *
+     * @param mountsJson     Mount JSON
      * @param elementsToFind List of elements to find
-     * @param foundElements Set of SysmlIDs of found elements
-     * @param commitId Commit Id to search for.
+     * @param foundElements  Set of SysmlIDs of found elements
+     * @param commitId       Commit Id to search for.
      * @return JsonArray of found elements
      */
-    public static JsonArray searchMountAtCommit(JsonObject mountsJson, Set<String> elementsToFind, Set<String> foundElements, String commitId) {
+    public static JsonArray searchMountAtCommit(JsonObject mountsJson, Set<String> elementsToFind,
+        Set<String> foundElements, String commitId) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.get(Sjm.SYSMLID).getAsString(), mountsJson.get(Sjm.REFID).getAsString());
         JsonArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, true);
@@ -1727,30 +1746,35 @@ public class EmsNodeUtil {
         return pastElement == null ? new JsonObject() : pastElement;
     }
 
-    public JsonArray getNearestCommitFromTimestamp(String timestamp, JsonArray commits) {
-        Date requestedTime = null;
+    public JsonArray getNearestCommitFromTimestamp(String refId, String timestamp, int limit) {
+        Date requestedTime;
+        List<Map<String, Object>> commits;
+        JsonArray response = new JsonArray();
         try {
-            requestedTime = requestedTime = df.parse(timestamp);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        for (int i = 0; i < commits.size(); i++) {
-            JsonObject current = commits.get(i).getAsJsonObject();
-            Date currentTime;
-            try {
-                currentTime = df.parse(current.get(Sjm.CREATED).getAsString());
-                if (requestedTime.getTime() >= currentTime.getTime()) {
-                    JsonArray ja = new JsonArray();
-                    ja.add(current);
-                    return ja;
-                }
-            } catch (Exception e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            requestedTime = df.parse(timestamp);
+            Timestamp time = new Timestamp(requestedTime.getTime());
+            commits = pgh.getRefsCommits(refId, time, limit);
+            if (commits.size() > 0) {
+                for (int i = 0; i < commits.size(); i++) {
+                    Map<String, Object> refCommit = commits.get(i);
+                    JsonObject commitJson = getCommitObject(refCommit.get(Sjm.SYSMLID).toString());
+                    JsonObject commit = new JsonObject();
+                    commit.addProperty(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID).toString());
+                    commit.addProperty(Sjm.CREATOR, refCommit.get(Sjm.CREATOR).toString());
+                    commit.addProperty(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED).toString()));
+                    if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
+                        commit.add(Sjm.COMMENT, commitJson.get(Sjm.COMMENT));
+                    }
+                    response.add(commit);
                 }
             }
+        } catch (ParseException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+            }
         }
-        return new JsonArray();
+
+        return response;
     }
 
     public JsonObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {

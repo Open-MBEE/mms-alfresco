@@ -469,12 +469,11 @@ public class ModelGet extends AbstractJavaWebScript {
             EmsNodeUtil nodeUtil = new EmsNodeUtil(mountsArray.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString(),
                 mountsArray.get(i).getAsJsonObject().get(Sjm.REFID).getAsString());
             if (nodeUtil.getById(rootSysmlid) != null) {
-                JsonArray commits = nodeUtil.getRefHistory(mountsArray.get(i).getAsJsonObject().get(Sjm.REFID).getAsString());
-                JsonArray nearestCommit = nodeUtil.getNearestCommitFromTimestamp(timestamp, commits);
+                JsonArray nearestCommit = nodeUtil.getNearestCommitFromTimestamp(
+                                mountsArray.get(i).getAsJsonObject().get(Sjm.REFID).getAsString(), timestamp, 1);
                 if (nearestCommit.size() > 0) {
                     JsonObject elementObject =
-                        nodeUtil.getElementAtCommit(rootSysmlid, 
-                        		nearestCommit.get(0).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
+                        nodeUtil.getElementAtCommit(rootSysmlid, nearestCommit.get(0).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
                     if (elementObject.size() > 0) {
                         return elementObject;
                     }

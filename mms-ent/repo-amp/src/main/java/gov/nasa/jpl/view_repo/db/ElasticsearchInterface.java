@@ -38,7 +38,7 @@ public interface ElasticsearchInterface {
 
     boolean bulkUpdateElements(Set<String> elements, String payload, String index, String type) throws IOException;
 
-    JsonArray search(JsonObject queryJson) throws IOException;
+    JsonObject search(JsonObject queryJson) throws IOException;
 
     JsonObject bulkDeleteByType(String type, ArrayList<String> ids, String index);
 

@@ -1,0 +1,8 @@
+{
+    "documents": [
+        {
+            "name": "test-doc",
+            "html": "<html><span style=\"font-weight:bold\">Hello!</span></html>"
+        }
+    ]
+}

@@ -1,0 +1,42 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_inRefIds": [
+                "master",
+                "imagebranch"
+            ],
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_qualifiedId": "/PA/holding_bin_PA/300/301/302",
+            "_qualifiedName": "/Initial Organization Project Updated/Holding Bin/this name is updated/this name is also updated/three hundred and two",
+            "_refId": "master",
+            "_relatedDocuments": [],
+            "documentation": "to",
+            "id": "302",
+            "isDerived": false,
+            "name": "three hundred and two",
+            "ownerId": "301",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ],
+    "aggregations": {
+        "group_by_type": {
+            "buckets": [
+                {
+                    "doc_count": 1,
+                    "key": "Property"
+                }
+            ],
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0
+        }
+    }
+}

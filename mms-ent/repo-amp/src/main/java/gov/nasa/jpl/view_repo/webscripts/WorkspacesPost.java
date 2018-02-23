@@ -99,22 +99,38 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
         int statusCode = HttpServletResponse.SC_OK;
-        JsonObject json = null;
+        JSONObject json = null;
         JsonParser parser = new JsonParser();
+
+        JSONArray success = new JSONArray();
+        JSONArray failure = new JSONArray();
+
         try {
             if (validateRequest(req, status)) {
                 JsonElement reqJsonElement = parser.parse(req.getContent().getContent());
                 JsonObject reqJson = reqJsonElement.getAsJsonObject();
                 String projectId = getProjectId(req);
-                JsonObject ozero = reqJson.get("refs").getAsJsonArray().get(0).getAsJsonObject();
-                String sourceWorkspaceParam = JsonUtil.getOptString(ozero, "parentRefId");
-                String newName = JsonUtil.getOptString(ozero, "name");
-                String commitId = !JsonUtil.getOptString(ozero, "parentCommitId").equals("") ?
-                        JsonUtil.getOptString(ozero, "parentCommitId") :
-                        req.getParameter("commitId");
+                JSONArray refsArray = reqJson.getJSONArray("refs");
+                if (refsArray != null && refsArray.length() > 0) {
+                    for (int i = 0; i < refsArray.length(); i++) {
+                        String sourceWorkspaceParam = refsArray.getJSONObject(i).optString("parentRefId");
+                        String newName = refsArray.getJSONObject(i).optString("name");
+                        String commitId =
+                            refsArray.getJSONObject(i).optString("parentCommitId", null) != null ?
+                                refsArray.getJSONObject(i).optString("parentCommitId") :
+                                req.getParameter("commitId");
 
-                json = createWorkSpace(projectId, sourceWorkspaceParam, newName, commitId, reqJson, user, status);
-                statusCode = status.getCode();
+                        json = createWorkSpace(projectId, sourceWorkspaceParam, newName, commitId, reqJson, user, status);
+                        statusCode = status.getCode();
+                        if (statusCode == HttpServletResponse.SC_OK) {
+                            success.put(json);
+                        } else {
+                            failure.put(json);
+                        }
+                    }
+                } else {
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request");
+                }
             } else {
                 statusCode = HttpServletResponse.SC_FORBIDDEN;
             }
@@ -125,7 +141,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
-        if (json == null) {
+        if (success.length() == 0 && failure.length() == 0) {
             model.put(Sjm.RES, createResponseJson());
         } else {
             try {
@@ -133,9 +149,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                     json.addProperty("message", response.toString());
                 }
                 JsonObject resultRefs = new JsonObject();
-                JsonArray refsList = new JsonArray();
-                refsList.add(json);
-                resultRefs.add("refs", refsList);
+                resultRefs.put("refs", success);
+                if (failure.length() > 0) {
+                    resultRefs.put("failed", failure);
+                }
                 model.put(Sjm.RES, resultRefs);
             } catch (JsonParseException e) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
