@@ -323,9 +323,6 @@ public class NodeUtil {
         Status status, boolean ignoreName) {
 
         EmsScriptNode artifactNode;
-//        String myType = Utils.isNullOrEmpty(type) ? "svg" : type;
-//        String finalType = myType.startsWith(".") ? myType.substring(1) : myType;
-        //String artifactId = name + System.currentTimeMillis() + "." + type;
 
         byte[] content = (base64content == null) ? null : DatatypeConverter.parseBase64Binary(base64content);
 
@@ -390,17 +387,7 @@ public class NodeUtil {
         return artifactNode;
     }
 
-    public static EmsScriptNode updateOrCreateArtifact(Path pngPath, String orgId, String projectId, String refId, boolean ignoreName) {
-
-//        byte[] content = null;
-//
-//        try {
-//            Files.exists(pngPath);
-//            content = Files.readAllBytes(pngPath);
-//        } catch (NullArgumentException | IOException e) {
-//            logger.error(LogUtil.getStackTrace(e));
-//            return null;
-//        }
+    public static EmsScriptNode updateOrCreateArtifact(Path pngPath, String orgId, String projectId, String refId) {
 
         EmsScriptNode pngNode;
         String finalType = "png";

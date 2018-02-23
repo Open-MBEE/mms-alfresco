@@ -251,7 +251,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                             .updateOrCreateArtifact(alfrescoId, extension, null, content, siteName, projectId, refId,
                                 null, response, null, false);
                     } else {
-                        svgArtifact = NodeUtil.updateOrCreateArtifact(pngPath, siteName, projectId, refId, false);
+                        svgArtifact = NodeUtil.updateOrCreateArtifact(pngPath, siteName, projectId, refId);
                     }
 
                     if (svgArtifact == null) {

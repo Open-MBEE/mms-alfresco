@@ -183,7 +183,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
 
     protected Map<String, Object> handleArtifactGet(WebScriptRequest req, Status status, String accept) {
 
-        Map<String, Object> model = new HashedMap();
+        Map<String, Object> model = new HashMap();
 
         if (validateRequest(req, status)) {
 
