@@ -441,7 +441,6 @@ public class NodeUtil {
 
         ContentWriter writer =
             services.getContentService().getWriter(pngNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
-        //InputStream contentStream = new ByteArrayInputStream(content);
         writer.putContent(content);
 
         ContentData contentData = writer.getContentData();
