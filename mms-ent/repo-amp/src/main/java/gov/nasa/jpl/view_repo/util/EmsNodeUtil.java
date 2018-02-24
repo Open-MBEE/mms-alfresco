@@ -676,19 +676,16 @@ public class EmsNodeUtil {
         return result;
     }
 
+    private static final String updateScript = "{\"script\": {\"inline\":"
+                + "\"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%2$s.removeAll([params.refId])}\","
+                + " \"params\":{\"refId\":\"%3$s\"}}}";
+    
     public void updateElasticRemoveRefs(Set<String> elasticIds) {
         try {
-            JsonObject script = new JsonObject();
-            JsonObject inline = new JsonObject();
-            JsonObject params = new JsonObject();
-            script.add("script", inline);
-            script.add("params", params);
-            inline.addProperty("inline", "if(ctx._source.containsKey(\""
-                    + Sjm.INREFIDS + "\")){ctx._source." 
-                    + Sjm.INREFIDS
-                    + ".removeAll([params.refId])}");
-            params.addProperty("refId", this.workspaceName);
-            eh.bulkUpdateElements(elasticIds, script.toString(), projectId, "element");
+            String scriptToRun = String.format(updateScript, Sjm.INREFIDS, Sjm.INREFIDS,
+                                               this.workspaceName);
+            logger.debug(String.format("elastic script: %s", scriptToRun));
+            eh.bulkUpdateElements(elasticIds, scriptToRun, projectId, "element");
         } catch (IOException ex) {
             // This catch left intentionally blank
         }

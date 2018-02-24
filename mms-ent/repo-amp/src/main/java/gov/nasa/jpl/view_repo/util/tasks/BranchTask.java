@@ -88,6 +88,12 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         return createBranch();
     }
 
+    // used in createBranch
+    private static final String refScript = "{\"script\": {\"inline\":"
+        + "\"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%2$s.add(params.refId)}"
+        + " else {ctx._source.%3$s = [params.refId]}\","
+        + " \"params\":{\"refId\":\"%4$s\"}}}";
+    
     private JsonObject createBranch() {
 
         timer = new Timer();
@@ -142,18 +148,10 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
             }
 
             Set<String> elementsToUpdate = pgh.getElasticIds();
-            JsonObject script = new JsonObject();
-            JsonObject inline = new JsonObject();
-            JsonObject params = new JsonObject();
-            script.add("script", inline);
-            script.add("params", params);
-            inline.addProperty("inline", "if(ctx._source.containsKey('"
-                               + Sjm.INREFIDS + "')){ctx._source." 
-                               + Sjm.INREFIDS
-                               + ".add(params.refId)} else {ctx._source."
-                               + Sjm.INREFIDS + " = [params.refId]}");
-            params.add("refId", created.get(Sjm.SYSMLID));
-            eh.bulkUpdateElements(elementsToUpdate, script.toString(), projectId, "element");
+            String scriptToRun = String.format(refScript, Sjm.INREFIDS, Sjm.INREFIDS, Sjm.INREFIDS,
+                                               created.get(Sjm.SYSMLID).getAsString());
+            logger.debug(String.format("elastic script: %s", scriptToRun));
+            eh.bulkUpdateElements(elementsToUpdate, scriptToRun, projectId, "element");
             created.addProperty("status", "created");
 
             success = true;
