@@ -212,7 +212,7 @@ public class CommitUtil {
         JSONArray jmsDeleted = new JSONArray();
 
         List<String> deletedSysmlIds = new ArrayList<>();
-        if (bulkElasticEntry(added, "added", false, projectId, "artifact") && bulkElasticEntry(updated, "updated", false,
+        if (bulkElasticEntry(added, "added", true, projectId, "artifact") && bulkElasticEntry(updated, "updated", true,
             projectId, "artifact")) {
             try {
                 List<Map<String, Object>> artifactInserts = new ArrayList<>();
@@ -333,8 +333,8 @@ public class CommitUtil {
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
 
-        if (bulkElasticEntry(added, "added", withChildViews, projectId, "element") && bulkElasticEntry(updated, "updated",
-            withChildViews, projectId, "element")) {
+        if (bulkElasticEntry(added, "added", true, projectId, "element") && bulkElasticEntry(updated, "updated",
+            true, projectId, "element")) {
 
             try {
                 List<Map<String, Object>> nodeInserts = new ArrayList<>();
