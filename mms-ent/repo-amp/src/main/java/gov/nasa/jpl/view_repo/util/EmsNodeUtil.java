@@ -1735,8 +1735,8 @@ public class EmsNodeUtil {
 
             pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
 
-            if (pastElement != null && pastElement.has(Sjm.SYSMLID) && deletedElementIds
-                .containsKey(pastElement.get(Sjm.ELASTICID))) {
+            if (pastElement != null && pastElement.has(Sjm.SYSMLID) 
+                            && deletedElementIds.containsKey(pastElement.get(Sjm.ELASTICID).getAsString())) {
                 pastElement = new JsonObject();
             }
         }

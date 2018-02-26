@@ -259,33 +259,17 @@ public class ElasticHelper implements ElasticsearchInterface {
         return null;
     }
 
+    private static final String elementCommitQuery = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
+    
     public JsonObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException {
-        JsonArray filter = new JsonArray();
-        JsonObject term1 = new JsonObject();
-        JsonObject term11 = new JsonObject();
-        term11.addProperty(Sjm.COMMITID, elasticId);
-        term1.add("term", term11);
-        JsonObject term2 = new JsonObject();
-        JsonObject term21 = new JsonObject();
-        term21.addProperty(Sjm.SYSMLID, sysmlid);
-        term1.add("term", term21);
-        filter.add(term1);
-        filter.add(term2);
-
-        JsonObject boolQuery = new JsonObject();
-        boolQuery.add("filter", filter);
-
-        JsonObject queryJson = new JsonObject();
-        JsonObject bool = new JsonObject();
-        bool.add("bool", boolQuery);
-        queryJson.add("query", bool);
+        String query = String.format(elementCommitQuery, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
         // should passes a json array that is the terms array from above
 
         if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Search Query %s", queryJson.toString()));
+            logger.debug(String.format("Search Query %s", query));
         }
 
-        Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
+        Search search = new Search.Builder(query).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
             .addType(ELEMENT).build();
         SearchResult result = client.execute(search);
 
