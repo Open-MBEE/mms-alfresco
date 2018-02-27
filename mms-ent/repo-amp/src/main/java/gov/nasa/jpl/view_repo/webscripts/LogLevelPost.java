@@ -16,8 +16,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
@@ -38,10 +38,10 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
 
         JsonObject response = new JsonObject();
 
-        JsonParser parser = new JsonParser();
         try {
-            JsonElement reqJsonElement = parser.parse(req.getContent().getContent());
-            JsonArray requestJson = reqJsonElement.getAsJsonArray();
+            JsonParser parser = new JsonParser();
+            JsonElement requestJsonElement = parser.parse(req.getContent().getContent());
+            JsonArray requestJson = requestJsonElement.getAsJsonArray();
 
             for (int ii = 0; ii < requestJson.size(); ii++) {
                 boolean failed = false;
@@ -84,16 +84,16 @@ public class LogLevelPost extends DeclarativeJavaWebScript {
             statusCode = HttpServletResponse.SC_BAD_REQUEST;
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             msg.append("Unable to convert request to JsonArray");
-        } catch (JsonSyntaxException e) {
+        } catch (JsonParseException e) {
             statusCode = HttpServletResponse.SC_BAD_REQUEST;
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             msg.append("Unable to parse request as Json");
-		} catch (IOException e) {
+        } catch (IOException e) {
             statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             msg.append("Unable to retrieve request content");
-		}
-
+        }
+        
         if (msg.length() > 0) {
             response.addProperty("msg", msg.toString());
         }

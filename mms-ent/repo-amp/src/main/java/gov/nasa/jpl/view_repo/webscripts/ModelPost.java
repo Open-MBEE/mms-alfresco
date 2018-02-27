@@ -25,17 +25,6 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -45,20 +34,13 @@ import javax.servlet.http.HttpServletResponse;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.util.TempFileProvider;
-import org.apache.batik.transcoder.TranscoderInput;
-import org.apache.batik.transcoder.TranscoderOutput;
-import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.springframework.extensions.webscripts.Cache;
@@ -68,13 +50,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.mbee.util.Utils;
 
 // ASSUMPTIONS & Interesting things about the new model get
 // 1. always complete json for elements (no partial)
@@ -149,11 +127,9 @@ public class ModelPost extends AbstractJavaWebScript {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-        JsonParser parser = new JsonParser();
         try {
-        	logger.debug(String.format("Post Data: '%s'", req.getContent().getContent()));
-            JsonElement postJsonElement = parser.parse(req.getContent().getContent());
-            JsonObject postJson = postJsonElement.getAsJsonObject();
+            logger.debug(String.format("Post Data: '%s'", req.getContent().getContent()));
+            JsonObject postJson = JsonUtil.buildFromString(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
@@ -207,7 +183,7 @@ public class ModelPost extends AbstractJavaWebScript {
             }
 
         } catch (IllegalStateException e) {
-        	log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             model.put(Sjm.RES, createResponseJson());
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));

@@ -52,10 +52,8 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
@@ -93,12 +91,9 @@ public class ModelSearch extends ModelPost {
         Map<String, Object> model = new HashMap<>();
 
 
-        JsonParser parser = new JsonParser();
         try {
             boolean noprocess = Boolean.parseBoolean(req.getParameter("literal"));
-            JsonElement jsonElement = parser.parse(req.getContent().getContent());
-            JsonObject json = jsonElement.isJsonNull() ? new JsonObject() :
-                jsonElement.getAsJsonObject();
+            JsonObject json = JsonUtil.buildFromString(req.getContent().getContent());
             if (noprocess) {
                 ElasticHelper eh = new ElasticHelper();
                 JsonObject result = eh.searchLiteral(json);
@@ -111,6 +106,8 @@ public class ModelSearch extends ModelPost {
                 }
                 model.put(Sjm.RES, top.toString());
             }
+        } catch (IllegalStateException e) { 
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
         } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse the JSON request", e);
         } catch (Exception e) {

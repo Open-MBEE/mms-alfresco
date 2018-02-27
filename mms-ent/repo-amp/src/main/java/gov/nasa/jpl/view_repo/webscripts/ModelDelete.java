@@ -23,8 +23,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.LogUtil;
@@ -100,11 +99,8 @@ public class ModelDelete extends AbstractJavaWebScript {
         if (elementId != null && !elementId.contains("holding_bin") && !elementId.contains("view_instances_bin")) {
             ids.add(elementId);
         } else {
-            JsonParser parser = new JsonParser();
             try {
-            	JsonElement requestJsonElement = parser.parse(req.getContent().getContent());
-                JsonObject requestJson = requestJsonElement.isJsonNull() ? new JsonObject()
-                    : requestJsonElement.getAsJsonObject();
+                JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
                 this.populateSourceApplicationFromJson(requestJson);
                 if (requestJson.has(Sjm.ELEMENTS)) {
                     JsonArray elementsJson = requestJson.get(Sjm.ELEMENTS).getAsJsonArray();
@@ -117,6 +113,10 @@ public class ModelDelete extends AbstractJavaWebScript {
                         }
                     }
                 }
+            } catch (IllegalStateException e) { 
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
+            } catch (JsonParseException e) {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
             } catch (Exception e) {
                 response.append("Could not parse request body");
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, String.format("%s", LogUtil.getStackTrace(e)));

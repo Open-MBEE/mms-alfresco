@@ -14,10 +14,8 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -96,18 +94,14 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
     }
 
     private JsonObject getHtmlJson(WebScriptRequest req) {
-        JsonParser parser = new JsonParser();
         JsonObject postJson = null;
         try {
-            JsonElement reqPostJsonElem = parser.parse(req.getContent().getContent());
-            JsonObject reqPostJson = reqPostJsonElem.getAsJsonObject();
-            if (reqPostJson != null) {
-                postJson = reqPostJson;
-                if (reqPostJson.has("documents")) {
-                    JsonArray documents = reqPostJson.get("documents").getAsJsonArray();
-                    if (documents != null) {
-                        postJson = documents.get(0).getAsJsonObject();
-                    }
+            JsonObject reqPostJson = JsonUtil.buildFromString(req.getContent().getContent());
+            postJson = reqPostJson;
+            if (reqPostJson.has("documents")) {
+                JsonArray documents = reqPostJson.get("documents").getAsJsonArray();
+                if (documents != null) {
+                    postJson = documents.get(0).getAsJsonObject();
                 }
             }
         } catch (IllegalStateException e) { 

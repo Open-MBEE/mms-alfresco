@@ -35,7 +35,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -47,10 +46,8 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
@@ -100,15 +97,13 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
         int statusCode = HttpServletResponse.SC_OK;
         JsonObject json = null;
-        JsonParser parser = new JsonParser();
 
         JsonArray success = new JsonArray();
         JsonArray failure = new JsonArray();
 
         try {
             if (validateRequest(req, status)) {
-                JsonElement reqJsonElement = parser.parse(req.getContent().getContent());
-                JsonObject reqJson = reqJsonElement.getAsJsonObject();
+                JsonObject reqJson = JsonUtil.buildFromString(req.getContent().getContent());
                 String projectId = getProjectId(req);
                 JsonArray refsArray = reqJson.get("refs").getAsJsonArray();
                 if (refsArray != null && refsArray.size() > 0) {
@@ -134,7 +129,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 statusCode = HttpServletResponse.SC_FORBIDDEN;
             }
         } catch (IllegalStateException e) { 
-        	log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to get object from JSON request");
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to get object from JSON request");
         } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {

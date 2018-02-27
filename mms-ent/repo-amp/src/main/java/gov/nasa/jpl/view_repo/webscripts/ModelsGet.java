@@ -51,10 +51,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.mbee.util.Timer;
@@ -128,6 +126,8 @@ public class ModelsGet extends ModelGet {
                     Long depth = getDepthFromRequest(req);
                     result = handleRequest(req, depth);
                     elementsJson = JsonUtil.getOptArray(result, Sjm.ELEMENTS);
+                } catch (IllegalStateException e) { 
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
                 } catch (JsonParseException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
                 }
@@ -193,10 +193,9 @@ public class ModelsGet extends ModelGet {
      */
     private JsonObject handleRequest(WebScriptRequest req, final Long maxDepth)
         throws JsonParseException, IOException, SQLException {
-        JsonParser parser = new JsonParser();
-        JsonElement requestJson = parser.parse(req.getContent().getContent());
-        if (!requestJson.isJsonNull() && requestJson.getAsJsonObject().has(Sjm.ELEMENTS)) {
-            JsonArray elementsToFindJson = requestJson.getAsJsonObject().get(Sjm.ELEMENTS).getAsJsonArray();
+        JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
+        if (requestJson.has(Sjm.ELEMENTS)) {
+            JsonArray elementsToFindJson = requestJson.get(Sjm.ELEMENTS).getAsJsonArray();
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);

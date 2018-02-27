@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.postgresql.util.PSQLException;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -922,7 +921,7 @@ public class CommitUtil {
                 JsonArray operand = contents.get("operand").getAsJsonArray();
                 for (int ii = 0; ii < operand.size(); ii++) {
                     JsonObject value = JsonUtil.getOptObject(operand, ii);
-                    if (value != null && value.has("instanceId")) {
+                    if (value.has("instanceId")) {
                         documentEdges.add(new Pair<>(sysmlId, value.get("instanceId").getAsString()));
                     }
                 }
@@ -936,8 +935,7 @@ public class CommitUtil {
             if (iss.has("value") && iss.has("type") && iss.get("type").getAsString().equals("LiteralString")) {
                 String string = iss.get("value").getAsString();
                 try {
-                    JsonParser parser = new JsonParser();
-                    JsonObject json = parser.parse(string).getAsJsonObject();
+                    JsonObject json = JsonUtil.buildFromString(string);
                     StringBuilder text = new StringBuilder();
                     Set<Object> sources = findKeyValueInJsonObject(json, "source", text);
                     for (Object source : sources) {

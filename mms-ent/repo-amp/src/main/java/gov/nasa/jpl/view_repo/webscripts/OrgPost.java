@@ -45,10 +45,8 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -86,13 +84,11 @@ public class OrgPost extends AbstractJavaWebScript {
 
         JsonArray success = new JsonArray();
         JsonArray failure = new JsonArray();
-        JsonParser parser = new JsonParser();
         
         try {
             if (validateRequest(req, status)) {
 
-                JsonElement jsonElement = parser.parse(req.getContent().getContent());
-                JsonObject json = jsonElement.getAsJsonObject();
+                JsonObject json = JsonUtil.buildFromString(req.getContent().getContent());
                 JsonArray elementsArray = JsonUtil.getOptArray(json, "orgs");
                 if (elementsArray.size() > 0) {
                     for (int i = 0; i < elementsArray.size(); i++) {

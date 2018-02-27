@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.JsonContentReader;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 
 import org.apache.commons.logging.Log;
