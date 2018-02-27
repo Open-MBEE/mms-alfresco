@@ -159,6 +159,9 @@ public class CommitUtil {
     public static boolean isSite(JSONObject element) {
         return element.has(Sjm.ISSITE) && element.getBoolean(Sjm.ISSITE);
     }
+    public static boolean indexProfile(JSONArray elements, String operation, boolean refresh, String index, String type){
+        return bulkElasticEntry(elements, operation, refresh, index, type);
+    }
 
     private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh, String index, String type) {
         if (elements.length() > 0) {

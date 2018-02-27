@@ -27,10 +27,7 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.util.CommitUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
-import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.util.*;
 import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -73,7 +70,7 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
      * Webscript entry point
      */
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
-        OrgPost instance = new OrgPost(repository, getServices());
+        UserPreferencesPost instance = new UserPreferencesPost(repository, getServices());
         return instance.executeImplImpl(req, status, cache);
     }
 
@@ -85,6 +82,10 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
         try {
             SerialJSONObject postJson = new SerialJSONObject(req.getContent().getContent());
+            SerialJSONArray toCommit = new SerialJSONArray();
+            toCommit.put(postJson);
+            // if(user.equals(username))
+            CommitUtil.indexProfile(toCommit, null, false, "mms", "profiles");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -215,6 +215,13 @@
                     "type": "keyword"
                 }
             }
+        },
+        "profiles": {
+            "properties": {
+                "username": {
+                    "type": "keyword"
+                }
+            }
         }
     }
 }
