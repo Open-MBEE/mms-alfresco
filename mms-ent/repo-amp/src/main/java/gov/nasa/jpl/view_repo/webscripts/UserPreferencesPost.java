@@ -76,9 +76,10 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
 
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
+        //Map<String, String> templateArgs = req.getServiceMatch().getTemplateVars();
         String username = req.getServiceMatch().getTemplateVars().get(USERNAME);
 
-        printHeader(user, logger, req);
+//        printHeader(user, logger, req);
         Map<String, Object> model = new HashMap<>();
         try {
             SerialJSONObject postJson = new SerialJSONObject(req.getContent().getContent());
