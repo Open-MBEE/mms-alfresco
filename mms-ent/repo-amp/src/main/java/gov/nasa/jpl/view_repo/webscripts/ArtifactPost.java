@@ -128,6 +128,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
                     pngPath = saveToFilesystem(filename, field.getInputStream());
                     content = new String(Files.readAllBytes(pngPath));
+                    //content = field.getContent().getContent();
 
                     logger.debug("filename: " + filename);
                     logger.debug("mimetype: " + mimeType);
@@ -175,7 +176,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
             SerialJSONArray delta = new SerialJSONArray();
             //postJson.put(Sjm.LOCATION, path);
             // this
-            postJson.put(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(content));
+            postJson.put(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(pngPath.toFile()));
             delta.put(postJson);
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
@@ -244,7 +245,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 // Update or create the artifact if possible:
                 if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
                     String alfrescoId = artifactId + System.currentTimeMillis() + "." + extension;
-                    // check against checksum first, md5hash(content), if matching return the previous version
+                    // :TODO check against checksum first, md5hash(content), if matching return the previous version
 
                     if (pngPath == null) {
                         svgArtifact = NodeUtil
@@ -256,7 +257,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
                     if (svgArtifact == null) {
                         logger.error("Was not able to create the artifact!\n");
-                        model.put(Sjm.RES, createResponseJson());
+                        //model.put(Sjm.RES, createResponseJson());
                     } else {
                         String url = svgArtifact.getUrl();
                         if (url != null) {
@@ -286,7 +287,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
             model.put(Sjm.RES, resultJson != null ? resultJson : createResponseJson());
         }
 
-        return true;
+        return null;
     }
 
         protected static Path saveToFilesystem(String filename, InputStream content) throws Throwable {

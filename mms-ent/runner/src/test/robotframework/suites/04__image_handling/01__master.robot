@@ -19,7 +19,7 @@ PostNewImage
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-PostNewElementForOrginalImage
+PostNewElementForOriginalImage
 	[Documentation]		"Post elements to get commitId after new version of image is created."
 	[Tags]				images		critical		0406
 	${post_json} =		Get File		${CURDIR}/../../JsonData/ImageBeforeCommit.json

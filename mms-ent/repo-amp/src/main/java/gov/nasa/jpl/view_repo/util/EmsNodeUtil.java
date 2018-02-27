@@ -1,5 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.security.MessageDigest;
@@ -22,6 +24,7 @@ import java.util.regex.Pattern;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -1810,5 +1813,16 @@ public class EmsNodeUtil {
             logger.error(e);
         }
         return sb.toString();
+    }
+    public static String md5Hash(File file){
+        String digest = null;
+        try {
+            FileInputStream fin = new FileInputStream(file);
+            digest = DigestUtils.md5Hex(fin); //used to get MD5
+            fin.close();
+        } catch (Exception e) {
+            logger.error(e);
+        }
+        return digest;
     }
 }
