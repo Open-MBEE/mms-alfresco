@@ -1814,12 +1814,11 @@ public class EmsNodeUtil {
         }
         return sb.toString();
     }
-    public static String md5Hash(File file){
+
+    public static String md5Hash(File file) {
         String digest = null;
-        try {
-            FileInputStream fin = new FileInputStream(file);
+        try (FileInputStream fin = new FileInputStream(file)) {
             digest = DigestUtils.md5Hex(fin); //used to get MD5
-            fin.close();
         } catch (Exception e) {
             logger.error(e);
         }

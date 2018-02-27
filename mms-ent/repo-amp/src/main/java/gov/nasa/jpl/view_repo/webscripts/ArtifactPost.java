@@ -25,26 +25,18 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.mbee.util.FileUtils;
 import gov.nasa.jpl.view_repo.util.*;
 
 import org.alfresco.repo.model.Repository;
@@ -69,16 +61,15 @@ import org.springframework.extensions.webscripts.servlet.FormData;
 public class ArtifactPost extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(ArtifactPost.class);
 
-    protected EmsScriptNode svgArtifact = null;
+    protected EmsScriptNode artifact = null;
     protected EmsScriptNode pngArtifact = null;
     protected String filename = null;
     protected String artifactId = null;
     protected String extension = null;
     protected String content = null;
     protected String siteName = null;
-    //protected String path = null;
     protected EmsScriptNode workspace = null;
-    protected Path pngPath = null;
+    protected Path filePath = null;
     protected String mimeType = null;
     protected String encoding = null;
 
@@ -126,9 +117,8 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     mimeType = tempContent.getMimetype();
                     encoding = tempContent.getEncoding();
 
-                    pngPath = saveToFilesystem(filename, field.getInputStream());
-                    content = new String(Files.readAllBytes(pngPath));
-                    //content = field.getContent().getContent();
+                    filePath = saveToFilesystem(filename, field.getInputStream());
+                    content = new String(Files.readAllBytes(filePath));
 
                     logger.debug("filename: " + filename);
                     logger.debug("mimetype: " + mimeType);
@@ -174,9 +164,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         try {
             SerialJSONArray delta = new SerialJSONArray();
-            //postJson.put(Sjm.LOCATION, path);
-            // this
-            postJson.put(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(pngPath.toFile()));
+            postJson.put(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(filePath.toFile()));
             delta.put(postJson);
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
@@ -232,7 +220,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
             try {
                 extension = FilenameUtils.getExtension(filename);
                 artifactId = postJson.getString(Sjm.SYSMLID);
-                //path = projectId + "/refs/" + refId + "/" + artifactId + System.currentTimeMillis() + "." + extension;
 
                 // Create return json:
                 resultJson = new JSONObject();
@@ -247,19 +234,15 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     String alfrescoId = artifactId + System.currentTimeMillis() + "." + extension;
                     // :TODO check against checksum first, md5hash(content), if matching return the previous version
 
-                    if (pngPath == null) {
-                        svgArtifact = NodeUtil
-                            .updateOrCreateArtifact(alfrescoId, extension, null, content, siteName, projectId, refId,
-                                null, response, null, false);
-                    } else {
-                        svgArtifact = NodeUtil.updateOrCreateArtifact(pngPath, siteName, projectId, refId);
+                    if (filePath != null) {
+                        artifact = NodeUtil.updateOrCreateArtifact(filePath, siteName, projectId, refId);
                     }
 
-                    if (svgArtifact == null) {
+                    if (artifact == null) {
                         logger.error("Was not able to create the artifact!\n");
                         //model.put(Sjm.RES, createResponseJson());
                     } else {
-                        String url = svgArtifact.getUrl();
+                        String url = artifact.getUrl();
                         if (url != null) {
                             postJson.put(Sjm.LOCATION , url.replace("/d/d/", "/service/api/node/content/"));
                         }
@@ -270,9 +253,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     model.put(Sjm.RES, createResponseJson());
                 }
 
-            } catch (JSONException e)
-
-            {
+            } catch (JSONException e) {
                 logger.error("Issues creating return JSON\\n");
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 model.put(Sjm.RES, createResponseJson());
@@ -287,28 +268,28 @@ public class ArtifactPost extends AbstractJavaWebScript {
             model.put(Sjm.RES, resultJson != null ? resultJson : createResponseJson());
         }
 
-        return null;
+        return true;
     }
 
-        protected static Path saveToFilesystem(String filename, InputStream content) throws Throwable {
-            File tempDir = TempFileProvider.getTempDir();
-            Path filePath = Paths.get(tempDir.getAbsolutePath(), filename);
-            File file = new File(filePath.toString());
+    protected static Path saveToFilesystem(String filename, InputStream content) throws Throwable {
+        File tempDir = TempFileProvider.getTempDir();
+        Path filePath = Paths.get(tempDir.getAbsolutePath(), filename);
+        File file = new File(filePath.toString());
 
-            try (FileOutputStream out = new FileOutputStream(file)) {
-                file.mkdirs();
-                int i = 0;
-                byte[] b = new byte[1024];
-                while ((i = content.read(b)) != -1) {
-                    out.write(b, 0, i);
-                }
-                out.flush();
-                out.close();
-                return filePath;
-            } catch (Throwable ex) {
-                throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            file.mkdirs();
+            int i = 0;
+            byte[] b = new byte[1024];
+            while ((i = content.read(b)) != -1) {
+                out.write(b, 0, i);
             }
+            out.flush();
+            out.close();
+            return filePath;
+        } catch (Throwable ex) {
+            throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
         }
+    }
 
 //    protected static Path saveSvgToFilesystem(String artifactId, String extension, String content) throws Throwable {
 //        byte[] svgContent = content.getBytes(Charset.forName("UTF-8"));
@@ -329,8 +310,8 @@ public class ArtifactPost extends AbstractJavaWebScript {
 //        if (svgPath.toString().contains(".png")) {
 //            return svgPath;
 //        }
-//        Path pngPath = Paths.get(svgPath.toString().replace(".svg", ".png"));
-//        try (OutputStream png_ostream = new FileOutputStream(pngPath.toString())) {
+//        Path filePath = Paths.get(svgPath.toString().replace(".svg", ".png"));
+//        try (OutputStream png_ostream = new FileOutputStream(filePath.toString())) {
 //            String svg_URI_input = svgPath.toUri().toURL().toString();
 //            TranscoderInput input_svg_image = new TranscoderInput(svg_URI_input);
 //            TranscoderOutput output_png_image = new TranscoderOutput(png_ostream);
@@ -339,7 +320,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
 //        } catch (Throwable ex) {
 //            throw new Throwable("Failed to convert SVG to PNG! " + ex.getMessage());
 //        }
-//        return pngPath;
+//        return filePath;
 //    }
 //
 //    protected static void synchSvgAndPngVersions(EmsScriptNode svgNode, EmsScriptNode pngNode) {
