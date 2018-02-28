@@ -1,0 +1,19 @@
+machine:
+  java:
+    version: oraclejdk8
+
+dependencies:
+  override:
+    - "./mvnw clean install -Pbuild -DskipTests dependency:resolve-plugins dependency:go-offline"
+
+deployment:
+  release:
+    tag: "/[0-9.]+(-(a|b|rc)[0-9]+)?/"
+    owner: Open-MBEE
+    commands:
+      - ""
+  snapshot:
+    branch: "/((release|hotfix|support)/[0-9.]+(-(a|b|rc)[0-9]+)?|master|develop)/"
+    owner: Open-MBEE
+    commands:
+      - ""
