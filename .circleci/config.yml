@@ -1,0 +1,21 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8
+    working_directory: ~/mms-ent
+    steps:
+      - checkout
+      - run: ./mvnw install -Pbuild
+      - store_artifacts:
+          path: /tmp/artifacts
+          destination: build
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build
+          filters:
+            branches:
+              only: master
