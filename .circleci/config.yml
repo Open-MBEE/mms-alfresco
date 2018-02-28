@@ -5,10 +5,24 @@ jobs:
       - image: circleci/openjdk:8
     steps:
       - checkout
+
+      - restore_cache:
+          key: mms-{{ checksum "mms-ent/pom.xml" }}
+
+      - run: cd mms-ent && sh mvnw dependency:go-offline
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: mms-{{ checksum "mms-ent/pom.xml" }}
+
       - run: cd mms-ent && sh mvnw install -Pbuild
+
       - store_artifacts:
-          path: /tmp/artifacts
-          destination: build
+          path: repo-amp/target/mms-*.amp
+
+      - store_articacts:
+          path: share-amp/target/mms-*.amp
 
 workflows:
   version: 2
