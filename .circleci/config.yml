@@ -21,7 +21,7 @@ jobs:
       - store_artifacts:
           path: repo-amp/target/mms-*.amp
 
-      - store_articacts:
+      - store_artifacts:
           path: share-amp/target/mms-*.amp
 
 workflows:
