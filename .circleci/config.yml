@@ -3,10 +3,9 @@ jobs:
   build_mms:
     docker:
       - image: circleci/openjdk:8
-    working_directory: ~/mms-ent
     steps:
       - checkout
-      - run: sh mvnw install -Pbuild
+      - run: cd mms-ent && sh mvnw install -Pbuild
       - store_artifacts:
           path: /tmp/artifacts
           destination: build
