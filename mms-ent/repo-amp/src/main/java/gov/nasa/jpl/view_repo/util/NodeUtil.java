@@ -379,26 +379,37 @@ public class NodeUtil {
         ContentWriter writer =
             services.getContentService().getWriter(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
         InputStream contentStream = new ByteArrayInputStream(content);
-        String mimetype = MimetypeMap.MIMETYPE_IMAGE_PNG;
-        writer.setMimetype(mimetype);
         writer.putContent(contentStream);
         writer.guessEncoding();
 
         return artifactNode;
     }
 
-    public static EmsScriptNode updateOrCreateArtifact(Path pngPath, String orgId, String projectId, String refId) {
+    public static EmsScriptNode updateOrCreateArtifact(Path filePath, String orgId, String projectId, String refId) {
 
-        EmsScriptNode pngNode;
-        String finalType = "png";
-        String artifactId = pngPath.getFileName().toString();
-        File content = pngPath.toFile();
+        EmsScriptNode artifactNode;
+        String finalType = null;
+        File content = filePath.toFile();
+        String artifactId = filePath.getFileName().toString();
+
+        try {
+            finalType = Files.probeContentType(filePath);
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("updateOrCreateArtifact: ", e);
+            }
+        }
+
+        if (finalType == null) {
+            logger.error("Could not determine type of artifact: " + filePath.getFileName().toString());
+            return null;
+        }
 
         EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
 
         // find site; it must exist!
         if (targetSiteNode == null || !targetSiteNode.exists()) {
-            Debug.err("Can't find node for site: " + orgId + "!\n");
+            logger.error("Can't find node for site: " + orgId + "!\n");
             return null;
         }
 
@@ -409,46 +420,46 @@ public class NodeUtil {
         }
 
         // find or create node:
-        pngNode = subfolder.childByNamePath("/" + artifactId);
+        artifactNode = subfolder.childByNamePath("/" + artifactId);
         // Node wasnt found, so create one:
-        if (pngNode == null) {
-            pngNode = subfolder.createNode(artifactId, "cm:content");
+        if (artifactNode == null) {
+            artifactNode = subfolder.createNode(artifactId, "cm:content");
         }
 
-        if (pngNode == null || !pngNode.exists()) {
-            Debug.err("Failed to create new PNG artifact " + artifactId + "!\n");
+        if (artifactNode == null || !artifactNode.exists()) {
+            logger.error("Failed to create new PNG artifact " + artifactId + "!\n");
             return null;
         }
 
-        if (!pngNode.hasAspect("cm:versionable")) {
-            pngNode.addAspect("cm:versionable");
+        if (!artifactNode.hasAspect("cm:versionable")) {
+            artifactNode.addAspect("cm:versionable");
         }
-        if (!pngNode.hasAspect("cm:indexControl")) {
-            pngNode.addAspect("cm:indexControl");
+        if (!artifactNode.hasAspect("cm:indexControl")) {
+            artifactNode.addAspect("cm:indexControl");
         }
-        if (!pngNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
-            pngNode.addAspect(Acm.ACM_IDENTIFIABLE);
+        if (!artifactNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
+            artifactNode.addAspect(Acm.ACM_IDENTIFIABLE);
         }
 
-        pngNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
-        pngNode.createOrUpdateProperty("cm:isIndexed", true);
-        pngNode.createOrUpdateProperty("cm:isContentIndexed", false);
-        pngNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
+        artifactNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
+        artifactNode.createOrUpdateProperty("cm:isIndexed", true);
+        artifactNode.createOrUpdateProperty("cm:isContentIndexed", false);
+        artifactNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Creating PNG artifact with indexing: " + pngNode.getProperty("cm:isIndexed"));
+            logger.debug("Creating artifact with indexing: " + artifactNode.getProperty("cm:isIndexed"));
         }
 
         ContentWriter writer =
-            services.getContentService().getWriter(pngNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
+            services.getContentService().getWriter(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
         writer.putContent(content);
 
         ContentData contentData = writer.getContentData();
         contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(finalType));
         contentData = ContentData.setEncoding(contentData, "UTF-8");
-        services.getNodeService().setProperty(pngNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
+        services.getNodeService().setProperty(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
 
-        return pngNode;
+        return artifactNode;
     }
 
     public static String getHostname() {
