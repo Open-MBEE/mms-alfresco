@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build_mms:
+  build_amps:
     docker:
       - image: circleci/openjdk:8
     steps:
@@ -14,4 +14,4 @@ workflows:
   version: 2
   build-deploy:
     jobs:
-      - build_mms
+      - build_amps
