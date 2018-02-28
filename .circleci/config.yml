@@ -17,11 +17,11 @@ jobs:
           key: mms-{{ checksum "mms-ent/pom.xml" }}
 
       - store_artifacts:
-          path: mms-ent/repo-amp/target/mms-*.amp
+          path: mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp
           destination: /tmp/artifacts
 
       - store_artifacts:
-          path: mms-ent/share-amp/target/mms-*.amp
+          path: mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp
           destination: /tmp/artifacts
 
 workflows:
