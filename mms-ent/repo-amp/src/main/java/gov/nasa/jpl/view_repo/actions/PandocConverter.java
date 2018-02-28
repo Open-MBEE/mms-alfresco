@@ -65,51 +65,17 @@ public class PandocConverter {
         return this.outputFile + "." + this.pandocOutputFormat.getFormatName();
     }
 
-    public void setCustomCss(String customCss) throws RuntimeException {
-        useCustomCss = true;
-        Path customCssPath = Paths.get(PandocConverter.PANDOC_DATA_DIR, "customStyles.css");
-        saveStringToFileSystem(customCss, customCssPath);
-    }
-
-    private void saveStringToFileSystem(String stringContent, Path filePath) throws RuntimeException {
-        if (Utils.isNullOrEmpty(stringContent))
-            return;
-        if (filePath == null)
-            return;
-        Path folder = filePath.getParent();
-        try {
-            try {
-                if (!Files.exists(folder))
-                    new File(folder.toString()).mkdirs();
-            } catch (Throwable ex) {
-                throw new RuntimeException(
-                    String.format("Failed to create %s directory! %s", folder.toString(), ex.getMessage()));
-            }
-
-            File file = new File(filePath.toString());
-            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-            bw.write(stringContent);
-            bw.close();
-        } catch (Throwable ex) {
-            throw new RuntimeException(
-                String.format("Failed to save %s to filesystem! %s", filePath.toString(), ex.getMessage()));
-        }
-    }
-
-    public void convert(String inputString) throws InterruptedException, RuntimeException {
+    public void convert(String inputString) {
 
         String title = StringUtils.substringBetween(inputString, "<title>", "</title>");
+        System.out.println(String.format("Input String [%s]", inputString));
         if (title == null) {
             throw new RuntimeException("No title in HTML");
         } else {
             title += "\n";
         }
         String command = String.format("%s --pdf-engine=%s ", this.pandocExec, this.pdfEngine);
-        if (useCustomCss) {
-            command += String.format("--css=%s/%s ", PandocConverter.PANDOC_DATA_DIR, "customStyles.css");
-        }
-        command +=
-            String.format(" -o %s/%s.%s", PANDOC_DATA_DIR, this.outputFile, this.pandocOutputFormat.getFormatName());
+        command += String.format(" -o %s/%s.%s", PANDOC_DATA_DIR, this.outputFile, this.pandocOutputFormat.getFormatName());
 
         int status;
 
