@@ -56,10 +56,10 @@ jobs:
           command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local/mms/mms-amp/ --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms-share-amp
-          command: ./jfrog rt u 'mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u 'mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local/mms/mms-share-amp/ --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=true
 
   deploy_release:
     <<: *defaults
@@ -77,10 +77,10 @@ jobs:
           command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp' libs-release-local/mms/mms-amp/ --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
       - run:
           name: Send mms-share-amp
-          command: ./jfrog rt u 'mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u 'mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp' libs-release-local/mms/mms-share-amp/ --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
 
 workflows:
   version: 2
