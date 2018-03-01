@@ -1,8 +1,12 @@
+defaults: &defaults
+  working_directory: ~/projects
+  docker:
+    - image: circleci/openjdk:8
+
 version: 2
 jobs:
   build_amps:
-    docker:
-      - image: circleci/openjdk:8
+    <<: *defaults
     steps:
       - checkout
 
@@ -20,14 +24,22 @@ jobs:
 
       - store_artifacts:
           path: mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp
+          destination: /tmp/
 
       - store_artifacts:
           path: mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp
+          destination: /tmp/
+
+      - persist_to_workspace:
+          root: /
+          paths:
+            - tmp
 
   deploy_amps:
-    docker:
-      - image: circleci/openjdk:8
+    <<: *defaults
     steps:
+      - attach_workspace:
+          at: /tmp
       - run:
           name: Get jfrog
           command: curl -fL https://getcli.jfrog.io | sh
@@ -39,10 +51,10 @@ jobs:
           command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: ./jfrog rt u "mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp" mms-snapshots --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u "mms-amp-3.3.0-SNAPSHOT.amp" mms-snapshots --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
       - run:
           name: Send mms-share-amp
-          command: ./jfrog rt u "mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp" --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u "mms-share-amp-3.3.0-SNAPSHOT.amp" mms-share-snapshots --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
 
 workflows:
   version: 2
