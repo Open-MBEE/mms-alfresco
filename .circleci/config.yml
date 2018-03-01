@@ -40,7 +40,7 @@ jobs:
             - repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp
             - share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp
 
-  deploy_amps:
+  deploy_snapshot:
     <<: *defaults
     steps:
       - attach_workspace:
@@ -56,10 +56,31 @@ jobs:
           command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
       - run:
           name: Send mms-share-amp
-          command: ./jfrog rt u 'mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+
+  deploy_release:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: mms-ent
+      - run:
+          name: Get jfrog
+          command: curl -fL https://getcli.jfrog.io | sh
+      - run:
+          name: Set Permissions
+          command: sudo chmod +x jfrog
+      - run:
+          name: Configure jfrog
+          command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
+      - run:
+          name: Send mms-amp
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+      - run:
+          name: Send mms-share-amp
+          command: ./jfrog rt u 'mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp' libs-snapshot-local --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
 
 workflows:
   version: 2
