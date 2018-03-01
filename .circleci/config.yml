@@ -46,9 +46,6 @@ jobs:
       - attach_workspace:
           at: mms-ent
       - run:
-          name: Debug
-          command: echo $ARTIFACTORY_URL
-      - run:
           name: Get jfrog
           command: curl -fL https://getcli.jfrog.io | sh
       - run:
@@ -56,13 +53,13 @@ jobs:
           command: sudo chmod +x jfrog
       - run:
           name: Configure jfrog
-          command: "./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false"
+          command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: "./jfrog rt u 'mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp' mms-snapshots --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false"
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp' snapshots --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms-share-amp
-          command: "./jfrog rt u 'mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp' mms-share-snapshots --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false"
+          command: ./jfrog rt u 'mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp' snapshots --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=true
 
 workflows:
   version: 2
