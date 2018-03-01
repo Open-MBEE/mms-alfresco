@@ -69,10 +69,10 @@ jobs:
           command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-release-local/gov/nasa/jpl/mms/mms-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-release-local/gov/nasa/jpl/mms/mms-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms-share-amp
-          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-release-local/gov/nasa/jpl/mms/mms-share-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-release-local/gov/nasa/jpl/mms/mms-share-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
 
 workflows:
   version: 2
