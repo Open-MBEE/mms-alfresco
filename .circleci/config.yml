@@ -22,6 +22,11 @@ jobs:
       - store_artifacts:
           path: mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp
 
+      - run: curl -fL https://getcli.jfrog.io | sh
+      - run: sh jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
+      - run: sh jfrog rt u "mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp" mms-snapshots --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+      - run: sh jfrog rt u "mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp" --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+
 workflows:
   version: 2
   build-deploy:
