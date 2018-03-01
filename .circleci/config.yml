@@ -24,23 +24,21 @@ jobs:
 
       - store_artifacts:
           path: mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp
-          destination: /tmp/artifacts/mms-amp-3.3.0-SNAPSHOT.amp
+          destination: tmp/artifacts/mms-amp-3.3.0-SNAPSHOT.amp
 
       - store_artifacts:
           path: mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp
-          destination: /tmp/artifacts/mms-share-amp-3.3.0-SNAPSHOT.amp
+          destination: tmp/artifacts/mms-share-amp-3.3.0-SNAPSHOT.amp
 
       - persist_to_workspace:
-          root: /tmp/artifacts
-          paths:
-            - mms-amp-3.3.0-SNAPSHOT.amp
-            - mms-share-amp-3.3.0-SNAPSHOT.amp
+          root: tmp/artifacts
+          paths: .
 
   deploy_amps:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: /tmp/artifacts
+          at: tmp/artifacts
       - run:
           name: Get jfrog
           command: curl -fL https://getcli.jfrog.io | sh
