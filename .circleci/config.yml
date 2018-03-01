@@ -49,3 +49,4 @@ workflows:
   build-deploy:
     jobs:
       - build_amps
+      - deploy_amps
