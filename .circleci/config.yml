@@ -1,0 +1,84 @@
+defaults: &defaults
+  working_directory: ~/projects
+  docker:
+    - image: circleci/openjdk:8
+
+version: 2
+jobs:
+  build_amps:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: mms-{{ checksum "mms-ent/pom.xml" }}
+
+      - run:
+          name: Run Maven Build
+          command: cd mms-ent && sh mvnw install -Pbuild
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: mms-{{ checksum "mms-ent/pom.xml" }}
+
+      - run:
+          name: Prepare Store Artifacts
+          command: mkdir -p tmp/artifacts
+
+      - persist_to_workspace:
+          root: mms-ent
+          paths:
+            - repo-amp/target
+            - share-amp/target
+
+  deploy_snapshot:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: mms-ent
+      - run:
+          name: Get jfrog
+          command: curl -fL https://getcli.jfrog.io | sh
+      - run:
+          name: Set Permissions
+          command: sudo chmod +x jfrog
+      - run:
+          name: Configure jfrog
+          command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
+      - run:
+          name: Send mms-amp
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-snapshot-local/mms/mms-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms-share-amp
+          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-snapshot-local/mms/mms-share-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+
+  deploy_release:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: mms-ent
+      - run:
+          name: Get jfrog
+          command: curl -fL https://getcli.jfrog.io | sh
+      - run:
+          name: Set Permissions
+          command: sudo chmod +x jfrog
+      - run:
+          name: Configure jfrog
+          command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
+      - run:
+          name: Send mms-amp
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-release-local/mms/mms-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=false
+      - run:
+          name: Send mms-share-amp
+          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-release-local/mms/mms-share-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=false
+
+workflows:
+  version: 2
+  build-deploy-snapshot:
+    jobs:
+      - build_amps
+      - deploy_snapshot:
+          requires:
+            - build_amps
