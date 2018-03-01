@@ -57,10 +57,10 @@ jobs:
           command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: ./jfrog rt u "mms-amp-3.3.0-SNAPSHOT.amp" mms-snapshots --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u "tmp/artifacts/mms-amp-3.3.0-SNAPSHOT.amp" mms-snapshots --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
       - run:
           name: Send mms-share-amp
-          command: ./jfrog rt u "mms-share-amp-3.3.0-SNAPSHOT.amp" mms-share-snapshots --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u "tmp/artifacts/mms-share-amp-3.3.0-SNAPSHOT.amp" mms-share-snapshots --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
 
 workflows:
   version: 2
