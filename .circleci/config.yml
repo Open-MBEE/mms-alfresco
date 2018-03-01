@@ -36,7 +36,7 @@ jobs:
 
       - persist_to_workspace:
           root: tmp
-          paths: artifacts/*
+          paths: artifacts
 
   deploy_amps:
     <<: *defaults
