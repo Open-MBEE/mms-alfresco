@@ -35,17 +35,19 @@ jobs:
           destination: tmp/artifacts/mms-share-amp-3.3.0-SNAPSHOT.amp
 
       - persist_to_workspace:
-          root: tmp
-          paths: artifacts
+          root: mms-ent
+          paths:
+            - repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp
+            - share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp
 
   deploy_amps:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: tmp/artifacts
+          at: mms-ent
       - run:
           name: Debug
-          command: ls -al tmp
+          command: ls -al ./ &&  ls -al repo-amp/target && ls -al share-amp/target
       - run:
           name: Debug 2
           command: find ./ -type f -name mms-amp-*
