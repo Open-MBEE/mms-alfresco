@@ -1,13 +1,11 @@
 {
-    "_creator": "admin",
     "artifacts": [
         {
             "_creator": "admin",
-            "_editable": true,
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "checksum": "70ec5b9e095dedfecf49ae1b5a11287f",
+            "checksum": "bbca8cc79a64733ad4896cbdc5c74e68",
             "contentType": "image/png",
             "id": "mounts",
             "ownerId": "holding_bin_PA",
