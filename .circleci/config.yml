@@ -24,22 +24,23 @@ jobs:
 
       - store_artifacts:
           path: mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp
-          destination: /tmp/mms-amp-3.3.0-SNAPSHOT.amp
+          destination: /tmp/artifacts/mms-amp-3.3.0-SNAPSHOT.amp
 
       - store_artifacts:
           path: mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp
-          destination: /tmp/mms-share-amp-3.3.0-SNAPSHOT.amp
+          destination: /tmp/artifacts/mms-share-amp-3.3.0-SNAPSHOT.amp
 
       - persist_to_workspace:
-          root: /
+          root: /tmp/artifacts
           paths:
-            - tmp
+            - mms-amp-3.3.0-SNAPSHOT.amp
+            - mms-share-amp-3.3.0-SNAPSHOT.amp
 
   deploy_amps:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: /tmp
+          at: /tmp/artifacts
       - run:
           name: Get jfrog
           command: curl -fL https://getcli.jfrog.io | sh
@@ -51,10 +52,10 @@ jobs:
           command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: ./jfrog rt u "/tmp/mms-amp-3.3.0-SNAPSHOT.amp" mms-snapshots --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u "mms-amp-3.3.0-SNAPSHOT.amp" mms-snapshots --build-name=mms-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
       - run:
           name: Send mms-share-amp
-          command: ./jfrog rt u "/tmp/mms-share-amp-3.3.0-SNAPSHOT.amp" mms-share-snapshots --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
+          command: ./jfrog rt u "mms-share-amp-3.3.0-SNAPSHOT.amp" mms-share-snapshots --build-name=mms-share-amp-3.3.0-SNAPSHOT --build-number=$CIRCLE_BUILD_NUM --flat=false
 
 workflows:
   version: 2
