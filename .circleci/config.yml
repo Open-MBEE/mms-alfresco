@@ -14,7 +14,7 @@ jobs:
           key: mms-{{ checksum "mms-ent/pom.xml" }}
 
       - run:
-          name: Build mms
+          name: Run Maven Build
           command: cd mms-ent && sh mvnw install -Pbuild
 
       - save_cache:
@@ -24,11 +24,11 @@ jobs:
 
       - store_artifacts:
           path: mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp
-          destination: /tmp/
+          destination: /tmp/mms-amp-3.3.0-SNAPSHOT.amp
 
       - store_artifacts:
           path: mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp
-          destination: /tmp/
+          destination: /tmp/mms-share-amp-3.3.0-SNAPSHOT.amp
 
       - persist_to_workspace:
           root: /
