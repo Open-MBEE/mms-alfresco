@@ -44,6 +44,9 @@ jobs:
       - attach_workspace:
           at: tmp/artifacts
       - run:
+          name: Debug
+          command: ls -al
+      - run:
           name: Get jfrog
           command: curl -fL https://getcli.jfrog.io | sh
       - run:
