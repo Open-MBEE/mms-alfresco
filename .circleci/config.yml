@@ -49,4 +49,6 @@ workflows:
   build-deploy:
     jobs:
       - build_amps
-      - deploy_amps
+      - deploy_amps:
+          requires:
+            - build_amps
