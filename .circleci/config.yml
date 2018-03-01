@@ -47,7 +47,7 @@ jobs:
           at: mms-ent
       - run:
           name: Debug
-          command: ls -al mms-ent &&  ls -al mms-ent/repo-amp/target && ls -al mms-ent/share-amp/target
+          command: "echo $ARTIFACTORY_URL"
       - run:
           name: Get jfrog
           command: curl -fL https://getcli.jfrog.io | sh
