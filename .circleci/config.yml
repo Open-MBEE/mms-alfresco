@@ -45,7 +45,10 @@ jobs:
           at: tmp/artifacts
       - run:
           name: Debug
-          command: ls -al
+          command: ls -al tmp
+      - run:
+          name: Debug 2
+          command: find ./ -type f -name mms-amp-*
       - run:
           name: Get jfrog
           command: curl -fL https://getcli.jfrog.io | sh
