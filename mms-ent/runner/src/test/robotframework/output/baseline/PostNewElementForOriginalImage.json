@@ -7,10 +7,10 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "Searching for an image after update",
-            "id": "ImageAfterUpdate",
+            "documentation": "Searching for an image",
+            "id": "ImageBeforeUpdate",
             "isDerived": false,
-            "name": "test image version",
+            "name": "test image",
             "ownerId": "PA",
             "type": "Property",
             "value": [

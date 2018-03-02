@@ -1,18 +1,14 @@
 [
     {
-        "classname": "gov.nasa.jpl.view_repo.webscripts.ModelGet",
-        "loglevel": "INFO"
-    },
-    {
         "classname": "gov.nasa.jpl.view_repo.webscripts.ModelPost",
-        "loglevel": "INFO"
+        "loglevel": "DEBUG"
     },
     {
         "classname": "gov.nasa.jpl.view_repo.db.PostgresHelper",
-        "loglevel": "INFO"
+        "loglevel": "DEBUG"
     },
     {
         "classname": "gov.nasa.jpl.view_repo.util.EmsNodeUtil",
-        "loglevel": "INFO"
+        "loglevel": "DEBUG"
     }
 ]

@@ -1,5 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.security.MessageDigest;
@@ -22,6 +24,7 @@ import java.util.regex.Pattern;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -207,6 +210,14 @@ public class EmsNodeUtil {
         }
         return new JSONObject();
     }
+    public JSONObject getArtifactByArtifactAndCommitId(String commitId, String sysmlid) {
+        try {
+            return eh.getArtifactByCommitId(commitId, sysmlid, projectId);
+        } catch (IOException e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return new JSONObject();
+    }
 
     public Node getById(String sysmlId) {
         return pgh.getNodeFromSysmlId(sysmlId, true);
@@ -260,6 +271,25 @@ public class EmsNodeUtil {
 
     public JSONArray getNodesBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
         List<String> elasticids = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids), withDeleted);
+        JSONArray elementsFromElastic = new JSONArray();
+        try {
+            elementsFromElastic = eh.getElementsFromElasticIds(elasticids, projectId);
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+
+        for (int i = 0; i < elementsFromElastic.length(); i++) {
+            JSONObject formatted = elementsFromElastic.getJSONObject(i);
+            formatted.put(Sjm.PROJECTID, this.projectId);
+            formatted.put(Sjm.REFID, this.workspaceName);
+            elementsFromElastic.put(i, withChildViews ? addChildViews(formatted) : formatted);
+        }
+
+        return elementsFromElastic;
+    }
+
+    public JSONArray getArtifactsBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
+        List<String> elasticids = pgh.getElasticIdsFromSysmlIdsArtifacts(new ArrayList<>(sysmlids), withDeleted);
         JSONArray elementsFromElastic = new JSONArray();
         try {
             elementsFromElastic = eh.getElementsFromElasticIds(elasticids, projectId);
@@ -384,6 +414,19 @@ public class EmsNodeUtil {
         }
         return children;
     }
+
+    public JSONObject getArtifactById(String sysmlid) {
+        String artifact = pgh.getElasticIdFromSysmlIdArtifact(sysmlid);
+        if (artifact != null) {
+            try {
+                return eh.getElementByElasticIdArtifact(artifact, projectId);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return new JSONObject();
+    }
+
 
     public JSONArray getChildren(String sysmlid, DbEdgeTypes dbEdge, final Long maxDepth) {
         Set<String> children = new HashSet<>();
@@ -561,7 +604,9 @@ public class EmsNodeUtil {
         Set<String> sysmlids = new HashSet<>();
         sysmlids.addAll(elementMap.keySet());
 
-        Map<String, JSONObject> existingMap = convertToMap(getNodesBySysmlids(sysmlids, false, true));
+        Map<String, JSONObject> existingMap = (!type.equals("Artifact")) ?
+            convertToMap(getNodesBySysmlids(sysmlids, false, true)) :
+            convertToMap(getArtifactsBySysmlids(sysmlids, false, true));
 
         for (int i = 0; i < elements.length(); i++) {
             SerialJSONObject o = elements.getJSONObject(i);
@@ -1768,5 +1813,15 @@ public class EmsNodeUtil {
             logger.error(e);
         }
         return sb.toString();
+    }
+
+    public static String md5Hash(File file) {
+        String digest = null;
+        try (FileInputStream fin = new FileInputStream(file)) {
+            digest = DigestUtils.md5Hex(fin); //used to get MD5
+        } catch (Exception e) {
+            logger.error(e);
+        }
+        return digest;
     }
 }

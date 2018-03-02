@@ -18,8 +18,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.Base64;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -115,7 +115,7 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
         String refId) {
 
         PandocConverter pandocConverter = new PandocConverter(filename);
-        String filePath = PandocConverter.PANDOC_DATA_DIR + "/" + pandocConverter.getOutputFile();
+        Path filePath = Paths.get(PandocConverter.PANDOC_DATA_DIR + "/" + pandocConverter.getOutputFile());
         boolean bSuccess = false;
         // Convert HTML to Word Doc
         try {
@@ -125,29 +125,20 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
             return false;
         }
 
-        String encodedBase64;
-        FileInputStream binFile;
-        File file = new File(filePath);
-
         try {
-            binFile = new FileInputStream(filePath);
-            byte[] content = new byte[(int) file.length()];
-            binFile.read(content);
-            encodedBase64 = new String(Base64.getEncoder().encode(content));
 
-            EmsScriptNode artifact = NodeUtil
-                .updateOrCreateArtifact(filename, PandocConverter.OutputFormat.DOCX.getFormatName(), encodedBase64,
-                    null, siteName, projectId, refId, null, response, null, false);
+            EmsScriptNode artifact = NodeUtil.updateOrCreateArtifact(filePath, siteName, projectId, refId);
 
             if (artifact == null) {
                 logger.error("Failed to create HTML to Docx artifact in Alfresco.");
             } else {
-                binFile.close();
                 bSuccess = true;
+                File file = filePath.toFile();
                 if (!file.delete()) {
                     logger.error(String.format("Failed to delete the temp file %s", filename));
                 }
             }
+
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
