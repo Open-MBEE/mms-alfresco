@@ -26,6 +26,14 @@ jobs:
           name: Prepare Store Artifacts
           command: mkdir -p tmp/artifacts
 
+      - store_artifacts:
+          path: mms-ent/repo-amp/target/mms-amp-3.3.0-SNAPSHOT.amp
+          destination: tmp/artifacts/mms-amp-3.3.0-SNAPSHOT.amp
+
+      - store_artifacts:
+          path: mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp
+          destination: tmp/artifacts/mms-share-amp-3.3.0-SNAPSHOT.amp
+
       - persist_to_workspace:
           root: mms-ent
           paths:
