@@ -2,7 +2,7 @@
     "documents": [
         {
             "name": "test-doc",
-            "html": "<html><span style=\"font-weight:bold\">Hello!</span></html>"
+            "html": "<html><head><title>Test File</title></head><span style=\"font-weight:bold\">Hello!</span></html>"
         }
     ]
 }

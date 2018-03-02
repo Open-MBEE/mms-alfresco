@@ -1,5 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.security.MessageDigest;
@@ -22,6 +24,7 @@ import java.util.regex.Pattern;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -207,6 +210,14 @@ public class EmsNodeUtil {
         }
         return new JSONObject();
     }
+    public JSONObject getArtifactByArtifactAndCommitId(String commitId, String sysmlid) {
+        try {
+            return eh.getArtifactByCommitId(commitId, sysmlid, projectId);
+        } catch (IOException e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return new JSONObject();
+    }
 
     public Node getById(String sysmlId) {
         return pgh.getNodeFromSysmlId(sysmlId, true);
@@ -277,6 +288,25 @@ public class EmsNodeUtil {
         return elementsFromElastic;
     }
 
+    public JSONArray getArtifactsBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
+        List<String> elasticids = pgh.getElasticIdsFromSysmlIdsArtifacts(new ArrayList<>(sysmlids), withDeleted);
+        JSONArray elementsFromElastic = new JSONArray();
+        try {
+            elementsFromElastic = eh.getElementsFromElasticIds(elasticids, projectId);
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+
+        for (int i = 0; i < elementsFromElastic.length(); i++) {
+            JSONObject formatted = elementsFromElastic.getJSONObject(i);
+            formatted.put(Sjm.PROJECTID, this.projectId);
+            formatted.put(Sjm.REFID, this.workspaceName);
+            elementsFromElastic.put(i, withChildViews ? addChildViews(formatted) : formatted);
+        }
+
+        return elementsFromElastic;
+    }
+
     public JSONArray getNodeHistory(String sysmlId) {
         JSONArray nodeHistory = new JSONArray();
         try {
@@ -297,10 +327,14 @@ public class EmsNodeUtil {
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId, cId, limit);
         for (int i = 0; i < refCommits.size(); i++) {
             Map<String, Object> refCommit = refCommits.get(i);
+            JSONObject commitJson = getCommitObject(refCommit.get(Sjm.SYSMLID).toString());
             JSONObject commit = new JSONObject();
             commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
             commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
             commit.put(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
+            if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
+                commit.put(Sjm.COMMENT, commitJson.getString(Sjm.COMMENT));
+            }
             result.put(commit);
         }
 
@@ -381,6 +415,19 @@ public class EmsNodeUtil {
         return children;
     }
 
+    public JSONObject getArtifactById(String sysmlid) {
+        String artifact = pgh.getElasticIdFromSysmlIdArtifact(sysmlid);
+        if (artifact != null) {
+            try {
+                return eh.getElementByElasticIdArtifact(artifact, projectId);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return new JSONObject();
+    }
+
+
     public JSONArray getChildren(String sysmlid, DbEdgeTypes dbEdge, final Long maxDepth) {
         Set<String> children = new HashSet<>();
 
@@ -409,13 +456,13 @@ public class EmsNodeUtil {
         return new JSONArray();
     }
 
-    public JSONArray search(JSONObject query) {
+    public JSONObject search(JSONObject query) {
         try {
             return eh.search(query);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return new JSONArray();
+        return new JSONObject();
     }
 
     public JSONArray addExtraDocs(JSONArray elements) {
@@ -526,8 +573,13 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public SerialJSONObject processPostJson(SerialJSONArray elements, String user, Set<String> oldElasticIds, boolean overwriteJson,
-        String src, String type) {
+    public SerialJSONObject processPostJson(SerialJSONArray elements, String user, Set<String> oldElasticIds,
+        boolean overwriteJson, String src, String type) {
+        return processPostJson(elements, user, oldElasticIds, overwriteJson, src, "", type);
+    }
+
+    public SerialJSONObject processPostJson(SerialJSONArray elements, String user, Set<String> oldElasticIds,
+        boolean overwriteJson, String src, String comment, String type) {
 
         SerialJSONObject result = new SerialJSONObject();
 
@@ -552,7 +604,9 @@ public class EmsNodeUtil {
         Set<String> sysmlids = new HashSet<>();
         sysmlids.addAll(elementMap.keySet());
 
-        Map<String, JSONObject> existingMap = convertToMap(getNodesBySysmlids(sysmlids, false, true));
+        Map<String, JSONObject> existingMap = (!type.equals("Artifact")) ?
+            convertToMap(getNodesBySysmlids(sysmlids, false, true)) :
+            convertToMap(getArtifactsBySysmlids(sysmlids, false, true));
 
         for (int i = 0; i < elements.length(); i++) {
             SerialJSONObject o = elements.getJSONObject(i);
@@ -571,10 +625,6 @@ public class EmsNodeUtil {
                 } else {
                     updated = true;
                 }
-            }
-
-            if (!added && !updated) {
-                rejectedElements.put(o);
             }
 
             // pregenerate the elasticId
@@ -615,6 +665,7 @@ public class EmsNodeUtil {
                     newObj.put(Sjm.CONTENTTYPE, o.getString(Sjm.CONTENTTYPE));
                 }
                 commitAdded.put(newObj);
+                newElements.put(o);
             } else if (updated) {
                 logger.debug("ELEMENT UPDATED!");
                 updatedElements.put(o);
@@ -625,11 +676,11 @@ public class EmsNodeUtil {
                 parent.put(Sjm.SYSMLID, sysmlid);
                 parent.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
                 commitUpdated.put(parent);
+                newElements.put(o);
             } else {
+                rejectedElements.put(o);
                 logger.debug("ELEMENT CONFLICT!");
             }
-
-            newElements.put(o);
         }
 
         result.put("addedElements", addedElements);
@@ -646,6 +697,9 @@ public class EmsNodeUtil {
         commit.put(Sjm.PROJECTID, projectId);
         commit.put(Sjm.SOURCE, src);
         commit.put(Sjm.TYPE, type);
+        if (!comment.isEmpty()) {
+            commit.put(Sjm.COMMENT, comment);
+        }
 
 
         result.put("commit", commit);
@@ -727,8 +781,9 @@ public class EmsNodeUtil {
     }
 
     private void reorderChildViews(SerialJSONObject element, SerialJSONArray newElements, SerialJSONArray addedElements,
-        SerialJSONArray updatedElements, SerialJSONArray deletedElements, SerialJSONArray commitAdded, SerialJSONArray commitUpdated,
-        SerialJSONArray commitDeleted, String commitId, String creator, String now, Set<String> oldElasticIds) {
+        SerialJSONArray updatedElements, SerialJSONArray deletedElements, SerialJSONArray commitAdded,
+        SerialJSONArray commitUpdated, SerialJSONArray commitDeleted, String commitId, String creator, String now,
+        Set<String> oldElasticIds) {
 
         if (!element.has(Sjm.CHILDVIEWS)) {
             return;
@@ -781,8 +836,9 @@ public class EmsNodeUtil {
                         childViewsSet.add(ownedAttribute.getString(Sjm.TYPEID));
                         try {
                             if (mountJson == null) {
-                                mountJson = new SerialJSONObject(getProjectWithFullMounts(ownedAttribute.optString(Sjm.PROJECTID),
-                                    ownedAttribute.optString(Sjm.REFID), null).toString());
+                                mountJson = new SerialJSONObject(
+                                    getProjectWithFullMounts(ownedAttribute.optString(Sjm.PROJECTID),
+                                        ownedAttribute.optString(Sjm.REFID), null).toString());
                             }
                             handleMountSearch(mountJson, false, false, 0L, childViewsSet, childViews);
                         } catch (Exception e) {
@@ -809,7 +865,8 @@ public class EmsNodeUtil {
                                         commitDeleted.put(newObj);
                                     }
                                     SerialJSONObject asi = new SerialJSONObject(emsNodeUtil
-                                        .getNodeBySysmlid(ownedAttribute.optString(Sjm.APPLIEDSTEREOTYPEINSTANCEID)).toString());
+                                        .getNodeBySysmlid(ownedAttribute.optString(Sjm.APPLIEDSTEREOTYPEINSTANCEID))
+                                        .toString());
                                     if (asi.optString(Sjm.SYSMLID, null) != null) {
                                         deletedElements.put(asi);
                                         oldElasticIds.add(asi.getString(Sjm.ELASTICID));
@@ -818,8 +875,9 @@ public class EmsNodeUtil {
                                         newObj.put(Sjm.ELASTICID, asi.getString(Sjm.ELASTICID));
                                         commitDeleted.put(newObj);
                                     }
-                                    SerialJSONObject association =
-                                        new SerialJSONObject(emsNodeUtil.getNodeBySysmlid(ownedAttribute.optString(Sjm.ASSOCIATIONID)).toString());
+                                    SerialJSONObject association = new SerialJSONObject(
+                                        emsNodeUtil.getNodeBySysmlid(ownedAttribute.optString(Sjm.ASSOCIATIONID))
+                                            .toString());
                                     if (association.optString(Sjm.SYSMLID, null) != null) {
                                         deletedElements.put(association);
                                         oldElasticIds.add(association.getString(Sjm.ELASTICID));
@@ -831,8 +889,8 @@ public class EmsNodeUtil {
                                     SerialJSONArray associationProps = association.optJSONArray(Sjm.OWNEDENDIDS);
                                     for (int k = 0; k < associationProps.length(); k++) {
                                         if (associationProps.optString(k, null) != null) {
-                                            SerialJSONObject assocProp =
-                                                new SerialJSONObject(emsNodeUtil.getNodeBySysmlid(associationProps.optString(k)).toString());
+                                            SerialJSONObject assocProp = new SerialJSONObject(
+                                                emsNodeUtil.getNodeBySysmlid(associationProps.optString(k)).toString());
                                             if (assocProp.optString(Sjm.SYSMLID, null) != null) {
                                                 deletedElements.put(assocProp);
                                                 oldElasticIds.add(assocProp.getString(Sjm.ELASTICID));
@@ -1174,8 +1232,8 @@ public class EmsNodeUtil {
 
         List<String> seen = new ArrayList<>();
 
-        while (o.has(Sjm.OWNERID) && o.optString(Sjm.OWNERID, null) != null && !o.getString(Sjm.OWNERID)
-            .equals("null") && !seen.contains(o.getString(Sjm.OWNERID))) {
+        while (o.has(Sjm.OWNERID) && o.optString(Sjm.OWNERID, null) != null && !o.getString(Sjm.OWNERID).equals("null")
+            && !seen.contains(o.getString(Sjm.OWNERID))) {
             String sysmlid = o.optString(Sjm.OWNERID);
             seen.add(sysmlid);
             JSONObject owner = elementMap.get(sysmlid);
@@ -1348,7 +1406,7 @@ public class EmsNodeUtil {
         JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, checkDeleted);
         Set<String> foundElements = new HashSet<>();
         JSONArray curFound = new JSONArray();
-        if (commitId != null){
+        if (commitId != null) {
             curFound = searchMountAtCommit(mountsJson, elementsToFind, foundElements, commitId);
         } else {
             for (int index = 0; index < nodeList.length(); index++) {
@@ -1386,20 +1444,23 @@ public class EmsNodeUtil {
         JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
 
         for (int i = 0; i < mountsArray.length(); i++) {
-            handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result, commitId);
+            handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result,
+                commitId);
         }
     }
 
     /**
      * Searches a mount for specified elements at the specified commit. Modifies the foundElements passed in and returns
      * the currently found elements.
-     * @param mountsJson Mount JSON
+     *
+     * @param mountsJson     Mount JSON
      * @param elementsToFind List of elements to find
-     * @param foundElements Set of SysmlIDs of found elements
-     * @param commitId Commit Id to search for.
+     * @param foundElements  Set of SysmlIDs of found elements
+     * @param commitId       Commit Id to search for.
      * @return JSONArray of found elements
      */
-    public static JSONArray searchMountAtCommit(JSONObject mountsJson, Set<String> elementsToFind, Set<String> foundElements, String commitId) {
+    public static JSONArray searchMountAtCommit(JSONObject mountsJson, Set<String> elementsToFind,
+        Set<String> foundElements, String commitId) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
         JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, true);
@@ -1692,10 +1753,14 @@ public class EmsNodeUtil {
             if (commits.size() > 0) {
                 for (int i = 0; i < commits.size(); i++) {
                     Map<String, Object> refCommit = commits.get(i);
+                    JSONObject commitJson = getCommitObject(refCommit.get(Sjm.SYSMLID).toString());
                     JSONObject commit = new JSONObject();
                     commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
                     commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
                     commit.put(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
+                    if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
+                        commit.put(Sjm.COMMENT, commitJson.getString(Sjm.COMMENT));
+                    }
                     response.put(commit);
                 }
             }
@@ -1748,5 +1813,15 @@ public class EmsNodeUtil {
             logger.error(e);
         }
         return sb.toString();
+    }
+
+    public static String md5Hash(File file) {
+        String digest = null;
+        try (FileInputStream fin = new FileInputStream(file)) {
+            digest = DigestUtils.md5Hex(fin); //used to get MD5
+        } catch (Exception e) {
+            logger.error(e);
+        }
+        return digest;
     }
 }

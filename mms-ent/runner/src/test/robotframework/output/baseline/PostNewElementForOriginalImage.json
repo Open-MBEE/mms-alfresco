@@ -2,17 +2,15 @@
     "_creator": "admin",
     "elements": [
         {
+            "_creator": "admin",
             "_editable": true,
-            "_inRefIds": [
-                "master"
-            ],
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "something",
-            "id": "ElementToOverwrite",
+            "documentation": "Searching for an image",
+            "id": "ImageBeforeUpdate",
             "isDerived": false,
-            "name": "Element to overwrite",
+            "name": "test image",
             "ownerId": "PA",
             "type": "Property",
             "value": [

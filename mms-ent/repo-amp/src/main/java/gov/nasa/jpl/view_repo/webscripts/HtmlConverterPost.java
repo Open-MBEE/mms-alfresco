@@ -3,7 +3,12 @@ package gov.nasa.jpl.view_repo.webscripts;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.actions.PandocConverter;
-import gov.nasa.jpl.view_repo.util.*;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.NodeUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.util.LogUtil;
+
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -18,8 +23,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.Base64;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,9 +68,8 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
             JSONObject project = emsNodeUtil.getProject(projectId);
             String siteName = project.optString("orgId", null);
 
-            String format = result.getString("format");
-            result.put("filename", String.format("%s.%s", docName, format));
-            if (createDoc(result, docName, siteName, projectId, refId, format)) {
+            result.put("filename", String.format("%s.%s", docName, PandocConverter.PandocOutputFormat.DOCX.getFormatName()));
+            if (createWordDoc(result, docName, siteName, projectId, refId)) {
                 result.put("status", "Conversion succeeded.");
             } else {
                 result.put("status", "Conversion failed.");
@@ -112,40 +116,36 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
         return postJson;
     }
 
-    private boolean createDoc(JSONObject postJson, String filename, String siteName, String projectId, String refId,
-        String format) {
+    private boolean createWordDoc(JSONObject postJson, String filename, String siteName, String projectId,
+        String refId) {
 
-        PandocConverter pandocConverter = new PandocConverter(filename, format);
+        PandocConverter pandocConverter = new PandocConverter(filename);
+        pandocConverter.setOutFormat(PandocConverter.PandocOutputFormat.DOCX);
 
-        String filePath = PandocConverter.PANDOC_DATA_DIR + "/" + pandocConverter.getOutputFile();
+        Path filePath = Paths.get(PandocConverter.PANDOC_DATA_DIR + "/" + pandocConverter.getOutputFile());
         boolean bSuccess = false;
-
-        // Convert HTML to Doc
-        pandocConverter.convert(postJson.optString("body"));
-
-        String encodedBase64;
-        FileInputStream binFile;
-        File file = new File(filePath);
+        // Convert HTML to Word Doc
+        try {
+            pandocConverter.convert(postJson.optString("html"));
+        } catch (Exception e) {
+            logger.error(String.format("%s", e.getMessage()));
+            return false;
+        }
 
         try {
-            binFile = new FileInputStream(filePath);
-            byte[] content = new byte[(int) file.length()];
-            binFile.read(content);
-            encodedBase64 = new String(Base64.getEncoder().encode(content));
 
-            EmsScriptNode artifact = NodeUtil
-                .updateOrCreateArtifact(filename, format, encodedBase64, null, siteName, projectId, refId, null,
-                    response, null, false);
+            EmsScriptNode artifact = NodeUtil.updateOrCreateArtifact(filePath, siteName, projectId, refId);
 
             if (artifact == null) {
-                logger.error(String.format("Failed to create HTML to %s artifact in Alfresco.", format));
+                logger.error("Failed to create HTML to Docx artifact in Alfresco.");
             } else {
-                binFile.close();
                 bSuccess = true;
+                File file = filePath.toFile();
                 if (!file.delete()) {
                     logger.error(String.format("Failed to delete the temp file %s", filename));
                 }
             }
+
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }

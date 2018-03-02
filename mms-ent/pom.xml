@@ -103,6 +103,14 @@
                     runner/tomcat/context-*.xml for more details) -->
                 <maven.alfresco.includeWebResources>false</maven.alfresco.includeWebResources>
             </properties>
+            <modules>
+                <module>repo-amp</module>
+                <module>share-amp</module>
+                <module>repo</module>
+                <module>solr-config</module>
+                <module>share</module>
+                <module>runner</module>
+            </modules>
         </profile>
         <profile>
             <!-- Invoke your build with -Prun to run the multimodule project and enable rapid dev mode in your IDE.
@@ -115,6 +123,21 @@
                     runner/tomcat/context-*.xml for more details) -->
                 <maven.alfresco.includeWebResources>true</maven.alfresco.includeWebResources>
             </properties>
+            <modules>
+                <module>repo-amp</module>
+                <module>share-amp</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>purge</id>
+            <modules>
+                <module>repo-amp</module>
+                <module>share-amp</module>
+                <module>repo</module>
+                <module>solr-config</module>
+                <module>share</module>
+                <module>runner</module>
+            </modules>
         </profile>
         <!-- if we're on a unix machine, chmod run.sh to be executable -->
         <profile>
@@ -144,6 +167,14 @@
                     </plugin>
                 </plugins>
             </build>
+            <modules>
+                <module>repo-amp</module>
+                <module>share-amp</module>
+                <module>repo</module>
+                <module>solr-config</module>
+                <module>share</module>
+                <module>runner</module>
+            </modules>
         </profile>
     </profiles>
 
@@ -160,13 +191,4 @@
             <url>https://cae-artifactory.jpl.nasa.gov/artifactory/libs-snapshot-local</url>
         </snapshotRepository>
     </distributionManagement>
-
-    <modules>
-        <module>repo-amp</module>
-        <module>share-amp</module>
-        <module>repo</module>
-        <module>solr-config</module>
-        <module>share</module>
-        <module>runner</module>
-    </modules>
 </project>

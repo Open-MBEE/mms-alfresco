@@ -52,6 +52,7 @@ public class ElasticHelper implements ElasticsearchInterface {
 
     private static final String ELEMENT = "element";
     private static final String COMMIT = "commit";
+    private static final String ARTIFACT = "artifact";
 
     public void init(String elasticHost) {
 
@@ -118,6 +119,26 @@ public class ElasticHelper implements ElasticsearchInterface {
         return null;
     }
 
+    /**
+     * Gets the JSON document of element type using a elastic _id (1)
+     *
+     * @param id _id elasticsearch property          (2)
+     * @return JSONObject o or null
+     */
+    public JSONObject getElementByElasticIdArtifact(String id, String index) throws IOException {
+        // Cannot use method for commit type
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(ARTIFACT).build();
+
+        JestResult result = client.execute(get);
+
+        if (result.isSucceeded()) {
+            JSONObject o = new JSONObject(result.getJsonObject().get("_source").toString());
+            o.put(Sjm.ELASTICID, result.getJsonObject().get("_id").getAsString());
+            return o;
+        }
+
+        return null;
+    }
     /**
      * Returns the commit history of a element                           (1)
      * <p> Returns a JSONArray of objects that look this:
@@ -225,6 +246,37 @@ public class ElasticHelper implements ElasticsearchInterface {
 
         Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
             .addType(ELEMENT).build();
+        SearchResult result = client.execute(search);
+
+        if (result.isSucceeded()) {
+            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+            if (hits.size() > 0) {
+                JSONObject o = new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
+                o.put(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id").getAsString());
+                return o;
+            }
+        }
+        return null;
+
+    }
+
+    public JSONObject getArtifactByCommitId(String elasticId, String sysmlid, String index) throws IOException {
+        JSONArray filter = new JSONArray();
+        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.COMMITID, elasticId)));
+        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.SYSMLID, sysmlid)));
+
+        JSONObject boolQuery = new JSONObject();
+        boolQuery.put("filter", filter);
+
+        JSONObject queryJson = new JSONObject().put("query", new JSONObject().put("bool", boolQuery));
+        // should passes a json array that is the terms array from above
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Search Query %s", queryJson.toString()));
+        }
+
+        Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
+            .addType(ARTIFACT).build();
         SearchResult result = client.execute(search);
 
         if (result.isSucceeded()) {
@@ -425,11 +477,11 @@ public class ElasticHelper implements ElasticsearchInterface {
     }
 
     // :TODO has to be set to accept multiple indexes as well.  Will need VE changes
-    public JSONArray search(JSONObject queryJson) throws IOException {
+    public JSONObject search(JSONObject queryJson) throws IOException {
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("Search Query %s", queryJson.toString()));
         }
-
+        JSONObject top = new JSONObject();
         JSONArray elements = new JSONArray();
 
         Search search = new Search.Builder(queryJson.toString()).build();
@@ -444,8 +496,12 @@ public class ElasticHelper implements ElasticsearchInterface {
                 elements.put(o);
             }
         }
-
-        return elements;
+        top.put("elements", elements);
+        if (result.getJsonObject().has("aggregations")) {
+            JSONObject aggs = new JSONObject(result.getJsonObject().getAsJsonObject("aggregations").toString());
+            top.put("aggregations", aggs);
+        }
+        return top;
     }
 
     public JSONObject searchLiteral(JSONObject queryJson) throws IOException {

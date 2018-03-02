@@ -25,7 +25,7 @@ public class PandocConverter {
 
 
     public enum PandocOutputFormat {
-        DOCX("docx"), ODT("odt"), PDF("pdf");
+        DOCX("docx"), PDF("pdf");
 
         private String formatName;
 
@@ -37,6 +37,24 @@ public class PandocConverter {
             return formatName;
         }
 
+        public static boolean exists(String find) {
+
+            for (PandocOutputFormat c : PandocOutputFormat.values()) {
+                if (c.getFormatName().equals(find)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+    }
+
+    public PandocConverter(String outputFileName) {
+        // Get the full path for Pandoc executable
+        if (outputFileName != null) {
+            this.outputFile = outputFileName;
+        }
     }
 
     public PandocConverter(String outputFileName, String format) {
@@ -74,6 +92,7 @@ public class PandocConverter {
         } else {
             title += "\n";
         }
+
         String command = String.format("%s --pdf-engine=%s ", this.pandocExec, this.pdfEngine);
         command += String.format(" -o %s/%s.%s", PANDOC_DATA_DIR, this.outputFile, this.pandocOutputFormat.getFormatName());
 
