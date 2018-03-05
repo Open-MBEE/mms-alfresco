@@ -52,6 +52,8 @@ public class Sjm {
     public static final String ORGS = "orgs";
     public static final String DOCUMENTS = "documents";
     public static final String COMMITS = "commits";
+    public static final String REJECTED = "rejected";
+    public static final String FAILED = "failed";
 
     public static final String AGGREGATION = "aggregation";
     public static final String APPLIEDSTEREOTYPEINSTANCEID = "appliedStereotypeInstanceId";
@@ -148,6 +150,7 @@ public class Sjm {
     public static final String INREFIDS = "_inRefIds";
 
     public static final String CHECKSUM = "checksum";
+    public static final String COMMENT = "comment";
     public static final String ARTIFACTS = "artifacts";
     public static final String CONTENTTYPE = "contentType";
     public static final String LOCATION = "location";

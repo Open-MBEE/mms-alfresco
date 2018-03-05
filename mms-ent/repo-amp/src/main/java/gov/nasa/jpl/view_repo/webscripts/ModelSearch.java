@@ -97,9 +97,7 @@ public class ModelSearch extends ModelPost {
                 JSONObject result = eh.searchLiteral(json);
                 model.put(Sjm.RES, result.toString());
             } else {
-                JSONObject top = new JSONObject();
-                JSONArray elementsJson = executeSearchRequest(req);
-                top.put("elements", elementsJson);
+                JSONObject top = executeSearchRequest(req);
 
                 if (!Utils.isNullOrEmpty(response.toString())) {
                     top.put("message", response.toString());
@@ -121,9 +119,8 @@ public class ModelSearch extends ModelPost {
         return model;
     }
 
-    private JSONArray executeSearchRequest(WebScriptRequest req) throws JSONException, IOException {
-
-        JSONArray elements = new JSONArray();
+    private JSONObject executeSearchRequest(WebScriptRequest req) throws JSONException, IOException {
+        JSONObject top = new JSONObject();
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -132,7 +129,8 @@ public class ModelSearch extends ModelPost {
         JSONObject json = (JSONObject) req.parseContent();
         boolean checkIfPropOrSlot = Boolean.parseBoolean(req.getParameter("checkType"));
         try {
-            JSONArray elasticResult = emsNodeUtil.search(json);
+            top = emsNodeUtil.search(json);
+            JSONArray elasticResult = top.getJSONArray("elements");
             elasticResult = filterByPermission(elasticResult, req);
             Map<String, JSONArray> bins = new HashMap<>();
             JSONArray finalResult = new JSONArray();
@@ -175,11 +173,12 @@ public class ModelSearch extends ModelPost {
                 util.addExtendedInformation(entry.getValue());
                 util.addExtraDocs(entry.getValue());
             }
-            return finalResult;
+            top.put("elements", finalResult);
+            return top;
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return elements;
+        return top;
     }
 
     /**

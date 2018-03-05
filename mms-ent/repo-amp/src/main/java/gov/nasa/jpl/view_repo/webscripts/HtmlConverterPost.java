@@ -4,8 +4,12 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.actions.ActionUtil;
 import gov.nasa.jpl.view_repo.actions.PandocConverter;
-import gov.nasa.jpl.view_repo.util.*;
-import org.alfresco.repo.content.MimetypeMap;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.NodeUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.util.LogUtil;
+
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -22,6 +26,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -165,8 +171,6 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
     protected void sendEmail(EmsScriptNode node) {
         String status = (node!= null) ? "completed" : "completed with errors";
         String subject = String.format("HTML to PDF generation %s.", status);
-//        EmsScriptNode logNode = ActionUtil.saveLogToFile(jobNode, MimetypeMap.MIMETYPE_TEXT_PLAIN, services,
-//            subject + System.lineSeparator() + System.lineSeparator() + response.toString());
         String msg = buildEmailMessage(node);
         ActionUtil.sendEmailToModifier(node, msg, subject, services);
         if (logger.isDebugEnabled())

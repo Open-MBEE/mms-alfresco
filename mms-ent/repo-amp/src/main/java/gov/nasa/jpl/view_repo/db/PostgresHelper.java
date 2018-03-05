@@ -363,6 +363,32 @@ public class PostgresHelper implements GraphInterface {
                     values.add(single);
                 }
                 break;
+            case "artifacts":
+                query = String.format(
+                    "INSERT INTO \"artifacts%s\" (elasticId, sysmlId, lastcommit, initialcommit) VALUES (?, ?, ?, ?)",
+                    workspaceId);
+                for (Map<String, Object> node : rows) {
+                    List<Object> single = new LinkedList<>();
+                    single.add(0, node.get(Sjm.ELASTICID));
+                    single.add(1, node.get(Sjm.SYSMLID));
+                    single.add(2, node.get("lastcommit"));
+                    single.add(3, node.get(Sjm.ELASTICID));
+                    values.add(single);
+                }
+                break;
+            case "artifactUpdates":
+                query = String
+                    .format("UPDATE \"artifacts%s\" SET elasticId = ?, lastcommit = ?, deleted = ? WHERE sysmlId = ?",
+                        workspaceId);
+                for (Map<String, Object> node : rows) {
+                    List<Object> single = new LinkedList<>();
+                    single.add(0, node.get(Sjm.ELASTICID));
+                    single.add(1, node.get("lastcommit"));
+                    single.add(2, node.get("deleted"));
+                    single.add(3, node.get(Sjm.SYSMLID));
+                    values.add(single);
+                }
+                break;
             case "updates":
                 query = String.format(
                     "UPDATE \"nodes%s\" SET elasticId = ?, lastcommit = ?, nodeType = ?, deleted = ? WHERE sysmlId = ?",
@@ -683,6 +709,55 @@ public class PostgresHelper implements GraphInterface {
         return elasticIds;
     }
 
+    public List<String> getElasticIdsFromSysmlIdsArtifacts(List<String> sysmlids, boolean withDeleted) {
+        List<String> elasticIds = new ArrayList<>();
+        if (sysmlids == null || sysmlids.isEmpty())
+            return elasticIds;
+
+        try {
+            String query = String.format("SELECT elasticid FROM \"artifacts%s\" WHERE sysmlid IN (%s)", workspaceId,
+                "'" + String.join("','", sysmlids) + "'");
+            if (!withDeleted) {
+                query += "AND deleted = false";
+            }
+            ResultSet rs = execQuery(query);
+            while (rs.next()) {
+                elasticIds.add(rs.getString(1));
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return elasticIds;
+    }
+
+    public List<String> getElasticIdsFromSysmlIdsArtifact(List<String> sysmlids, boolean withDeleted) {
+        List<String> elasticIds = new ArrayList<>();
+        if (sysmlids == null || sysmlids.isEmpty())
+            return elasticIds;
+
+        try {
+            String query = String.format("SELECT elasticid FROM \"artifacts%s\" WHERE sysmlid IN (%s)", workspaceId,
+                "'" + String.join("','", sysmlids) + "'");
+            if (!withDeleted) {
+                query += "AND deleted = false";
+            }
+            ResultSet rs = execQuery(query);
+            while (rs.next()) {
+                elasticIds.add(rs.getString(1));
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return elasticIds;
+    }
+
+
     public Node getNodeFromSysmlId(String sysmlId) {
         return getNodeFromSysmlId(sysmlId, false);
     }
@@ -749,6 +824,49 @@ public class PostgresHelper implements GraphInterface {
             return node.getElasticId();
         }
 
+        return null;
+    }
+
+    public String getElasticIdFromSysmlIdArtifact(String sysmlId) {
+        if (logger.isDebugEnabled())
+            logger.debug("Getting ElasticId for: " + sysmlId);
+        Artifact artifact = getArtifactFromSysmlId(sysmlId);
+        if (artifact != null) {
+            return artifact.getElasticId();
+        }
+
+        return null;
+    }
+
+    public Artifact getArtifactFromSysmlId(String sysmlId) {
+        return getArtifactFromSysmlId(sysmlId, false);
+    }
+
+    public Artifact getArtifactFromSysmlId(String sysmlId, boolean withDeleted) {
+        try {
+            PreparedStatement query;
+            if (withDeleted) {
+                query = getConn().prepareStatement("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
+                query.setString(1, sysmlId);
+            } else {
+                query = getConn().prepareStatement(
+                    "SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
+                query.setString(1, sysmlId);
+                query.setBoolean(2, false);
+            }
+
+            ResultSet rs = query.executeQuery();
+            if (rs.next()) {
+                return new Artifact(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
+                    rs.getBoolean(6));
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
         return null;
     }
 
@@ -1512,7 +1630,7 @@ public class PostgresHelper implements GraphInterface {
             execUpdate("CREATE INDEX refsIndex on refs(id)");
 
             execUpdate(
-                "CREATE TABLE artifacts(id bigserial primary key, elasticId text not null unique, contentType text not null, sysmlId text not null unique, lastCommit text, initialCommit text, deleted boolean default false);");
+                "CREATE TABLE artifacts(id bigserial primary key, elasticId text not null unique, sysmlId text not null unique, lastCommit text, initialCommit text, deleted boolean default false);");
             execUpdate("CREATE INDEX artifactIndex on artifacts(id);");
             execUpdate("CREATE INDEX sysmlArtifactIndex on artifacts(sysmlId);");
 
