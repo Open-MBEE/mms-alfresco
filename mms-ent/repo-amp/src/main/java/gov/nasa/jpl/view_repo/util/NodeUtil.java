@@ -318,7 +318,8 @@ public class NodeUtil {
                 logger.debug("updateOrCreateArtifact: ", e);
             }
         }
-
+        //i'm getting null here when running tests, should fallback to contentType from posted json?
+        //artifact failed to create, json was still added with 200
         if (finalType == null) {
             logger.error("Could not determine type of artifact: " + filePath.getFileName().toString());
             return null;
