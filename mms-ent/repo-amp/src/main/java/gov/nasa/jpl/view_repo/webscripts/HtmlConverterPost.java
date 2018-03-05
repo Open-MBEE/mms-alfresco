@@ -147,7 +147,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
             encodedBase64 = new String(Base64.getEncoder().encode(content));
 
             artifact = NodeUtil
-                .updateOrCreateArtifact(filename, format, encodedBase64, null, siteName, projectId, refId, null,
+                .updateOrCreateArtifact(pandocConverter.getOutputFile(), format, encodedBase64, null, siteName, projectId, refId, null,
                     response, null, false);
 
             sendEmail(artifact);
@@ -157,9 +157,9 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
 
             // Should close the file either way.
             binFile.close();
-//            if (!file.delete()) {
-//                logger.error(String.format("Failed to delete the temp file %s", filename));
-//            }
+            if (!file.delete()) {
+                logger.error(String.format("Failed to delete the temp file %s", filename));
+            }
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
