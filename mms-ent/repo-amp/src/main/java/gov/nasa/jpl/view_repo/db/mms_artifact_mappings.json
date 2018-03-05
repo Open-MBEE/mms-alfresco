@@ -1,11 +1,14 @@
 {
     "artifact": {
         "properties": {
+            "id": {
+                "type": "keyword"
+            },
             "location": {
                 "type": "keyword"
             },
             "name": {
-                "type": "keyword"
+                "type": "text"
             },
             "checksum": {
                 "type": "keyword"

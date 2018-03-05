@@ -26,7 +26,6 @@ public class Artifact {
 
     public Artifact(int id, String elasticId, String sysmlId, String lastCommit, String initialCommit,
         boolean isDeleted) {
-        super();
         this.id = id;
         this.elasticId = elasticId;
         this.sysmlId = sysmlId;

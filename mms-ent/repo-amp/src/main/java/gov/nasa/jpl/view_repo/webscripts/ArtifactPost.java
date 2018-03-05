@@ -104,7 +104,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         Map<String, Object> result = new HashMap<>();
         JSONObject postJson = new JSONObject();
-        String imageId = getArtifactId(req);
 
         FormData formData = (FormData) req.parseContent();
         FormData.FormField[] fields = formData.getFields();
@@ -116,7 +115,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     Content tempContent = field.getContent();
                     mimeType = tempContent.getMimetype();
                     encoding = tempContent.getEncoding();
-
+                    //should construct unique filename here
                     filePath = saveToFilesystem(filename, field.getInputStream());
                     content = new String(Files.readAllBytes(filePath));
 
@@ -130,9 +129,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     postJson.put(name, value);
                     logger.debug("property name: " + name);
                 }
-            }
-            if (imageId != null && !imageId.isEmpty()) {
-                postJson.put(Sjm.SYSMLID, imageId);
             }
             postJson.put(Sjm.TYPE, "Artifact");
         } catch (Exception e) {
@@ -169,11 +165,11 @@ public class ArtifactPost extends AbstractJavaWebScript {
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
             results = emsNodeUtil
-                .processPostJson(delta, user, oldElasticIds, false, this.requestSourceApplication, Sjm.ARTIFACT);
+                .processPostJson(delta, user, oldElasticIds, false, this.requestSourceApplication, postJson.optString("comment"), Sjm.ARTIFACT);
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
             if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, false, true)) {
                 if (!oldElasticIds.isEmpty()) {
-                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
+                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds, "artifact");
                 }
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
                 newElementsObject.put(Sjm.ARTIFACTS, filterByPermission(results.getJSONArray(NEWELEMENTS), req));
@@ -207,7 +203,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
         if (!contentType.isEmpty() && postJson.optString(Sjm.CONTENTTYPE).isEmpty()) {
-            postJson.put(Sjm.CONTENTTYPE, contentType);
+            postJson.put(Sjm.CONTENTTYPE, contentType); //this would be wrong anyway if it gets here
         }
 
         String projectId = getProjectId(req);
@@ -235,6 +231,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     // :TODO check against checksum first, md5hash(content), if matching return the previous version
 
                     if (filePath != null) {
+                        //fileName from filePath becomes the path name in alfresco, but it's not guaranteed to be unique, this is based on user form field, should construct unique filename
                         artifact = NodeUtil.updateOrCreateArtifact(filePath, siteName, projectId, refId);
                     }
 

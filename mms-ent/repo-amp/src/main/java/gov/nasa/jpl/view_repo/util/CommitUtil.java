@@ -264,10 +264,6 @@ public class CommitUtil {
                     pgh.updateLastCommits(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
-                    nullParents = pgh.findNullParents();
-                    if (nullParents != null) {
-                        updateNullEdges(nullParents, projectId);
-                    }
                 } catch (Exception e) {
                     try {
                         pgh.rollBackToSavepoint(sp);

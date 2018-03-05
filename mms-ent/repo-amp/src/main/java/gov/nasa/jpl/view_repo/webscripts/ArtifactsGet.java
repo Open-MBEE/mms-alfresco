@@ -120,8 +120,7 @@ public class ArtifactsGet extends ArtifactGet {
 
             if (validateRequest(req, status)) {
                 try {
-                    Long depth = getDepthFromRequest(req);
-                    result = handleRequest(req, depth);
+                    result = handleRequest(req);
                     elementsJson = result.optJSONArray(Sjm.ARTIFACTS);
                 } catch (JSONException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
@@ -185,7 +184,7 @@ public class ArtifactsGet extends ArtifactGet {
      * @return
      * @throws IOException
      */
-    private JSONObject handleRequest(WebScriptRequest req, final Long maxDepth)
+    private JSONObject handleRequest(WebScriptRequest req)
         throws JSONException, IOException, SQLException {
         JSONObject requestJson = (JSONObject) req.parseContent();
         if (requestJson.has(Sjm.ARTIFACTS)) {
@@ -203,7 +202,8 @@ public class ArtifactsGet extends ArtifactGet {
             for (int i = 0; i < elementsToFindJson.length(); i++) {
                 uniqueElements.add(elementsToFindJson.getJSONObject(i).getString(Sjm.SYSMLID));
             }
-            EmsNodeUtil.handleMountSearch(mountsJson, false, false, maxDepth, uniqueElements, found);
+            //this gets elements, not artifacts
+            EmsNodeUtil.handleMountSearch(mountsJson, false, false, 0L, uniqueElements, found);
             result.put(Sjm.ARTIFACTS, found);
             result.put(Sjm.WARN, uniqueElements);
             return result;

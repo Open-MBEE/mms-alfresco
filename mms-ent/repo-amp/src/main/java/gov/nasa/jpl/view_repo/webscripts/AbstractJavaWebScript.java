@@ -418,14 +418,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         return refId;
     }
 
-    public static String getArtifactId(WebScriptRequest req) {
-        String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACT_ID);
-        if (artifactId == null || artifactId.length() <= 0) {
-            artifactId = null;
-        }
-        return artifactId;
-    }
-
     public EmsScriptNode getWorkspace(WebScriptRequest req) {
         String refId = getRefId(req);
         String projectId = getProjectId(req);

@@ -160,7 +160,7 @@ public class ModelPost extends AbstractJavaWebScript {
             if (CommitUtil
                 .sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews, false)) {
                 if (!oldElasticIds.isEmpty()) {
-                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
+                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds, "element");
                 }
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
 

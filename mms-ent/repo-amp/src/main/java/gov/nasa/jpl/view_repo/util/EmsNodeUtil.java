@@ -301,7 +301,7 @@ public class EmsNodeUtil {
             JSONObject formatted = elementsFromElastic.getJSONObject(i);
             formatted.put(Sjm.PROJECTID, this.projectId);
             formatted.put(Sjm.REFID, this.workspaceName);
-            elementsFromElastic.put(i, withChildViews ? addChildViews(formatted) : formatted);
+            elementsFromElastic.put(i, formatted);
         }
 
         return elementsFromElastic;
@@ -643,14 +643,14 @@ public class EmsNodeUtil {
                 o.remove(Sjm.QUALIFIEDNAME);
             }
 
-            if (!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null
-                || o.getString(Sjm.OWNERID).equalsIgnoreCase("null") && !o.getString(Sjm.TYPE).equals(Sjm.ARTIFACT)) {
+            if ((!o.has(Sjm.OWNERID) || o.getString(Sjm.OWNERID) == null
+                || o.getString(Sjm.OWNERID).equalsIgnoreCase("null")) && !o.getString(Sjm.TYPE).equals(Sjm.ARTIFACT)) {
                 o.put(Sjm.OWNERID, holdingBinSysmlid);
             }
-
-            reorderChildViews(o, newElements, addedElements, updatedElements, deletedElements, commitAdded,
-                commitUpdated, commitDeleted, commitId, user, date, oldElasticIds);
-
+            if (!o.getString(Sjm.TYPE).equals(Sjm.ARTIFACT)) {
+                reorderChildViews(o, newElements, addedElements, updatedElements, deletedElements, commitAdded,
+                    commitUpdated, commitDeleted, commitId, user, date, oldElasticIds);
+            }
             if (added) {
                 logger.debug("ELEMENT ADDED!");
                 o.put(Sjm.CREATOR, user);
@@ -707,13 +707,13 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public void updateElasticRemoveRefs(Set<String> elasticIds) {
+    public void updateElasticRemoveRefs(Set<String> elasticIds, String type) {
         try {
             String payload = new JSONObject().put("script", new JSONObject().put("inline",
                 "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
                     + ".removeAll([params.refId])}").put("params", new JSONObject().put("refId", this.workspaceName)))
                 .toString();
-            eh.bulkUpdateElements(elasticIds, payload, projectId, "element");
+            eh.bulkUpdateElements(elasticIds, payload, projectId, type);
         } catch (IOException ex) {
             // This catch left intentionally blank
         }
@@ -1395,6 +1395,7 @@ public class EmsNodeUtil {
         handleMountSearch(mountsJson, extended, extraDocs, maxDepth, elementsToFind, result, null);
     }
 
+    //commitId is wrong, should be timestamp, maxDepth, extended and extraDocs cannot be used with commit
     public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs,
         final Long maxDepth, Set<String> elementsToFind, JSONArray result, String commitId) throws IOException {
         boolean checkDeleted = commitId != null;
@@ -1403,6 +1404,7 @@ public class EmsNodeUtil {
         }
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
+        //this is repeated for commit, handle inside if else, withChildViews should be false for commit
         JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, checkDeleted);
         Set<String> foundElements = new HashSet<>();
         JSONArray curFound = new JSONArray();
@@ -1459,11 +1461,12 @@ public class EmsNodeUtil {
      * @param commitId       Commit Id to search for.
      * @return JSONArray of found elements
      */
+    //use timestamp instead of commit id, see modelGet's handle commit
     public static JSONArray searchMountAtCommit(JSONObject mountsJson, Set<String> elementsToFind,
         Set<String> foundElements, String commitId) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
-        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, true);
+        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
         JSONArray curFound = new JSONArray();
 
         for (int index = 0; index < nodeList.length(); index++) {

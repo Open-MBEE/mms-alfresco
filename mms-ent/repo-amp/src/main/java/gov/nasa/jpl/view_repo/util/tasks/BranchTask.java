@@ -115,7 +115,7 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                 pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
                 SerialJSONObject modelFromCommit = new SerialJSONObject(emsNodeUtil.getModelAtCommit(commitId).toString());
-
+                //need the same thing for artifacts table
                 List<Map<String, Object>> nodeInserts = new ArrayList<>();
                 List<Map<String, Object>> edgeInserts = new ArrayList<>();
                 List<Map<String, Object>> childEdgeInserts = new ArrayList<>();

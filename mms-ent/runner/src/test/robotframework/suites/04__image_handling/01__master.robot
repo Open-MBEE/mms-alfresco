@@ -141,7 +141,7 @@ PostAnotherVersionOfParentImage
     ${image_file} =     Binary Data	${CURDIR}${/}../../assets/arlaug.png
     ${files} =			Create Dictionary	file	${image_file}
     ${data} =			Create Dictionary	id=mounts	contentType=image/png
-    ${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts/mounts		data=${data}		files=${files}
+    ${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts		data=${data}		files=${files}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
@@ -165,7 +165,7 @@ PostImageToMountedProject
     ${image_file} =     Binary Data	${CURDIR}${/}../../assets/imagemount.png
     ${files} =			Create Dictionary	file	${image_file}
     ${data} =			Create Dictionary	contentType=image/png	id=imagemount
-    ${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PB/refs/master/artifacts/imagemounts		data=${data}		files=${files}
+    ${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PB/refs/master/artifacts		data=${data}		files=${files}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
@@ -176,7 +176,7 @@ PostImageToMountedProject
 GetImageInMountedProject
 	[Documentation]		"Get Image that is in a Mount related to the current project"
 	[Tags]				images		critical		0413
-	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/imagebranch/artifacts/imagemounts		headers=&{PNG_GET_HEADER}
+	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/imagebranch/artifacts/imagemount		headers=&{PNG_GET_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 url		 location
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}

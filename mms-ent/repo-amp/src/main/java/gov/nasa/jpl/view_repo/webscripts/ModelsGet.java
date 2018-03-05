@@ -206,6 +206,7 @@ public class ModelsGet extends ModelGet {
             for (int i = 0; i < elementsToFindJson.length(); i++) {
                 uniqueElements.add(elementsToFindJson.getJSONObject(i).getString(Sjm.SYSMLID));
             }
+            //should use timestamp instead of commitId (commit id only applies to current project)
             EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found, commitId);
             result.put(Sjm.ELEMENTS, found);
             result.put(Sjm.WARN, uniqueElements);
