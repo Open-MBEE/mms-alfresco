@@ -86,7 +86,6 @@ public class PandocConverter {
     public void convert(String inputString) {
 
         String title = StringUtils.substringBetween(inputString, "<title>", "</title>");
-        System.out.println(String.format("Input String [%s]", inputString));
         if (title == null) {
             throw new RuntimeException("No title in HTML");
         } else {
