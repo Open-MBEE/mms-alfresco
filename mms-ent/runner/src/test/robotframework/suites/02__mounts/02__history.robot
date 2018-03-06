@@ -49,7 +49,6 @@ GetElementFromMountedProjectMountCommit
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-
 SearchAcrossMountsByCommit
     [Documentation]     "Search for an element on PA mount that exists by commit over mounts."
 	[Tags]				mounts		critical		020205
