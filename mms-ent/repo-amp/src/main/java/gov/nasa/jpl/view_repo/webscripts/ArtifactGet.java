@@ -157,8 +157,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
 
         String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACTID);
         String commitId = req.getParameter(COMMITID);
-        //this needs to have withDeleted = true
-        if (emsNodeUtil.getArtifactById(artifactId) != null) {
+        if (emsNodeUtil.getArtifactById(artifactId, true) != null) {
             JSONObject artifact = emsNodeUtil.getArtifactByArtifactAndCommitId(commitId, artifactId);
             if (artifact == null || artifact.length() == 0) {
                 // :TODO I don't think this logic needs to be changed at all for Artifact
@@ -230,7 +229,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
 
     protected JSONObject handleMountSearch(JSONObject mountsJson, String rootSysmlid) throws SQLException, IOException {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
-        JSONObject tmpElements = emsNodeUtil.getArtifactById(rootSysmlid);
+        JSONObject tmpElements = emsNodeUtil.getArtifactById(rootSysmlid, false);
         if (tmpElements.length() > 0) {
             return tmpElements;
         }
@@ -262,7 +261,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
         for (int i = 0; i < mountsArray.length(); i++) {
             EmsNodeUtil nodeUtil = new EmsNodeUtil(mountsArray.getJSONObject(i).getString(Sjm.SYSMLID),
                 mountsArray.getJSONObject(i).getString(Sjm.REFID));
-            if (nodeUtil.getById(rootSysmlid) != null) { //this gets element node, not artifact, also needs to be with deleted
+            if (nodeUtil.getArtifactById(rootSysmlid, true) != null) {
                 JSONArray nearestCommit = nodeUtil.getNearestCommitFromTimestamp(mountsArray.getJSONObject(i).getString(Sjm.SYSMLID), timestamp, 0);
                 if (nearestCommit.length() > 0) {
                     JSONObject elementObject =

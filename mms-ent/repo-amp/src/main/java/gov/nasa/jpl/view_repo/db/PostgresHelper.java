@@ -827,10 +827,10 @@ public class PostgresHelper implements GraphInterface {
         return null;
     }
 
-    public String getElasticIdFromSysmlIdArtifact(String sysmlId) {
+    public String getElasticIdFromSysmlIdArtifact(String sysmlId, boolean withDeleted) {
         if (logger.isDebugEnabled())
             logger.debug("Getting ElasticId for: " + sysmlId);
-        Artifact artifact = getArtifactFromSysmlId(sysmlId);
+        Artifact artifact = getArtifactFromSysmlId(sysmlId, withDeleted);
         if (artifact != null) {
             return artifact.getElasticId();
         }
@@ -838,19 +838,16 @@ public class PostgresHelper implements GraphInterface {
         return null;
     }
 
-    public Artifact getArtifactFromSysmlId(String sysmlId) {
-        return getArtifactFromSysmlId(sysmlId, false);
-    }
-
     public Artifact getArtifactFromSysmlId(String sysmlId, boolean withDeleted) {
         try {
             PreparedStatement query;
+            StringBuilder queryString = new StringBuilder("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
             if (withDeleted) {
-                query = getConn().prepareStatement("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
+                query = getConn().prepareStatement(queryString.toString());
                 query.setString(1, sysmlId);
             } else {
-                query = getConn().prepareStatement(
-                    "SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
+                queryString.append(" AND deleted = ?");
+                query = getConn().prepareStatement(queryString.toString());
                 query.setString(1, sysmlId);
                 query.setBoolean(2, false);
             }

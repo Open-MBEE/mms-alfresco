@@ -111,11 +111,13 @@ public class ArtifactPost extends AbstractJavaWebScript {
             for (FormData.FormField field : fields) {
                 logger.debug("field.getName(): " + field.getName());
                 if (field.getName().equals("file") && field.getIsFile()) {
+                    //String extension = FilenameUtils.getExtension();
+                    //String filenameString = field.getFilename().substring(0, field.getFilename().lastIndexOf('.') - 1);
                     filename = field.getFilename();
                     Content tempContent = field.getContent();
                     mimeType = tempContent.getMimetype();
                     encoding = tempContent.getEncoding();
-                    //should construct unique filename here
+
                     filePath = saveToFilesystem(filename, field.getInputStream());
                     content = new String(Files.readAllBytes(filePath));
 

@@ -53,14 +53,19 @@ GetElementFromMountedProjectMountCommit
 SearchAcrossMountsByCommit
     [Documentation]     "Search for an element on PA mount that exists by commit over mounts."
 	[Tags]				mounts		critical		020205
-	${element} =			Get		url=${ROOT}/projects/PA/refs/master/elements/mc1		headers=&{REQ_HEADER}
-	${commitId} =       Set Variable        ${element.json()["elements"][0]["_commitId"]}
+	${refHistory} =			Get		url=${ROOT}/projects/PA/refs/master/history		headers=&{REQ_HEADER}
+    ${latestCommit} =   Set Variable        ${refHistory.json()["commits"][0]["id"]}
+	${element} =			Get		url=${ROOT}/projects/MountCommit/refs/master/elements/mc1/history		headers=&{REQ_HEADER}
+	${commitId} =       Set Variable        ${element.json()["commits"][0]["id"]}
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/UpdateMountCommitElement.json
 	${result} =			Post		url=${ROOT}/projects/MountCommit/refs/master/elements			data=${post_json}		headers=&{REQ_HEADER}
 	Sleep				${POST_DELAY_INDEXING}
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/GetElementAcrossMountCommit.json
-	${new_element} =        Put     url=${ROOT}/projects/PA/refs/master/elements?commitId=${commitId}		data=${post_json}         headers=&{REQ_HEADER}
-    Should Be Equal     ${element.json()["elements"][0]["_commitId"]}        ${new_element.json()["elements"][0]["_commitId"]}
+	${new_element} =        Put     url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}         headers=&{REQ_HEADER}
+    Should Not Be Equal  ${commitId}        ${new_element.json()["elements"][0]["_commitId"]}
+    ${post_json} =		Get File	 ${CURDIR}/../../JsonData/GetElementAcrossMountCommit.json
+    ${old_element} =        Put     url=${ROOT}/projects/PA/refs/master/elements?commitId=${latestCommit}		data=${post_json}         headers=&{REQ_HEADER}
+    Should Be Equal     ${commitId}        ${old_element.json()["elements"][0]["_commitId"]}
 
 
 

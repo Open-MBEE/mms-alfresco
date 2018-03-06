@@ -415,8 +415,8 @@ public class EmsNodeUtil {
         return children;
     }
 
-    public JSONObject getArtifactById(String sysmlid) {
-        String artifact = pgh.getElasticIdFromSysmlIdArtifact(sysmlid);
+    public JSONObject getArtifactById(String sysmlid, boolean withDeleted) {
+        String artifact = pgh.getElasticIdFromSysmlIdArtifact(sysmlid, withDeleted);
         if (artifact != null) {
             try {
                 return eh.getElementByElasticIdArtifact(artifact, projectId);
@@ -1397,8 +1397,8 @@ public class EmsNodeUtil {
 
     //commitId is wrong, should be timestamp, maxDepth, extended and extraDocs cannot be used with commit
     public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs,
-        final Long maxDepth, Set<String> elementsToFind, JSONArray result, String commitId) throws IOException {
-        boolean checkDeleted = commitId != null;
+        final Long maxDepth, Set<String> elementsToFind, JSONArray result, String timestamp) throws IOException {
+        boolean checkDeleted = timestamp != null;
         if (elementsToFind.isEmpty() || mountsJson == null) {
             return;
         }
@@ -1408,8 +1408,8 @@ public class EmsNodeUtil {
         JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, checkDeleted);
         Set<String> foundElements = new HashSet<>();
         JSONArray curFound = new JSONArray();
-        if (commitId != null) {
-            curFound = searchMountAtCommit(mountsJson, elementsToFind, foundElements, commitId);
+        if (timestamp != null) {
+            curFound = searchMountAtCommit(mountsJson, elementsToFind, foundElements, timestamp);
         } else {
             for (int index = 0; index < nodeList.length(); index++) {
                 String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
@@ -1447,7 +1447,7 @@ public class EmsNodeUtil {
 
         for (int i = 0; i < mountsArray.length(); i++) {
             handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result,
-                commitId);
+                timestamp);
         }
     }
 
@@ -1463,18 +1463,22 @@ public class EmsNodeUtil {
      */
     //use timestamp instead of commit id, see modelGet's handle commit
     public static JSONArray searchMountAtCommit(JSONObject mountsJson, Set<String> elementsToFind,
-        Set<String> foundElements, String commitId) {
+        Set<String> foundElements, String timestamp) {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
         JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
         JSONArray curFound = new JSONArray();
 
-        for (int index = 0; index < nodeList.length(); index++) {
-            String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
-            JSONObject obj = emsNodeUtil.getElementAtCommit(id, commitId);
-            if (obj != null) {
-                curFound.put(obj);
-                foundElements.add(id);
+        JSONArray nearestCommitId = emsNodeUtil.getNearestCommitFromTimestamp(mountsJson.getString(Sjm.REFID), timestamp, 1);
+
+        if (nearestCommitId.getJSONObject(0).has(Sjm.SYSMLID)) {
+            for (int index = 0; index < nodeList.length(); index++) {
+                String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
+                JSONObject obj = emsNodeUtil.getElementAtCommit(id, nearestCommitId.getJSONObject(0).getString(Sjm.SYSMLID));
+                if (obj != null) {
+                    curFound.put(obj);
+                    foundElements.add(id);
+                }
             }
         }
         return curFound;
