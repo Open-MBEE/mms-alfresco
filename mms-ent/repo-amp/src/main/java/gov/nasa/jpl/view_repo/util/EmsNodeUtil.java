@@ -1412,7 +1412,7 @@ public class EmsNodeUtil {
             nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
             JSONArray nearestCommitId = emsNodeUtil.getNearestCommitFromTimestamp(mountsJson.getString(Sjm.REFID), timestamp, 1);
 
-            if (nearestCommitId.getJSONObject(0).has(Sjm.SYSMLID)) {
+            if (nearestCommitId.length() > 0 && nearestCommitId.getJSONObject(0).has(Sjm.SYSMLID)) {
                 for (int i = 0; i < nodeList.length(); i++) {
                     String id = nodeList.getJSONObject(i).getString(Sjm.SYSMLID);
                     JSONObject obj = emsNodeUtil.getElementAtCommit(id, nearestCommitId.getJSONObject(0).getString(Sjm.SYSMLID));
