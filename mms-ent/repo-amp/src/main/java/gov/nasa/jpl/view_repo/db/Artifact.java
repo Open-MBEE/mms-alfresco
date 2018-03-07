@@ -24,12 +24,11 @@ public class Artifact {
         this.sysmlId = sysmlId;
     }
 
-    public Artifact(int id, String elasticId, int nodeType, String sysmlId, String lastCommit, String initialCommit,
+    public Artifact(int id, String elasticId, String sysmlId, String lastCommit, String initialCommit,
         boolean isDeleted) {
         super();
         this.id = id;
         this.elasticId = elasticId;
-        this.contentType = contentType;
         this.sysmlId = sysmlId;
         this.lastCommit = lastCommit;
         this.initialCommit = initialCommit;

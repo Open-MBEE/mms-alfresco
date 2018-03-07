@@ -87,6 +87,7 @@ public class CommitUtil {
     public static void initHazelcastClient() {
         if (hzInstance == null) {
             Config config = new Config();
+            config.getNetworkConfig().setPort(5901).setPortAutoIncrement(true);
             hzInstance = Hazelcast.newHazelcastInstance(config);
         }
     }
@@ -231,7 +232,6 @@ public class CommitUtil {
                         artifact.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
                         artifact.put(INITIALCOMMIT, e.getString(Sjm.ELASTICID));
                         artifact.put(LASTCOMMIT, commitElasticId);
-                        artifact.put(CONTENTTYPE, e.getString(Sjm.CONTENTTYPE));
                         artifactInserts.add(artifact);
                     }
                 }
@@ -251,7 +251,7 @@ public class CommitUtil {
                         Map<String, Object> updatedArtifact = new HashMap<>();
                         updatedArtifact.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
                         updatedArtifact.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
-                        updatedArtifact.put(DELETED, "false");
+                        updatedArtifact.put(DELETED, false);
                         updatedArtifact.put(LASTCOMMIT, commitElasticId);
                         artifactUpdates.add(updatedArtifact);
                     }

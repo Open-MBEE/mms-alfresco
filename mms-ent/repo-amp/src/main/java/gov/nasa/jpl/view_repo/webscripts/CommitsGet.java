@@ -111,6 +111,7 @@ public class CommitsGet extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         JSONArray commitJson = new JSONArray();
         String commitId = req.getServiceMatch().getTemplateVars().get(COMMIT_ID);
+        String groupId = req.getParameter("contentType");
 
         if (commitId == null){
             logger.error("Did not find commit");
