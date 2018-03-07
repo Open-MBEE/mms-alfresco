@@ -27,19 +27,10 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.util.CommitUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
-import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
+import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -56,7 +47,7 @@ import java.util.Map;
 
 /**
  *
- * @author han
+ * @author Lemmy
  */
 public class UserPreferencesGet extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(OrgPost.class);
@@ -73,16 +64,53 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
      * Webscript entry point
      */
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
-        OrgPost instance = new OrgPost(repository, getServices());
+        UserPreferencesGet instance = new UserPreferencesGet(repository, getServices());
         return instance.executeImplImpl(req, status, cache);
     }
 
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         String username = req.getServiceMatch().getTemplateVars().get(USERNAME);
+        Map<String, Object> model = new HashMap<>();
+        JSONArray success = new JSONArray();
+        JSONArray failure = new JSONArray();
 
+        Timer timer = new Timer();
+        printHeader(user, logger, req, true);
 
-        return null;
+        if (user != null && username.equals(user)) {
+            try {
+                if (validateRequest(req, status)) {
+                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
+                    JSONObject res = emsNodeUtil.getProfile(username);
+                    if (res.length() > 0 && res != null) {
+                        success.put(res);
+                    } else {
+                        failure.put(res);
+                    }
+                }
+            } catch (JSONException ex) {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", ex);
+            } catch (IOException e) {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
+                    "Commit failed, please check server logs for failed items", e);
+            }
+        } else {
+            log(Level.ERROR, HttpServletResponse.SC_UNAUTHORIZED, "You are not authorized to make this post");
+        }
+        JSONObject response = new JSONObject();
+        response.put(Sjm.PROFILES, success);
+
+        if (failure.length() > 0) {
+            response.put("failed", failure);
+        }
+
+        status.setCode(responseStatus.getCode());
+        model.put(Sjm.RES, response);
+
+        printFooter(user, logger, timer);
+
+        return model;
     }
 
     /**

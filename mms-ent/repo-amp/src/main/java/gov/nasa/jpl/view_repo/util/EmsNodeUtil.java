@@ -1769,4 +1769,7 @@ public class EmsNodeUtil {
         }
         return sb.toString();
     }
+    public JSONObject getProfile(String id) throws IOException {
+        return eh.getProfileByElasticId(id, "mms");
+    }
 }

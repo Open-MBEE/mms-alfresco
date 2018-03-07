@@ -118,6 +118,20 @@ public class ElasticHelper implements ElasticsearchInterface {
 
         return null;
     }
+    public JSONObject getProfileByElasticId(String id, String index) throws IOException {
+        // Cannot use method for commit type
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(PROFILE).build();
+
+        JestResult result = client.execute(get);
+
+        if (result.isSucceeded()) {
+            JSONObject o = new JSONObject(result.getJsonObject().get("_source").toString());
+            o.put(Sjm.ELASTICID, result.getJsonObject().get("_id").getAsString());
+            return o;
+        }
+
+        return null;
+    }
 
     /**
      * Returns the commit history of a element                           (1)

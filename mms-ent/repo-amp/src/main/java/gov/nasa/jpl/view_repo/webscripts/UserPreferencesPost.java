@@ -28,15 +28,9 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.*;
-import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -52,7 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author han
+ * @author Lemmy
  */
 public class UserPreferencesPost extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(OrgPost.class);
