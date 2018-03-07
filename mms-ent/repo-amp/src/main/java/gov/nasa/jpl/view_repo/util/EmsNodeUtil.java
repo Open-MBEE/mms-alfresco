@@ -1395,22 +1395,35 @@ public class EmsNodeUtil {
         handleMountSearch(mountsJson, extended, extraDocs, maxDepth, elementsToFind, result, null);
     }
 
-    //commitId is wrong, should be timestamp, maxDepth, extended and extraDocs cannot be used with commit
     public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs,
         final Long maxDepth, Set<String> elementsToFind, JSONArray result, String timestamp) throws IOException {
-        boolean checkDeleted = timestamp != null;
         if (elementsToFind.isEmpty() || mountsJson == null) {
             return;
         }
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
         //this is repeated for commit, handle inside if else, withChildViews should be false for commit
-        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, checkDeleted);
+        JSONArray nodeList;
         Set<String> foundElements = new HashSet<>();
         JSONArray curFound = new JSONArray();
         if (timestamp != null) {
-            curFound = searchMountAtCommit(mountsJson, elementsToFind, foundElements, timestamp);
+            extended = false;
+            extraDocs = false;
+            nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
+            JSONArray nearestCommitId = emsNodeUtil.getNearestCommitFromTimestamp(mountsJson.getString(Sjm.REFID), timestamp, 1);
+
+            if (nearestCommitId.getJSONObject(0).has(Sjm.SYSMLID)) {
+                for (int i = 0; i < nodeList.length(); i++) {
+                    String id = nodeList.getJSONObject(i).getString(Sjm.SYSMLID);
+                    JSONObject obj = emsNodeUtil.getElementAtCommit(id, nearestCommitId.getJSONObject(0).getString(Sjm.SYSMLID));
+                    if (obj != null) {
+                        curFound.put(obj);
+                        foundElements.add(id);
+                    }
+                }
+            }
         } else {
+            nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, false);
             for (int index = 0; index < nodeList.length(); index++) {
                 String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
                 if (maxDepth != 0) {
@@ -1449,39 +1462,6 @@ public class EmsNodeUtil {
             handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result,
                 timestamp);
         }
-    }
-
-    /**
-     * Searches a mount for specified elements at the specified commit. Modifies the foundElements passed in and returns
-     * the currently found elements.
-     *
-     * @param mountsJson     Mount JSON
-     * @param elementsToFind List of elements to find
-     * @param foundElements  Set of SysmlIDs of found elements
-     * @param commitId       Commit Id to search for.
-     * @return JSONArray of found elements
-     */
-    //use timestamp instead of commit id, see modelGet's handle commit
-    public static JSONArray searchMountAtCommit(JSONObject mountsJson, Set<String> elementsToFind,
-        Set<String> foundElements, String timestamp) {
-
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
-        JSONArray nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
-        JSONArray curFound = new JSONArray();
-
-        JSONArray nearestCommitId = emsNodeUtil.getNearestCommitFromTimestamp(mountsJson.getString(Sjm.REFID), timestamp, 1);
-
-        if (nearestCommitId.getJSONObject(0).has(Sjm.SYSMLID)) {
-            for (int index = 0; index < nodeList.length(); index++) {
-                String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
-                JSONObject obj = emsNodeUtil.getElementAtCommit(id, nearestCommitId.getJSONObject(0).getString(Sjm.SYSMLID));
-                if (obj != null) {
-                    curFound.put(obj);
-                    foundElements.add(id);
-                }
-            }
-        }
-        return curFound;
     }
 
     public List<Node> getSites(boolean sites, boolean sitepackages) {

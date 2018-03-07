@@ -28,9 +28,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NavigableMap;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -201,6 +199,7 @@ public class ModelGet extends AbstractJavaWebScript {
         // getElement at commit
         String projectId = getProjectId(req);
         String refId = getRefId(req);
+        Long depth = getDepthFromRequest(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         String elementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
@@ -218,8 +217,15 @@ public class ModelGet extends AbstractJavaWebScript {
         JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
         // convert commitId to timestamp
         String commit = emsNodeUtil.getCommitObject(commitId).getString(Sjm.CREATED);
+
+        JSONArray result = new JSONArray();
+        Set<String> elementsToFind = new HashSet<>();
+        elementsToFind.add(elementId);
         try {
-            return handleMountSearchForCommits(mountsJson, elementId, commit);
+            EmsNodeUtil.handleMountSearch(mountsJson, false, false, depth, elementsToFind, result, commit);
+            if (result.length() > 0) {
+                return result.optJSONObject(0);
+            }
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s",
                 elementId, commitId);
@@ -286,62 +292,10 @@ public class ModelGet extends AbstractJavaWebScript {
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
         JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
-
-        return handleMountSearch(mountsJson, extended, rootSysmlid, depth);
-    }
-
-    protected JSONArray handleMountSearch(JSONObject mountsJson, boolean extended, String rootSysmlid, Long depth)
-        throws SQLException, IOException {
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
-        JSONArray tmpElements = emsNodeUtil.getChildren(rootSysmlid, depth);
-        if (tmpElements.length() > 0) {
-            return extended ? emsNodeUtil.addExtendedInformation(tmpElements) : tmpElements;
-        }
-        if (!mountsJson.has(Sjm.MOUNTS)) {
-            mountsJson = emsNodeUtil
-                .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
-        }
-        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
-
-        for (int i = 0; i < mountsArray.length(); i++) {
-            tmpElements = handleMountSearch(mountsArray.getJSONObject(i), extended, rootSysmlid, depth);
-            if (tmpElements.length() > 0) {
-                return tmpElements;
-            }
-        }
-        return new JSONArray();
-
-    }
-
-    protected JSONObject handleMountSearchForCommits(JSONObject mountsJson, String rootSysmlid, String timestamp)
-        throws SQLException, IOException {
-
-        if (!mountsJson.has(Sjm.MOUNTS)) {
-            EmsNodeUtil emsNodeUtil =
-                new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
-            mountsJson = emsNodeUtil
-                .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
-        }
-        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
-        for (int i = 0; i < mountsArray.length(); i++) {
-            EmsNodeUtil nodeUtil = new EmsNodeUtil(mountsArray.getJSONObject(i).getString(Sjm.SYSMLID),
-                mountsArray.getJSONObject(i).getString(Sjm.REFID));
-            if (nodeUtil.getById(rootSysmlid) != null) {
-                JSONArray nearestCommit = nodeUtil.getNearestCommitFromTimestamp(mountsArray.getJSONObject(i).getString(Sjm.REFID), timestamp, 1);
-                if (nearestCommit.length() > 0) {
-                    JSONObject elementObject =
-                        nodeUtil.getElementAtCommit(rootSysmlid, nearestCommit.getJSONObject(0).getString(Sjm.SYSMLID));
-                    if (elementObject.length() > 0) {
-                        return elementObject;
-                    }
-                }
-                return new JSONObject();
-            }
-            JSONObject el = handleMountSearchForCommits(mountsArray.getJSONObject(i), rootSysmlid, timestamp);
-            if (el.length() > 0) {
-                return el;
-            }
-        }
-        return new JSONObject();
+        JSONArray result = new JSONArray();
+        Set<String> elementsToFind = new HashSet<>();
+        elementsToFind.add(rootSysmlid);
+        EmsNodeUtil.handleMountSearch(mountsJson, extended, false, depth, elementsToFind, result);
+        return result;
     }
 }

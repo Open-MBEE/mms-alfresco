@@ -126,8 +126,8 @@ public class HtmlToWordPost extends AbstractJavaWebScript {
         }
 
         try {
-
-            EmsScriptNode artifact = NodeUtil.updateOrCreateArtifact(filePath, siteName, projectId, refId);
+            String artifactId = postJson.getString(Sjm.SYSMLID) + System.currentTimeMillis() + ".docx";
+            EmsScriptNode artifact = NodeUtil.updateOrCreateArtifact(artifactId, filePath, "docx", siteName, projectId, refId);
 
             if (artifact == null) {
                 logger.error("Failed to create HTML to Docx artifact in Alfresco.");

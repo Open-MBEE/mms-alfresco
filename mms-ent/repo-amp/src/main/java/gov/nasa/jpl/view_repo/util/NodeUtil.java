@@ -304,12 +304,11 @@ public class NodeUtil {
         return authorityNames;
     }
 
-    public static EmsScriptNode updateOrCreateArtifact(Path filePath, String orgId, String projectId, String refId) {
+    public static EmsScriptNode updateOrCreateArtifact(String artifactId, Path filePath, String fileType, String orgId, String projectId, String refId) {
 
         EmsScriptNode artifactNode;
         String finalType = null;
         File content = filePath.toFile();
-        String artifactId = filePath.getFileName().toString();
 
         try {
             finalType = Files.probeContentType(filePath);
@@ -318,11 +317,15 @@ public class NodeUtil {
                 logger.debug("updateOrCreateArtifact: ", e);
             }
         }
-        //i'm getting null here when running tests, should fallback to contentType from posted json?
-        //artifact failed to create, json was still added with 200
+
         if (finalType == null) {
-            logger.error("Could not determine type of artifact: " + filePath.getFileName().toString());
-            return null;
+            // Fallback if getting content type fails
+            if (fileType != null) {
+                finalType = fileType;
+            } else {
+                logger.error("Could not determine type of artifact: " + filePath.getFileName().toString());
+                return null;
+            }
         }
 
         EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);

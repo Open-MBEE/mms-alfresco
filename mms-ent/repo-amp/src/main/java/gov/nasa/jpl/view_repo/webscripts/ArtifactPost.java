@@ -234,12 +234,12 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
                     if (filePath != null) {
                         //fileName from filePath becomes the path name in alfresco, but it's not guaranteed to be unique, this is based on user form field, should construct unique filename
-                        artifact = NodeUtil.updateOrCreateArtifact(filePath, siteName, projectId, refId);
+                        artifact = NodeUtil.updateOrCreateArtifact(alfrescoId, filePath, postJson.optString(Sjm.CONTENTTYPE), siteName, projectId, refId);
                     }
 
                     if (artifact == null) {
-                        logger.error("Was not able to create the artifact!\n");
-                        //model.put(Sjm.RES, createResponseJson());
+                        log(HttpServletResponse.SC_BAD_REQUEST, "Was not able to create the artifact!\n");
+                        model.put(Sjm.RES, createResponseJson());
                     } else {
                         String url = artifact.getUrl();
                         if (url != null) {
@@ -248,17 +248,17 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     }
 
                 } else {
-                    logger.error("artifactId not supplied or content is empty!");
+                    log(HttpServletResponse.SC_BAD_REQUEST, "artifactId not supplied or content is empty!");
                     model.put(Sjm.RES, createResponseJson());
                 }
 
             } catch (JSONException e) {
-                logger.error("Issues creating return JSON\\n");
+                log(HttpServletResponse.SC_BAD_REQUEST, "Issues creating return JSON\\n");
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 model.put(Sjm.RES, createResponseJson());
             }
         } else {
-            logger.error("Invalid request, no sitename specified or no content provided!\\n");
+            log(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, no sitename specified or no content provided!\\n");
             model.put(Sjm.RES, createResponseJson());
         }
 
@@ -289,59 +289,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
             throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
         }
     }
-
-//    protected static Path saveSvgToFilesystem(String artifactId, String extension, String content) throws Throwable {
-//        byte[] svgContent = content.getBytes(Charset.forName("UTF-8"));
-//        File tempDir = TempFileProvider.getTempDir();
-//        Path svgPath = Paths.get(tempDir.getAbsolutePath(), String.format("%s%s", artifactId, extension));
-//        File file = new File(svgPath.toString());
-//
-//        try (final InputStream in = new ByteArrayInputStream(svgContent)) {
-//            file.mkdirs();
-//            Files.copy(in, svgPath, StandardCopyOption.REPLACE_EXISTING);
-//            return svgPath;
-//        } catch (Throwable ex) {
-//            throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
-//        }
-//    }
-//
-//    protected static Path svgToPng(Path svgPath) throws Throwable {
-//        if (svgPath.toString().contains(".png")) {
-//            return svgPath;
-//        }
-//        Path filePath = Paths.get(svgPath.toString().replace(".svg", ".png"));
-//        try (OutputStream png_ostream = new FileOutputStream(filePath.toString())) {
-//            String svg_URI_input = svgPath.toUri().toURL().toString();
-//            TranscoderInput input_svg_image = new TranscoderInput(svg_URI_input);
-//            TranscoderOutput output_png_image = new TranscoderOutput(png_ostream);
-//            PNGTranscoder my_converter = new PNGTranscoder();
-//            my_converter.transcode(input_svg_image, output_png_image);
-//        } catch (Throwable ex) {
-//            throw new Throwable("Failed to convert SVG to PNG! " + ex.getMessage());
-//        }
-//        return filePath;
-//    }
-//
-//    protected static void synchSvgAndPngVersions(EmsScriptNode svgNode, EmsScriptNode pngNode) {
-//        Version svgVer = svgNode.getCurrentVersion();
-//        String svgVerLabel = svgVer.getVersionLabel();
-//        Double svgVersion = Double.parseDouble(svgVerLabel);
-//
-//        Version pngVer = pngNode.getCurrentVersion();
-//        String pngVerLabel = pngVer.getVersionLabel();
-//        Double pngVersion = Double.parseDouble(pngVerLabel);
-//
-//        int svgVerLen = svgNode.getEmsVersionHistory().length;
-//        int pngVerLen = pngNode.getEmsVersionHistory().length;
-//
-//        while (pngVersion < svgVersion || pngVerLen < svgVerLen) {
-//            pngNode.createVersion("creating the version history", false);
-//            pngVer = pngNode.getCurrentVersion();
-//            pngVerLabel = pngVer.getVersionLabel();
-//            pngVersion = Double.parseDouble(pngVerLabel);
-//            pngVerLen = pngNode.getEmsVersionHistory().length;
-//        }
-//    }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         String elementId = req.getServiceMatch().getTemplateVars().get("elementid");
