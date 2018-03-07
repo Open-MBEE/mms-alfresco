@@ -28,13 +28,14 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.util.*;
-import org.alfresco.service.cmr.version.Version;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -49,7 +50,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.db.Node;
 
 /**
  * Descriptor in /view-repo/src/main/amp/config/alfresco/extension/templates/webscripts

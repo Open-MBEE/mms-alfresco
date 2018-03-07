@@ -912,6 +912,8 @@ public class EmsNodeUtil {
                 } else {
                     notAViewList.add(ownedAttribute.getString(Sjm.SYSMLID));
                 }
+            } else if (ownedAttribute != null) {
+                notAViewList.add(ownedAttribute.getString(Sjm.SYSMLID));
             }
         }
 
@@ -1172,19 +1174,6 @@ public class EmsNodeUtil {
         return pgh.getCommitAndTimestamp("elasticId", elasticid);
     }
 
-    public Long getTimestampFromElasticId(String elasticid) {
-        return pgh.getTimestamp("elasticId", elasticid);
-    }
-
-    public JSONObject getElementByElasticID(String elasticId) {
-        try {
-            return eh.getElementByElasticId(elasticId, projectId);
-        } catch (IOException e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-        return null;
-    }
-
     private Map<String, JSONObject> convertToMap(JSONArray elements) {
         Map<String, JSONObject> result = new HashMap<>();
         for (int i = 0; i < elements.length(); i++) {
@@ -1270,21 +1259,6 @@ public class EmsNodeUtil {
         result.put(Sjm.SITECHARACTERIZATIONID, siteCharacterizationId);
 
         return result;
-    }
-
-    public Version imageVersionBeforeTimestamp(NavigableMap<Long, Version> versions, Long timestamp) {
-        // finds entry with the greatest key less than or equal to key, or null if it does not exist
-        Map.Entry<Long, Version> nearestDate = versions.floorEntry(timestamp);
-        if (nearestDate != null) {
-            return nearestDate.getValue();
-        }
-        // ClassCastException - if the specified key cannot be compared with the keys currently in the map
-        // NullPointerException - if the specified key is null and this map does not permit null keys
-        return null;
-    }
-
-    public Pair<String, Long> getDirectParentRef(String refId) {
-        return pgh.getParentRef(refId);
     }
 
     public boolean isDeleted(String sysmlid) {
@@ -1679,6 +1653,23 @@ public class EmsNodeUtil {
                 }
 
                 // Reset to null so if there is an exception it doesn't add a duplicate
+                pastElement = null;
+            }
+
+            for (Map<String, Object> a : pgh.getAllArtifactsWithLastCommitTimestamp()) {
+                if (((Date) a.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
+                    if (!deletedElementIds.containsKey((String) a.get(Sjm.ELASTICID))) {
+                        elasticIds.add((String) a.get(Sjm.ELASTICID));
+                    }
+                } else {
+                    pastElement = getElementAtCommit((String) a.get(Sjm.SYSMLID), commitId, refsCommitsIds);
+                }
+
+                if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds
+                    .containsKey(pastElement.getString(Sjm.ELASTICID))) {
+                    elements.put(pastElement);
+                }
+
                 pastElement = null;
             }
 

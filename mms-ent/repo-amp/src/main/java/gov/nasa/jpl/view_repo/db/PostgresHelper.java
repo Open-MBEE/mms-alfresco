@@ -619,8 +619,38 @@ public class PostgresHelper implements GraphInterface {
                 node.put(Sjm.SYSMLID, rs.getString(4));
                 node.put(LASTCOMMIT, rs.getString(5));
                 node.put(INITIALCOMMIT, rs.getString(6));
+                node.put(DELETED, rs.getBoolean(7));
                 node.put(Sjm.TIMESTAMP, rs.getTimestamp(8));
                 result.add(node);
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return result;
+    }
+
+    public List<Map<String, Object>> getAllArtifactsWithLastCommitTimestamp() {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        try {
+            ResultSet rs = execQuery(String.format(
+                "SELECT artifacts%1$s.id, artifacts%1$s.elasticid, nodes%1$s.sysmlid, "
+                    + "artifacts%1$s.lastcommit, artifacts%1$s.initialcommit, artifacts%1$s.deleted, commits.timestamp "
+                    + "FROM artifacts%1$s JOIN commits ON artifacts%1$s.lastcommit = commits.elasticid "
+                    + "WHERE initialcommit IS NOT NULL ORDER BY commits.timestamp;", workspaceId));
+
+            while (rs.next()) {
+                Map<String, Object> artifact = new HashMap<>();
+                artifact.put(Sjm.ELASTICID, rs.getString(2));
+                artifact.put(Sjm.SYSMLID, rs.getString(3));
+                artifact.put(LASTCOMMIT, rs.getString(4));
+                artifact.put(INITIALCOMMIT, rs.getString(5));
+                artifact.put(DELETED, rs.getBoolean(6));
+                artifact.put(Sjm.TIMESTAMP, rs.getTimestamp(7));
+                result.add(artifact);
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));

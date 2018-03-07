@@ -15,6 +15,7 @@ import org.postgresql.util.PSQLException;
 public interface GraphInterface {
     String LASTCOMMIT = "lastCommit";
     String INITIALCOMMIT = "initialCommit";
+    String DELETED = "deleted";
 
     void connect();
 
