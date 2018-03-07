@@ -52,6 +52,7 @@ public class ElasticHelper implements ElasticsearchInterface {
 
     private static final String ELEMENT = "element";
     private static final String COMMIT = "commit";
+    private static final String PROFILE = "profile";
 
     public void init(String elasticHost) {
 
@@ -344,6 +345,12 @@ public class ElasticHelper implements ElasticsearchInterface {
         client.execute(new Update.Builder(payload.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", ""))
             .type(ELEMENT).build());
 
+        return true;
+    }
+    public boolean updateProfile(String id, JSONObject payload, String index) throws JSONException, IOException {
+        JSONObject upsert = new JSONObject().put("doc", payload).put("doc_as_upsert", true);
+        client.execute(new Update.Builder(upsert.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", ""))
+            .type(PROFILE).build());
         return true;
     }
 

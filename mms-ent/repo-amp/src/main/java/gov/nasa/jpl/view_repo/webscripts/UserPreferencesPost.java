@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author han
  */
 public class UserPreferencesPost extends AbstractJavaWebScript {
@@ -76,105 +75,51 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
 
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        //Map<String, String> templateArgs = req.getServiceMatch().getTemplateVars();
         String username = req.getServiceMatch().getTemplateVars().get(USERNAME);
 
-//        printHeader(user, logger, req);
+        Timer timer = new Timer();
+        printHeader(user, logger, req, true);
+
+        JSONArray success = new JSONArray();
+        JSONArray failure = new JSONArray();
+
         Map<String, Object> model = new HashMap<>();
-        try {
-            SerialJSONObject postJson = new SerialJSONObject(req.getContent().getContent());
-            SerialJSONArray toCommit = new SerialJSONArray();
-            toCommit.put(postJson);
-            // if(user.equals(username))
-            CommitUtil.indexProfile(toCommit, null, false, "mms", "profiles");
-        } catch (IOException e) {
-            e.printStackTrace();
+        // :TODO Weak check for authorization
+        if (user != null && username.equals(user)) {
+            try {
+                if (validateRequest(req, status)) {
+                    // Post request is always a single object
+                    SerialJSONObject postJson =
+                        new SerialJSONObject(req.getContent().getContent()).getJSONObject(Sjm.PROFILES);
+                    // creates a new document if one didn't exist, otherwise updates existing document
+                    Boolean res = CommitUtil.indexProfile(username, postJson, "mms");
+                    if (res) {
+                        success.put(res);
+                    } else {
+                        failure.put(res);
+                    }
+                }
+            } catch (JSONException ex) {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", ex);
+            } catch (IOException e) {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
+                    "Commit failed, please check server logs for failed items", e);
+            }
+        } else {
+            log(Level.ERROR, HttpServletResponse.SC_UNAUTHORIZED, "You are not authorized to make this post");
         }
-        //        Timer timer = new Timer();
-//        boolean restoredOrg = false;
-//
-//        Map<String, Object> model = new HashMap<>();
-//
-//        JSONArray success = new JSONArray();
-//        JSONArray failure = new JSONArray();
-//
-//        try {
-//            if (validateRequest(req, status)) {
-//
-//                JSONObject json = (JSONObject) req.parseContent();
-//                JSONArray elementsArray = json != null ? json.optJSONArray("orgs") : null;
-//                if (elementsArray != null && elementsArray.length() > 0) {
-//                    for (int i = 0; i < elementsArray.length(); i++) {
-//                        JSONObject projJson = elementsArray.getJSONObject(i);
-//
-//                        String orgId = projJson.getString(Sjm.SYSMLID);
-//                        String orgName = projJson.getString(Sjm.NAME);
-//
-//                        SiteInfo siteInfo = services.getSiteService().getSite(orgId);
-//                        if (siteInfo == null) {
-//                            SearchService searcher = services.getSearchService();
-//                            ResultSet result =
-//                                searcher.query(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, "fts-alfresco", "name:" + orgId);
-//
-//                            if (result != null && result.length() > 0) {
-//                                log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site restored.\n");
-//                                services.getNodeService().restoreNode(result.getRow(0).getNodeRef(), null, null, null);
-//                            } else {
-//                                String sitePreset = "site-dashboard";
-//                                String siteTitle =
-//                                    (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;
-//                                String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
-//                                if (!ShareUtils
-//                                    .constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
-//                                    log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-//                                        "Failed to create site.\n");
-//                                    logger.error(String
-//                                        .format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
-//                                    failure.put(projJson);
-//                                } else {
-//                                    log(Level.INFO, HttpServletResponse.SC_OK, "Organization " + orgName + " Site created.\n");
-//                                }
-//                            }
-//
-//                            if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
-//                                JSONObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
-//                                success.put(res);
-//                            }
-//
-//                        } else {
-//                            JSONObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
-//                            if (res != null && res.optString(Sjm.SYSMLID) != null) {
-//                                log(Level.INFO, HttpServletResponse.SC_OK, "Organization " + orgName + " Site updated.\n");
-//                                success.put(res);
-//                            } else {
-//                                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
-//                                    "Organization " + orgName + " Site update failed.\n");
-//                                failure.put(res);
-//                            }
-//                        }
-//                    }
-//                } else {
-//                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request");
-//                }
-//            }
-//        } catch (JSONException e) {
-//            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
-//        } catch (Exception e) {
-//            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
-//        }
-//
-//        JSONObject response = new JSONObject();
-//        response.put(Sjm.ORGS, success);
-//
-//        if (failure.length() > 0) {
-//            response.put("failed", failure);
-//        }
-//
-//        status.setCode(responseStatus.getCode());
-//        model.put(Sjm.RES, response);
-//
-//
-//        printFooter(user, logger, timer);
+
+        JSONObject response = new JSONObject();
+        response.put(Sjm.PROFILES, success);
+
+        if (failure.length() > 0) {
+            response.put("failed", failure);
+        }
+
+        status.setCode(responseStatus.getCode());
+        model.put(Sjm.RES, response);
+
+        printFooter(user, logger, timer);
 
         return model;
     }

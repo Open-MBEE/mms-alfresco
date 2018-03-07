@@ -156,6 +156,7 @@ public class Sjm {
     public static final String LOCATION = "location";
     public static final String ELEMENT = "Element";
     public static final String ARTIFACT = "Artifact";
+    public static final String PROFILES = "profiles";
 
 
     public static final Map<String, String> STEREOTYPEIDS;
