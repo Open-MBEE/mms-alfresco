@@ -28,16 +28,20 @@ GetMangerProfileAsCollaborator
 	[Tags]				crud		critical		1203
 	${result} =			Get		url=http://Collaborator:password@${SERVER}/alfresco/service/users/Manager/profile		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${401}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
-	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-	${compare_result} =		Compare JSON		${TEST_NAME}
-	Should Match Baseline		${compare_result}
+
 PostManagerProfileAsCollaborator
 	[Documentation]		"Create a new user profile"
-	[Tags]				crud		critical		1201
+	[Tags]				crud		critical		1204
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/PostManagerProfile.json
 	${result} =			Post		url=http://Collaborator:password@${SERVER}/alfresco/service/users/Manager/profile			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${401}
+
+PostUpdateToManagerProfile
+	[Documentation]		"Update and check the response"
+	[Tags]				crud		critical		1205
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/PostManagerProfile.json
+	${result} =			Post		url=http://Manager:password@${SERVER}/alfresco/service/users/Manager/profile			data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}

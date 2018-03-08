@@ -86,8 +86,8 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
                     SerialJSONObject postJson =
                         new SerialJSONObject(req.getContent().getContent()).getJSONObject(Sjm.PROFILES);
                     // creates a new document if one didn't exist, otherwise updates existing document
-                    Boolean res = CommitUtil.indexProfile(username, postJson, "mms");
-                    if (res) {
+                    JSONObject res = CommitUtil.indexProfile(username, postJson, "mms");
+                    if (res != null && res.length() > 0 ) {
                         success.put(res);
                     } else {
                         failure.put(res);
