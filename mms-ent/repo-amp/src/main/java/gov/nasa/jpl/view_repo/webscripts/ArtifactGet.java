@@ -191,7 +191,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
                 String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACTID);
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
-                String commitId = (req.getParameter(COMMITID) != null) ? req.getParameter(COMMITID) : null;
+                String commitId = req.getParameter(COMMITID);
                 if (artifactId != null && commitId == null) {
                     JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
                     JSONObject result = null;

@@ -123,20 +123,18 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                 processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS),
                     modelFromCommit.getJSONArray(Sjm.ARTIFACTS), nodeInserts, artifactInserts, edgeInserts,
                     childEdgeInserts);
-                //need artifactInserts
-                if (!nodeInserts.isEmpty() || !edgeInserts.isEmpty() || !childEdgeInserts.isEmpty()) {
-                    if (!nodeInserts.isEmpty()) {
-                        insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
-                    }
-                    if (!artifactInserts.isEmpty()) {
-                        insertForBranchInPast(pgh, artifactInserts, "artifactUpdates", projectId);
-                    }
-                    if (!edgeInserts.isEmpty()) {
-                        insertForBranchInPast(pgh, edgeInserts, EDGES, projectId);
-                    }
-                    if (!childEdgeInserts.isEmpty()) {
-                        insertForBranchInPast(pgh, childEdgeInserts, EDGES, projectId);
-                    }
+
+                if (!nodeInserts.isEmpty()) {
+                    insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
+                }
+                if (!artifactInserts.isEmpty()) {
+                    insertForBranchInPast(pgh, artifactInserts, "artifactUpdates", projectId);
+                }
+                if (!edgeInserts.isEmpty()) {
+                    insertForBranchInPast(pgh, edgeInserts, EDGES, projectId);
+                }
+                if (!childEdgeInserts.isEmpty()) {
+                    insertForBranchInPast(pgh, childEdgeInserts, EDGES, projectId);
                 }
             } else {
                 pgh.setWorkspace(created.getString(Sjm.SYSMLID));

@@ -710,7 +710,7 @@ public class EmsNodeUtil {
     }
 
     public JSONObject addChildViews(JSONObject o) {
-        return new SerialJSONObject(addChildViews(new SerialJSONObject(o.toString())).toString());//??
+        return addChildViews(new SerialJSONObject(o.toString()));
     }
 
     public SerialJSONObject addChildViews(SerialJSONObject o) {

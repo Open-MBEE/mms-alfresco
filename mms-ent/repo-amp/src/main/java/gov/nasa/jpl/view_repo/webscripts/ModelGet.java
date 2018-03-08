@@ -130,7 +130,7 @@ public class ModelGet extends AbstractJavaWebScript {
                     if (commitJson.length() == 0) {
                         log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
                     }
-                    if (commitJson != null && commitJson.length() > 0) {
+                    if (commitJson.length() > 0) {
                         top.put(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
                     }
                     if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
@@ -284,7 +284,6 @@ public class ModelGet extends AbstractJavaWebScript {
 
     protected JSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
         throws SQLException, IOException {
-        // get timestamp if specified
         String projectId = getProjectId(req);
         String refId = getRefId(req);
         Long depth = getDepthFromRequest(req);
