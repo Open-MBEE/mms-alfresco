@@ -180,6 +180,9 @@ public class ModelGet extends AbstractJavaWebScript {
             String modelId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
             String projectId = getProjectId(req);
             String refId = getRefId(req);
+            Long depth = getDepthFromRequest(req);
+            boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
+
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
             if (null == modelId) {
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s", modelId);
@@ -188,7 +191,14 @@ public class ModelGet extends AbstractJavaWebScript {
                 log(Level.ERROR, HttpServletResponse.SC_GONE, "Element %s is deleted", modelId);
                 return new JSONArray();
             }
-            return handleElementHierarchy(modelId, req);
+
+            JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+
+            JSONArray result = new JSONArray();
+            Set<String> elementsToFind = new HashSet<>();
+            elementsToFind.add(modelId);
+            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, depth, elementsToFind, result);
+            return result;
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }

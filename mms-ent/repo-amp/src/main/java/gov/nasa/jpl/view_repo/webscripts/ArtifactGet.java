@@ -29,9 +29,11 @@ package gov.nasa.jpl.view_repo.webscripts;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -171,8 +173,16 @@ public class ArtifactGet extends AbstractJavaWebScript {
         JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
         // convert commitId to timestamp
         String commit = emsNodeUtil.getCommitObject(commitId).getString(Sjm.CREATED);
+
+        JSONArray result = new JSONArray();
+        Set<String> elementsToFind = new HashSet<>();
+        elementsToFind.add(artifactId);
+
         try {
-            return handleMountSearchForCommits(mountsJson, artifactId, commit);
+            EmsNodeUtil.handleMountSearch(mountsJson, false, false, 0L, elementsToFind, result, commit, "artifacts");
+            if (result.length() > 0) {
+                return result.optJSONObject(0);
+            }
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find artifact %s at commit %s", artifactId,
                 commitId);
@@ -188,18 +198,21 @@ public class ArtifactGet extends AbstractJavaWebScript {
         if (validateRequest(req, status)) {
 
             try {
+                JSONObject result = null;
                 String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACTID);
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
-                String commitId = req.getParameter(COMMITID);
-                if (artifactId != null && commitId == null) {
+                if (artifactId != null) {
                     JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
-                    JSONObject result = null;
+
+                    JSONArray results = new JSONArray();
+                    Set<String> elementsToFind = new HashSet<>();
+                    elementsToFind.add(artifactId);
                     try {
-                        result = handleMountSearch(mountsJson, artifactId);
-                    } catch (SQLException e) {
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
-                        logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                        EmsNodeUtil.handleMountSearch(mountsJson, false, false, 0L, elementsToFind, results, null, "artifacts");
+                        if (results.length() > 0) {
+                            result = results.optJSONObject(0);
+                        }
                     } catch (IOException e) {
                         log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
                         logger.error(String.format("%s", LogUtil.getStackTrace(e)));
@@ -224,58 +237,5 @@ public class ArtifactGet extends AbstractJavaWebScript {
             model.put(Sjm.RES, createResponseJson());
         }
         return model;
-    }
-
-    protected JSONObject handleMountSearch(JSONObject mountsJson, String rootSysmlid) throws SQLException, IOException {
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
-        JSONObject tmpElements = emsNodeUtil.getArtifactById(rootSysmlid, false);
-        if (tmpElements.length() > 0) {
-            return tmpElements;
-        }
-        if (!mountsJson.has(Sjm.MOUNTS)) {
-            mountsJson = emsNodeUtil
-                .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
-        }
-        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
-
-        for (int i = 0; i < mountsArray.length(); i++) {
-            tmpElements = handleMountSearch(mountsArray.getJSONObject(i), rootSysmlid);
-            if (tmpElements.length() > 0) {
-                return tmpElements;
-            }
-        }
-        return new JSONObject();
-    }
-
-    protected JSONObject handleMountSearchForCommits(JSONObject mountsJson, String rootSysmlid, String timestamp)
-        throws SQLException, IOException {
-
-        if (!mountsJson.has(Sjm.MOUNTS)) {
-            EmsNodeUtil emsNodeUtil =
-                new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
-            mountsJson = emsNodeUtil
-                .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
-        }
-        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
-        for (int i = 0; i < mountsArray.length(); i++) {
-            EmsNodeUtil nodeUtil = new EmsNodeUtil(mountsArray.getJSONObject(i).getString(Sjm.SYSMLID),
-                mountsArray.getJSONObject(i).getString(Sjm.REFID));
-            if (nodeUtil.getArtifactById(rootSysmlid, true) != null) {
-                JSONArray nearestCommit = nodeUtil.getNearestCommitFromTimestamp(mountsArray.getJSONObject(i).getString(Sjm.SYSMLID), timestamp, 0);
-                if (nearestCommit.length() > 0) {
-                    JSONObject elementObject =
-                        nodeUtil.getElementAtCommit(rootSysmlid, nearestCommit.getJSONObject(0).getString(Sjm.SYSMLID));
-                    if (elementObject.length() > 0) {
-                        return elementObject;
-                    }
-                }
-                return new JSONObject();
-            }
-            JSONObject el = handleMountSearchForCommits(mountsArray.getJSONObject(i), rootSysmlid, timestamp);
-            if (el.length() > 0) {
-                return el;
-            }
-        }
-        return new JSONObject();
     }
 }
