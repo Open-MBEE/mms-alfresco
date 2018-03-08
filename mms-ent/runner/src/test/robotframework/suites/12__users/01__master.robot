@@ -39,7 +39,7 @@ PostManagerProfileAsCollaborator
 PostUpdateToManagerProfile
 	[Documentation]		"Update and check the response"
 	[Tags]				crud		critical		1205
-	${post_json} =		Get File	 ${CURDIR}/../../JsonData/PostManagerProfile.json
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/PostManagerProfileUpdate.json
 	${result} =			Post		url=http://Manager:password@${SERVER}/alfresco/service/users/Manager/profile			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId
@@ -47,6 +47,3 @@ PostUpdateToManagerProfile
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
-# Two tests for 401 (from user to another user), that admin users can?
-# That after a create and update of the same document there's only one document
-# check output for 200 and failure
