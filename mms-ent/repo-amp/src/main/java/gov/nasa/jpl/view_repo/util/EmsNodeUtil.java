@@ -179,7 +179,7 @@ public class EmsNodeUtil {
         for (int i = 0; i < nodes.size(); i++) {
             mountIds.add(nodes.get(i).getSysmlId());
         }
-        JSONArray nodeList = getNodesBySysmlids(mountIds);
+        JSONArray nodeList = getNodesBySysmlids(mountIds, false, false);
         for (int i = 0; i < nodeList.length(); i++) {
             JSONObject mountJson = nodeList.getJSONObject(i);
             if (mountJson.has(Sjm.MOUNTEDELEMENTPROJECTID) && mountJson.has(Sjm.MOUNTEDREFID)) {
@@ -259,10 +259,6 @@ public class EmsNodeUtil {
             }
         }
         return new JSONObject();
-    }
-
-    public JSONArray getNodesBySysmlids(Set<String> sysmlids) {
-        return getNodesBySysmlids(sysmlids, true, false);
     }
 
     public JSONArray getNodesBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
@@ -714,7 +710,7 @@ public class EmsNodeUtil {
     }
 
     public JSONObject addChildViews(JSONObject o) {
-        return new SerialJSONObject(addChildViews(new SerialJSONObject(o.toString())).toString());
+        return new SerialJSONObject(addChildViews(new SerialJSONObject(o.toString())).toString());//??
     }
 
     public SerialJSONObject addChildViews(SerialJSONObject o) {
@@ -741,7 +737,7 @@ public class EmsNodeUtil {
                 }
             }
 
-            SerialJSONArray ownedAttributesJSON = new SerialJSONArray(getNodesBySysmlids(ownedAttributeSet).toString());
+            SerialJSONArray ownedAttributesJSON = new SerialJSONArray(getNodesBySysmlids(ownedAttributeSet, false, false).toString());
             Map<String, SerialJSONObject> ownedAttributesMap = new HashMap<>();
             for (int i = 0; i < ownedAttributesJSON.length(); i++) {
                 SerialJSONObject ownedAttribute = ownedAttributesJSON.optJSONObject(i);
@@ -805,7 +801,7 @@ public class EmsNodeUtil {
             }
         }
 
-        ownedAttributes = new SerialJSONArray(getNodesBySysmlids(oldOwnedAttributeSet).toString());
+        ownedAttributes = new SerialJSONArray(getNodesBySysmlids(oldOwnedAttributeSet, false, false).toString());
 
         Map<String, String> createProps = new HashMap<>();
         List<String> notAViewList = new ArrayList<>();
@@ -1362,7 +1358,6 @@ public class EmsNodeUtil {
         }
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
-        //this is repeated for commit, handle inside if else, withChildViews should be false for commit
         JSONArray nodeList;
         Set<String> foundElements = new HashSet<>();
         JSONArray curFound = new JSONArray();
@@ -1390,7 +1385,7 @@ public class EmsNodeUtil {
             }
         } else {
             if (type != null && type.contains("artifacts")) {
-                nodeList = emsNodeUtil.getArtifactsBySysmlids(elementsToFind, true, false);
+                nodeList = emsNodeUtil.getArtifactsBySysmlids(elementsToFind, false, false);
             } else {
                 nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, false);
             }
@@ -1430,7 +1425,7 @@ public class EmsNodeUtil {
 
         for (int i = 0; i < mountsArray.length(); i++) {
             handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result,
-                timestamp, "elements");
+                timestamp, type);
         }
     }
 

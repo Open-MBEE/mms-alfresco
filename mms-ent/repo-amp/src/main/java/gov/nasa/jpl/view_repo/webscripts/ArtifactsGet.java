@@ -207,7 +207,6 @@ public class ArtifactsGet extends ArtifactGet {
             String timestamp =
                 commitObject != null && commitObject.has(Sjm.CREATED) ? commitObject.getString(Sjm.CREATED) : null;
 
-            //this gets elements, not artifacts
             EmsNodeUtil.handleMountSearch(mountsJson, false, false, 0L, uniqueElements, found, timestamp, "artifacts");
             result.put(Sjm.ARTIFACTS, found);
             result.put(Sjm.WARN, uniqueElements);

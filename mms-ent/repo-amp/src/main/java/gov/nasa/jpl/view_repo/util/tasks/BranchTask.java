@@ -115,7 +115,6 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                 pgh.setWorkspace(created.getString(Sjm.SYSMLID));
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
                 SerialJSONObject modelFromCommit = new SerialJSONObject(emsNodeUtil.getModelAtCommit(commitId).toString());
-                //need the same thing for artifacts table
                 List<Map<String, Object>> nodeInserts = new ArrayList<>();
                 List<Map<String, Object>> artifactInserts = new ArrayList<>();
                 List<Map<String, Object>> edgeInserts = new ArrayList<>();
@@ -124,7 +123,7 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                 processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS),
                     modelFromCommit.getJSONArray(Sjm.ARTIFACTS), nodeInserts, artifactInserts, edgeInserts,
                     childEdgeInserts);
-
+                //need artifactInserts
                 if (!nodeInserts.isEmpty() || !edgeInserts.isEmpty() || !childEdgeInserts.isEmpty()) {
                     if (!nodeInserts.isEmpty()) {
                         insertForBranchInPast(pgh, nodeInserts, "updates", projectId);

@@ -233,7 +233,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     // :TODO check against checksum first, md5hash(content), if matching return the previous version
 
                     if (filePath != null) {
-                        //fileName from filePath becomes the path name in alfresco, but it's not guaranteed to be unique, this is based on user form field, should construct unique filename
                         artifact = NodeUtil.updateOrCreateArtifact(alfrescoId, filePath, postJson.optString(Sjm.CONTENTTYPE), siteName, projectId, refId);
                     }
 
