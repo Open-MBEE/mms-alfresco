@@ -128,6 +128,9 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                     if (!nodeInserts.isEmpty()) {
                         insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
                     }
+                    if (!artifactInserts.isEmpty()) {
+                        insertForBranchInPast(pgh, artifactInserts, "artifactUpdates", projectId);
+                    }
                     if (!edgeInserts.isEmpty()) {
                         insertForBranchInPast(pgh, edgeInserts, EDGES, projectId);
                     }
