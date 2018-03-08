@@ -69,9 +69,9 @@ public interface GraphInterface {
 
     Node getNodeFromSysmlId(String sysmlId, boolean withDeleted);
 
-    Set<String> getElasticIds();
+    Set<String> getElasticIdsNodes();
 
-    Set<String> getElasticIds(boolean withDeleted);
+    Set<String> getElasticIdsNodes(boolean withDeleted);
 
     String getElasticIdFromSysmlId(String sysmlId);
 

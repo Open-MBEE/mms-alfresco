@@ -16,11 +16,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -31,7 +28,6 @@ import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.TimeUtils;
-import org.alfresco.service.cmr.version.Version;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.ElasticResult;
 import gov.nasa.jpl.view_repo.db.Node;
@@ -270,10 +266,19 @@ public class EmsNodeUtil {
     }
 
     public JSONArray getNodesBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
-        List<String> elasticids = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids), withDeleted);
+        List<String> elasticIds = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids), withDeleted);
+        return getJSONBySysmlids(elasticIds, withChildViews);
+    }
+
+    public JSONArray getArtifactsBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
+        List<String> elasticIds = pgh.getElasticIdsFromSysmlIdsArtifacts(new ArrayList<>(sysmlids), withDeleted);
+        return getJSONBySysmlids(elasticIds, withChildViews);
+    }
+
+    public JSONArray getJSONBySysmlids(List<String> elasticIds, boolean withChildViews) {
         JSONArray elementsFromElastic = new JSONArray();
         try {
-            elementsFromElastic = eh.getElementsFromElasticIds(elasticids, projectId);
+            elementsFromElastic = eh.getElementsFromElasticIds(elasticIds, projectId);
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -283,25 +288,6 @@ public class EmsNodeUtil {
             formatted.put(Sjm.PROJECTID, this.projectId);
             formatted.put(Sjm.REFID, this.workspaceName);
             elementsFromElastic.put(i, withChildViews ? addChildViews(formatted) : formatted);
-        }
-
-        return elementsFromElastic;
-    }
-
-    public JSONArray getArtifactsBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
-        List<String> elasticids = pgh.getElasticIdsFromSysmlIdsArtifacts(new ArrayList<>(sysmlids), withDeleted);
-        JSONArray elementsFromElastic = new JSONArray();
-        try {
-            elementsFromElastic = eh.getElementsFromElasticIds(elasticids, projectId);
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-
-        for (int i = 0; i < elementsFromElastic.length(); i++) {
-            JSONObject formatted = elementsFromElastic.getJSONObject(i);
-            formatted.put(Sjm.PROJECTID, this.projectId);
-            formatted.put(Sjm.REFID, this.workspaceName);
-            elementsFromElastic.put(i, formatted);
         }
 
         return elementsFromElastic;
@@ -1366,11 +1352,11 @@ public class EmsNodeUtil {
     public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs,
         final Long maxDepth, Set<String> elementsToFind, JSONArray result) throws IOException {
 
-        handleMountSearch(mountsJson, extended, extraDocs, maxDepth, elementsToFind, result, null);
+        handleMountSearch(mountsJson, extended, extraDocs, maxDepth, elementsToFind, result, null, null);
     }
 
     public static void handleMountSearch(JSONObject mountsJson, boolean extended, boolean extraDocs,
-        final Long maxDepth, Set<String> elementsToFind, JSONArray result, String timestamp) throws IOException {
+        final Long maxDepth, Set<String> elementsToFind, JSONArray result, String timestamp, String type) throws IOException {
         if (elementsToFind.isEmpty() || mountsJson == null) {
             return;
         }
@@ -1383,7 +1369,13 @@ public class EmsNodeUtil {
         if (timestamp != null) {
             extended = false;
             extraDocs = false;
-            nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
+
+            if (type != null && type.contains("artifacts")) {
+                nodeList = emsNodeUtil.getArtifactsBySysmlids(elementsToFind, false, true);
+            } else {
+                nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
+            }
+
             JSONArray nearestCommitId = emsNodeUtil.getNearestCommitFromTimestamp(mountsJson.getString(Sjm.REFID), timestamp, 1);
 
             if (nearestCommitId.length() > 0 && nearestCommitId.getJSONObject(0).has(Sjm.SYSMLID)) {
@@ -1397,7 +1389,11 @@ public class EmsNodeUtil {
                 }
             }
         } else {
-            nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, false);
+            if (type != null && type.contains("artifacts")) {
+                nodeList = emsNodeUtil.getArtifactsBySysmlids(elementsToFind, true, false);
+            } else {
+                nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, false);
+            }
             for (int index = 0; index < nodeList.length(); index++) {
                 String id = nodeList.getJSONObject(index).getString(Sjm.SYSMLID);
                 if (maxDepth != 0) {
@@ -1434,7 +1430,7 @@ public class EmsNodeUtil {
 
         for (int i = 0; i < mountsArray.length(); i++) {
             handleMountSearch(mountsArray.getJSONObject(i), extended, extraDocs, maxDepth, elementsToFind, result,
-                timestamp);
+                timestamp, "elements");
         }
     }
 
@@ -1623,8 +1619,8 @@ public class EmsNodeUtil {
 
     public JSONObject getModelAtCommit(String commitId) {
         JSONObject result = new JSONObject();
-        JSONObject pastElement = null;
         JSONArray elements = new JSONArray();
+        JSONArray artifacts = new JSONArray();
         ArrayList<String> refsCommitsIds = new ArrayList<>();
 
         Map<String, Object> commit = pgh.getCommit(commitId);
@@ -1638,39 +1634,15 @@ public class EmsNodeUtil {
 
             Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds, projectId);
             List<String> elasticIds = new ArrayList<>();
+            List<String> artifactElasticIds = new ArrayList<>();
             for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
-                if (((Date) n.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
-                    if (!deletedElementIds.containsKey((String) n.get(Sjm.ELASTICID))) {
-                        elasticIds.add((String) n.get(Sjm.ELASTICID));
-                    }
-                } else {
-                    pastElement = getElementAtCommit((String) n.get(Sjm.SYSMLID), commitId, refsCommitsIds);
-                }
-
-                if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds
-                    .containsKey(pastElement.getString(Sjm.ELASTICID))) {
-                    elements.put(pastElement);
-                }
-
-                // Reset to null so if there is an exception it doesn't add a duplicate
-                pastElement = null;
+                processElementForModelAtCommit(n, deletedElementIds, commit, commitId, refsCommitsIds, elements,
+                    elasticIds);
             }
 
             for (Map<String, Object> a : pgh.getAllArtifactsWithLastCommitTimestamp()) {
-                if (((Date) a.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
-                    if (!deletedElementIds.containsKey((String) a.get(Sjm.ELASTICID))) {
-                        elasticIds.add((String) a.get(Sjm.ELASTICID));
-                    }
-                } else {
-                    pastElement = getElementAtCommit((String) a.get(Sjm.SYSMLID), commitId, refsCommitsIds);
-                }
-
-                if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds
-                    .containsKey(pastElement.getString(Sjm.ELASTICID))) {
-                    elements.put(pastElement);
-                }
-
-                pastElement = null;
+                processElementForModelAtCommit(a, deletedElementIds, commit, commitId, refsCommitsIds, artifacts,
+                    artifactElasticIds);
             }
 
             try {
@@ -1678,12 +1650,34 @@ public class EmsNodeUtil {
                 for (int i = 0; i < elems.length(); i++) {
                     elements.put(elems.getJSONObject(i));
                 }
+                JSONArray artifactElastic = eh.getElementsFromElasticIds(artifactElasticIds, projectId);
+                for (int i = 0; i < artifactElastic.length(); i++) {
+                    artifacts.put(artifactElastic.getJSONObject(i));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
             result.put(Sjm.ELEMENTS, elements);
+            result.put(Sjm.ARTIFACTS, artifacts);
         }
         return result;
+    }
+
+    public void processElementForModelAtCommit(Map<String, Object> element, Map<String, String> deletedElementIds,
+        Map<String, Object> commit, String commitId, ArrayList<String> refsCommitsIds, JSONArray elements, List<String> elasticIds) {
+        JSONObject pastElement = null;
+        if (((Date) element.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
+            if (!deletedElementIds.containsKey((String) element.get(Sjm.ELASTICID))) {
+                elasticIds.add((String) element.get(Sjm.ELASTICID));
+            }
+        } else {
+            pastElement = getElementAtCommit((String) element.get(Sjm.SYSMLID), commitId, refsCommitsIds);
+        }
+
+        if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds
+            .containsKey(pastElement.getString(Sjm.ELASTICID))) {
+            elements.put(pastElement);
+        }
     }
 
     /**

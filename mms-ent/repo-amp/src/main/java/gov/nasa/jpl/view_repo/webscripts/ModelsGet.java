@@ -73,13 +73,10 @@ public class ModelsGet extends ModelGet {
         super(repositoryHelper, registry);
     }
 
-    String timestamp;
-    Date dateTime;
-
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         // get timestamp if specified
-        timestamp = req.getParameter("timestamp");
-        dateTime = TimeUtils.dateFromTimestamp(timestamp);
+        String timestamp = req.getParameter("timestamp");
+        Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
@@ -213,7 +210,8 @@ public class ModelsGet extends ModelGet {
             String timestamp =
                 commitObject != null && commitObject.has(Sjm.CREATED) ? commitObject.getString(Sjm.CREATED) : null;
 
-            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found, timestamp);
+            EmsNodeUtil
+                .handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found, timestamp, null);
             result.put(Sjm.ELEMENTS, found);
             result.put(Sjm.WARN, uniqueElements);
             return result;

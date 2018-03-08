@@ -637,7 +637,7 @@ public class PostgresHelper implements GraphInterface {
 
         try {
             ResultSet rs = execQuery(String.format(
-                "SELECT artifacts%1$s.id, artifacts%1$s.elasticid, nodes%1$s.sysmlid, "
+                "SELECT artifacts%1$s.id, artifacts%1$s.elasticid, artifacts%1$s.sysmlid, "
                     + "artifacts%1$s.lastcommit, artifacts%1$s.initialcommit, artifacts%1$s.deleted, commits.timestamp "
                     + "FROM artifacts%1$s JOIN commits ON artifacts%1$s.lastcommit = commits.elasticid "
                     + "WHERE initialcommit IS NOT NULL ORDER BY commits.timestamp;", workspaceId));
@@ -820,24 +820,34 @@ public class PostgresHelper implements GraphInterface {
         return null;
     }
 
-    public Set<String> getElasticIds() {
-        return getElasticIds(false);
+    public Set<String> getElasticIdsNodes() {
+        return getElasticIdsNodes(false);
     }
 
-    public Set<String> getElasticIds(boolean withDeleted) {
+    public Set<String> getElasticIdsNodes(boolean withDeleted) {
+        return getElasticIds("nodes", withDeleted);
+    }
+
+    public Set<String> getElasticIdsArtifacts() {
+        return getElasticIdsArtifacts(false);
+    }
+
+    public Set<String> getElasticIdsArtifacts(boolean withDeleted) {
+        return getElasticIds("artifacts", withDeleted);
+    }
+
+    public Set<String> getElasticIds(String table, boolean withDeleted) {
         Set<String> elasticIds = new HashSet<>();
         try {
-            String query;
-            if (withDeleted) {
-                query = String.format("SELECT elasticid FROM \"nodes%s\"", workspaceId);
-            } else {
-                query = String.format("SELECT elasticid FROM \"nodes%s\" WHERE deleted = false", workspaceId);
+            StringBuilder query = new StringBuilder(String.format("SELECT elasticid FROM \"%s%s\"", table, workspaceId));
+            if (!withDeleted) {
+                query.append(" WHERE deleted = false");
             }
-            ResultSet rs = execQuery(query);
+            ResultSet rs = execQuery(query.toString());
             while (rs.next()) {
                 elasticIds.add(rs.getString(1));
             }
-            elasticIds.remove("holding_bin"); //??
+            elasticIds.remove("holding_bin");
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {

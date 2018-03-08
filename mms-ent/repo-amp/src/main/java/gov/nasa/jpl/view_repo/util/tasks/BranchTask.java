@@ -117,11 +117,13 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                 SerialJSONObject modelFromCommit = new SerialJSONObject(emsNodeUtil.getModelAtCommit(commitId).toString());
                 //need the same thing for artifacts table
                 List<Map<String, Object>> nodeInserts = new ArrayList<>();
+                List<Map<String, Object>> artifactInserts = new ArrayList<>();
                 List<Map<String, Object>> edgeInserts = new ArrayList<>();
                 List<Map<String, Object>> childEdgeInserts = new ArrayList<>();
 
-                processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS), nodeInserts,
-                    edgeInserts, childEdgeInserts);
+                processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS),
+                    modelFromCommit.getJSONArray(Sjm.ARTIFACTS), nodeInserts, artifactInserts, edgeInserts,
+                    childEdgeInserts);
 
                 if (!nodeInserts.isEmpty() || !edgeInserts.isEmpty() || !childEdgeInserts.isEmpty()) {
                     if (!nodeInserts.isEmpty()) {
@@ -138,8 +140,14 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                 pgh.setWorkspace(created.getString(Sjm.SYSMLID));
             }
 
-            Set<String> elementsToUpdate = pgh.getElasticIds();
+            Set<String> nodesToUpdate = pgh.getElasticIdsNodes();
             String payload = new SerialJSONObject().put("script", new SerialJSONObject().put("inline",
+                "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
+                    + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
+                .put("params", new SerialJSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
+
+            Set<String> artifactsToUpdate = pgh.getElasticIdsArtifacts();
+            String artifactsUpdate = new SerialJSONObject().put("script", new SerialJSONObject().put("inline",
                 "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
                     + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
                 .put("params", new SerialJSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
@@ -148,7 +156,9 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                 logger.debug("inRefId update: " + payload);
             }
 
-            eh.bulkUpdateElements(elementsToUpdate, payload, projectId, "element");
+            eh.bulkUpdateElements(nodesToUpdate, payload, projectId, "element");
+            eh.bulkUpdateElements(artifactsToUpdate, artifactsUpdate, projectId, "artifact");
+
             created.put("status", "created");
 
             success = true;
@@ -251,13 +261,26 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
         }
     }
 
-    public static void processNodesAndEdgesWithoutCommit(SerialJSONArray elements, List<Map<String, Object>> nodeInserts,
+    public static void processNodesAndEdgesWithoutCommit(SerialJSONArray elements, SerialJSONArray artifacts,
+        List<Map<String, Object>> nodeInserts, List<Map<String, Object>> artifactInserts,
         List<Map<String, Object>> edgeInserts, List<Map<String, Object>> childEdgeInserts) {
 
         List<Pair<String, String>> addEdges = new ArrayList<>();
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
         List<String> uniqueEdge = new ArrayList<>();
+
+        for (int i = 0; i < artifacts.length(); i++) {
+            SerialJSONObject a = elements.getJSONObject(i);
+            Map<String, Object> artifact = new HashMap<>();
+            if (a.has(Sjm.ELASTICID)) {
+                artifact.put(Sjm.ELASTICID, a.getString(Sjm.ELASTICID));
+                artifact.put(Sjm.SYSMLID, a.getString(Sjm.SYSMLID));
+                artifact.put(LASTCOMMIT, a.getString(Sjm.COMMITID));
+                artifact.put(DELETED, false);
+                artifactInserts.add(artifact);
+            }
+        }
 
         for (int i = 0; i < elements.length(); i++) {
             SerialJSONObject e = elements.getJSONObject(i);

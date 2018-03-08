@@ -222,7 +222,7 @@ public class ModelGet extends AbstractJavaWebScript {
         Set<String> elementsToFind = new HashSet<>();
         elementsToFind.add(elementId);
         try {
-            EmsNodeUtil.handleMountSearch(mountsJson, false, false, depth, elementsToFind, result, commit);
+            EmsNodeUtil.handleMountSearch(mountsJson, false, false, depth, elementsToFind, result, commit, "elements");
             if (result.length() > 0) {
                 return result.optJSONObject(0);
             }
