@@ -7,6 +7,8 @@
     </description>
     <url>/projects/{projectId}/refs/{refId}/elements/{elementId}/history</url>
     <url>/projects/{projectId}/refs/{refId}/elements/{elementId}/commits</url>
+    <url>/projects/{projectId}/refs/{refId}/artifacts/{artifactId}/history</url>
+    <url>/projects/{projectId}/refs/{refId}/artifacts/{artifactId}/commits</url>
     <format default="json">argument</format>
     <authentication>user</authentication>
     <transaction>required</transaction>
