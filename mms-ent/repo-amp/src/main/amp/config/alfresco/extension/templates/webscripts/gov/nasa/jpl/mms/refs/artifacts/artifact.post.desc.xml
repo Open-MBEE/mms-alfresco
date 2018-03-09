@@ -6,7 +6,6 @@
         post artifacts
     </description>
     <url>/projects/{projectId}/refs/{refId}/artifacts</url>
-    <url>/projects/{projectId}/refs/{refId}/artifacts/{artifactId}</url>
     <format default="json">argument</format>
     <authentication>user</authentication>
     <transaction>required</transaction>

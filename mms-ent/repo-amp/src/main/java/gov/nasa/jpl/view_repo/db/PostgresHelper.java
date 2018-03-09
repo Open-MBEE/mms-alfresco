@@ -619,8 +619,38 @@ public class PostgresHelper implements GraphInterface {
                 node.put(Sjm.SYSMLID, rs.getString(4));
                 node.put(LASTCOMMIT, rs.getString(5));
                 node.put(INITIALCOMMIT, rs.getString(6));
+                node.put(DELETED, rs.getBoolean(7));
                 node.put(Sjm.TIMESTAMP, rs.getTimestamp(8));
                 result.add(node);
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return result;
+    }
+
+    public List<Map<String, Object>> getAllArtifactsWithLastCommitTimestamp() {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        try {
+            ResultSet rs = execQuery(String.format(
+                "SELECT artifacts%1$s.id, artifacts%1$s.elasticid, artifacts%1$s.sysmlid, "
+                    + "artifacts%1$s.lastcommit, artifacts%1$s.initialcommit, artifacts%1$s.deleted, commits.timestamp "
+                    + "FROM artifacts%1$s JOIN commits ON artifacts%1$s.lastcommit = commits.elasticid "
+                    + "WHERE initialcommit IS NOT NULL ORDER BY commits.timestamp;", workspaceId));
+
+            while (rs.next()) {
+                Map<String, Object> artifact = new HashMap<>();
+                artifact.put(Sjm.ELASTICID, rs.getString(2));
+                artifact.put(Sjm.SYSMLID, rs.getString(3));
+                artifact.put(LASTCOMMIT, rs.getString(4));
+                artifact.put(INITIALCOMMIT, rs.getString(5));
+                artifact.put(DELETED, rs.getBoolean(6));
+                artifact.put(Sjm.TIMESTAMP, rs.getTimestamp(7));
+                result.add(artifact);
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -790,24 +820,34 @@ public class PostgresHelper implements GraphInterface {
         return null;
     }
 
-    public Set<String> getElasticIds() {
-        return getElasticIds(false);
+    public Set<String> getElasticIdsNodes() {
+        return getElasticIdsNodes(false);
     }
 
-    public Set<String> getElasticIds(boolean withDeleted) {
+    public Set<String> getElasticIdsNodes(boolean withDeleted) {
+        return getElasticIds("nodes", withDeleted);
+    }
+
+    public Set<String> getElasticIdsArtifacts() {
+        return getElasticIdsArtifacts(false);
+    }
+
+    public Set<String> getElasticIdsArtifacts(boolean withDeleted) {
+        return getElasticIds("artifacts", withDeleted);
+    }
+
+    public Set<String> getElasticIds(String table, boolean withDeleted) {
         Set<String> elasticIds = new HashSet<>();
         try {
-            String query;
-            if (withDeleted) {
-                query = String.format("SELECT elasticid FROM \"nodes%s\"", workspaceId);
-            } else {
-                query = String.format("SELECT elasticid FROM \"nodes%s\" WHERE deleted = false", workspaceId);
+            StringBuilder query = new StringBuilder(String.format("SELECT elasticid FROM \"%s%s\"", table, workspaceId));
+            if (!withDeleted) {
+                query.append(" WHERE deleted = false");
             }
-            ResultSet rs = execQuery(query);
+            ResultSet rs = execQuery(query.toString());
             while (rs.next()) {
                 elasticIds.add(rs.getString(1));
             }
-            elasticIds.remove("holding_bin"); //??
+            elasticIds.remove("holding_bin");
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -827,10 +867,10 @@ public class PostgresHelper implements GraphInterface {
         return null;
     }
 
-    public String getElasticIdFromSysmlIdArtifact(String sysmlId) {
+    public String getElasticIdFromSysmlIdArtifact(String sysmlId, boolean withDeleted) {
         if (logger.isDebugEnabled())
             logger.debug("Getting ElasticId for: " + sysmlId);
-        Artifact artifact = getArtifactFromSysmlId(sysmlId);
+        Artifact artifact = getArtifactFromSysmlId(sysmlId, withDeleted);
         if (artifact != null) {
             return artifact.getElasticId();
         }
@@ -838,19 +878,16 @@ public class PostgresHelper implements GraphInterface {
         return null;
     }
 
-    public Artifact getArtifactFromSysmlId(String sysmlId) {
-        return getArtifactFromSysmlId(sysmlId, false);
-    }
-
     public Artifact getArtifactFromSysmlId(String sysmlId, boolean withDeleted) {
         try {
             PreparedStatement query;
+            StringBuilder queryString = new StringBuilder("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
             if (withDeleted) {
-                query = getConn().prepareStatement("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
+                query = getConn().prepareStatement(queryString.toString());
                 query.setString(1, sysmlId);
             } else {
-                query = getConn().prepareStatement(
-                    "SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
+                queryString.append(" AND deleted = ?");
+                query = getConn().prepareStatement(queryString.toString());
                 query.setString(1, sysmlId);
                 query.setBoolean(2, false);
             }
@@ -1408,23 +1445,6 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public void deleteEdgesForNode(String sysmlId) {
-        try {
-            Node n = getNodeFromSysmlId(sysmlId);
-
-            if (n == null) {
-                return;
-            }
-
-            execUpdate(
-                "DELETE FROM \"edges" + workspaceId + "\" WHERE child = " + n.getId() + " OR parent = " + n.getId());
-        } catch (Exception e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-    }
-
-    public void deleteEdgesForArtifact(String sysmlId) {
         try {
             Node n = getNodeFromSysmlId(sysmlId);
 
