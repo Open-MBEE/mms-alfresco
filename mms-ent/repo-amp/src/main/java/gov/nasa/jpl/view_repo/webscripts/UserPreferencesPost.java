@@ -74,8 +74,7 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
         Timer timer = new Timer();
         printHeader(user, logger, req, true);
 
-        JSONArray success = new JSONArray();
-        JSONArray failure = new JSONArray();
+        JSONObject response = new JSONObject();
 
         Map<String, Object> model = new HashMap<>();
         // :TODO Weak check for authorization
@@ -87,10 +86,10 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
                         new SerialJSONObject(req.getContent().getContent()).getJSONObject(Sjm.PROFILES);
                     // creates a new document if one didn't exist, otherwise updates existing document
                     JSONObject res = CommitUtil.indexProfile(username, postJson, "mms");
-                    if (res != null && res.length() > 0 ) {
-                        success.put(res);
+                    if (res != null && res.length() > 0) {
+                        response.append(Sjm.PROFILES, res);
                     } else {
-                        failure.put(res);
+                        response.append("falied", res);
                     }
                 }
             } catch (JSONException ex) {
@@ -101,13 +100,6 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
             }
         } else {
             log(Level.ERROR, HttpServletResponse.SC_UNAUTHORIZED, "You are not authorized to make this post");
-        }
-
-        JSONObject response = new JSONObject();
-        response.put(Sjm.PROFILES, success);
-
-        if (failure.length() > 0) {
-            response.put("failed", failure);
         }
 
         status.setCode(responseStatus.getCode());
