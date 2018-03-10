@@ -839,7 +839,8 @@ public class PostgresHelper implements GraphInterface {
     public Set<String> getElasticIds(String table, boolean withDeleted) {
         Set<String> elasticIds = new HashSet<>();
         try {
-            StringBuilder query = new StringBuilder(String.format("SELECT elasticid FROM \"%s%s\"", table, workspaceId));
+            StringBuilder query =
+                new StringBuilder(String.format("SELECT elasticid FROM \"%s%s\"", table, workspaceId));
             if (!withDeleted) {
                 query.append(" WHERE deleted = false");
             }
@@ -881,7 +882,8 @@ public class PostgresHelper implements GraphInterface {
     public Artifact getArtifactFromSysmlId(String sysmlId, boolean withDeleted) {
         try {
             PreparedStatement query;
-            StringBuilder queryString = new StringBuilder("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
+            StringBuilder queryString =
+                new StringBuilder("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
             if (withDeleted) {
                 query = getConn().prepareStatement(queryString.toString());
                 query.setString(1, sysmlId);
@@ -1930,17 +1932,23 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
-    public Pair<String, String> getRefElastic(String refId) {
+    public Map<String, String> getRefElastic(String refId) {
         if (refId == null || refId.isEmpty()) {
             refId = "master";
         }
         try {
             PreparedStatement statement =
-                prepareStatement("SELECT refId, elasticId FROM refs WHERE deleted = false AND refId = ?");
+                prepareStatement("SELECT refId, elasticId, parent, tag FROM refs WHERE deleted = false AND refId = ?");
             statement.setString(1, sanitizeRefId(refId));
             ResultSet rs = statement.executeQuery();
+            Map res = new HashMap();
             if (rs.next()) {
-                return new Pair<>(rs.getString(1), rs.getString(2));
+                res.put("refId", rs.getString(1));
+                res.put("elasticId", rs.getString(2));
+                res.put("parent", rs.getString(3));
+                // Tricky needs a class
+                res.put("isTag", String.valueOf(rs.getBoolean(4)));
+                return res;
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -2006,7 +2014,8 @@ public class PostgresHelper implements GraphInterface {
         return getRefsCommits(refId, 0, timestamp, limit, 0);
     }
 
-    public List<Map<String, Object>> getRefsCommits(String refId, int commitId, Timestamp timestamp, int limit, int count) {
+    public List<Map<String, Object>> getRefsCommits(String refId, int commitId, Timestamp timestamp, int limit,
+        int count) {
 
         List<Map<String, Object>> result = new ArrayList<>();
         try {
@@ -2022,8 +2031,8 @@ public class PostgresHelper implements GraphInterface {
             int limitColNum = 0;
             int timestampColNum = 0;
 
-            StringBuilder query =
-                new StringBuilder("SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE (refId = ? OR refId = ?)");
+            StringBuilder query = new StringBuilder(
+                "SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE (refId = ? OR refId = ?)");
 
             if (commitId != 0) {
                 query.append(" AND timestamp <= (SELECT timestamp FROM commits WHERE id = ?)");

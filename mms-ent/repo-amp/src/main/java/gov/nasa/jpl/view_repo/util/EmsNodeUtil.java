@@ -349,10 +349,12 @@ public class EmsNodeUtil {
 
     public JSONObject getRefJson(String refId) {
         JSONObject jObj = null;
-        Pair<String, String> refInfo = pgh.getRefElastic(refId);
+        Map<String, String> refInfo = pgh.getRefElastic(refId);
         if (refInfo != null) {
             try {
-                jObj = eh.getElementByElasticId(refInfo.second, projectId);
+                jObj = eh.getElementByElasticId(refInfo.get("elasticId"), projectId);
+                jObj.put("parentRefId", (refInfo.get("parent").equals("")) ? "noParent" : refInfo.get("parent"));
+                jObj.put("type", (refInfo.get("isTag").equals("true")) ? "tag" : "branch");
             } catch (IOException e) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             }

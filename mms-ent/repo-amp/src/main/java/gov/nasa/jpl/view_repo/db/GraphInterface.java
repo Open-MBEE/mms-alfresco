@@ -123,7 +123,7 @@ public interface GraphInterface {
 
     void deleteRef(String id);
 
-    Pair<String, String> getRefElastic(String refId);
+    Map<String, String> getRefElastic(String refId);
 
     Pair<String, Long> getParentRef(String refId);
 
