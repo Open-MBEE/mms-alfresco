@@ -849,6 +849,8 @@ public class EmsNodeUtil {
                 } else {
                     notAViewList.add(ownedAttribute.getString(Sjm.SYSMLID));
                 }
+            } else if (ownedAttribute != null) {
+                notAViewList.add(ownedAttribute.getString(Sjm.SYSMLID));
             }
         }
 
