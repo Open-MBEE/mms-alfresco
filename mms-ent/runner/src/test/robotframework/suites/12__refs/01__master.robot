@@ -1,7 +1,6 @@
 *** Settings ***
 Documentation	Testing CRUD Operations on Master
 Resource		../resources.robot
-Suite Setup	 Purge Results Directory
 
 *** Test Cases ***
 GetRef
@@ -23,13 +22,4 @@ GetRefDiffParent
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-#GetOrg
-#	[Documentation]		"Get first org."
-#	[Tags]				crud		critical		0103
-#	${result} =			Get		url=${ROOT}/orgs/initorg		headers=&{REQ_HEADER}
-#	Should Be Equal		${result.status_code}		${200}
-#	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
-#	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-#	${compare_result} =		Compare JSON		${TEST_NAME}
-#	Should Match Baseline		${compare_result}
 
