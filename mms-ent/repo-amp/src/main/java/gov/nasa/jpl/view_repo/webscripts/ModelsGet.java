@@ -78,16 +78,16 @@ public class ModelsGet extends ModelGet {
         String timestamp = req.getParameter("timestamp");
         Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
 
-            String refId = getRefId(req);
-            String projectId = getProjectId(req);
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
-                return true;
-            } else if (refId != null && !emsNodeUtil.refExists(refId)) {
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
-                    refId + (dateTime == null ? "" : " at " + dateTime));
-                return false;
-            }
+        String refId = getRefId(req);
+        String projectId = getProjectId(req);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
+            return true;
+        } else if (refId != null && !emsNodeUtil.refExists(refId)) {
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
+                refId + (dateTime == null ? "" : " at " + dateTime));
+            return false;
+        }
 
         return true;
     }
@@ -118,7 +118,9 @@ public class ModelsGet extends ModelGet {
             if (validateRequest(req, status)) {
                 try {
                     Long depth = getDepthFromRequest(req);
-                    result = handleRequest(req, depth);
+                    result = (req.parseContent() != null) ?
+                        handleRequest(req, depth) :
+                        getAllElements(getProjectId(req), getRefId(req););
                     elementsJson = result.optJSONArray(Sjm.ELEMENTS);
                 } catch (JSONException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
@@ -190,7 +192,7 @@ public class ModelsGet extends ModelGet {
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
-            String commitId = req.getParameter(Sjm.COMMITID.replace("_",""));
+            String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
 
             boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
@@ -218,6 +220,27 @@ public class ModelsGet extends ModelGet {
         } else {
             return new JSONObject();
         }
+    }
+
+    /**
+     * Wrapper for handling a request for all elements in a project and ref and getting the appropriate JSONArray of
+     * elements
+     *
+     * @param projectId
+     * @return
+     * @throws IOException
+     */
+    private JSONObject getAllElements(String projectId, String refId) throws IOException {
+        JSONArray found = new JSONArray();
+        JSONObject result = new JSONObject();
+        JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+        Set<String> uniqueElements = new HashSet<>();
+        uniqueElements.add(projectId);
+        Long maxDepth = 100000L;
+        EmsNodeUtil.handleMountSearch(mountsJson, false, false, maxDepth, uniqueElements, found, null, null);
+        result.put(Sjm.ELEMENTS, found);
+        result.put(Sjm.WARN, uniqueElements);
+        return result;
     }
 }
 
