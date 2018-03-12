@@ -120,7 +120,7 @@ public class ModelsGet extends ModelGet {
                     Long depth = getDepthFromRequest(req);
                     result = (req.parseContent() != null) ?
                         handleRequest(req, depth) :
-                        getAllElements(getProjectId(req), getRefId(req););
+                        getAllElements(getProjectId(req), getRefId(req));
                     elementsJson = result.optJSONArray(Sjm.ELEMENTS);
                 } catch (JSONException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
