@@ -89,7 +89,7 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
                     if (res != null && res.length() > 0) {
                         response.append(Sjm.PROFILES, res);
                     } else {
-                        response.append("falied", res);
+                        response.append("failed", res);
                     }
                 }
             } catch (JSONException ex) {
