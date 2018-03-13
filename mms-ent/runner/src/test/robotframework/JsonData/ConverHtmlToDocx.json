@@ -1,6 +1,7 @@
 {
     "documents": [
         {
+            "id": "test-doc",
             "name": "test-doc",
             "html": "<html><span style=\"font-weight:bold\">Hello!</span></html>"
         }
