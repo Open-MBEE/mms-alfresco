@@ -160,6 +160,9 @@ public class CommitUtil {
     public static boolean isSite(JSONObject element) {
         return element.has(Sjm.ISSITE) && element.getBoolean(Sjm.ISSITE);
     }
+    public static JSONObject indexProfile(String id, JSONObject elements, String index) throws IOException {
+        return eh.updateProfile(id, elements, index);
+    }
 
     private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh, String index, String type) {
         if (elements.length() > 0) {

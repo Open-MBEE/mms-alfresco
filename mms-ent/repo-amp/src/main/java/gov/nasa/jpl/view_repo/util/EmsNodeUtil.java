@@ -1782,6 +1782,10 @@ public class EmsNodeUtil {
         return sb.toString();
     }
 
+    public JSONObject getProfile(String id) throws IOException {
+        return eh.getProfileByElasticId(id, "mms");
+    }
+
     public static String md5Hash(File file) {
         String digest = null;
         try (FileInputStream fin = new FileInputStream(file)) {
@@ -1790,5 +1794,6 @@ public class EmsNodeUtil {
             logger.error(e);
         }
         return digest;
+
     }
 }
