@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webscript>
 <webscript>
-    <shortname>post elements</shortname>
+    <shortname>get artifacts</shortname>
     <description>
-        post elements
+        get multiple artifacts
     </description>
-    <url>/projects/{projectId}/refs/{refId}/elements</url>
+    <url>/projects/{projectId}/refs/{refId}/artifacts</url>
     <format default="json">argument</format>
     <authentication>user</authentication>
     <transaction>required</transaction>

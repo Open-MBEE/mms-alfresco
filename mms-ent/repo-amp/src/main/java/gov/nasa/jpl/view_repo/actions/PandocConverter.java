@@ -57,11 +57,13 @@ public class PandocConverter {
         }
     }
 
-    public PandocConverter(String outputFileName, String format) {
+    public PandocConverter(String outputFileName, String extension) {
         // Get the full path for Pandoc executable
         if (outputFileName != null) {
             this.outputFile = outputFileName;
         }
+
+        String format = extension.substring(1);
 
         if (format.equals(PandocOutputFormat.DOCX.getFormatName())) {
             this.pandocOutputFormat = PandocOutputFormat.DOCX;

@@ -73,13 +73,10 @@ public class ArtifactsGet extends ArtifactGet {
         super(repositoryHelper, registry);
     }
 
-    String timestamp;
-    Date dateTime;
-
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         // get timestamp if specified
-        timestamp = req.getParameter("timestamp");
-        dateTime = TimeUtils.dateFromTimestamp(timestamp);
+        String timestamp = req.getParameter("timestamp");
+        Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
@@ -120,8 +117,7 @@ public class ArtifactsGet extends ArtifactGet {
 
             if (validateRequest(req, status)) {
                 try {
-                    Long depth = getDepthFromRequest(req);
-                    result = handleRequest(req, depth);
+                    result = handleRequest(req);
                     elementsJson = result.optJSONArray(Sjm.ARTIFACTS);
                 } catch (JSONException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
@@ -185,7 +181,7 @@ public class ArtifactsGet extends ArtifactGet {
      * @return
      * @throws IOException
      */
-    private JSONObject handleRequest(WebScriptRequest req, final Long maxDepth)
+    private JSONObject handleRequest(WebScriptRequest req)
         throws JSONException, IOException, SQLException {
         JSONObject requestJson = (JSONObject) req.parseContent();
         if (requestJson.has(Sjm.ARTIFACTS)) {
@@ -193,6 +189,7 @@ public class ArtifactsGet extends ArtifactGet {
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
+            String commitId = req.getParameter(Sjm.COMMITID.replace("_",""));
 
             JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
 
@@ -203,7 +200,14 @@ public class ArtifactsGet extends ArtifactGet {
             for (int i = 0; i < elementsToFindJson.length(); i++) {
                 uniqueElements.add(elementsToFindJson.getJSONObject(i).getString(Sjm.SYSMLID));
             }
-            EmsNodeUtil.handleMountSearch(mountsJson, false, false, maxDepth, uniqueElements, found);
+
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            JSONObject commitObject = emsNodeUtil.getCommitObject(commitId);
+
+            String timestamp =
+                commitObject != null && commitObject.has(Sjm.CREATED) ? commitObject.getString(Sjm.CREATED) : null;
+
+            EmsNodeUtil.handleMountSearch(mountsJson, false, false, 0L, uniqueElements, found, timestamp, "artifacts");
             result.put(Sjm.ARTIFACTS, found);
             result.put(Sjm.WARN, uniqueElements);
             return result;

@@ -304,93 +304,11 @@ public class NodeUtil {
         return authorityNames;
     }
 
-    /**
-     * Updates or creates a artifact with the passed name/type in the specified site name/workspace
-     * with the specified content.
-     *
-     * Only updates the artifact if found if updateIfFound is true.
-     *
-     * @param name
-     * @param type
-     * @param base64content
-     * @param dateTime
-     * @param response
-     * @param status
-     * @return
-     */
-    public static EmsScriptNode updateOrCreateArtifact(String name, String type, String base64content,
-        String strContent, String orgId, String projectId, String refId, Date dateTime, StringBuffer response,
-        Status status, boolean ignoreName) {
-
-        EmsScriptNode artifactNode;
-
-        byte[] content = (base64content == null) ? null : DatatypeConverter.parseBase64Binary(base64content);
-
-        if (content == null && strContent != null) {
-            content = strContent.getBytes();
-        }
-
-        EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
-
-        // find site; it must exist!
-        if (targetSiteNode == null || !targetSiteNode.exists()) {
-            Debug.err("Can't find node for site: " + orgId + "!\n");
-            return null;
-        }
-
-        // find or create subfolder
-        EmsScriptNode subfolder = targetSiteNode.childByNamePath("/" + projectId + "/refs/" + refId);
-        if (subfolder == null || !subfolder.exists()) {
-            return null;
-        }
-
-        // find or create node:
-        artifactNode = subfolder.childByNamePath("/" + name);
-
-        // Node wasnt found, so create one:
-        if (artifactNode == null) {
-            artifactNode = subfolder.createNode(name, "cm:content");
-        }
-
-        if (artifactNode == null || !artifactNode.exists()) {
-            Debug.err("Failed to create new artifact " + name + "!\n");
-            return null;
-        }
-
-        if (!artifactNode.hasAspect("cm:versionable")) {
-            artifactNode.addAspect("cm:versionable");
-        }
-        if (!artifactNode.hasAspect("cm:indexControl")) {
-            artifactNode.addAspect("cm:indexControl");
-        }
-        if (!artifactNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
-            artifactNode.addAspect(Acm.ACM_IDENTIFIABLE);
-        }
-
-        artifactNode.createOrUpdateProperty(Acm.CM_TITLE, name);
-        artifactNode.createOrUpdateProperty("cm:isIndexed", true);
-        artifactNode.createOrUpdateProperty("cm:isContentIndexed", false);
-        artifactNode.createOrUpdateProperty(Acm.ACM_ID, name);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Creating artifact with indexing: " + artifactNode.getProperty("cm:isIndexed"));
-        }
-
-        ContentWriter writer =
-            services.getContentService().getWriter(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
-        InputStream contentStream = new ByteArrayInputStream(content);
-        writer.putContent(contentStream);
-        writer.guessEncoding();
-
-        return artifactNode;
-    }
-
-    public static EmsScriptNode updateOrCreateArtifact(Path filePath, String orgId, String projectId, String refId) {
+    public static EmsScriptNode updateOrCreateArtifact(String artifactId, Path filePath, String fileType, String orgId, String projectId, String refId) {
 
         EmsScriptNode artifactNode;
         String finalType = null;
         File content = filePath.toFile();
-        String artifactId = filePath.getFileName().toString();
 
         try {
             finalType = Files.probeContentType(filePath);
@@ -401,8 +319,13 @@ public class NodeUtil {
         }
 
         if (finalType == null) {
-            logger.error("Could not determine type of artifact: " + filePath.getFileName().toString());
-            return null;
+            // Fallback if getting content type fails
+            if (fileType != null) {
+                finalType = fileType;
+            } else {
+                logger.error("Could not determine type of artifact: " + filePath.getFileName().toString());
+                return null;
+            }
         }
 
         EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);

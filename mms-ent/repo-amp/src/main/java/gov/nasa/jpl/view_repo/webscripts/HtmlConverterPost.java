@@ -7,16 +7,17 @@ import gov.nasa.jpl.view_repo.actions.PandocConverter;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
+import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
+import org.apache.tika.mime.MimeType;
+import org.apache.tika.mime.MimeTypes;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
@@ -25,10 +26,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileInputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +35,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(HtmlConverterPost.class);
 
     private StringBuffer response = new StringBuffer();
+    MimeTypes allTypes = MimeTypes.getDefaultMimeTypes();
 
     public HtmlConverterPost() {
         super();
@@ -63,36 +63,48 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
 
         HtmlConverterPost instance = new HtmlConverterPost(repository, services);
+        JSONObject postJson = null;
+        JSONObject result = new JSONObject();
+        try {
+            postJson = new SerialJSONObject(req.getContent().getContent());
+            if (postJson.has("name")) {
 
-        JSONObject result = instance.getHtmlJson(req);
-        String docName = req.getServiceMatch().getTemplateVars().get("documentName");
+                String docName = postJson.optString(Sjm.NAME);
+                String projectId = getProjectId(req);
+                String refId = getRefId(req);
+                EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+                JSONObject project = emsNodeUtil.getProject(projectId);
+                String siteName = project.optString("orgId", null);
 
-        if (result != null && result.has("name")) {
+                // Convert mimetype to extension string
+                String rawFormat = postJson.getString("Accepts");
+                MimeType mimeType = allTypes.forName(rawFormat);
+                String format = mimeType.getExtension();
 
-            String projectId = getProjectId(req);
-            String refId = getRefId(req);
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            JSONObject project = emsNodeUtil.getProject(projectId);
-            String siteName = project.optString("orgId", null);
+                String filename = String.format("%s.%s", docName, format);
+                postJson.put("filename",filename );
+                EmsScriptNode artifact = createDoc(postJson, docName, siteName, projectId, refId, format);
 
-            String format = result.getString("format");
-            result.put("filename", String.format("%s.%s", docName, format));
-            EmsScriptNode artifact = createDoc(result, docName, siteName, projectId, refId, format);
-            if (artifact != null) {
-                result.put("status", "Conversion succeeded.");
+                result.put(Sjm.NAME, docName);
+                result.put("filename", filename);
+
+                if (artifact != null) {
+                    result.put("status", "Conversion succeeded.");
+                } else {
+                    result.put("status", "Conversion failed.");
+                }
+
             } else {
-                result.put("status", "Conversion failed.");
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Job name not specified");
             }
-            result.remove("html");
-
-        } else {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Job name not specified");
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
         appendResponseStatusInfo(instance);
         status.setCode(responseStatus.getCode());
 
-        if (result == null) {
+        if (postJson == null) {
             model.put(Sjm.RES, createResponseJson());
         } else {
             try {
@@ -109,58 +121,31 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
         return model;
     }
 
-    private JSONObject getHtmlJson(WebScriptRequest req) {
-        JSONObject postJson = null;
-        JSONObject reqPostJson = (JSONObject) req.parseContent();
-        if (reqPostJson != null) {
-            postJson = reqPostJson;
-            if (reqPostJson.has("documents")) {
-                JSONArray documents = reqPostJson.getJSONArray("documents");
-                if (documents != null) {
-                    postJson = documents.getJSONObject(0);
-                }
-            }
-        }
-
-        return postJson;
-    }
-
     private EmsScriptNode createDoc(JSONObject postJson, String filename, String siteName, String projectId,
         String refId, String format) {
 
         PandocConverter pandocConverter = new PandocConverter(filename, format);
 
-        String filePath = PandocConverter.PANDOC_DATA_DIR + "/" + pandocConverter.getOutputFile();
+        Path filePath = Paths.get(PandocConverter.PANDOC_DATA_DIR + "/" + pandocConverter.getOutputFile());
 
-        // Convert HTML to Doc
-        pandocConverter.convert(postJson.optString("body"));
         EmsScriptNode artifact = null;
 
-        String encodedBase64;
-        FileInputStream binFile;
-        File file = new File(filePath);
-
         try {
-            binFile = new FileInputStream(filePath);
-            byte[] content = new byte[(int) file.length()];
-            binFile.read(content);
-            encodedBase64 = new String(Base64.getEncoder().encode(content));
+            // Convert HTML to Doc
+            pandocConverter.convert(postJson.optString("body"));
 
-            artifact = NodeUtil
-                .updateOrCreateArtifact(pandocConverter.getOutputFile(), format, encodedBase64, null, siteName, projectId, refId, null,
-                    response, null, false);
+            String artifactId = postJson.getString(Sjm.NAME) + System.currentTimeMillis() + format;
+            artifact = NodeUtil.updateOrCreateArtifact(artifactId, filePath, format, siteName, projectId, refId);
 
             sendEmail(artifact);
             if (artifact == null) {
                 logger.error(String.format("Failed to create HTML to %s artifact in Alfresco.", format));
+            } else {
+                File file = filePath.toFile();
+                if (!file.delete()) {
+                    logger.error(String.format("Failed to delete the temp file %s", filename));
+                }
             }
-
-            // Should close the file either way.
-            binFile.close();
-            if (!file.delete()) {
-                logger.error(String.format("Failed to delete the temp file %s", filename));
-            }
-
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }

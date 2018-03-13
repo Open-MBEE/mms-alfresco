@@ -7,8 +7,7 @@
             "_refId": "master",
             "checksum": "af40d30cbe164d63f2e53e6e438dc707",
             "contentType": "image/png",
-            "id": "imagemounts",
-            "ownerId": "holding_bin_PB",
+            "id": "imagemount",
             "type": "Artifact"
         }
     ]

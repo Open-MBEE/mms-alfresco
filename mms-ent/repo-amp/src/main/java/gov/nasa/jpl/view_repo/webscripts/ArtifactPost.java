@@ -104,7 +104,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         Map<String, Object> result = new HashMap<>();
         JSONObject postJson = new JSONObject();
-        String imageId = getArtifactId(req);
 
         FormData formData = (FormData) req.parseContent();
         FormData.FormField[] fields = formData.getFields();
@@ -112,6 +111,8 @@ public class ArtifactPost extends AbstractJavaWebScript {
             for (FormData.FormField field : fields) {
                 logger.debug("field.getName(): " + field.getName());
                 if (field.getName().equals("file") && field.getIsFile()) {
+                    //String extension = FilenameUtils.getExtension();
+                    //String filenameString = field.getFilename().substring(0, field.getFilename().lastIndexOf('.') - 1);
                     filename = field.getFilename();
                     Content tempContent = field.getContent();
                     mimeType = tempContent.getMimetype();
@@ -130,9 +131,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     postJson.put(name, value);
                     logger.debug("property name: " + name);
                 }
-            }
-            if (imageId != null && !imageId.isEmpty()) {
-                postJson.put(Sjm.SYSMLID, imageId);
             }
             postJson.put(Sjm.TYPE, "Artifact");
         } catch (Exception e) {
@@ -169,11 +167,11 @@ public class ArtifactPost extends AbstractJavaWebScript {
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
             results = emsNodeUtil
-                .processPostJson(delta, user, oldElasticIds, false, this.requestSourceApplication, Sjm.ARTIFACT);
+                .processPostJson(delta, user, oldElasticIds, false, this.requestSourceApplication, postJson.optString("comment"), Sjm.ARTIFACT);
             String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
             if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, false, true)) {
                 if (!oldElasticIds.isEmpty()) {
-                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds);
+                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds, "artifact");
                 }
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
                 newElementsObject.put(Sjm.ARTIFACTS, filterByPermission(results.getJSONArray(NEWELEMENTS), req));
@@ -207,7 +205,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
         if (!contentType.isEmpty() && postJson.optString(Sjm.CONTENTTYPE).isEmpty()) {
-            postJson.put(Sjm.CONTENTTYPE, contentType);
+            postJson.put(Sjm.CONTENTTYPE, contentType); //this would be wrong anyway if it gets here
         }
 
         String projectId = getProjectId(req);
@@ -235,12 +233,12 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     // :TODO check against checksum first, md5hash(content), if matching return the previous version
 
                     if (filePath != null) {
-                        artifact = NodeUtil.updateOrCreateArtifact(filePath, siteName, projectId, refId);
+                        artifact = NodeUtil.updateOrCreateArtifact(alfrescoId, filePath, postJson.optString(Sjm.CONTENTTYPE), siteName, projectId, refId);
                     }
 
                     if (artifact == null) {
-                        logger.error("Was not able to create the artifact!\n");
-                        //model.put(Sjm.RES, createResponseJson());
+                        log(HttpServletResponse.SC_BAD_REQUEST, "Was not able to create the artifact!\n");
+                        model.put(Sjm.RES, createResponseJson());
                     } else {
                         String url = artifact.getUrl();
                         if (url != null) {
@@ -249,17 +247,17 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     }
 
                 } else {
-                    logger.error("artifactId not supplied or content is empty!");
+                    log(HttpServletResponse.SC_BAD_REQUEST, "artifactId not supplied or content is empty!");
                     model.put(Sjm.RES, createResponseJson());
                 }
 
             } catch (JSONException e) {
-                logger.error("Issues creating return JSON\\n");
+                log(HttpServletResponse.SC_BAD_REQUEST, "Issues creating return JSON\\n");
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 model.put(Sjm.RES, createResponseJson());
             }
         } else {
-            logger.error("Invalid request, no sitename specified or no content provided!\\n");
+            log(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, no sitename specified or no content provided!\\n");
             model.put(Sjm.RES, createResponseJson());
         }
 
@@ -290,59 +288,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
             throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
         }
     }
-
-//    protected static Path saveSvgToFilesystem(String artifactId, String extension, String content) throws Throwable {
-//        byte[] svgContent = content.getBytes(Charset.forName("UTF-8"));
-//        File tempDir = TempFileProvider.getTempDir();
-//        Path svgPath = Paths.get(tempDir.getAbsolutePath(), String.format("%s%s", artifactId, extension));
-//        File file = new File(svgPath.toString());
-//
-//        try (final InputStream in = new ByteArrayInputStream(svgContent)) {
-//            file.mkdirs();
-//            Files.copy(in, svgPath, StandardCopyOption.REPLACE_EXISTING);
-//            return svgPath;
-//        } catch (Throwable ex) {
-//            throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
-//        }
-//    }
-//
-//    protected static Path svgToPng(Path svgPath) throws Throwable {
-//        if (svgPath.toString().contains(".png")) {
-//            return svgPath;
-//        }
-//        Path filePath = Paths.get(svgPath.toString().replace(".svg", ".png"));
-//        try (OutputStream png_ostream = new FileOutputStream(filePath.toString())) {
-//            String svg_URI_input = svgPath.toUri().toURL().toString();
-//            TranscoderInput input_svg_image = new TranscoderInput(svg_URI_input);
-//            TranscoderOutput output_png_image = new TranscoderOutput(png_ostream);
-//            PNGTranscoder my_converter = new PNGTranscoder();
-//            my_converter.transcode(input_svg_image, output_png_image);
-//        } catch (Throwable ex) {
-//            throw new Throwable("Failed to convert SVG to PNG! " + ex.getMessage());
-//        }
-//        return filePath;
-//    }
-//
-//    protected static void synchSvgAndPngVersions(EmsScriptNode svgNode, EmsScriptNode pngNode) {
-//        Version svgVer = svgNode.getCurrentVersion();
-//        String svgVerLabel = svgVer.getVersionLabel();
-//        Double svgVersion = Double.parseDouble(svgVerLabel);
-//
-//        Version pngVer = pngNode.getCurrentVersion();
-//        String pngVerLabel = pngVer.getVersionLabel();
-//        Double pngVersion = Double.parseDouble(pngVerLabel);
-//
-//        int svgVerLen = svgNode.getEmsVersionHistory().length;
-//        int pngVerLen = pngNode.getEmsVersionHistory().length;
-//
-//        while (pngVersion < svgVersion || pngVerLen < svgVerLen) {
-//            pngNode.createVersion("creating the version history", false);
-//            pngVer = pngNode.getCurrentVersion();
-//            pngVerLabel = pngVer.getVersionLabel();
-//            pngVersion = Double.parseDouble(pngVerLabel);
-//            pngVerLen = pngNode.getEmsVersionHistory().length;
-//        }
-//    }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         String elementId = req.getServiceMatch().getTemplateVars().get("elementid");

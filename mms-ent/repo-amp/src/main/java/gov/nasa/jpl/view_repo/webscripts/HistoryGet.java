@@ -70,11 +70,10 @@ public class HistoryGet extends ModelGet {
         }
 
         JSONObject top = new JSONObject();
-        JSONArray elementsJson = handleRequest(req);
-
+        JSONArray historyJson = handleRequest(req);
         try {
-            if (elementsJson.length() > 0) {
-                top.put(Sjm.COMMITS, elementsJson);
+            if (historyJson.length() > 0) {
+                top.put(Sjm.COMMITS, historyJson);
             } else {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -109,13 +108,9 @@ public class HistoryGet extends ModelGet {
      * @return
      */
     private JSONArray handleRequest(WebScriptRequest req) {
-        // REVIEW -- Why check for errors here if validate has already been
-        // called? Is the error checking code different? Why?
-
-        // Creates an empty JSONArray
-        JSONArray jsonHist = null;
+        JSONArray jsonHist = new JSONArray();
         try {
-            String[] idKeys = { "modelid", "elementid", "elementId" };
+            String[] idKeys = { "elementId", "artifactId" };
             String modelId = null;
             for (String idKey : idKeys) {
                 modelId = req.getServiceMatch().getTemplateVars().get(idKey);
