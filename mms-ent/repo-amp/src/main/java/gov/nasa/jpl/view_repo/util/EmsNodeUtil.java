@@ -1762,6 +1762,18 @@ public class EmsNodeUtil {
         return result;
     }
 
+    public List<String> getModel(Boolean withDeleted) {
+        List<String> model = new ArrayList();
+
+        try {
+            model = pgh.getAllNodes(withDeleted);
+
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return model;
+    }
+
     public static String md5Hash(String str) {
         StringBuilder sb = new StringBuilder();
 

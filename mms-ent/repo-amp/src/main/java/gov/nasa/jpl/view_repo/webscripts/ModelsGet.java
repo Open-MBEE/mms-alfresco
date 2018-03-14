@@ -31,11 +31,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -118,9 +114,7 @@ public class ModelsGet extends ModelGet {
             if (validateRequest(req, status)) {
                 try {
                     Long depth = getDepthFromRequest(req);
-                    result = (req.parseContent() != null) ?
-                        handleRequest(req, depth) :
-                        getAllElements(getProjectId(req), getRefId(req));
+                    result = (req.parseContent() != null) ? handleRequest(req, depth) : getAllElements(req);
                     elementsJson = result.optJSONArray(Sjm.ELEMENTS);
                 } catch (JSONException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
@@ -226,16 +220,25 @@ public class ModelsGet extends ModelGet {
      * Wrapper for handling a request for all elements in a project and ref and getting the appropriate JSONArray of
      * elements
      *
-     * @param projectId
+     * @param req
      * @return
      * @throws IOException
      */
-    private JSONObject getAllElements(String projectId, String refId) throws IOException {
+    private JSONObject getAllElements(WebScriptRequest req) throws IOException {
+        // getElementAtCommit and all Nodes not deleted and pass to handleMountSearch
+        // For commit get all Nodes that are deleted as well and pass to handleMountSearch
+        String refId = getRefId(req);
+        String projectId = getProjectId(req);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         JSONArray found = new JSONArray();
         JSONObject result = new JSONObject();
         JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
         Set<String> uniqueElements = new HashSet<>();
-        uniqueElements.add(projectId);
+        List<String> elementsToFindJson = emsNodeUtil.getModel(false);
+        for (int i = 0; i < elementsToFindJson.size(); i++) {
+            uniqueElements.add(elementsToFindJson.get(i));
+        }
         Long maxDepth = 100000L;
         EmsNodeUtil.handleMountSearch(mountsJson, false, false, maxDepth, uniqueElements, found, null, null);
         result.put(Sjm.ELEMENTS, found);
