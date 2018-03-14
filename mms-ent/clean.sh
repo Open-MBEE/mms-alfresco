@@ -64,6 +64,7 @@ if [[ "$OSTYPE" == "darwin" ]]; then
     dropdb -U $dbuser _PD
     dropdb -U $dbuser _MountCommit
     dropdb -U $dbuser _CollaboratorProject
+    dropdb -U $dbuser _CompleteModelGet
     dropdb -U $dbuser $usedb
     createdb -U $dbuser $usedb
     psql -U $dbuser -f ./repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql $usedb
@@ -150,6 +151,7 @@ EOD
         dropdb -U $dbuser _PD
         dropdb -U $dbuser _MountCommit
         dropdb -U $dbuser _CollaboratorProject
+        dropdb -U $dbuser _CompleteModelGet
         dropdb -U $dbuser $usedb
         createdb -U $dbuser $usedb
         psql -U $dbuser -f ./repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql $usedb

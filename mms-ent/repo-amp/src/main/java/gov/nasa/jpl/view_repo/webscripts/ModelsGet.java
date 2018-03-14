@@ -225,24 +225,30 @@ public class ModelsGet extends ModelGet {
      * @throws IOException
      */
     private JSONObject getAllElements(WebScriptRequest req) throws IOException {
-        // getElementAtCommit and all Nodes not deleted and pass to handleMountSearch
-        // For commit get all Nodes that are deleted as well and pass to handleMountSearch
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
-        JSONArray found = new JSONArray();
+        String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
+
+        JSONArray elements = new JSONArray();
+        JSONObject extendedElements = new JSONObject();
         JSONObject result = new JSONObject();
-        JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
-        Set<String> uniqueElements = new HashSet<>();
-        List<String> elementsToFindJson = emsNodeUtil.getModel(false);
-        for (int i = 0; i < elementsToFindJson.size(); i++) {
-            uniqueElements.add(elementsToFindJson.get(i));
+
+        if (commitId == null) {
+            Set<String> uniqueElements = new HashSet<>();
+            List<String> elementsToFindJson = emsNodeUtil.getModel(false);
+            for (int i = 0; i < elementsToFindJson.size(); i++) {
+                uniqueElements.add(elementsToFindJson.get(i));
+            }
+            elements = emsNodeUtil.getJSONBySysmlids(new ArrayList<>(uniqueElements), false);
+            result.put(Sjm.ELEMENTS, elements);
+        } else {
+            result = emsNodeUtil.getModelAtCommit(commitId);
         }
-        Long maxDepth = 100000L;
-        EmsNodeUtil.handleMountSearch(mountsJson, false, false, maxDepth, uniqueElements, found, null, null);
-        result.put(Sjm.ELEMENTS, found);
-        result.put(Sjm.WARN, uniqueElements);
+        if (extended) {
+            return extendedElements.put(Sjm.ELEMENTS, emsNodeUtil.addExtendedInformation(result.getJSONArray(Sjm.ELEMENTS)));
+        }
         return result;
     }
 }

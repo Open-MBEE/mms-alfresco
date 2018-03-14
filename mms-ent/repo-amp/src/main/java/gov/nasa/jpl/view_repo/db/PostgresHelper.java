@@ -608,7 +608,7 @@ public class PostgresHelper implements GraphInterface {
             StringBuilder query = new StringBuilder("SELECT * FROM \"nodes" + workspaceId + "\"");
 
             if (!withDeleted) {
-                query.append(" AND deleted = false");
+                query.append(" WHERE deleted = false");
             }
 
             statement = getConn().prepareStatement(query.toString());
@@ -617,7 +617,7 @@ public class PostgresHelper implements GraphInterface {
             while (rs.next()) {
                 result.add(resultSetToNode(rs));
             }
-            ids = result.stream().map(Node::getSysmlId).collect(Collectors.toList());
+            ids = result.stream().map(Node::getElasticId).collect(Collectors.toList());
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
