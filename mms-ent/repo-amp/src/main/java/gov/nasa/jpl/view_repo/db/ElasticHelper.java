@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 import io.searchbox.core.*;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,7 +51,14 @@ public class ElasticHelper implements ElasticsearchInterface {
 
     public void init(String elasticHost) {
 
-        JestClientFactory factory = new JestClientFactory();
+        JestClientFactory factory = new JestClientFactory(){
+            @Override
+            protected HttpClientBuilder configureHttpClient(HttpClientBuilder builder) {
+                builder = super.configureHttpClient(builder);
+                builder.setRetryHandler(new DefaultHttpRequestRetryHandler(3, true));
+                return builder;
+            }
+        };
         if (elasticHost.contains("https")) {
             factory.setHttpClientConfig(
                 new HttpClientConfig.Builder(elasticHost).defaultSchemeForDiscoveredNodes("https").multiThreaded(true)
