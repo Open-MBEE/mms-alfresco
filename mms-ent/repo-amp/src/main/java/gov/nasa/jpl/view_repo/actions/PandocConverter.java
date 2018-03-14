@@ -94,13 +94,17 @@ public class PandocConverter {
             title += "\n";
         }
 
-        String command = String.format("%s --pdf-engine=%s ", this.pandocExec, this.pdfEngine);
-        command += String.format(" -o %s/%s.%s", PANDOC_DATA_DIR, this.outputFile, this.pandocOutputFormat.getFormatName());
+        StringBuilder command = new StringBuilder();
+        command.append(String.format("%s", this.pandocExec));
+        if (this.pandocOutputFormat.getFormatName().equals("pdf")) {
+            command.append(String.format(" --pdf-engine=%s ", this.pdfEngine));
+        }
+        command.append(String.format(" -o %s/%s.%s", PANDOC_DATA_DIR, this.outputFile, this.pandocOutputFormat.getFormatName()));
 
         int status;
 
         try {
-            Process process = Runtime.getRuntime().exec(command);
+            Process process = Runtime.getRuntime().exec(command.toString());
             OutputStream out = process.getOutputStream();
             out.write(title.getBytes());
             out.flush();
@@ -109,14 +113,16 @@ public class PandocConverter {
             out.close();
             status = process.waitFor();
         } catch (InterruptedException ex) {
-            throw new RuntimeException("Could not execute: " + command, ex);
+            throw new RuntimeException("Could not execute: " + command.toString(), ex);
         } catch (IOException ex) {
-            throw new RuntimeException("Could not execute. Maybe pandoc is not in PATH?: " + command, ex);
+            throw new RuntimeException("Could not execute. Maybe pandoc is not in PATH?: " + command.toString(), ex);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
         }
 
         if (status != 0) {
             throw new RuntimeException(
-                "Conversion failed with status code: " + status + ". Command executed: " + command);
+                "Conversion failed with status code: " + status + ". Command executed: " + command.toString());
         }
         useCustomCss = false;
     }
