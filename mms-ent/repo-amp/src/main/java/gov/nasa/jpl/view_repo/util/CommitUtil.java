@@ -308,7 +308,7 @@ public class CommitUtil {
     }
 
     private static boolean processDeltasForDb(SerialJSONObject delta, String projectId, String refId, JSONObject jmsPayload,
-        boolean withChildViews, ServiceRegistry services) {
+        ServiceRegistry services) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
         PostgresHelper pgh = new PostgresHelper();
@@ -626,7 +626,7 @@ public class CommitUtil {
                 return false;
             }
         } else {
-            if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
+            if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, services)) {
                 return false;
             }
         }
