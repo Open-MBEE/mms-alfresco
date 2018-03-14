@@ -969,9 +969,9 @@ public class CommitUtil {
             if (key.equals(keyMatch)) {
                 result.add(value);
             } else if (value instanceof JSONObject) {
-                result.addAll(findKeyValueInJsonObject((SerialJSONObject) value, keyMatch, text));
+                result.addAll(findKeyValueInJsonObject(new SerialJSONObject(value.toString()), keyMatch, text));
             } else if (value instanceof JSONArray) {
-                result.addAll(findKeyValueInJsonArray((SerialJSONArray) value, keyMatch, text));
+                result.addAll(findKeyValueInJsonArray(new SerialJSONArray(value.toString()), keyMatch, text));
             }
         }
         return result;
@@ -982,9 +982,9 @@ public class CommitUtil {
 
         for (int ii = 0; ii < jsonArray.length(); ii++) {
             if (jsonArray.get(ii) instanceof JSONObject) {
-                result.addAll(findKeyValueInJsonObject((SerialJSONObject) jsonArray.get(ii), keyMatch, text));
+                result.addAll(findKeyValueInJsonObject(new SerialJSONObject(jsonArray.get(ii).toString()), keyMatch, text));
             } else if (jsonArray.get(ii) instanceof JSONArray) {
-                result.addAll(findKeyValueInJsonArray((SerialJSONArray) jsonArray.get(ii), keyMatch, text));
+                result.addAll(findKeyValueInJsonArray(new SerialJSONArray(jsonArray.get(ii).toString()), keyMatch, text));
             }
         }
 
