@@ -160,6 +160,9 @@ public class CommitUtil {
     public static boolean isSite(JSONObject element) {
         return element.has(Sjm.ISSITE) && element.getBoolean(Sjm.ISSITE);
     }
+    public static JSONObject indexProfile(String id, JSONObject elements, String index) throws IOException {
+        return eh.updateProfile(id, elements, index);
+    }
 
     private static boolean bulkElasticEntry(JSONArray elements, String operation, boolean refresh, String index, String type) {
         if (elements.length() > 0) {
@@ -213,7 +216,7 @@ public class CommitUtil {
         JSONArray jmsDeleted = new JSONArray();
 
         List<String> deletedSysmlIds = new ArrayList<>();
-        if (bulkElasticEntry(added, "added", false, projectId, "artifact") && bulkElasticEntry(updated, "updated", false,
+        if (bulkElasticEntry(added, "added", true, projectId, "artifact") && bulkElasticEntry(updated, "updated", true,
             projectId, "artifact")) {
             try {
                 List<Map<String, Object>> artifactInserts = new ArrayList<>();
@@ -305,7 +308,7 @@ public class CommitUtil {
     }
 
     private static boolean processDeltasForDb(SerialJSONObject delta, String projectId, String refId, JSONObject jmsPayload,
-        boolean withChildViews, ServiceRegistry services) {
+        ServiceRegistry services) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
         PostgresHelper pgh = new PostgresHelper();
@@ -329,8 +332,8 @@ public class CommitUtil {
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
 
-        if (bulkElasticEntry(added, "added", withChildViews, projectId, "element") && bulkElasticEntry(updated, "updated",
-            withChildViews, projectId, "element")) {
+        if (bulkElasticEntry(added, "added", true, projectId, "element") && bulkElasticEntry(updated, "updated",
+            true, projectId, "element")) {
 
             try {
                 List<Map<String, Object>> nodeInserts = new ArrayList<>();
@@ -623,7 +626,7 @@ public class CommitUtil {
                 return false;
             }
         } else {
-            if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
+            if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, services)) {
                 return false;
             }
         }

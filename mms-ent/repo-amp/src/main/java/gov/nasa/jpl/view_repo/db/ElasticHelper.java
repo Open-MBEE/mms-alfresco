@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.searchbox.core.*;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,19 +25,10 @@ import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
 import io.searchbox.client.config.HttpClientConfig;
-import io.searchbox.core.Bulk;
-import io.searchbox.core.BulkResult;
-import io.searchbox.core.Get;
-import io.searchbox.core.Index;
-import io.searchbox.core.Update;
-import io.searchbox.core.Search;
-import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
 import io.searchbox.indices.Refresh;
 import io.searchbox.params.Parameters;
-import io.searchbox.core.DeleteByQuery;
-import io.searchbox.core.Delete;
 
 
 /**
@@ -52,11 +46,19 @@ public class ElasticHelper implements ElasticsearchInterface {
 
     private static final String ELEMENT = "element";
     private static final String COMMIT = "commit";
+    private static final String PROFILE = "profile";
     private static final String ARTIFACT = "artifact";
 
     public void init(String elasticHost) {
 
-        JestClientFactory factory = new JestClientFactory();
+        JestClientFactory factory = new JestClientFactory(){
+            @Override
+            protected HttpClientBuilder configureHttpClient(HttpClientBuilder builder) {
+                builder = super.configureHttpClient(builder);
+                builder.setRetryHandler(new DefaultHttpRequestRetryHandler(3, true));
+                return builder;
+            }
+        };
         if (elasticHost.contains("https")) {
             factory.setHttpClientConfig(
                 new HttpClientConfig.Builder(elasticHost).defaultSchemeForDiscoveredNodes("https").multiThreaded(true)
@@ -119,6 +121,21 @@ public class ElasticHelper implements ElasticsearchInterface {
         return null;
     }
 
+    public JSONObject getProfileByElasticId(String id, String index) throws IOException {
+        // Cannot use method for commit type
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(PROFILE).build();
+
+        JestResult result = client.execute(get);
+
+        if (result.isSucceeded()) {
+            JSONObject o = new JSONObject(result.getJsonObject().get("_source").toString());
+            o.put(Sjm.ELASTICID, result.getJsonObject().get("_id").getAsString());
+            return o;
+        }
+
+        return null;
+    }
+
     /**
      * Gets the JSON document of element type using a elastic _id (1)
      *
@@ -139,6 +156,7 @@ public class ElasticHelper implements ElasticsearchInterface {
 
         return null;
     }
+
     /**
      * Returns the commit history of a element                           (1)
      * <p> Returns a JSONArray of objects that look this:
@@ -399,6 +417,14 @@ public class ElasticHelper implements ElasticsearchInterface {
         return true;
     }
 
+    public JSONObject updateProfile(String id, JSONObject payload, String index) throws JSONException, IOException {
+        JSONObject upsert = new JSONObject().put("doc", payload).put("doc_as_upsert", true).put("_source", true);
+        JestResult res = client.execute(
+            new Update.Builder(upsert.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(PROFILE)
+                .build());
+        return new JSONObject(res != null ? res.getJsonString() : "").getJSONObject("get").getJSONObject("_source");
+    }
+
     /**
      * Index multiple JSON documents by type using the BulkAPI                        (1)
      *
@@ -406,8 +432,8 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param operation    checks for CRUD operation, does not delete documents
      * @return ElasticResult e
      */
-    public boolean bulkIndexElements(JSONArray bulkElements, String operation, boolean refresh, String index, String type)
-        throws JSONException, IOException {
+    public boolean bulkIndexElements(JSONArray bulkElements, String operation, boolean refresh, String index,
+        String type) throws JSONException, IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         // BulkableAction is generic
         ArrayList<BulkableAction> actions = new ArrayList<>();

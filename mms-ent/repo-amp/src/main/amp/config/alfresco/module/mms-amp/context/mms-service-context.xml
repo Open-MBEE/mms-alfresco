@@ -234,4 +234,18 @@
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
+    <bean
+        id="webscript.gov.nasa.jpl.mms.users.preferences.get"
+        class="gov.nasa.jpl.view_repo.webscripts.UserPreferencesGet" parent="webscript"
+        singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
+    <bean
+        id="webscript.gov.nasa.jpl.mms.users.preferences.post"
+        class="gov.nasa.jpl.view_repo.webscripts.UserPreferencesPost" parent="webscript"
+        singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
 </beans>

@@ -81,8 +81,8 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
                 MimeType mimeType = allTypes.forName(rawFormat);
                 String format = mimeType.getExtension();
 
-                String filename = String.format("%s.%s", docName, format);
-                postJson.put("filename",filename );
+                String filename = String.format("%s%s", docName, format);
+                postJson.put("filename", filename );
                 EmsScriptNode artifact = createDoc(postJson, docName, siteName, projectId, refId, format);
 
                 result.put(Sjm.NAME, docName);
