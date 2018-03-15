@@ -237,7 +237,7 @@ public class ModelsGet extends ModelGet {
 
         if (commitId == null) {
             Set<String> uniqueElements = new HashSet<>();
-            List<String> elementsToFindJson = emsNodeUtil.getModel(false);
+            List<String> elementsToFindJson = emsNodeUtil.getModel();
             for (int i = 0; i < elementsToFindJson.size(); i++) {
                 uniqueElements.add(elementsToFindJson.get(i));
             }

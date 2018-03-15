@@ -599,17 +599,13 @@ public class PostgresHelper implements GraphInterface {
         return result;
     }
 
-    public List<String> getAllNodes(boolean withDeleted) {
+    public List<String> getAllNodes() {
         List<Node> result = new ArrayList<>();
         List<String> ids =  new ArrayList<>();
 
         try {
             PreparedStatement statement;
-            StringBuilder query = new StringBuilder("SELECT * FROM \"nodes" + workspaceId + "\"");
-
-            if (!withDeleted) {
-                query.append(" WHERE deleted = false");
-            }
+            StringBuilder query = new StringBuilder("SELECT * FROM \"nodes" + workspaceId + "\" WHERE deleted = false ORDER BY id");
 
             statement = getConn().prepareStatement(query.toString());
 

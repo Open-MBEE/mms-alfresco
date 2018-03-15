@@ -1762,11 +1762,11 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public List<String> getModel(Boolean withDeleted) {
+    public List<String> getModel() {
         List<String> model = new ArrayList();
 
         try {
-            model = pgh.getAllNodes(withDeleted);
+            model = pgh.getAllNodes();
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));

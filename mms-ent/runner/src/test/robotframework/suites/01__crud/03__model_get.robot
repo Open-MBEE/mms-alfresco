@@ -16,6 +16,7 @@ PostNewElementsToModel
 	${post_json} =		Get File		${CURDIR}/../../JsonData/PostNewElementsForModelGet.json
 	${result} =			Post		url=${ROOT}/projects/CompleteModelGet/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
 	${commit} =	Get Commit Id		${result.json()}
     Set Global Variable	  ${commit}
 
