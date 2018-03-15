@@ -23,11 +23,6 @@
         <property name="repository" ref="repositoryHelper"/>
     </bean>
 
-    <bean id="htmlToPdf" class="gov.nasa.jpl.view_repo.actions.HtmlToPdfActionExecuter" parent="action-executer">
-        <property name="services" ref="ServiceRegistry"/>
-        <property name="repository" ref="repositoryHelper"/>
-    </bean>
-
     <bean id="extendPermissionModel" parent="permissionModelBootstrap">
         <property name="model" value="alfresco/extension/permissionDefinitionsExtension.xml"/>
     </bean>

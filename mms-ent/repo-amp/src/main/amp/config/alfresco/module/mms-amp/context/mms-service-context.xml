@@ -87,14 +87,6 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
-    <bean
-        id="webscript.gov.nasa.jpl.mms.refs.htmlToPdf.post"
-        class="gov.nasa.jpl.view_repo.webscripts.HtmlToPdfPost" parent="webscript"
-        singleton="false">
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="services" ref="ServiceRegistry" />
-    </bean>
-
     <bean id="webscript.gov.nasa.jpl.mms.refs.documents.get"
           class="gov.nasa.jpl.view_repo.webscripts.DocumentsGet" parent="webscript"
           singleton="false">
@@ -236,8 +228,8 @@
     </bean>
 
     <bean
-        id="webscript.gov.nasa.jpl.mms.refs.htmlToWord.post"
-        class="gov.nasa.jpl.view_repo.webscripts.HtmlToWordPost" parent="webscript"
+        id="webscript.gov.nasa.jpl.mms.refs.convert.post"
+        class="gov.nasa.jpl.view_repo.webscripts.HtmlConverterPost" parent="webscript"
         singleton="false">
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />

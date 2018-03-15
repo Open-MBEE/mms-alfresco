@@ -47,3 +47,4 @@ jms.uri=tcp://localhost:61616
 pandoc.output.dir=/tmp
 pandoc.output.filename=tmp.output
 pandoc.exec=/usr/local/bin/pandoc
+pandoc.pdfengine="prince"
