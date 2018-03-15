@@ -31,11 +31,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -78,16 +74,16 @@ public class ModelsGet extends ModelGet {
         String timestamp = req.getParameter("timestamp");
         Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
 
-            String refId = getRefId(req);
-            String projectId = getProjectId(req);
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
-                return true;
-            } else if (refId != null && !emsNodeUtil.refExists(refId)) {
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
-                    refId + (dateTime == null ? "" : " at " + dateTime));
-                return false;
-            }
+        String refId = getRefId(req);
+        String projectId = getProjectId(req);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
+            return true;
+        } else if (refId != null && !emsNodeUtil.refExists(refId)) {
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
+                refId + (dateTime == null ? "" : " at " + dateTime));
+            return false;
+        }
 
         return true;
     }
@@ -118,7 +114,7 @@ public class ModelsGet extends ModelGet {
             if (validateRequest(req, status)) {
                 try {
                     Long depth = getDepthFromRequest(req);
-                    result = handleRequest(req, depth);
+                    result = (req.parseContent() != null) ? handleRequest(req, depth) : getAllElements(req);
                     elementsJson = result.optJSONArray(Sjm.ELEMENTS);
                 } catch (JSONException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
@@ -190,7 +186,7 @@ public class ModelsGet extends ModelGet {
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
-            String commitId = req.getParameter(Sjm.COMMITID.replace("_",""));
+            String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
 
             boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
@@ -218,6 +214,42 @@ public class ModelsGet extends ModelGet {
         } else {
             return new JSONObject();
         }
+    }
+
+    /**
+     * Wrapper for handling a request for all elements in a project and ref and getting the appropriate JSONArray of
+     * elements
+     *
+     * @param req
+     * @return
+     * @throws IOException
+     */
+    private JSONObject getAllElements(WebScriptRequest req) throws IOException {
+        String refId = getRefId(req);
+        String projectId = getProjectId(req);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
+        String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
+
+        JSONArray elements = new JSONArray();
+        JSONObject extendedElements = new JSONObject();
+        JSONObject result = new JSONObject();
+
+        if (commitId == null) {
+            Set<String> uniqueElements = new HashSet<>();
+            List<String> elementsToFindJson = emsNodeUtil.getModel();
+            for (int i = 0; i < elementsToFindJson.size(); i++) {
+                uniqueElements.add(elementsToFindJson.get(i));
+            }
+            elements = emsNodeUtil.getJSONBySysmlids(new ArrayList<>(uniqueElements), false);
+            result.put(Sjm.ELEMENTS, elements);
+        } else {
+            result = emsNodeUtil.getModelAtCommit(commitId);
+        }
+        if (extended) {
+            return extendedElements.put(Sjm.ELEMENTS, emsNodeUtil.addExtendedInformation(result.getJSONArray(Sjm.ELEMENTS)));
+        }
+        return result;
     }
 }
 

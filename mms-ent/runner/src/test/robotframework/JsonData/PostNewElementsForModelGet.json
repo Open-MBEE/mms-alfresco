@@ -1,0 +1,81 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "A",
+            "isDerived": false,
+            "name": "three hundred",
+            "ownerId": "CompleteModelGet",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "documentation": "else",
+            "id": "B",
+            "isDerived": false,
+            "name": "three hundred and one",
+            "ownerId": "A",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "documentation": "to",
+            "id": "C",
+            "isDerived": false,
+            "name": "three hundred and two",
+            "ownerId": "B",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "documentation": "to",
+            "id": "D",
+            "isDerived": false,
+            "name": "Has no owner",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "blah",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ],
+    "rejected": []
+}

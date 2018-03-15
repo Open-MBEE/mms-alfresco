@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -598,6 +599,30 @@ public class PostgresHelper implements GraphInterface {
         return result;
     }
 
+    public List<String> getAllNodes() {
+        List<Node> result = new ArrayList<>();
+        List<String> ids =  new ArrayList<>();
+
+        try {
+            PreparedStatement statement;
+            StringBuilder query = new StringBuilder("SELECT * FROM \"nodes" + workspaceId + "\" WHERE deleted = false ORDER BY id");
+
+            statement = getConn().prepareStatement(query.toString());
+
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                result.add(resultSetToNode(rs));
+            }
+            ids = result.stream().map(Node::getElasticId).collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return ids;
+    }
+
     /**
      * Returns a modified version of all the nodes the database along with the timestamp of the last commit.
      *
@@ -839,7 +864,8 @@ public class PostgresHelper implements GraphInterface {
     public Set<String> getElasticIds(String table, boolean withDeleted) {
         Set<String> elasticIds = new HashSet<>();
         try {
-            StringBuilder query = new StringBuilder(String.format("SELECT elasticid FROM \"%s%s\"", table, workspaceId));
+            StringBuilder query =
+                new StringBuilder(String.format("SELECT elasticid FROM \"%s%s\"", table, workspaceId));
             if (!withDeleted) {
                 query.append(" WHERE deleted = false");
             }
@@ -881,7 +907,8 @@ public class PostgresHelper implements GraphInterface {
     public Artifact getArtifactFromSysmlId(String sysmlId, boolean withDeleted) {
         try {
             PreparedStatement query;
-            StringBuilder queryString = new StringBuilder("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
+            StringBuilder queryString =
+                new StringBuilder("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
             if (withDeleted) {
                 query = getConn().prepareStatement(queryString.toString());
                 query.setString(1, sysmlId);
@@ -2006,7 +2033,8 @@ public class PostgresHelper implements GraphInterface {
         return getRefsCommits(refId, 0, timestamp, limit, 0);
     }
 
-    public List<Map<String, Object>> getRefsCommits(String refId, int commitId, Timestamp timestamp, int limit, int count) {
+    public List<Map<String, Object>> getRefsCommits(String refId, int commitId, Timestamp timestamp, int limit,
+        int count) {
 
         List<Map<String, Object>> result = new ArrayList<>();
         try {
@@ -2022,8 +2050,8 @@ public class PostgresHelper implements GraphInterface {
             int limitColNum = 0;
             int timestampColNum = 0;
 
-            StringBuilder query =
-                new StringBuilder("SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE (refId = ? OR refId = ?)");
+            StringBuilder query = new StringBuilder(
+                "SELECT elasticId, creator, timestamp, refId, commitType.name FROM commits JOIN commitType ON commitType.id = commits.commitType WHERE (refId = ? OR refId = ?)");
 
             if (commitId != 0) {
                 query.append(" AND timestamp <= (SELECT timestamp FROM commits WHERE id = ?)");
