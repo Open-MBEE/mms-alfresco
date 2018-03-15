@@ -1,0 +1,13 @@
+{
+    "refs": [
+        {
+            "_creator": "admin",
+            "_modifier": "admin",
+            "id": "newbranch",
+            "name": "newBranch",
+            "parentRefId": "master",
+            "status": "created",
+            "type": "branch"
+        }
+    ]
+}
