@@ -1957,17 +1957,23 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
-    public Pair<String, String> getRefElastic(String refId) {
+    public Map<String, String> getRefElastic(String refId) {
         if (refId == null || refId.isEmpty()) {
             refId = "master";
         }
         try {
             PreparedStatement statement =
-                prepareStatement("SELECT refId, elasticId FROM refs WHERE deleted = false AND refId = ?");
+                prepareStatement("SELECT refId, elasticId, parent, tag FROM refs WHERE deleted = false AND refId = ?");
             statement.setString(1, sanitizeRefId(refId));
             ResultSet rs = statement.executeQuery();
+            Map res = new HashMap();
             if (rs.next()) {
-                return new Pair<>(rs.getString(1), rs.getString(2));
+                res.put("refId", rs.getString(1));
+                res.put("elasticId", rs.getString(2));
+                res.put("parent", rs.getString(3));
+                // Tricky needs a class
+                res.put("isTag", String.valueOf(rs.getBoolean(4)));
+                return res;
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
