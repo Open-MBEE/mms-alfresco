@@ -25,7 +25,7 @@ public class PandocConverter {
 
 
     public enum PandocOutputFormat {
-        DOCX("docx"), PDF("pdf");
+        DOCX("docx"), PDF("pdf"), LATEX("latex");
 
         private String formatName;
 
