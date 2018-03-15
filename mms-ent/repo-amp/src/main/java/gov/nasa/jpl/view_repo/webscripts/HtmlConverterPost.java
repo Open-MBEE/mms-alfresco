@@ -163,7 +163,6 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
 
     }
 
-
     protected String buildEmailMessage(EmsScriptNode pdfNode) {
         StringBuffer buf = new StringBuffer();
         HostnameGet hostnameGet = new HostnameGet(this.repository, this.services);
