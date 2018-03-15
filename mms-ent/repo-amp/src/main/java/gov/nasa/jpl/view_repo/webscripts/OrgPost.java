@@ -27,7 +27,10 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
+import gov.nasa.jpl.view_repo.util.Acm;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
@@ -93,10 +96,10 @@ public class OrgPost extends AbstractJavaWebScript {
                 JSONArray elementsArray = json != null ? json.optJSONArray("orgs") : null;
                 if (elementsArray != null && elementsArray.length() > 0) {
                     for (int i = 0; i < elementsArray.length(); i++) {
-                        JSONObject projJson = elementsArray.getJSONObject(i);
+                        JSONObject postJson = elementsArray.getJSONObject(i);
 
-                        String orgId = projJson.getString(Sjm.SYSMLID);
-                        String orgName = projJson.getString(Sjm.NAME);
+                        String orgId = postJson.getString(Sjm.SYSMLID);
+                        String orgName = postJson.getString(Sjm.NAME);
 
                         SiteInfo siteInfo = services.getSiteService().getSite(orgId);
                         if (siteInfo == null) {
@@ -118,21 +121,25 @@ public class OrgPost extends AbstractJavaWebScript {
                                         "Failed to create site.\n");
                                     logger.error(String
                                         .format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
-                                    failure.put(projJson);
+                                    failure.put(postJson);
                                 } else {
-                                    log(Level.INFO, HttpServletResponse.SC_OK, "Organization " + orgName + " Site created.\n");
+                                    log(Level.INFO, HttpServletResponse.SC_OK,
+                                        "Organization " + orgName + " Site created.\n");
                                 }
                             }
 
                             if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
-                                JSONObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                                JSONObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, postJson);
                                 success.put(res);
                             }
 
                         } else {
-                            JSONObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                            EmsScriptNode site = new EmsScriptNode(siteInfo.getNodeRef(), services, response);
+                            site.setProperty(Acm.ACM_NAME, orgName);
+                            JSONObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, postJson);
                             if (res != null && res.optString(Sjm.SYSMLID) != null) {
-                                log(Level.INFO, HttpServletResponse.SC_OK, "Organization " + orgName + " Site updated.\n");
+                                log(Level.INFO, HttpServletResponse.SC_OK,
+                                    "Organization " + orgName + " Site updated.\n");
                                 success.put(res);
                             } else {
                                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,

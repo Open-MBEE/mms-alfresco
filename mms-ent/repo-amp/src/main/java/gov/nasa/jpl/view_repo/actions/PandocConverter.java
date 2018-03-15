@@ -91,9 +91,9 @@ public class PandocConverter {
         }
 
         StringBuilder command = new StringBuilder();
-        command.append(String.format("%s -f html", this.pandocExec));
+        command.append(String.format("%s ", this.pandocExec));
         if (this.pandocOutputFormat.getFormatName().equals("pdf")) {
-            command.append(String.format(" --pdf-engine=%s", this.pdfEngine));
+            command.append(String.format(" --pdf-engine=%s ", this.pdfEngine));
         }
         command.append(String.format(" -o %s/%s.%s", PANDOC_DATA_DIR, this.outputFile, this.pandocOutputFormat.getFormatName()));
 
