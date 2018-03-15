@@ -410,11 +410,10 @@ public class ElasticHelper implements ElasticsearchInterface {
     }
 
     public boolean updateElement(String id, JSONObject payload, String index) throws JSONException, IOException {
-        JSONObject update = new JSONObject().put("doc", payload).put("doc_as_upsert", false).put("_source", true);
+        JSONObject update = new JSONObject().put("doc", payload).put("_source", true);
         JestResult updated = client.execute(
             new Update.Builder(update.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(ELEMENT)
                 .build());
-
         return updated.isSucceeded();
     }
 
