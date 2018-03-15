@@ -1547,6 +1547,39 @@ public class PostgresHelper implements GraphInterface {
         return recordId;
     }
 
+    public int updateOrganization(String orgId, String orgName) throws PSQLException {
+        int recordId = 0;
+        try (PreparedStatement query = getConn("config")
+            .prepareStatement("SELECT count(id) FROM organizations WHERE orgId = ?")) {
+            query.setString(1, orgId);
+            if (query.execute()) {
+                PreparedStatement updateOrg =
+                    getConn("config").prepareStatement("UPDATE organizations SET orgName = ? WHERE orgId = ?");
+                updateOrg.setString(1, orgName);
+                updateOrg.setString(2, orgId);
+                if (updateOrg.execute()) {
+                    try (ResultSet rs = updateOrg.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            recordId = rs.getInt(1);
+                        }
+                    }
+                }
+            }
+        } catch (PSQLException pe) {
+            ServerErrorMessage em = pe.getServerErrorMessage();
+            // Do nothing for duplicate found
+            if (!em.getConstraint().equals("unique_organizations")) {
+                throw pe;
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            closeConfig();
+        }
+
+        return recordId;
+    }
+
     public void createProjectDatabase(String projectId, String orgId, String name, String location) {
         int organizationId = 0;
         try {

@@ -2,7 +2,7 @@
     "orgs": [
         {
             "id": "initorg",
-            "name": "Initial Organization",
+            "name": "Initial Organization Test",
             "anyprop": "Any Value"
         },
         {
