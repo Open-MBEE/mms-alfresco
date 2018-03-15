@@ -82,7 +82,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
                 String format = mimeType.getExtension();
 
                 String filename = String.format("%s%s", docName, format);
-                postJson.put("filename", filename );
+                postJson.put("filename", filename);
                 EmsScriptNode artifact = createDoc(postJson, docName, siteName, projectId, refId, format);
 
                 result.put(Sjm.NAME, docName);
@@ -154,7 +154,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
     }
 
     protected void sendEmail(EmsScriptNode node) {
-        String status = (node!= null) ? "completed" : "completed with errors";
+        String status = (node != null) ? "completed" : "completed with errors";
         String subject = String.format("HTML to PDF generation %s.", status);
         String msg = buildEmailMessage(node);
         ActionUtil.sendEmailToModifier(node, msg, subject, services);
