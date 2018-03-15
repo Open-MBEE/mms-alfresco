@@ -1011,8 +1011,8 @@ public class EmsNodeUtil {
                         newElements.put(propertyASI);
                         addedElements.put(propertyASI);
                         SerialJSONObject newASI = new SerialJSONObject();
-                        newASI.put(Sjm.SYSMLID, property.getString(Sjm.SYSMLID));
-                        newASI.put(Sjm.ELASTICID, property.getString(Sjm.ELASTICID));
+                        newASI.put(Sjm.SYSMLID, propertyASI.getString(Sjm.SYSMLID));
+                        newASI.put(Sjm.ELASTICID, propertyASI.getString(Sjm.ELASTICID));
                         commitAdded.put(newASI);
 
                         // Create Associations
@@ -1069,8 +1069,8 @@ public class EmsNodeUtil {
                         newElements.put(association);
                         addedElements.put(association);
                         SerialJSONObject newAssociation = new SerialJSONObject();
-                        newAssociation.put(Sjm.SYSMLID, property.getString(Sjm.SYSMLID));
-                        newAssociation.put(Sjm.ELASTICID, property.getString(Sjm.ELASTICID));
+                        newAssociation.put(Sjm.SYSMLID, association.getString(Sjm.SYSMLID));
+                        newAssociation.put(Sjm.ELASTICID, association.getString(Sjm.ELASTICID));
                         commitAdded.put(newAssociation);
 
                         // Create Association Property
@@ -1126,8 +1126,8 @@ public class EmsNodeUtil {
                         newElements.put(assocProperty);
                         addedElements.put(assocProperty);
                         SerialJSONObject newAssociationProperty = new SerialJSONObject();
-                        newAssociationProperty.put(Sjm.SYSMLID, property.getString(Sjm.SYSMLID));
-                        newAssociationProperty.put(Sjm.ELASTICID, property.getString(Sjm.ELASTICID));
+                        newAssociationProperty.put(Sjm.SYSMLID, assocProperty.getString(Sjm.SYSMLID));
+                        newAssociationProperty.put(Sjm.ELASTICID, assocProperty.getString(Sjm.ELASTICID));
                         commitAdded.put(newAssociationProperty);
 
                         ownedAttributesIds.put(propertySysmlId);
