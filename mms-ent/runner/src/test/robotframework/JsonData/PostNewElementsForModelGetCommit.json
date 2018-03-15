@@ -1,0 +1,25 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "E",
+            "isDerived": false,
+            "name": "three hundred",
+            "ownerId": "CompleteModelGet",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ],
+    "rejected": []
+}
