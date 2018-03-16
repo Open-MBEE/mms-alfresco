@@ -23,6 +23,11 @@
         <property name="repository" ref="repositoryHelper"/>
     </bean>
 
+    <bean id="migrationRunner" class="gov.nasa.jpl.view_repo.actions.MigrationRunner">
+        <property name="services" ref="ServiceRegistry"/>
+        <property name="repository" ref="repositoryHelper"/>
+    </bean>
+
     <bean id="extendPermissionModel" parent="permissionModelBootstrap">
         <property name="model" value="alfresco/extension/permissionDefinitionsExtension.xml"/>
     </bean>
