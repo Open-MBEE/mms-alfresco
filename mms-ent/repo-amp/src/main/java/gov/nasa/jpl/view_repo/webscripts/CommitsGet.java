@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -123,6 +124,19 @@ public class CommitsGet extends AbstractJavaWebScript {
 
         if (commitObject == null) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not insert into ElasticSearch");
+        } else {
+            if (commitObject.has("added")) {
+                for (int i = 0; i < commitObject.getJSONArray("added").length(); i++) {
+                }
+            }
+            if (commitObject.has("updated")) {
+                for (int i = 0; i < commitObject.getJSONArray("updated").length(); i++) {
+                }
+            }
+            if (commitObject.has("deleted")) {
+                for (int i = 0; i < commitObject.getJSONArray("deleted").length(); i++) {
+                }
+            }
         }
 
         commitJson.put(commitObject);
