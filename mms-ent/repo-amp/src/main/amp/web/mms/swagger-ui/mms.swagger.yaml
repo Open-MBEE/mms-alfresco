@@ -748,7 +748,7 @@ paths:
         200:
           description: "OK"
           schema:
-            $ref: "#/definitions/Elements"
+            $ref: "#/definitions/Artifacts"
         401:
           $ref: "#/responses/Unauthorized"
         403:
@@ -1109,6 +1109,17 @@ definitions:
         type: "string"
     additionalProperties:
       type: "object"
+  Artifact:
+    type: "object"
+    required:
+    - "id"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+    additionalProperties:
+      type: "object"
   Orgs:
     type: "object"
     required:
@@ -1154,6 +1165,15 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Element"
+  Artifacts:
+    type: "object"
+    required:
+    - "artifacts"
+    properties:
+      artifacts:
+        type: "array"
+        items:
+          $ref: "#/definitions/Artifact"
   Groups:
     type: "object"
     required:
