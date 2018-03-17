@@ -154,7 +154,7 @@ public class ModelDelete extends AbstractJavaWebScript {
             result.add("commit", commit);
             if (CommitUtil.sendDeltas(result, projectId, refId, requestSourceApplication, services, false, false)) {
                 if (!elasticIds.isEmpty()) {
-                    emsNodeUtil.updateElasticRemoveRefs(elasticIds);
+                    emsNodeUtil.updateElasticRemoveRefs(elasticIds, "element");
                 }
                 res.add(Sjm.ELEMENTS, deletedElements);
                 res.addProperty(Sjm.CREATOR, user);

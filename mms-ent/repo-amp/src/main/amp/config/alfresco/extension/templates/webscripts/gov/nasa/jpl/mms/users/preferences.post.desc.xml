@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE webscript>
 <webscript>
-    <shortname>post elements</shortname>
+    <shortname>post user preferences</shortname>
     <description>
-        post elements
+        post projects
     </description>
-    <url>/projects/{projectId}/refs/{refId}/artifacts</url>
-    <url>/projects/{projectId}/refs/{refId}/artifacts/{artifactId}</url>
+    <url>/users/{username}/profile</url>
     <format default="json">argument</format>
     <authentication>user</authentication>
     <transaction>required</transaction>
     <family>MMS REST API</family>
-</webscript>
+ </webscript>

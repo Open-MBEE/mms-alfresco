@@ -107,13 +107,9 @@ public class HistoryGet extends ModelGet {
      * @return
      */
     private JsonArray handleRequest(WebScriptRequest req) {
-        // REVIEW -- Why check for errors here if validate has already been
-        // called? Is the error checking code different? Why?
-
-        // Creates an empty JSONArray
         JsonArray jsonHist = null;
         try {
-            String[] idKeys = { "modelid", "elementid", "elementId" };
+            String[] idKeys = { "elementId", "artifactId" };
             String modelId = null;
             for (String idKey : idKeys) {
                 modelId = req.getServiceMatch().getTemplateVars().get(idKey);

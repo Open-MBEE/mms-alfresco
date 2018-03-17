@@ -274,13 +274,13 @@ PostNewElementsToPAForCommit
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${commit_in_pb} =	Get Commit Id		${result.json()}
-	Set Suite Variable  ${commit_in_pb}
+    Set Suite Variable  ${commit_in_pb}
     Sleep				${POST_DELAY_INDEXING}
 
 GetCommitAcrossMounts
 	[Documentation]		"Gets closest commit in across mounts by timestamp."
 	[Tags]				mounts		critical		0225
-	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/eleminPB?commit=${commit_in_pb}		headers=&{REQ_HEADER}
+	${result} =			Get		url=${ROOT}/projects/PA/refs/master/elements/eleminPB?commitId=${commit_in_pb}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}

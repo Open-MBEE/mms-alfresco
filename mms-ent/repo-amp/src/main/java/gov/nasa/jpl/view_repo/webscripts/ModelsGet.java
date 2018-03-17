@@ -31,11 +31,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -76,24 +72,21 @@ public class ModelsGet extends ModelGet {
         super(repositoryHelper, registry);
     }
 
-    String timestamp;
-    Date dateTime;
-
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         // get timestamp if specified
-        timestamp = req.getParameter("timestamp");
-        dateTime = TimeUtils.dateFromTimestamp(timestamp);
+        String timestamp = req.getParameter("timestamp");
+        Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
 
-            String refId = getRefId(req);
-            String projectId = getProjectId(req);
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
-                return true;
-            } else if (refId != null && !emsNodeUtil.refExists(refId)) {
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
-                    refId + (dateTime == null ? "" : " at " + dateTime));
-                return false;
-            }
+        String refId = getRefId(req);
+        String projectId = getProjectId(req);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
+            return true;
+        } else if (refId != null && !emsNodeUtil.refExists(refId)) {
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
+                refId + (dateTime == null ? "" : " at " + dateTime));
+            return false;
+        }
 
         return true;
     }
@@ -199,7 +192,7 @@ public class ModelsGet extends ModelGet {
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
-            String commitId = req.getParameter(Sjm.COMMITID.replace("_",""));
+            String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
 
             boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
@@ -214,13 +207,58 @@ public class ModelsGet extends ModelGet {
             for (int i = 0; i < elementsToFindJson.size(); i++) {
                 uniqueElements.add(elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
             }
-            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found, commitId);
+
+            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+            JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
+
+            String timestamp =
+                commitObject != null && commitObject.has(Sjm.CREATED) ? commitObject.get(Sjm.CREATED).getAsString() : null;
+
+            EmsNodeUtil
+                .handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found, timestamp, null);
             result.add(Sjm.ELEMENTS, found);
             JsonUtil.addStringSet(result, Sjm.WARN, uniqueElements);
             return result;
         } else {
             return new JsonObject();
         }
+    }
+
+    /**
+     * Wrapper for handling a request for all elements in a project and ref and getting the appropriate JSONArray of
+     * elements
+     *
+     * @param req
+     * @return
+     * @throws IOException
+     */
+    private JsonObject getAllElements(WebScriptRequest req) throws IOException {
+        String refId = getRefId(req);
+        String projectId = getProjectId(req);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
+        String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
+
+        JsonArray elements = new JsonArray();
+        JsonObject extendedElements = new JsonObject();
+        JsonObject result = new JsonObject();
+
+        if (commitId == null) {
+            Set<String> uniqueElements = new HashSet<>();
+            List<String> elementsToFindJson = emsNodeUtil.getModel();
+            for (int i = 0; i < elementsToFindJson.size(); i++) {
+                uniqueElements.add(elementsToFindJson.get(i));
+            }
+            elements = emsNodeUtil.getJsonBySysmlids(new ArrayList<>(uniqueElements), false);
+            result.add(Sjm.ELEMENTS, elements);
+        } else {
+            result = emsNodeUtil.getModelAtCommit(commitId);
+        }
+        if (extended) {
+            extendedElements.add(Sjm.ELEMENTS, emsNodeUtil.addExtendedInformation(result.get(Sjm.ELEMENTS).getAsJsonArray()));
+            return extendedElements;
+        }
+        return result;
     }
 }
 

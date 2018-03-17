@@ -1,13 +1,10 @@
 package gov.nasa.jpl.view_repo.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.transaction.UserTransaction;
-import javax.xml.bind.DatatypeConverter;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ScriptNode;
@@ -33,15 +29,12 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang.NullArgumentException;
 import org.apache.log4j.Logger;
-import org.springframework.extensions.webscripts.Status;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
 import gov.nasa.jpl.mbee.util.Debug;
-import gov.nasa.jpl.mbee.util.Utils;
 
 public class NodeUtil {
 
@@ -302,60 +295,35 @@ public class NodeUtil {
         return authorityNames;
     }
 
-    /**
-     * Updates or creates a artifact with the passed name/type in the specified site name/workspace
-     * with the specified content.
-     *
-     * Only updates the artifact if found if updateIfFound is true.
-     *
-     * @param name
-     * @param type
-     * @param base64content
-     * @param dateTime
-     * @param response
-     * @param status
-     * @return
-     */
-    public static EmsScriptNode updateOrCreateArtifact(String name, String type, String base64content,
-        String strContent, String orgId, String projectId, String refId, Date dateTime, StringBuffer response,
-        Status status, boolean ignoreName) {
+    public static EmsScriptNode updateOrCreateArtifact(String artifactId, Path filePath, String fileType, String orgId, String projectId, String refId) {
 
         EmsScriptNode artifactNode;
-        String myType = Utils.isNullOrEmpty(type) ? "svg" : type;
-        String finalType = myType.startsWith(".") ? myType.substring(1) : myType;
-        String artifactId = name + System.currentTimeMillis() + "." + finalType;
+        String finalType = null;
+        File content = filePath.toFile();
 
-        byte[] content = (base64content == null) ? null : DatatypeConverter.parseBase64Binary(base64content);
-
-        if (content == null && strContent != null) {
-            content = strContent.getBytes(Charset.forName("UTF-8"));
+        try {
+            finalType = Files.probeContentType(filePath);
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("updateOrCreateArtifact: ", e);
+            }
         }
 
-        //long cs = EmsScriptNode.getChecksum(content);
-
-        // see if image already exists by looking up by checksum
-        //ArrayList<NodeRef> refs = findNodeRefsByType("" + cs, SearchType.CHECKSUM.prefix, false, workspace, dateTime,
-        //               false, false, services, false);
-
-        //List<EmsScriptNode> nodeList = EmsScriptNode.toEmsScriptNodeList(refs, services, response, status);
-
-        EmsScriptNode matchingNode = null;
-
-        //if (nodeList != null && nodeList.size() > 0) {
-        //    matchingNode = nodeList.iterator().next();
-        //}
-
-        // No need to update if the checksum and name match (even if it is in a
-        // parent branch):
-        if (matchingNode != null && (ignoreName || matchingNode.getSysmlId().equals(artifactId))) {
-            return matchingNode;
+        if (finalType == null) {
+            // Fallback if getting content type fails
+            if (fileType != null) {
+                finalType = fileType;
+            } else {
+                logger.error("Could not determine type of artifact: " + filePath.getFileName().toString());
+                return null;
+            }
         }
 
         EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
 
         // find site; it must exist!
         if (targetSiteNode == null || !targetSiteNode.exists()) {
-            Debug.err("Can't find node for site: " + orgId + "!\n");
+            logger.error("Can't find node for site: " + orgId + "!\n");
             return null;
         }
 
@@ -367,14 +335,13 @@ public class NodeUtil {
 
         // find or create node:
         artifactNode = subfolder.childByNamePath("/" + artifactId);
-
         // Node wasnt found, so create one:
         if (artifactNode == null) {
             artifactNode = subfolder.createNode(artifactId, "cm:content");
         }
 
         if (artifactNode == null || !artifactNode.exists()) {
-            Debug.err("Failed to create new artifact " + artifactId + "!\n");
+            logger.error("Failed to create new PNG artifact " + artifactId + "!\n");
             return null;
         }
 
@@ -399,134 +366,14 @@ public class NodeUtil {
 
         ContentWriter writer =
             services.getContentService().getWriter(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
-        InputStream contentStream = new ByteArrayInputStream(content);
-        writer.putContent(contentStream);
-
-        ContentData contentData = writer.getContentData();
-        contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(finalType));
-        if (base64content == null) {
-            contentData = ContentData.setEncoding(contentData, "UTF-8");
-        }
-        services.getNodeService().setProperty(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
-
-        // if only version, save dummy version so snapshots can reference
-        // versioned images - need to check against 1 since if someone
-        // deleted previously a "dead" version is left in its place
-        Object[] versionHistory = artifactNode.getEmsVersionHistory();
-
-        if (versionHistory == null || versionHistory.length <= 1) {
-            artifactNode.createVersion("creating the version history", false);
-        }
-        return artifactNode;
-    }
-
-    public static EmsScriptNode updateOrCreateArtifactPng(EmsScriptNode svgNode, Path pngPath, String orgId,
-        String projectId, String refId, Date dateTime, StringBuffer response, Status status, boolean ignoreName)
-        throws Throwable {
-        if (svgNode == null) {
-            throw new NullArgumentException("SVG script node");
-        }
-        if (!Files.exists(pngPath)) {
-            throw new NullArgumentException("PNG path");
-        }
-
-        EmsScriptNode pngNode;
-        String finalType = "png";
-        String artifactId = pngPath.getFileName().toString();
-
-        byte[] content = Files.readAllBytes(pngPath);
-        long cs = EmsScriptNode.getChecksum(content);
-
-        // see if image already exists by looking up by checksum
-        //ArrayList<NodeRef> refs = findNodeRefsByType("" + cs,
-        //		SearchType.CHECKSUM.prefix, false, workspace, dateTime, false,
-        //		false, services, false);
-        // ResultSet existingArtifacts =
-        // NodeUtil.findNodeRefsByType( "" + cs, SearchType.CHECKSUM,
-        // services );
-        // Set< EmsScriptNode > nodeSet = toEmsScriptNodeSet( existingArtifacts
-        // );
-        //List<EmsScriptNode> nodeList = EmsScriptNode.toEmsScriptNodeList(refs,
-        //		services, response, status);
-        // existingArtifacts.close();
-
-        EmsScriptNode matchingNode = null;
-
-        //if (nodeList != null && nodeList.size() > 0) {
-        //	matchingNode = nodeList.iterator().next();
-        //}
-
-        // No need to update if the checksum and name match (even if it is in a
-        // parent branch):
-        if (matchingNode != null && (ignoreName || matchingNode.getSysmlId().equals(artifactId))) {
-            return matchingNode;
-        }
-
-        EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
-
-        // find site; it must exist!
-        if (targetSiteNode == null || !targetSiteNode.exists()) {
-            Debug.err("Can't find node for site: " + orgId + "!\n");
-            return null;
-        }
-
-        // find or create subfolder
-        EmsScriptNode subfolder = targetSiteNode.childByNamePath("/" + projectId + "/refs/" + refId);
-        if (subfolder == null || !subfolder.exists()) {
-            return null;
-        }
-
-        // find or create node:
-        pngNode = subfolder.childByNamePath("/" + artifactId);
-        // Node wasnt found, so create one:
-        if (pngNode == null) {
-            pngNode = subfolder.createNode(artifactId, "cm:content");
-        }
-
-        if (pngNode == null || !pngNode.exists()) {
-            Debug.err("Failed to create new PNG artifact " + artifactId + "!\n");
-            return null;
-        }
-
-        if (!pngNode.hasAspect("cm:versionable")) {
-            pngNode.addAspect("cm:versionable");
-        }
-        if (!pngNode.hasAspect("cm:indexControl")) {
-            pngNode.addAspect("cm:indexControl");
-        }
-        if (!pngNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
-            pngNode.addAspect(Acm.ACM_IDENTIFIABLE);
-        }
-
-        pngNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
-        pngNode.createOrUpdateProperty("cm:isIndexed", true);
-        pngNode.createOrUpdateProperty("cm:isContentIndexed", false);
-        pngNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Creating PNG artifact with indexing: " + pngNode.getProperty("cm:isIndexed"));
-        }
-
-        ContentWriter writer =
-            services.getContentService().getWriter(pngNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
-        InputStream contentStream = new ByteArrayInputStream(content);
-        writer.putContent(contentStream);
+        writer.putContent(content);
 
         ContentData contentData = writer.getContentData();
         contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(finalType));
         contentData = ContentData.setEncoding(contentData, "UTF-8");
-        services.getNodeService().setProperty(pngNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
+        services.getNodeService().setProperty(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
 
-		/*
-        Object[] versionHistory = pngNode.getEmsVersionHistory();
-
-        if ( versionHistory == null || versionHistory.length <= 1 ) {
-            pngNode.makeSureNodeRefIsNotFrozen();
-            pngNode.createVersion( "creating the version history", false );
-        }
-        */
-
-        return pngNode;
+        return artifactNode;
     }
 
     public static String getHostname() {

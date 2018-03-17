@@ -126,32 +126,44 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
                 JsonObject modelFromCommit = JsonUtil.deepCopy(emsNodeUtil.getModelAtCommit(commitId));
 
                 List<Map<String, Object>> nodeInserts = new ArrayList<>();
+                List<Map<String, Object>> artifactInserts = new ArrayList<>();
                 List<Map<String, Object>> edgeInserts = new ArrayList<>();
                 List<Map<String, Object>> childEdgeInserts = new ArrayList<>();
 
-                processNodesAndEdgesWithoutCommit(modelFromCommit.get(Sjm.ELEMENTS).getAsJsonArray(), nodeInserts,
-                    edgeInserts, childEdgeInserts);
+                processNodesAndEdgesWithoutCommit(modelFromCommit.get(Sjm.ELEMENTS).getAsJsonArray(), 
+                                modelFromCommit.get(Sjm.ARTIFACTS).getAsJsonArray(), nodeInserts,
+                                artifactInserts, edgeInserts, childEdgeInserts);
 
-                if (!nodeInserts.isEmpty() || !edgeInserts.isEmpty() || !childEdgeInserts.isEmpty()) {
-                    if (!nodeInserts.isEmpty()) {
-                        insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
-                    }
-                    if (!edgeInserts.isEmpty()) {
-                        insertForBranchInPast(pgh, edgeInserts, EDGES, projectId);
-                    }
-                    if (!childEdgeInserts.isEmpty()) {
-                        insertForBranchInPast(pgh, childEdgeInserts, EDGES, projectId);
-                    }
+                if (!nodeInserts.isEmpty()) {
+                    insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
+                }
+                if (!artifactInserts.isEmpty()) {
+                    insertForBranchInPast(pgh, artifactInserts, "artifactUpdates", projectId);
+                }
+                if (!edgeInserts.isEmpty()) {
+                    insertForBranchInPast(pgh, edgeInserts, EDGES, projectId);
+                }
+                if (!childEdgeInserts.isEmpty()) {
+                    insertForBranchInPast(pgh, childEdgeInserts, EDGES, projectId);
                 }
             } else {
                 pgh.setWorkspace(created.get(Sjm.SYSMLID).getAsString());
             }
 
-            Set<String> elementsToUpdate = pgh.getElasticIds();
+            Set<String> nodesToUpdate = pgh.getElasticIdsNodes();
             String scriptToRun = String.format(refScript, Sjm.INREFIDS, Sjm.INREFIDS, Sjm.INREFIDS,
                                                created.get(Sjm.SYSMLID).getAsString());
-            logger.debug(String.format("elastic script: %s", scriptToRun));
-            eh.bulkUpdateElements(elementsToUpdate, scriptToRun, projectId, "element");
+            created.addProperty("status", "created");
+
+            Set<String> artifactsToUpdate = pgh.getElasticIdsArtifacts();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("inRefId update: " + scriptToRun);
+            }
+
+            eh.bulkUpdateElements(nodesToUpdate, scriptToRun, projectId, "element");
+            eh.bulkUpdateElements(artifactsToUpdate, scriptToRun, projectId, "artifact");
+
             created.addProperty("status", "created");
 
             success = true;
@@ -163,9 +175,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         }
 
         try {
-        	JsonObject o = new JsonObject();
-        	o.add("doc", created);
-            eh.updateElement(elasticId, o, projectId);
+            eh.updateElement(elasticId, created, projectId);
         } catch (Exception e) {
             //Do nothing
         }
@@ -261,13 +271,27 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         }
     }
 
-    public static void processNodesAndEdgesWithoutCommit(JsonArray elements, List<Map<String, Object>> nodeInserts,
-        List<Map<String, Object>> edgeInserts, List<Map<String, Object>> childEdgeInserts) {
+    public static void processNodesAndEdgesWithoutCommit(JsonArray elements, JsonArray artifacts, 
+                    List<Map<String, Object>> nodeInserts, List<Map<String, Object>> artifactInserts,
+                    List<Map<String, Object>> edgeInserts, List<Map<String, Object>> childEdgeInserts) {
 
         List<Pair<String, String>> addEdges = new ArrayList<>();
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
         List<String> uniqueEdge = new ArrayList<>();
+
+        for (int i = 0; i < artifacts.size(); i++) {
+            // BUGBUG: looping through artifacts, but getting elements
+            JsonObject a = elements.get(i).getAsJsonObject();
+            Map<String, Object> artifact = new HashMap<>();
+            if (a.has(Sjm.ELASTICID)) {
+                artifact.put(Sjm.ELASTICID, a.get(Sjm.ELASTICID));
+                artifact.put(Sjm.SYSMLID, a.get(Sjm.SYSMLID));
+                artifact.put(LASTCOMMIT, a.get(Sjm.COMMITID));
+                artifact.put(DELETED, false);
+                artifactInserts.add(artifact);
+            }
+        }
 
         for (int i = 0; i < elements.size(); i++) {
             JsonObject e = elements.get(i).getAsJsonObject();

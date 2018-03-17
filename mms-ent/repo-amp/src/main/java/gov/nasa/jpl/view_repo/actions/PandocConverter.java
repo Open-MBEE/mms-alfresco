@@ -1,9 +1,9 @@
 package gov.nasa.jpl.view_repo.actions;
 
 import gov.nasa.jpl.view_repo.util.EmsConfig;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -13,22 +13,35 @@ import java.io.OutputStream;
  */
 public class PandocConverter {
     private String pandocExec = EmsConfig.get("pandoc.exec");
-    private OutputFormat outputFormat;
+    private PandocOutputFormat pandocOutputFormat;
     private String outputFile = EmsConfig.get("pandoc.output.filename");
+    private String pdfEngine = EmsConfig.get("pandoc.pdfengine");
+    private boolean useCustomCss = false;
     public static final String PANDOC_DATA_DIR = EmsConfig.get("pandoc.output.dir");
 
 
-    public enum OutputFormat {
-        DOCX("docx"), ODT("odt"), PDF("pdf");
+    public enum PandocOutputFormat {
+        DOCX("docx"), PDF("pdf"), LATEX("latex");
 
         private String formatName;
 
-        OutputFormat(String name) {
+        PandocOutputFormat(String name) {
             this.formatName = name;
         }
 
         public String getFormatName() {
             return formatName;
+        }
+
+        public static boolean exists(String find) {
+
+            for (PandocOutputFormat c : PandocOutputFormat.values()) {
+                if (c.getFormatName().equals(find)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
     }
@@ -38,44 +51,75 @@ public class PandocConverter {
         if (outputFileName != null) {
             this.outputFile = outputFileName;
         }
-        this.outputFormat = OutputFormat.DOCX;
+    }
+
+    public PandocConverter(String outputFileName, String extension) {
+        // Get the full path for Pandoc executable
+        if (outputFileName != null) {
+            this.outputFile = outputFileName;
+        }
+
+        String format = extension.substring(1);
+
+        if (format.equals(PandocOutputFormat.DOCX.getFormatName())) {
+            this.pandocOutputFormat = PandocOutputFormat.DOCX;
+        } else {
+            this.pandocOutputFormat = PandocOutputFormat.PDF;
+        }
+
     }
 
     public void setOutputFile(String outputFile) {
         this.outputFile = outputFile;
     }
 
-    public void setOutFormat(OutputFormat outputFormat) {
-        this.outputFormat = outputFormat;
+    public void setOutFormat(PandocOutputFormat pandocOutputFormat) {
+        this.pandocOutputFormat = pandocOutputFormat;
     }
 
     public String getOutputFile() {
-        return this.outputFile + "." + this.outputFormat.getFormatName();
+        return this.outputFile + "." + this.pandocOutputFormat.getFormatName();
     }
 
     public void convert(String inputString) {
 
-        String command = String.format("%s -o %s/%s.%s", this.pandocExec, PANDOC_DATA_DIR, this.outputFile,
-            this.outputFormat.getFormatName());
+        String title = StringUtils.substringBetween(inputString, "<title>", "</title>");
+        if (title == null) {
+            throw new RuntimeException("No title in HTML");
+        } else {
+            title += "\n";
+        }
+
+        StringBuilder command = new StringBuilder();
+        command.append(String.format("%s -f html", this.pandocExec));
+        if (this.pandocOutputFormat.getFormatName().equals("pdf")) {
+            command.append(String.format(" --pdf-engine=%s", this.pdfEngine));
+        }
+        command.append(String.format(" -o %s/%s.%s", PANDOC_DATA_DIR, this.outputFile, this.pandocOutputFormat.getFormatName()));
 
         int status;
 
         try {
-            Process process = Runtime.getRuntime().exec(command);
+            Process process = Runtime.getRuntime().exec(command.toString());
             OutputStream out = process.getOutputStream();
+            out.write(title.getBytes());
+            out.flush();
             out.write(inputString.getBytes());
             out.flush();
             out.close();
             status = process.waitFor();
         } catch (InterruptedException ex) {
-            throw new RuntimeException("Could not execute: " + command, ex);
+            throw new RuntimeException("Could not execute: " + command.toString(), ex);
         } catch (IOException ex) {
-            throw new RuntimeException("Could not execute. Maybe pandoc is not in PATH?: " + command, ex);
+            throw new RuntimeException("Could not execute. Maybe pandoc is not in PATH?: " + command.toString(), ex);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
         }
 
         if (status != 0) {
             throw new RuntimeException(
-                "Conversion failed with status code: " + status + ". Command executed: " + command);
+                "Conversion failed with status code: " + status + ". Command executed: " + command.toString());
         }
+        useCustomCss = false;
     }
 }

@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.searchbox.core.*;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonObject;
@@ -21,19 +24,10 @@ import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
 import io.searchbox.client.config.HttpClientConfig;
-import io.searchbox.core.Bulk;
-import io.searchbox.core.BulkResult;
-import io.searchbox.core.Get;
-import io.searchbox.core.Index;
-import io.searchbox.core.Update;
-import io.searchbox.core.Search;
-import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
 import io.searchbox.indices.Refresh;
 import io.searchbox.params.Parameters;
-import io.searchbox.core.DeleteByQuery;
-import io.searchbox.core.Delete;
 
 
 /**
@@ -51,10 +45,19 @@ public class ElasticHelper implements ElasticsearchInterface {
 
     private static final String ELEMENT = "element";
     private static final String COMMIT = "commit";
+    private static final String PROFILE = "profile";
+    private static final String ARTIFACT = "artifact";
 
     public void init(String elasticHost) {
 
-        JestClientFactory factory = new JestClientFactory();
+        JestClientFactory factory = new JestClientFactory(){
+            @Override
+            protected HttpClientBuilder configureHttpClient(HttpClientBuilder builder) {
+                builder = super.configureHttpClient(builder);
+                builder.setRetryHandler(new DefaultHttpRequestRetryHandler(3, true));
+                return builder;
+            }
+        };
         if (elasticHost.contains("https")) {
             factory.setHttpClientConfig(
                 new HttpClientConfig.Builder(elasticHost).defaultSchemeForDiscoveredNodes("https").multiThreaded(true)
@@ -110,6 +113,42 @@ public class ElasticHelper implements ElasticsearchInterface {
 
         if (result.isSucceeded()) {
             JsonObject o = result.getJsonObject().getAsJsonObject("_source");
+            o.add(Sjm.ELASTICID, result.getJsonObject().get("_id"));
+            return o;
+        }
+
+        return null;
+    }
+
+    public JsonObject getProfileByElasticId(String id, String index) throws IOException {
+        // Cannot use method for commit type
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(PROFILE).build();
+
+        JestResult result = client.execute(get);
+
+        if (result.isSucceeded()) {
+            JsonObject o = result.getJsonObject().get("_source").getAsJsonObject();
+            o.add(Sjm.ELASTICID, result.getJsonObject().get("_id"));
+            return o;
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the JSON document of element type using a elastic _id (1)
+     *
+     * @param id _id elasticsearch property          (2)
+     * @return JSONObject o or null
+     */
+    public JsonObject getElementByElasticIdArtifact(String id, String index) throws IOException {
+        // Cannot use method for commit type
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(ARTIFACT).build();
+
+        JestResult result = client.execute(get);
+
+        if (result.isSucceeded()) {
+            JsonObject o = result.getJsonObject().get("_source").getAsJsonObject();
             o.add(Sjm.ELASTICID, result.getJsonObject().get("_id"));
             return o;
         }
@@ -289,6 +328,31 @@ public class ElasticHelper implements ElasticsearchInterface {
         return null;
     }
 
+    private static final String artifactCommitQuery = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
+
+    public JsonObject getArtifactByCommitId(String elasticId, String sysmlid, String index) throws IOException {
+        String query = String.format(artifactCommitQuery, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Search Query %s", query));
+        }
+
+        Search search = new Search.Builder(query).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
+            .addType(ARTIFACT).build();
+        SearchResult result = client.execute(search);
+
+        if (result.isSucceeded()) {
+            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+            if (hits.size() > 0) {
+                JsonObject o = hits.get(0).getAsJsonObject().getAsJsonObject("_source").getAsJsonObject();
+                o.add(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id"));
+                return o;
+            }
+        }
+        return null;
+
+    }
+
     /**
      * A paginated search for a list of elasticsearch _id's, returns empty JSONArray if passed empty list  (1)
      *
@@ -405,11 +469,26 @@ public class ElasticHelper implements ElasticsearchInterface {
     }
 
     public boolean updateElement(String id, JsonObject payload, String index) throws IOException {
+        JsonObject update = new JsonObject();
+        update.add("doc", payload);
+        update.addProperty("_source", true);
+        JestResult updated = client.execute(
+            new Update.Builder(update.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(ELEMENT)
+                .build());
+        return updated.isSucceeded();
+    }
 
-        client.execute(new Update.Builder(payload.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", ""))
-            .type(ELEMENT).build());
-
-        return true;
+    public JsonObject updateProfile(String id, JsonObject payload, String index) throws IOException {
+        JsonObject upsert = new JsonObject();
+        upsert.add("doc", payload);
+        upsert.addProperty("doc_as_upsert", true);
+        upsert.addProperty("_source", true);
+        JestResult res = client.execute(
+            new Update.Builder(upsert.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(PROFILE)
+                .build());
+        if (res.isSucceeded())
+            return res.getJsonObject().get("_source").getAsJsonObject();
+        return new JsonObject();
     }
 
     /**

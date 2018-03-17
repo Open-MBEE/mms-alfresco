@@ -89,6 +89,7 @@ public class CommitUtil {
     public static void initHazelcastClient() {
         if (hzInstance == null) {
             Config config = new Config();
+            config.getNetworkConfig().setPort(5901).setPortAutoIncrement(true);
             hzInstance = Hazelcast.newHazelcastInstance(config);
         }
     }
@@ -161,6 +162,10 @@ public class CommitUtil {
     public static boolean isSite(JsonObject element) {
         return element.has(Sjm.ISSITE) && element.get(Sjm.ISSITE).getAsBoolean();
     }
+    
+    public static JsonObject indexProfile(String id, JsonObject elements, String index) throws IOException {
+        return eh.updateProfile(id, elements, index);
+    }
 
     private static boolean bulkElasticEntry(JsonArray elements, String operation, boolean refresh, String index, String type) {
         if (elements.size() > 0) {
@@ -214,7 +219,7 @@ public class CommitUtil {
         JsonArray jmsDeleted = new JsonArray();
 
         List<String> deletedSysmlIds = new ArrayList<>();
-        if (bulkElasticEntry(added, "added", false, projectId, "artifact") && bulkElasticEntry(updated, "updated", false,
+        if (bulkElasticEntry(added, "added", true, projectId, "artifact") && bulkElasticEntry(updated, "updated", true,
             projectId, "artifact")) {
             try {
                 List<Map<String, Object>> artifactInserts = new ArrayList<>();
@@ -230,7 +235,6 @@ public class CommitUtil {
                         artifact.put(Sjm.SYSMLID, e.get(Sjm.SYSMLID).getAsString());
                         artifact.put(INITIALCOMMIT, e.get(Sjm.ELASTICID).getAsString());
                         artifact.put(LASTCOMMIT, commitElasticId);
-                        artifact.put(CONTENTTYPE, e.get(Sjm.CONTENTTYPE).getAsString());
                         artifactInserts.add(artifact);
                     }
                 }
@@ -266,10 +270,6 @@ public class CommitUtil {
                     pgh.updateLastCommits(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
-                    nullParents = pgh.findNullParents();
-                    if (nullParents != null) {
-                        updateNullEdges(nullParents, projectId);
-                    }
                 } catch (Exception e) {
                     try {
                         pgh.rollBackToSavepoint(sp);
@@ -310,8 +310,7 @@ public class CommitUtil {
 
     }
 
-    private static boolean processDeltasForDb(JsonObject delta, String projectId, String refId, JsonObject jmsPayload,
-        boolean withChildViews, ServiceRegistry services) {
+    private static boolean processDeltasForDb(JsonObject delta, String projectId, String refId, JsonObject jmsPayload, ServiceRegistry services) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
         PostgresHelper pgh = new PostgresHelper();
@@ -335,8 +334,8 @@ public class CommitUtil {
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
 
-        if (bulkElasticEntry(added, "added", withChildViews, projectId, "element") && bulkElasticEntry(updated, "updated",
-            withChildViews, projectId, "element")) {
+        if (bulkElasticEntry(added, "added", true, projectId, "element") && bulkElasticEntry(updated, "updated",
+            true, projectId, "element")) {
 
             try {
                 List<Map<String, Object>> nodeInserts = new ArrayList<>();
@@ -628,7 +627,7 @@ public class CommitUtil {
                 return false;
             }
         } else {
-            if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, withChildViews, services)) {
+            if (!processDeltasForDb(deltaJson, projectId, workspaceId, jmsPayload, services)) {
                 return false;
             }
         }
@@ -644,14 +643,29 @@ public class CommitUtil {
 
     public static JsonObject sendOrganizationDelta(String orgId, String orgName, JsonObject orgJson) throws PSQLException {
         PostgresHelper pgh = new PostgresHelper();
-        pgh.createOrganization(orgId, orgName);
+
         String defaultIndex = EmsConfig.get("elastic.index.element");
+        ElasticResult result = null;
+
         try {
             ElasticHelper eh = new ElasticHelper();
-            eh.createIndex(defaultIndex);
-            orgJson.addProperty(Sjm.ELASTICID, orgId);
-            ElasticResult result = eh.indexElement(orgJson, defaultIndex);
-            return result.current;
+
+            if (!pgh.orgExists(orgId)) {
+                pgh.createOrganization(orgId, orgName);
+                eh.createIndex(defaultIndex);
+                orgJson.addProperty(Sjm.ELASTICID, orgId);
+                result = eh.indexElement(orgJson, defaultIndex);
+                return result.current;
+            } else {
+                pgh.updateOrganization(orgId, orgName);
+                orgJson.addProperty(Sjm.ELASTICID, orgId);
+                if (eh.updateElement(orgId, orgJson, defaultIndex)) {
+                    if (eh.refreshIndex()) {
+                        return eh.getElementByElasticId(orgId, defaultIndex);
+                    }
+                }
+            }
+
         } catch (Exception e) {
             logger.error(e);
         }
@@ -977,8 +991,10 @@ public class CommitUtil {
             }
             if (key.equals(keyMatch)) {
                 result.add(value.getAsString());
-            } else {
-                result.addAll(findKeyValueInJsonElement(value, keyMatch, text));
+            } else if (value.isJsonObject()) {
+                result.addAll(findKeyValueInJsonObject(value.getAsJsonObject(), keyMatch, text));
+            } else if (value.isJsonArray()) {
+                result.addAll(findKeyValueInJsonArray(value.getAsJsonArray(), keyMatch, text));
             }
         }
         return result;
@@ -988,7 +1004,12 @@ public class CommitUtil {
         Set<Object> result = new HashSet<>();
 
         for (int ii = 0; ii < jsonArray.size(); ii++) {
-        	result.addAll(findKeyValueInJsonElement(jsonArray.get(ii), keyMatch, text));
+            JsonElement e = jsonArray.get(ii);
+            if (e.isJsonObject()) {
+                result.addAll(findKeyValueInJsonObject(e.getAsJsonObject(), keyMatch, text));
+            } else if (e.isJsonArray()) {
+                result.addAll(findKeyValueInJsonArray(e.getAsJsonArray(), keyMatch, text));
+            }
         }
 
         return result;

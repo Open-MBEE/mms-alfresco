@@ -27,8 +27,11 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
+import gov.nasa.jpl.view_repo.util.Acm;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
 import org.alfresco.repo.model.Repository;
@@ -119,7 +122,8 @@ public class OrgPost extends AbstractJavaWebScript {
                                         .format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
                                     failure.add(projJson);
                                 } else {
-                                    log(Level.INFO, HttpServletResponse.SC_OK, "Organization " + orgName + " Site created.\n");
+                                    log(Level.INFO, HttpServletResponse.SC_OK,
+                                        "Organization " + orgName + " Site created.\n");
                                 }
                             }
 
@@ -129,9 +133,12 @@ public class OrgPost extends AbstractJavaWebScript {
                             }
 
                         } else {
+                            EmsScriptNode site = new EmsScriptNode(siteInfo.getNodeRef(), services, response);
+                            site.setProperty(Acm.ACM_NAME, orgName);
                             JsonObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
                             if (res != null && !JsonUtil.getOptString(res, Sjm.SYSMLID).isEmpty()) {
-                                log(Level.INFO, HttpServletResponse.SC_OK, "Organization " + orgName + " Site updated.\n");
+                                log(Level.INFO, HttpServletResponse.SC_OK,
+                                    "Organization " + orgName + " Site updated.\n");
                                 success.add(res);
                             } else {
                                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,

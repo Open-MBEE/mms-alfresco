@@ -8,11 +8,14 @@
     "mappings" : {
         "artifact": {
             "properties": {
+                "id": {
+                    "type": "keyword"
+                },
                 "location": {
                     "type": "keyword"
                 },
                 "name": {
-                    "type": "keyword"
+                    "type": "text"
                 },
                 "checksum": {
                     "type": "keyword"
@@ -212,6 +215,13 @@
                     "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                 },
                 "_elasticId":{
+                    "type": "keyword"
+                }
+            }
+        },
+        "profiles": {
+            "properties": {
+                "username": {
                     "type": "keyword"
                 }
             }

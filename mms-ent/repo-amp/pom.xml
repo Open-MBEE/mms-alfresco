@@ -259,7 +259,7 @@
                         </goals>
                         <configuration>
                             <overwrite>true</overwrite>
-                            <outputDirectory>${project.build.directory}/amp/web/mms/swagger</outputDirectory>
+                            <outputDirectory>${project.build.directory}/amp/web/mms</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${project.build.directory}/generated-sources/swagger</directory>

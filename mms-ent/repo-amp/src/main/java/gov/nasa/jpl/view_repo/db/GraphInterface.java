@@ -15,6 +15,7 @@ import org.postgresql.util.PSQLException;
 public interface GraphInterface {
     String LASTCOMMIT = "lastCommit";
     String INITIALCOMMIT = "initialCommit";
+    String DELETED = "deleted";
 
     void connect();
 
@@ -68,9 +69,9 @@ public interface GraphInterface {
 
     Node getNodeFromSysmlId(String sysmlId, boolean withDeleted);
 
-    Set<String> getElasticIds();
+    Set<String> getElasticIdsNodes();
 
-    Set<String> getElasticIds(boolean withDeleted);
+    Set<String> getElasticIdsNodes(boolean withDeleted);
 
     String getElasticIdFromSysmlId(String sysmlId);
 
@@ -122,7 +123,7 @@ public interface GraphInterface {
 
     void deleteRef(String id);
 
-    Pair<String, String> getRefElastic(String refId);
+    Map<String, String> getRefElastic(String refId);
 
     Pair<String, Long> getParentRef(String refId);
 

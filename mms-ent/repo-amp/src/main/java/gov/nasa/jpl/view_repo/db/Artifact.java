@@ -1,10 +1,6 @@
 package gov.nasa.jpl.view_repo.db;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.json.JSONObject;
-
+import com.google.gson.JsonObject;
 
 public class Artifact {
 
@@ -24,12 +20,10 @@ public class Artifact {
         this.sysmlId = sysmlId;
     }
 
-    public Artifact(int id, String elasticId, int nodeType, String sysmlId, String lastCommit, String initialCommit,
+    public Artifact(int id, String elasticId, String sysmlId, String lastCommit, String initialCommit,
         boolean isDeleted) {
-        super();
         this.id = id;
         this.elasticId = elasticId;
-        this.contentType = contentType;
         this.sysmlId = sysmlId;
         this.lastCommit = lastCommit;
         this.initialCommit = initialCommit;
@@ -72,12 +66,12 @@ public class Artifact {
         return isDeleted;
     }
 
-    public JSONObject toJson() {
-        JSONObject json = new JSONObject();
-        json.put("id", this.id);
-        json.put("sysmlId", this.sysmlId);
-        json.put("elasticId", this.elasticId);
-        json.put("nodeType", this.contentType);
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.addProperty("id", this.id);
+        json.addProperty("sysmlId", this.sysmlId);
+        json.addProperty("elasticId", this.elasticId);
+        json.addProperty("nodeType", this.contentType);
 
         return json;
     }

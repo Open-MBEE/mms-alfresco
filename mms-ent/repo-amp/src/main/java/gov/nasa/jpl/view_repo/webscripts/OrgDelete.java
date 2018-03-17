@@ -84,16 +84,17 @@ public class OrgDelete extends AbstractJavaWebScript {
                     if (!hasProjects(orgId)) {
                         // Deleting from postgres needs to be attempted first, if it fails we need to bail or
                         //  alfresco will delete the site
-                        if (pgh.deleteOrganization(orgId)){
+                        if (pgh.deleteOrganization(orgId)) {
                             services.getSiteService().deleteSite(orgId);
                             log(Level.INFO, HttpServletResponse.SC_OK, orgId + " Organization Delete");
                         }
-                    }
-                    else {
-                        log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not delete organization, still has projects");
+                    } else {
+                        log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
+                            "Could not delete organization, still has projects");
                     }
                 } else {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not delete organization, organization doesn't exist");
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
+                        "Could not delete organization, organization doesn't exist");
                 }
 
             }
@@ -118,15 +119,16 @@ public class OrgDelete extends AbstractJavaWebScript {
 
     /**
      * Determines whether an organization has projects. If it has projects then it will return true.
+     *
      * @param orgId
      * @return boolean
      */
-    private boolean hasProjects(String orgId){
+    private boolean hasProjects(String orgId) {
         PostgresHelper pgh = new PostgresHelper();
         List<Map<String, String>> orgs = pgh.getOrganizations(orgId);
-        if(orgs.size() > 0){
+        if (orgs.size() > 0) {
             List<Map<String, Object>> projects = pgh.getProjects(orgs.get(0).get("orgId"));
-            if(projects != null)
+            if (projects != null)
                 return projects.size() > 0;
         }
         return false;
