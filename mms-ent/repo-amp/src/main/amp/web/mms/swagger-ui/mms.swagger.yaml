@@ -1151,10 +1151,14 @@ definitions:
     type: "object"
     required:
     - "id"
+    - "contentType"
+    - "file"
     properties:
-      id:
+      contentType:
         type: "string"
-      name:
+      file:
+        type: "string"
+      id:
         type: "string"
     additionalProperties:
       type: "object"
