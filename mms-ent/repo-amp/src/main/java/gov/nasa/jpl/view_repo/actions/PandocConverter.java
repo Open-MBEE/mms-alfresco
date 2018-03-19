@@ -87,7 +87,7 @@ public class PandocConverter {
         if (title == null) {
             throw new RuntimeException("No title in HTML");
         } else {
-            title += "\n";
+            title += System.lineSeparator();
         }
 
         StringBuilder command = new StringBuilder();
