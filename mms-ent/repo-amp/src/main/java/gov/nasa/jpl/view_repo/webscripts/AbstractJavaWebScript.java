@@ -206,7 +206,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     }
 
     protected void log(String msg) {
-        response.append(msg + "");
+        response.append(msg + System.lineSeparator());
         //TODO: add to responseStatus too (below)?
         //responseStatus.setMessage(msg);
     }
