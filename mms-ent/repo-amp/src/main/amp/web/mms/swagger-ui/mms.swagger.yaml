@@ -717,6 +717,254 @@ paths:
           $ref: "#/responses/InternalServerError"
         default:
           $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/artifacts:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    get:
+      tags:
+      - "artifact"
+      summary: "Get artifacts"
+      description: ""
+      operationId: "getArtifacts"
+      parameters:
+      - in: "query"
+        name: "extended"
+        description: ""
+        type: "boolean"
+      - in: "query"
+        name: "commitId"
+        description: ""
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Artifacts"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    put:
+      tags:
+      - "artifact"
+      summary: "Get artifact(s) in batch"
+      description: ""
+      operationId: "getArtifactsInBatch"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/Artifacts"
+        required: true
+      - in: "query"
+        name: "depth"
+        description: ""
+        type: "integer"
+      - in: "query"
+        name: "extended"
+        description: ""
+        type: "boolean"
+      - in: "query"
+        name: "commitId"
+        description: ""
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Artifacts"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    delete:
+      tags:
+      - "artifact"
+      summary: "Delete artifact(s) in batch"
+      description: ""
+      operationId: "deleteArtifactsInBatch"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/Artifacts"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Artifacts"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    post:
+      tags:
+      - "artifact"
+      summary: "Create and/or update artifact(s)"
+      description: ""
+      operationId: "postArtifacts"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/Artifacts"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Artifacts"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/artifacts/{artifact_id}:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    - name: "artifact_id"
+      in: "path"
+      required: true
+      description: "artifact identifier"
+      type: "string"
+    get:
+      tags:
+      - "artifact"
+      summary: "Get artifact"
+      description: ""
+      operationId: "getArtifact"
+      parameters:
+      - in: "query"
+        name: "depth"
+        description: ""
+        type: "integer"
+      - in: "query"
+        name: "extended"
+        description: ""
+        type: "boolean"
+      - in: "query"
+        name: "commitId"
+        description: ""
+        type: "string"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Artifacts"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+    delete:
+      tags:
+      - "artifact"
+      summary: "Delete artifact"
+      description: ""
+      operationId: "deleteArtifact"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Artifacts"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/artifacts/{artifact_id}/history:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    - name: "artifact_id"
+      in: "path"
+      required: true
+      description: "artifact identifier"
+      type: "string"
+    get:
+      tags:
+      - "artifact"
+      summary: "Get artifact history"
+      description: ""
+      operationId: "getArtifactHistory"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Commits"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
   /projects/{project_id}/refs/{ref_id}/groups:
     parameters:
     - name: "project_id"
@@ -899,6 +1147,21 @@ definitions:
         type: "string"
     additionalProperties:
       type: "object"
+  Artifact:
+    type: "object"
+    required:
+    - "id"
+    - "contentType"
+    - "file"
+    properties:
+      contentType:
+        type: "string"
+      file:
+        type: "string"
+      id:
+        type: "string"
+    additionalProperties:
+      type: "object"
   Orgs:
     type: "object"
     required:
@@ -944,6 +1207,15 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Element"
+  Artifacts:
+    type: "object"
+    required:
+    - "artifacts"
+    properties:
+      artifacts:
+        type: "array"
+        items:
+          $ref: "#/definitions/Artifact"
   Groups:
     type: "object"
     required:
