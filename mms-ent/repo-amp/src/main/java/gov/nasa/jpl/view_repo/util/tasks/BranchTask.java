@@ -170,7 +170,7 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
         }
 
         try {
-            eh.updateElement(elasticId, new SerialJSONObject().put("doc", created), projectId);
+            eh.updateElement(elasticId, created, projectId);
         } catch (Exception e) {
             //Do nothing
         }

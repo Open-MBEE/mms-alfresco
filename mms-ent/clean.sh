@@ -122,6 +122,14 @@ EOD
 
         $EXPECT <<EOD
 log_user 0
+spawn dropdb -U $dbuser _CompleteModelGet
+expect "*Password*"
+send "$password\r"
+expect eof
+EOD
+
+        $EXPECT <<EOD
+log_user 0
 spawn dropdb -U $dbuser $usedb
 expect "*Password*"
 send "$password\r"

@@ -266,8 +266,8 @@ It takes as input JSON that specifies the classes and the log levels. For exampl
 ## API Documentation
 API Documentation is located at the following endpoints:
 ```
-alfresco/mms/swagger/index.html
-alfresco/mms/swagger-ui/index.html
+alfresco/mms
+alfresco/mms/swagger-ui
 ```
 
 The Swagger YAML file is accessible here:

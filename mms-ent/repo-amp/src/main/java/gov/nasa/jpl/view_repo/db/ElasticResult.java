@@ -11,7 +11,7 @@ public class ElasticResult {
     @Override
     public String toString() {
         return String.format(
-                "\n\tsysmlid: %s\n\telasticId: %s\n\tcurrent: %s\n",
+                "sysmlid: %s, elasticId: %s, current: %s",
                 sysmlid, elasticId, current);
     }
 }

@@ -237,7 +237,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     }
 
                     if (artifact == null) {
-                        log(HttpServletResponse.SC_BAD_REQUEST, "Was not able to create the artifact!\n");
+                        log(HttpServletResponse.SC_BAD_REQUEST, "Was not able to create the artifact!");
                         model.put(Sjm.RES, createResponseJson());
                     } else {
                         String url = artifact.getUrl();
@@ -252,12 +252,12 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 }
 
             } catch (JSONException e) {
-                log(HttpServletResponse.SC_BAD_REQUEST, "Issues creating return JSON\\n");
+                log(HttpServletResponse.SC_BAD_REQUEST, "Issues creating return JSON");
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 model.put(Sjm.RES, createResponseJson());
             }
         } else {
-            log(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, no sitename specified or no content provided!\\n");
+            log(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, no sitename specified or no content provided!");
             model.put(Sjm.RES, createResponseJson());
         }
 

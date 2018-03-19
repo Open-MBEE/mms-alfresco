@@ -543,7 +543,7 @@ public class ClassUtils {
                 }
             } catch ( Throwable e ) {
                 Debug.errln( "classForName(" + className
-                             + ") failed for loader: " + cl + "\n"
+                             + ") failed for loader: " + cl + ""
                              + e.getLocalizedMessage() );
             }
         }
@@ -607,9 +607,9 @@ public class ClassUtils {
       }
       if ( parameterDepth < 0 ) {
         Debug.error( false,
-                     "Error! Generic parameter nesting is invalid for class name:\n  \""
+                     "Error! Generic parameter nesting is invalid for class name:  \""
                          + className + "\" at char #" + Integer.toString( i )
-                         + "\n" + Utils.spaces( i + 3 ) + "^" );
+                         + "" + Utils.spaces( i + 3 ) + "^" );
       }
     }
     return newName.toString();
