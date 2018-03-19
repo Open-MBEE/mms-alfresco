@@ -5,7 +5,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -21,7 +20,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
 
 /**
  * @author dank
@@ -112,7 +110,6 @@ public class CommitsGet extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         JSONArray commitJson = new JSONArray();
         String commitId = req.getServiceMatch().getTemplateVars().get(COMMIT_ID);
-        String groupId = req.getParameter("contentType");
 
         if (commitId == null){
             logger.error("Did not find commit");
@@ -124,19 +121,6 @@ public class CommitsGet extends AbstractJavaWebScript {
 
         if (commitObject == null) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not insert into ElasticSearch");
-        } else {
-            if (commitObject.has("added")) {
-                for (int i = 0; i < commitObject.getJSONArray("added").length(); i++) {
-                }
-            }
-            if (commitObject.has("updated")) {
-                for (int i = 0; i < commitObject.getJSONArray("updated").length(); i++) {
-                }
-            }
-            if (commitObject.has("deleted")) {
-                for (int i = 0; i < commitObject.getJSONArray("deleted").length(); i++) {
-                }
-            }
         }
 
         commitJson.put(commitObject);
