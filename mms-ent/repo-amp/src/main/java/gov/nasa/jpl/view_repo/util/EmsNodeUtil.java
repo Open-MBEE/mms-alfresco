@@ -558,11 +558,6 @@ public class EmsNodeUtil {
     }
 
     public SerialJSONObject processPostJson(SerialJSONArray elements, String user, Set<String> oldElasticIds,
-        boolean overwriteJson, String src, String type) {
-        return processPostJson(elements, user, oldElasticIds, overwriteJson, src, "", type);
-    }
-
-    public SerialJSONObject processPostJson(SerialJSONArray elements, String user, Set<String> oldElasticIds,
         boolean overwriteJson, String src, String comment, String type) {
 
         SerialJSONObject result = new SerialJSONObject();
@@ -644,6 +639,7 @@ public class EmsNodeUtil {
                 JSONObject newObj = new JSONObject();
                 newObj.put(Sjm.SYSMLID, o.getString(Sjm.SYSMLID));
                 newObj.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
+                newObj.put(Sjm.TYPE, type);
                 // this for the artifact object, has extra key...
                 if (type.equals("Artifact")) {
                     newObj.put(Sjm.CONTENTTYPE, o.getString(Sjm.CONTENTTYPE));
@@ -659,6 +655,10 @@ public class EmsNodeUtil {
                 oldElasticIds.add(existingMap.get(sysmlid).getString(Sjm.ELASTICID));
                 parent.put(Sjm.SYSMLID, sysmlid);
                 parent.put(Sjm.ELASTICID, o.getString(Sjm.ELASTICID));
+                parent.put(Sjm.TYPE, type);
+                if (type.equals("Artifact")) {
+                    parent.put(Sjm.CONTENTTYPE, o.getString(Sjm.CONTENTTYPE));
+                }
                 commitUpdated.put(parent);
                 newElements.put(o);
             } else {
@@ -680,11 +680,9 @@ public class EmsNodeUtil {
         commit.put(Sjm.CREATED, date);
         commit.put(Sjm.PROJECTID, projectId);
         commit.put(Sjm.SOURCE, src);
-        commit.put(Sjm.TYPE, type);
         if (!comment.isEmpty()) {
             commit.put(Sjm.COMMENT, comment);
         }
-
 
         result.put("commit", commit);
 
