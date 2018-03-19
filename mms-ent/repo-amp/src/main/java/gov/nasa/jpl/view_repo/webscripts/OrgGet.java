@@ -98,7 +98,7 @@ public class OrgGet extends AbstractJavaWebScript {
                         json = new JSONObject();
                         json.put(Sjm.PROJECTS, filterProjectByPermission(jsonArray));
                         if (jsonArray.length() == 0) {
-                            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Project does not exist\n");
+                            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Project does not exist");
                             responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
                         } else if (json.getJSONArray("projects").length() == 0) {
                             responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);

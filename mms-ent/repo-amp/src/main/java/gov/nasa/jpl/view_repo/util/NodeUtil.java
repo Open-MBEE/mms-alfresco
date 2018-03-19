@@ -332,7 +332,7 @@ public class NodeUtil {
 
         // find site; it must exist!
         if (targetSiteNode == null || !targetSiteNode.exists()) {
-            logger.error("Can't find node for site: " + orgId + "!\n");
+            logger.error("Can't find node for site: " + orgId + "!");
             return null;
         }
 
@@ -350,7 +350,7 @@ public class NodeUtil {
         }
 
         if (artifactNode == null || !artifactNode.exists()) {
-            logger.error("Failed to create new PNG artifact " + artifactId + "!\n");
+            logger.error("Failed to create new PNG artifact " + artifactId + "!");
             return null;
         }
 

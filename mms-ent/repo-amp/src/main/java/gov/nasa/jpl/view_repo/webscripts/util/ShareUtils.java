@@ -172,7 +172,7 @@ public class ShareUtils {
                 logger.error(String.format("Could not %s, HTTP Status code : %s", callName, status));
             }
         } catch (Exception e) {
-            logger.error(String.format("Failed to %s\n\n%s", callName, LogUtil.getStackTrace(e)));
+            logger.error(String.format("Failed to %s%n%n%s", callName, LogUtil.getStackTrace(e)));
         } finally {
             if (postMethod != null) {
                 postMethod.releaseConnection();
