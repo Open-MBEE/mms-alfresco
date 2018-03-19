@@ -68,9 +68,9 @@ public abstract class FlagSet extends DeclarativeWebScript {
         if (flagName().equalsIgnoreCase("all")) {
             // print out all of the flags and their current values
             StringBuffer msg = new StringBuffer();
-            msg.append("All flags:\n");
+            msg.append("All flags:");
             for (String flag : getAllFlags()) {
-                msg.append(flag + " is " + (get(flag) ? "on" : "off") + "\n");
+                msg.append(flag + " is " + (get(flag) ? "on" : "off") + "");
             }
             model.put(Sjm.RES, msg);
             return model;
@@ -97,7 +97,7 @@ public abstract class FlagSet extends DeclarativeWebScript {
         String msg = null;
 
         if (turnOnStr == null && turnOffStr == null && isOnStr == null) {
-            msg = "Parameters are on, off or ison\n" + flagName() + " is " + (get() ? "on" : "off");
+            msg = "Parameters are on, off or ison" + flagName() + " is " + (get() ? "on" : "off");
         } else if (justAsking) {
             msg = flagName() + " is " + (get() ? "on" : "off");
         } else if (turnOn == get()) {

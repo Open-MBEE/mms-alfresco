@@ -206,7 +206,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     }
 
     protected void log(String msg) {
-        response.append(msg + "\n");
+        response.append(msg + "");
         //TODO: add to responseStatus too (below)?
         //responseStatus.setMessage(msg);
     }
@@ -305,7 +305,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
 
     protected boolean checkRequestContent(WebScriptRequest req) {
         if (req.getContent() == null) {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "No content provided.\n");
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "No content provided.");
             return false;
         }
         return true;
@@ -313,7 +313,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
 
     protected boolean checkRequestVariable(Object value, String type) {
         if (value == null) {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "%s not found.\n", type);
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "%s not found.", type);
             return false;
         }
         return true;
@@ -461,7 +461,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      */
     public String createResponseJson() {
         String resToString = response.toString();
-        String resStr = !Utils.isNullOrEmpty(resToString) ? resToString.replaceAll("\n", "") : "";
+        String resStr = !Utils.isNullOrEmpty(resToString) ? resToString.replaceAll(System.lineSeparator(), "") : "";
         return !Utils.isNullOrEmpty(resStr) ? String.format("{\"message\":\"%s\"}", resStr) : "{}";
     }
 

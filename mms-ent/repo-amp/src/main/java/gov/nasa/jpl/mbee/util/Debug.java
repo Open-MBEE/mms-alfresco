@@ -121,7 +121,7 @@ public class Debug {
                         final boolean isErr ) {
     String ps = s;
     PrintStream stream = ( isErr ? System.err : System.out );
-    if ( addNewLine ) ps = ps + "\n";
+    if ( addNewLine ) ps = ps + "";
     stream.print( ps );
     stream.flush();
   }

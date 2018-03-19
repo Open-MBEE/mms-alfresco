@@ -214,23 +214,23 @@ public class ArtifactGet extends AbstractJavaWebScript {
                             result = results.optJSONObject(0);
                         }
                     } catch (IOException e) {
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!");
                         logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                     }
                     if (result != null) {
                         model.put(Sjm.RES, new JSONObject().put("artifacts", new JSONArray().put(result)));
                     } else {
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!");
                     }
                 } else {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "ArtifactId not supplied!\n");
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "ArtifactId not supplied!");
                 }
             } catch (JSONException e) {
-                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Issues creating return JSON\n");
+                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Issues creating return JSON");
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             }
         } else {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid request!\n");
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid request!");
         }
         status.setCode(responseStatus.getCode());
         if (!model.containsKey(Sjm.RES)) {

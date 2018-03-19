@@ -827,7 +827,7 @@ public class CommitUtil {
         if (jmsConnection != null) {
             status = jmsConnection.publish(json, eventType, refId, projectId);
             if (logger.isDebugEnabled()) {
-                String msg = "Event: " + eventType + ", RefId: " + refId + ", ProjectId: " + projectId + "\n";
+                String msg = "Event: " + eventType + ", RefId: " + refId + ", ProjectId: " + projectId + "";
                 msg += "JSONObject: " + json;
                 logger.debug(msg);
             }

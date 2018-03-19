@@ -108,7 +108,7 @@ public class OrgPost extends AbstractJavaWebScript {
                                 searcher.query(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, "fts-alfresco", "name:" + orgId);
 
                             if (result != null && result.length() > 0) {
-                                log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site restored.\n");
+                                log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site restored.");
                                 services.getNodeService().restoreNode(result.getRow(0).getNodeRef(), null, null, null);
                             } else {
                                 String sitePreset = "site-dashboard";
@@ -118,13 +118,13 @@ public class OrgPost extends AbstractJavaWebScript {
                                 if (!ShareUtils
                                     .constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
                                     log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                                        "Failed to create site.\n");
+                                        "Failed to create site.");
                                     logger.error(String
                                         .format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
                                     failure.put(postJson);
                                 } else {
                                     log(Level.INFO, HttpServletResponse.SC_OK,
-                                        "Organization " + orgName + " Site created.\n");
+                                        "Organization " + orgName + " Site created.");
                                 }
                             }
 
@@ -139,11 +139,11 @@ public class OrgPost extends AbstractJavaWebScript {
                             JSONObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, postJson);
                             if (res != null && res.optString(Sjm.SYSMLID) != null) {
                                 log(Level.INFO, HttpServletResponse.SC_OK,
-                                    "Organization " + orgName + " Site updated.\n");
+                                    "Organization " + orgName + " Site updated.");
                                 success.put(res);
                             } else {
                                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
-                                    "Organization " + orgName + " Site update failed.\n");
+                                    "Organization " + orgName + " Site update failed.");
                                 failure.put(res);
                             }
                         }

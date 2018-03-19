@@ -447,7 +447,7 @@ public class Timer implements StopWatch< Vector< Long > > {
         s.add( timers.keySet().toArray()[ i ] + "="
                + writeNanosAsSeconds( timeOfLastClock.get( i ) ) + "s" );
       }
-      sb.append( "last time segment: " + s + "\n" );
+      sb.append( "last time segment: " + s + "" );
     }
 
     // total time
@@ -456,7 +456,7 @@ public class Timer implements StopWatch< Vector< Long > > {
       s.add( timers.keySet().toArray()[ i ] + "=" + writeNanosAsSeconds( totalTime.get( i ) )
              + "s" );
     }
-    sb.append( "total time: " + s + "\n" );
+    sb.append( "total time: " + s + "" );
 
     // current time
     s.clear();
@@ -465,10 +465,10 @@ public class Timer implements StopWatch< Vector< Long > > {
         s.add( timers.keySet().toArray()[ i ] + "="
                + writeNanosAsSeconds( currentTime.get( i ) ) + "s" );
       }
-      sb.append( "time since created: " + s + "\n" );
+      sb.append( "time since created: " + s + "" );
     }
 
-    sb.append( "\n" );
+    sb.append( "" );
     
     return sb.toString();
   }
