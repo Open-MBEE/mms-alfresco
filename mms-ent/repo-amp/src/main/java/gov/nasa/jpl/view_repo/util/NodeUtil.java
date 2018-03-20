@@ -378,7 +378,7 @@ public class NodeUtil {
         writer.putContent(content);
 
         ContentData contentData = writer.getContentData();
-        contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(finalType));
+        contentData = ContentData.setMimetype(contentData, finalType);
         contentData = ContentData.setEncoding(contentData, "UTF-8");
         services.getNodeService().setProperty(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
 
