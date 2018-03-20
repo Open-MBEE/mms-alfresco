@@ -86,7 +86,7 @@ public class ArtifactDelete extends AbstractJavaWebScript {
         String commitId = UUID.randomUUID().toString();
         JSONObject commit = new JSONObject();
         commit.put(Sjm.ELASTICID, commitId);
-        JSONArray commitDeleted = new JSONArray();
+        JSONArray commitDeleted = new SerialJSONArray();
         JSONArray deletedElements = new JSONArray();
 
         String projectId = getProjectId(req);
@@ -119,21 +119,24 @@ public class ArtifactDelete extends AbstractJavaWebScript {
                 return null;
             }
         }
+        for (String id : ids) {
+            deletedElements.put(id);
+        }
 
         if (deletedElements.length() > 0) {
             result.put("addedElements", new JSONArray());
             result.put("updatedElements", new JSONArray());
-            result.put("deletedElements", ids);
+            result.put("deletedElements", deletedElements);
             commit.put("added", new JSONArray());
             commit.put("updated", new JSONArray());
             commit.put("deleted", commitDeleted);
             commit.put(Sjm.CREATOR, user);
             commit.put(Sjm.CREATED, date);
             result.put("commit", commit);
-            if (CommitUtil.sendDeltas(result, projectId, refId, requestSourceApplication, services, false, false)) {
-                if (!elasticIds.isEmpty()) {
-                    emsNodeUtil.updateElasticRemoveRefs(elasticIds, "artifact");
-                }
+            if (CommitUtil.sendDeltas(result, projectId, refId, requestSourceApplication, services, false, true)) {
+//                if (!elasticIds.isEmpty()) {
+//                    emsNodeUtil.updateElasticRemoveRefs(elasticIds, "artifact");
+//                }:TODO check logic here
                 res.put(Sjm.ELEMENTS, deletedElements);
                 res.put(Sjm.CREATOR, user);
                 res.put(Sjm.COMMITID, commitId);

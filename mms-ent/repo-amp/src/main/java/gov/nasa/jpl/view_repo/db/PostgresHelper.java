@@ -345,6 +345,35 @@ public class PostgresHelper implements GraphInterface {
         }
     }
 
+    public void updateLastCommitsArtifacts(String value, List<String> sysmlIds) {
+        if (sysmlIds == null || sysmlIds.isEmpty()) {
+            return;
+        }
+        int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
+        String starter = String.format("UPDATE \"artifacts%s\" SET lastcommit = ? WHERE sysmlId IN (", workspaceId);
+        StringBuilder query = new StringBuilder(starter);
+        int count = 0;
+        int total = sysmlIds.size();
+        for (int i = 0; i < total; i++) {
+            query.append("?,");
+            count++;
+            if (((i + 1) % limit) == 0 || i == (total - 1)) {
+                query.setLength(query.length() - 1);
+                query.append(")");
+                List<Object> single = new LinkedList<>();
+                single.add(0, value);
+                for (int j = 0; j < count; j++) {
+                    single.add(j + 1, sysmlIds.remove(0));
+                }
+                List<List<Object>> values = new ArrayList<>();
+                values.add(single);
+                executeBulkStatements(query.toString(), values);
+                query = new StringBuilder(starter);
+                count = 0;
+            }
+        }
+    }
+
     public void runBatchQueries(List<Map<String, Object>> rows, String type) {
         String query = null;
         List<List<Object>> values = new LinkedList<>();
