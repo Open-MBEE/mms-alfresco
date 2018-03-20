@@ -78,23 +78,23 @@ public class ArtifactDelete extends AbstractJavaWebScript {
         return model;
     }
 
-    protected JSONObject handleRequest(WebScriptRequest req, final Status status, String user) throws JSONException, IOException {
+    protected JSONObject handleRequest(WebScriptRequest req, final Status status, String user)
+        throws JSONException, IOException {
         SerialJSONObject result = new SerialJSONObject();
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
         JSONObject res = new JSONObject();
         String commitId = UUID.randomUUID().toString();
-        JSONObject commit = new JSONObject();
+        JSONObject commit = new SerialJSONObject();
         commit.put(Sjm.ELASTICID, commitId);
         JSONArray commitDeleted = new SerialJSONArray();
-        JSONArray deletedElements = new JSONArray();
+        JSONArray deletedElements = new SerialJSONArray();
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
 
         Set<String> ids = new HashSet<>();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        Set<String> elasticIds = new HashSet<>();
         String artifactId = req.getServiceMatch().getTemplateVars().get("artifactId");
         if (artifactId != null && !artifactId.contains("holding_bin") && !artifactId.contains("view_instances_bin")) {
             ids.add(artifactId);
@@ -120,7 +120,12 @@ public class ArtifactDelete extends AbstractJavaWebScript {
             }
         }
         for (String id : ids) {
-            deletedElements.put(id);
+            Artifact artifact = emsNodeUtil.getArtifact(id, false);
+            JSONObject obj = new JSONObject();
+            obj.put(Sjm.SYSMLID, artifact.getSysmlId());
+            deletedElements.put(obj);
+            obj.put(Sjm.ELASTICID, artifact.getId());
+            commitDeleted.put(obj);
         }
 
         if (deletedElements.length() > 0) {
@@ -134,14 +139,12 @@ public class ArtifactDelete extends AbstractJavaWebScript {
             commit.put(Sjm.CREATED, date);
             result.put("commit", commit);
             if (CommitUtil.sendDeltas(result, projectId, refId, requestSourceApplication, services, false, true)) {
-//                if (!elasticIds.isEmpty()) {
-//                    emsNodeUtil.updateElasticRemoveRefs(elasticIds, "artifact");
-//                }:TODO check logic here
-                res.put(Sjm.ELEMENTS, deletedElements);
+                res.put(Sjm.ARTIFACTS, deletedElements);
                 res.put(Sjm.CREATOR, user);
                 res.put(Sjm.COMMITID, commitId);
             } else {
-                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
+                    "Commit failed, please check server logs for failed items");
                 return null;
             }
         }

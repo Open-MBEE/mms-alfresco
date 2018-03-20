@@ -199,10 +199,10 @@ DeleteArtifact
     [Documentation]  "Test deleting an artifact"
     [Tags]           crud       critical        0415
 	# Delete element
-	${result} =         requests.Delete          url=${ROOT}/projects/PA/refs/master/artifacts/deleteElement          headers=&{REQ_HEADER}
+	${result} =         requests.Delete          url=${ROOT}/projects/PA/refs/master/artifacts/deleteArtifact          headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	# Try to get element
-	${result} =         requests.Get         url=${ROOT}/projects/PA/refs/master/artifacts/deleteElement          headers=&{REQ_HEADER}
+	${result} =         requests.Get         url=${ROOT}/projects/PA/refs/master/artifacts/deleteArtifact          headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${404}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
