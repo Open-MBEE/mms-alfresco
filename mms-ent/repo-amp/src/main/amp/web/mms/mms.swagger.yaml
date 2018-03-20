@@ -326,6 +326,39 @@ paths:
           $ref: "#/responses/InternalServerError"
         default:
           $ref: "#/responses/Default"
+  /projects/{project_id}/commits/{commit_id}:
+     parameters:
+     - name: "project_id"
+       in: "path"
+       required: true
+       description: "project identifier"
+       type: "string"
+     - name: "commit_id"
+       in: "path"
+       required: true
+       description: "commit identifier"
+       type: "string"
+     get:
+       tags:
+       - "project"
+       summary: "Get project commit"
+       description: ""
+       operationId: "getProjectCommit"
+       responses:
+         200:
+           description: "OK"
+           schema:
+             $ref: "#/definitions/Commits"
+         401:
+           $ref: "#/responses/Unauthorized"
+         403:
+           $ref: "#/responses/Forbidden"
+         404:
+           $ref: "#/responses/NotFound"
+         500:
+           $ref: "#/responses/InternalServerError"
+         default:
+           $ref: "#/responses/Default"
   /projects/{project_id}/refs:
     parameters:
     - name: "project_id"
@@ -436,7 +469,7 @@ paths:
           $ref: "#/responses/InternalServerError"
         default:
           $ref: "#/responses/Default"
-  /projects/{project_id}/refs/{ref_id}/history:
+  /projects/{project_id}/refs/{ref_id}/commits:
     parameters:
     - name: "project_id"
       in: "path"
@@ -679,7 +712,7 @@ paths:
           $ref: "#/responses/InternalServerError"
         default:
           $ref: "#/responses/Default"
-  /projects/{project_id}/refs/{ref_id}/elements/{element_id}/history:
+  /projects/{project_id}/refs/{ref_id}/elements/{element_id}/commits:
     parameters:
     - name: "project_id"
       in: "path"
@@ -927,7 +960,7 @@ paths:
           $ref: "#/responses/InternalServerError"
         default:
           $ref: "#/responses/Default"
-  /projects/{project_id}/refs/{ref_id}/artifacts/{artifact_id}/history:
+  /projects/{project_id}/refs/{ref_id}/artifacts/{artifact_id}/commits:
     parameters:
     - name: "project_id"
       in: "path"
@@ -1207,6 +1240,10 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Element"
+      comment:
+        type: "string"
+      source:
+        type: "string"
   Artifacts:
     type: "object"
     required:
