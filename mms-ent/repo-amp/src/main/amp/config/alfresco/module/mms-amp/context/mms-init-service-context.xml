@@ -23,11 +23,6 @@
         <property name="repository" ref="repositoryHelper"/>
     </bean>
 
-    <bean id="migrationRunner" class="gov.nasa.jpl.view_repo.actions.MigrationRunner">
-        <property name="services" ref="ServiceRegistry"/>
-        <property name="repository" ref="repositoryHelper"/>
-    </bean>
-
     <bean id="extendPermissionModel" parent="permissionModelBootstrap">
         <property name="model" value="alfresco/extension/permissionDefinitionsExtension.xml"/>
     </bean>
@@ -36,6 +31,11 @@
     <bean id="emsConfig" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.EmsConfig.setProperties"/>
         <property name="arguments" value="mms.properties"/>
+    </bean>
+
+    <bean id="emsModuleConfig" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.EmsConfig.setProperties"/>
+        <property name="arguments" value="module.properties"/>
     </bean>
 
     <bean id="emsAlfConfig" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">

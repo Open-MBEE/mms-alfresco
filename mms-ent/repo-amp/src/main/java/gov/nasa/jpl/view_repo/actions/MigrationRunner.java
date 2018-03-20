@@ -1,5 +1,6 @@
 package gov.nasa.jpl.view_repo.actions;
 
+import gov.nasa.jpl.view_repo.util.EmsConfig;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
@@ -8,7 +9,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 
-import javax.jws.WebParam;
 import java.util.List;
 
 /**
@@ -19,15 +19,7 @@ public class MigrationRunner {
     static Logger logger = Logger.getLogger(MigrationRunner.class);
 
     public static ServiceRegistry services = null;
-    public static Repository repository = null;
-
-    public static Repository getRepository() {
-        return repository;
-    }
-
-    public static void setRepository(Repository repositoryHelper) {
-        MigrationRunner.repository = repositoryHelper;
-    }
+    public static ModuleDetails moduleDetails = null;
 
     public static ServiceRegistry getServices() {
         return getServiceRegistry();
@@ -41,7 +33,8 @@ public class MigrationRunner {
         return services;
     }
 
-    public static boolean checkMigration() {
+    public static boolean checkMigration(ServiceRegistry services) {
+        setServices(services);
         String previousVersion = getPreviousVersion();
         String currentVersion = getCurrentVersion();
         return false;
@@ -53,6 +46,16 @@ public class MigrationRunner {
         List<ModuleDetails> modules = moduleService.getAllModules();
         for (ModuleDetails module : modules) {
             if (module.getId().contains("mms-amp")) {
+                moduleDetails = module;
+                logger.error("MODULE VERSION IN DB: " + module.getModuleVersionNumber().toString());
+                List<String> editions = module.getEditions();
+                if (editions != null && editions.size() > 0) {
+                    for (String edition : editions) {
+                        logger.error("Edition: " + edition);
+                    }
+                } else {
+                    logger.error("No editions found.");
+                }
                 return module.getModuleVersionNumber().toString();
             }
         }
@@ -60,6 +63,14 @@ public class MigrationRunner {
     }
 
     public static String getCurrentVersion() {
+        try {
+            EmsConfig.setAlfrescoProperties(moduleDetails.getProperties());
+            logger.error("MODULE VERSION IN PROPERTIES: " + EmsConfig.get("module.version"));
+            return EmsConfig.get("module.version");
+        } catch (Exception e) {
+            logger.error(e);
+        }
+
         return null;
     }
 }

@@ -248,4 +248,8 @@
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="gov.nasa.jpl.view_repo.actions.MigrationRunner.checkMigration"/>
+        <property name="arguments" ref="ServiceRegistry" />
+    </bean>
 </beans>
