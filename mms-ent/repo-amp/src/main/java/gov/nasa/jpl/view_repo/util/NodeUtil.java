@@ -1,29 +1,24 @@
 package gov.nasa.jpl.view_repo.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.transaction.UserTransaction;
-import javax.xml.bind.DatatypeConverter;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -32,18 +27,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang.NullArgumentException;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.extensions.webscripts.Status;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 
 import gov.nasa.jpl.mbee.util.Debug;
-import gov.nasa.jpl.mbee.util.Utils;
 
 public class NodeUtil {
 
@@ -433,13 +424,13 @@ public class NodeUtil {
      * @param service the service containing modules to be returned
      * @return JSONArray of ModuleDetails within the ModuleService object
      */
-    public static JSONArray getServiceModulesJson(ModuleService service) {
+    public static JsonArray getServiceModulesJson(ModuleService service) {
 
-        JSONArray jsonArray = new JSONArray();
+        JsonArray jsonArray = new JsonArray();
         List<ModuleDetails> modules = service.getAllModules();
         for (ModuleDetails detail : modules) {
-            JSONObject jsonModule = moduleDetailsToJson(detail);
-            jsonArray.put(jsonModule);
+            JsonObject jsonModule = moduleDetailsToJson(detail);
+            jsonArray.add(jsonModule);
         }
         return jsonArray;
     }
@@ -456,21 +447,26 @@ public class NodeUtil {
      * @param module A single module of type ModuleDetails
      * @return JSONObject which contains all the details of that module
      */
-    public static JSONObject moduleDetailsToJson(ModuleDetails module) {
-        JSONObject jsonModule = new JSONObject();
-        try {
-            jsonModule.put("mmsTitle", module.getTitle());
-            jsonModule.put("mmsVersion", module.getModuleVersionNumber());
-            jsonModule.put("mmsAliases", module.getAliases());
-            jsonModule.put("mmsClass", module.getClass());
-            jsonModule.put("mmsDependencies", module.getDependencies());
-            jsonModule.put("mmsEditions", module.getEditions());
-            jsonModule.put("mmsId", module.getId());
-            jsonModule.put("mmsProperties", module.getProperties());
-        } catch (Exception e) {
-            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-        return jsonModule;
+    public static JsonObject moduleDetailsToJson(ModuleDetails module) {
+    	JsonObject jsonModule = new JsonObject();
+    	jsonModule.addProperty("mmsTitle", module.getTitle());
+    	jsonModule.addProperty("mmsVersion", module.getModuleVersionNumber().toString());
+    	JsonUtil.addStringList(jsonModule, "mmsAliases", module.getAliases());
+    	jsonModule.addProperty("mmsClass", module.getClass().toString());
+    	JsonArray depArray = new JsonArray();
+    	for (ModuleDependency depend: module.getDependencies())
+            depArray.add(depend.toString());
+    	jsonModule.add("mmsDependencies", depArray);
+    	JsonUtil.addStringList(jsonModule, "mmsEditions", module.getEditions());
+    	jsonModule.addProperty("mmsId", module.getId());
+    	JsonObject propObj = new JsonObject();
+    	Enumeration<?> enumerator = module.getProperties().propertyNames();
+    	while (enumerator.hasMoreElements()) {
+            String key = (String)enumerator.nextElement();
+            propObj.addProperty(key, module.getProperties().getProperty(key));
+    	}
+    	jsonModule.add("mmsProperties", propObj);
+    	return jsonModule;
     }
 
     /**
@@ -484,14 +480,12 @@ public class NodeUtil {
      */
     public static String getMMSversion() {
         ModuleService service = getModuleService(services);
-        JSONArray moduleDetails = getServiceModulesJson(service);
+        JsonArray moduleDetails = getServiceModulesJson(service);
         String mmsVersion = "NA";
-        int moduleArrayLength = moduleDetails.length();
-        if (moduleArrayLength > 0) {
-            for (int i = 0; i < moduleArrayLength; i++) {
-                if (moduleDetails.getJSONObject(i).getString("mmsId").equalsIgnoreCase("mms-amp")) {
-                    mmsVersion = moduleDetails.getJSONObject(i).getString("mmsVersion");
-                }
+        for (int i = 0; i < moduleDetails.size(); i++) {
+            JsonObject o = moduleDetails.get(i).getAsJsonObject();
+            if (o.get("mmsId").getAsString().equalsIgnoreCase("mms-amp")) {
+                mmsVersion = o.get("mmsVersion").getAsString();
             }
         }
 

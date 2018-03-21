@@ -34,12 +34,15 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -93,28 +96,29 @@ public class MountsGet extends AbstractJavaWebScript {
     protected Map<String, Object> handleMountGet(WebScriptRequest req, Status status, String accept) {
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject top = new JSONObject();
+        JsonObject top = new JsonObject();
 
         try {
             String projectId = getProjectId(req);
             String refId = getRefId(req);
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            JSONObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
-            JSONArray mountsArray = new JSONArray().put(mountsJson);
+            JsonObject mountsJson = emsNodeUtil.getProjectWithFullMounts(projectId, refId, null);
+            JsonArray mountsArray = new JsonArray();
+            mountsArray.add(mountsJson);
 
-            if (mountsJson.length() > 0) {
-                top.put(Sjm.PROJECTS, filterByPermission(mountsArray, req));
+            if (mountsJson.size() > 0) {
+                top.add(Sjm.PROJECTS, filterByPermission(mountsArray, req));
             }
-            if (top.length() == 0) {
+            if (top.size() == 0) {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
             }
-            if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+            if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
                 responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
             }
             if (!Utils.isNullOrEmpty(response.toString()))
-                top.put("message", response.toString());
+                top.addProperty("message", response.toString());
 
-        } catch (JSONException e) {
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create the JSON response", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
@@ -123,7 +127,8 @@ public class MountsGet extends AbstractJavaWebScript {
         status.setCode(responseStatus.getCode());
 
         if (prettyPrint || accept.contains("webp")) {
-            model.put(Sjm.RES, top.toString(4));
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            model.put(Sjm.RES, gson.toJson(top));
         } else {
             model.put(Sjm.RES, top);
         }

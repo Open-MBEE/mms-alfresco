@@ -41,12 +41,14 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
@@ -118,40 +120,38 @@ public class ModelGet extends AbstractJavaWebScript {
     protected Map<String, Object> handleElementGet(WebScriptRequest req, Status status, String accept) {
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject top = new JSONObject();
+        JsonObject top = new JsonObject();
 
         if (validateRequest(req, status)) {
             Boolean isCommit = req.getParameter(COMMITID) != null && !req.getParameter(COMMITID).isEmpty();
             try {
                 if (isCommit) {
-                    JSONArray commitJsonToArray = new JSONArray();
-                    JSONObject commitJson = handleCommitRequest(req);
-                    commitJsonToArray.put(commitJson);
-                    if (commitJson.length() == 0) {
+                    JsonArray commitJsonToArray = new JsonArray();
+                    JsonObject commitJson = handleCommitRequest(req);
+                    commitJsonToArray.add(commitJson);
+                    if (commitJson.size() == 0) {
                         log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
                     }
-                    if (commitJson.length() > 0) {
-                        top.put(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
+                    if (commitJson != null && commitJson.size() > 0) {
+                        top.add(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
                     }
-                    if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+                    if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
                         log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
                     }
                 } else {
-                    JSONArray elementsJson = handleRequest(req);
-                    if (elementsJson.length() == 0) {
+                    JsonArray elementsJson = handleRequest(req);
+                    if (elementsJson.size() == 0) {
                         log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
                     }
-                    if (elementsJson.length() > 0) {
-                        top.put(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
+                    if (elementsJson.size() > 0) {
+                        top.add(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
                     }
-                    if (top.has(Sjm.ELEMENTS) && top.getJSONArray(Sjm.ELEMENTS).length() < 1) {
+                    if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
                         log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
                     }
                 }
                 if (!Utils.isNullOrEmpty(response.toString()))
-                    top.put("message", response.toString());
-            } catch (JSONException e) {
-                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
+                    top.addProperty("message", response.toString());
             } catch (Exception e) {
                 log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
             }
@@ -159,7 +159,8 @@ public class ModelGet extends AbstractJavaWebScript {
             status.setCode(responseStatus.getCode());
         }
         if (prettyPrint || accept.contains("webp")) {
-            model.put(Sjm.RES, top.toString(4));
+        	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            model.put(Sjm.RES, gson.toJson(top));
         } else {
             model.put(Sjm.RES, top);
         }
@@ -173,7 +174,7 @@ public class ModelGet extends AbstractJavaWebScript {
      * @param req WebScriptRequest object
      * @return JSONArray of elements
      */
-    private JSONArray handleRequest(WebScriptRequest req) {
+    private JsonArray handleRequest(WebScriptRequest req) {
         // REVIEW -- Why check for errors here if validate has already been
         // called? Is the error checking code different? Why?
         try {
@@ -186,15 +187,17 @@ public class ModelGet extends AbstractJavaWebScript {
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
             if (null == modelId) {
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s", modelId);
-                return new JSONArray();
+                return new JsonArray();
             } else if (emsNodeUtil.isDeleted(modelId)) {
                 log(Level.ERROR, HttpServletResponse.SC_GONE, "Element %s is deleted", modelId);
-                return new JSONArray();
+                return new JsonArray();
             }
 
-            JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+            JsonObject mountsJson = new JsonObject();
+            mountsJson.addProperty(Sjm.SYSMLID, projectId);
+            mountsJson.addProperty(Sjm.REFID, refId);
 
-            JSONArray result = new JSONArray();
+            JsonArray result = new JsonArray();
             Set<String> elementsToFind = new HashSet<>();
             elementsToFind.add(modelId);
             EmsNodeUtil.handleMountSearch(mountsJson, extended, false, depth, elementsToFind, result);
@@ -202,10 +205,10 @@ public class ModelGet extends AbstractJavaWebScript {
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return new JSONArray();
+        return new JsonArray();
     }
 
-    private JSONObject handleCommitRequest(WebScriptRequest req) {
+    private JsonObject handleCommitRequest(WebScriptRequest req) {
         // getElement at commit
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -216,32 +219,34 @@ public class ModelGet extends AbstractJavaWebScript {
         String commitId = req.getParameter(COMMITID);
 
         if (emsNodeUtil.getById(elementId) != null) {
-            JSONObject element = emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
-            if (element == null || element.length() == 0) {
+            JsonObject element = emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
+            if (element == null || element.size() == 0) {
                 return emsNodeUtil.getElementAtCommit(elementId, commitId);
             } else {
                 return element;
             }
         }
 
-        JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+        JsonObject mountsJson = new JsonObject();
+        mountsJson.addProperty(Sjm.SYSMLID, projectId);
+        mountsJson.addProperty(Sjm.REFID, refId);
         // convert commitId to timestamp
-        String commit = emsNodeUtil.getCommitObject(commitId).getString(Sjm.CREATED);
+        String commit = emsNodeUtil.getCommitObject(commitId).get(Sjm.CREATED).getAsString();
 
-        JSONArray result = new JSONArray();
+        JsonArray result = new JsonArray();
         Set<String> elementsToFind = new HashSet<>();
         elementsToFind.add(elementId);
         try {
             EmsNodeUtil.handleMountSearch(mountsJson, false, false, depth, elementsToFind, result, commit, "elements");
-            if (result.length() > 0) {
-                return result.optJSONObject(0);
+            if (result.size() > 0) {
+                return JsonUtil.getOptObject(result, 0);
             }
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s",
                 elementId, commitId);
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return new JSONObject();
+        return new JsonObject();
     }
 
     /**
@@ -292,7 +297,7 @@ public class ModelGet extends AbstractJavaWebScript {
      * @throws IOException  IO error
      */
 
-    protected JSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
+    protected JsonArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
         throws SQLException, IOException {
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -300,8 +305,10 @@ public class ModelGet extends AbstractJavaWebScript {
 
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
-        JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
-        JSONArray result = new JSONArray();
+        JsonObject mountsJson = new JsonObject();
+        mountsJson.addProperty(Sjm.SYSMLID, projectId);
+        mountsJson.addProperty(Sjm.REFID, refId);
+        JsonArray result = new JsonArray();
         Set<String> elementsToFind = new HashSet<>();
         elementsToFind.add(rootSysmlid);
         EmsNodeUtil.handleMountSearch(mountsJson, extended, false, depth, elementsToFind, result);

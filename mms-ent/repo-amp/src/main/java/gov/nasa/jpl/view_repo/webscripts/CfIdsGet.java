@@ -40,12 +40,12 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONException;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
@@ -100,11 +100,11 @@ public class CfIdsGet extends AbstractJavaWebScript {
     protected Map<String, Object> handleElementGet(WebScriptRequest req, Status status) {
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject top = new JSONObject();
+        JsonObject top = new JsonObject();
 
         if (validateRequest(req, status)) {
             try {
-                JSONArray elementsJson = null;
+                JsonArray elementsJson = null;
                 String modelId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
                 if (null == modelId) {
                     log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s", modelId);
@@ -112,13 +112,11 @@ public class CfIdsGet extends AbstractJavaWebScript {
                     elementsJson = handleElementHierarchy(modelId, req);
                 }
                 if (elementsJson != null) {
-                    top.put("elementIds", elementsJson);
+                    top.add("elementIds", elementsJson);
                 }
                 if (!Utils.isNullOrEmpty(response.toString())) {
-                    top.put("message", response.toString());
+                    top.addProperty("message", response.toString());
                 }
-            } catch (JSONException e) {
-                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
             } catch (Exception e) {
                 log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
             }
@@ -128,12 +126,14 @@ public class CfIdsGet extends AbstractJavaWebScript {
         return model;
     }
 
-    protected JSONArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
+    protected JsonArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
         throws SQLException, IOException {
         // get timestamp if specified
         String projectId = getProjectId(req);
         String refId = getRefId(req);
-        JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+        JsonObject mountsJson = new JsonObject();
+        mountsJson.addProperty(Sjm.SYSMLID, projectId);
+        mountsJson.addProperty(Sjm.REFID, refId);
         Long depth = null;
         String depthParam = req.getParameter("depth");
         if (depthParam != null) {
@@ -153,26 +153,28 @@ public class CfIdsGet extends AbstractJavaWebScript {
         return handleMountSearch(mountsJson, rootSysmlid, depth);
     }
 
-    protected JSONArray handleMountSearch(JSONObject mountsJson, String rootSysmlid, Long depth)
+    protected JsonArray handleMountSearch(JsonObject mountsJson, String rootSysmlid, Long depth)
         throws SQLException, IOException {
-        JSONArray result = null;
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID));
+        JsonArray result = null;
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.get(Sjm.SYSMLID).getAsString(), 
+                        mountsJson.get(Sjm.REFID).getAsString());
         Node n = emsNodeUtil.getById(rootSysmlid);
         if (n != null) {
             if (n.isDeleted()) {
                 log(Level.ERROR, HttpServletResponse.SC_GONE, "Element %s is deleted", rootSysmlid);
-                return new JSONArray();
+                return new JsonArray();
             }
             return emsNodeUtil.getChildrenIds(rootSysmlid, GraphInterface.DbEdgeTypes.VIEW, depth);
         }
         if (!mountsJson.has(Sjm.MOUNTS)) {
-            mountsJson = emsNodeUtil
-                .getProjectWithFullMounts(mountsJson.getString(Sjm.SYSMLID), mountsJson.getString(Sjm.REFID), null);
+            mountsJson = emsNodeUtil.getProjectWithFullMounts(
+                            mountsJson.get(Sjm.SYSMLID).getAsString(), 
+                            mountsJson.get(Sjm.REFID).getAsString(), null);
         }
-        JSONArray mountsArray = mountsJson.getJSONArray(Sjm.MOUNTS);
+        JsonArray mountsArray = mountsJson.get(Sjm.MOUNTS).getAsJsonArray();
 
-        for (int i = 0; i < mountsArray.length(); i++) {
-            result = handleMountSearch(mountsArray.getJSONObject(i), rootSysmlid, depth);
+        for (int i = 0; i < mountsArray.size(); i++) {
+            result = handleMountSearch(mountsArray.get(i).getAsJsonObject(), rootSysmlid, depth);
             if (result != null) {
                 return result;
             }

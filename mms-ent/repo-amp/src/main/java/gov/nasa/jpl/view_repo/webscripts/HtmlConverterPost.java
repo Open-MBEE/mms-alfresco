@@ -6,8 +6,8 @@ import gov.nasa.jpl.view_repo.actions.ActionUtil;
 import gov.nasa.jpl.view_repo.actions.PandocConverter;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 
@@ -18,11 +18,11 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypes;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -63,35 +63,35 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
 
         HtmlConverterPost instance = new HtmlConverterPost(repository, services);
-        JSONObject postJson = null;
-        JSONObject result = new JSONObject();
+        JsonObject postJson = null;
+        JsonObject result = new JsonObject();
         try {
-            postJson = new SerialJSONObject(req.getContent().getContent());
+            postJson = JsonUtil.buildFromString(req.getContent().getContent());
             if (postJson.has("name")) {
 
-                String docName = postJson.optString(Sjm.NAME);
+                String docName = JsonUtil.getOptString(postJson, Sjm.NAME);
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-                JSONObject project = emsNodeUtil.getProject(projectId);
-                String siteName = project.optString("orgId", null);
+                JsonObject project = emsNodeUtil.getProject(projectId);
+                String siteName = JsonUtil.getOptString(project, "orgId");
 
                 // Convert mimetype to extension string
-                String rawFormat = postJson.getString("Accepts");
+                String rawFormat = postJson.get("Accepts").getAsString();
                 MimeType mimeType = allTypes.forName(rawFormat);
                 String format = mimeType.getExtension();
 
                 String filename = String.format("%s%s", docName, format);
-                postJson.put("filename", filename);
+                postJson.addProperty("filename", filename);
                 EmsScriptNode artifact = createDoc(postJson, docName, siteName, projectId, refId, format);
 
-                result.put(Sjm.NAME, docName);
-                result.put("filename", filename);
+                result.addProperty(Sjm.NAME, docName);
+                result.addProperty("filename", filename);
 
                 if (artifact != null) {
-                    result.put("status", "Conversion succeeded.");
+                    result.addProperty("status", "Conversion succeeded.");
                 } else {
-                    result.put("status", "Conversion failed.");
+                    result.addProperty("status", "Conversion failed.");
                 }
 
             } else {
@@ -107,21 +107,17 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
         if (postJson == null) {
             model.put(Sjm.RES, createResponseJson());
         } else {
-            try {
-                if (!Utils.isNullOrEmpty(response.toString())) {
-                    result.put("message", response.toString());
-                }
-                model.put(Sjm.RES, result);
-            } catch (JSONException e) {
-                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            if (!Utils.isNullOrEmpty(response.toString())) {
+                result.addProperty("message", response.toString());
             }
+            model.put(Sjm.RES, result);
         }
 
         printFooter(user, logger, timer);
         return model;
     }
 
-    private EmsScriptNode createDoc(JSONObject postJson, String filename, String siteName, String projectId,
+    private EmsScriptNode createDoc(JsonObject postJson, String filename, String siteName, String projectId,
         String refId, String format) {
 
         PandocConverter pandocConverter = new PandocConverter(filename, format);
@@ -132,9 +128,9 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
 
         try {
             // Convert HTML to Doc
-            pandocConverter.convert(postJson.optString("body"));
+            pandocConverter.convert(JsonUtil.getOptString(postJson, "body"));
 
-            String artifactId = postJson.getString(Sjm.NAME) + System.currentTimeMillis() + format;
+            String artifactId = postJson.get(Sjm.NAME).getAsString() + System.currentTimeMillis() + format;
             artifact = NodeUtil.updateOrCreateArtifact(artifactId, filePath, format, siteName, projectId, refId);
 
             sendEmail(artifact);

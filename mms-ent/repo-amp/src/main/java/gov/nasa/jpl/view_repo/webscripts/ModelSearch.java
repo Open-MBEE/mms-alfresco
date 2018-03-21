@@ -47,15 +47,17 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 
@@ -91,20 +93,22 @@ public class ModelSearch extends ModelPost {
 
         try {
             boolean noprocess = Boolean.parseBoolean(req.getParameter("literal"));
+            JsonObject json = JsonUtil.buildFromString(req.getContent().getContent());
             if (noprocess) {
-                JSONObject json = (JSONObject) req.parseContent();
                 ElasticHelper eh = new ElasticHelper();
-                JSONObject result = eh.searchLiteral(json);
+                JsonObject result = eh.searchLiteral(json);
                 model.put(Sjm.RES, result.toString());
             } else {
-                JSONObject top = executeSearchRequest(req);
+                JsonObject top = executeSearchRequest(req, json);
 
                 if (!Utils.isNullOrEmpty(response.toString())) {
-                    top.put("message", response.toString());
+                    top.addProperty("message", response.toString());
                 }
                 model.put(Sjm.RES, top.toString());
             }
-        } catch (JSONException e) {
+        } catch (IllegalStateException e) { 
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse the JSON request", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
@@ -119,53 +123,52 @@ public class ModelSearch extends ModelPost {
         return model;
     }
 
-    private JSONObject executeSearchRequest(WebScriptRequest req) throws JSONException, IOException {
-        JSONObject top = new JSONObject();
+    private JsonObject executeSearchRequest(WebScriptRequest req, JsonObject json) throws IOException {
+        JsonObject top = new JsonObject();
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        JSONObject json = (JSONObject) req.parseContent();
         boolean checkIfPropOrSlot = Boolean.parseBoolean(req.getParameter("checkType"));
         try {
             top = emsNodeUtil.search(json);
-            JSONArray elasticResult = top.getJSONArray("elements");
+            JsonArray elasticResult = top.get("elements").getAsJsonArray();
             elasticResult = filterByPermission(elasticResult, req);
-            Map<String, JSONArray> bins = new HashMap<>();
-            JSONArray finalResult = new JSONArray();
+            Map<String, JsonArray> bins = new HashMap<>();
+            JsonArray finalResult = new JsonArray();
             Set<String> found = new HashSet<>();
-            for (int i = 0; i < elasticResult.length(); i++) {
-                JSONObject e = elasticResult.getJSONObject(i);
+            for (int i = 0; i < elasticResult.size(); i++) {
+                JsonObject e = elasticResult.get(i).getAsJsonObject();
 
                 if (checkIfPropOrSlot) {
-                    String eprojId = e.getString(Sjm.PROJECTID);
-                    String erefId = e.getString(Sjm.REFID);
-                    JSONObject ownere = null;
-                    if (e.getString(Sjm.TYPE).equals("Property")) {
-                        ownere = getJsonBySysmlId(eprojId, erefId, e.getString(Sjm.OWNERID));
-                    } else if (e.getString(Sjm.TYPE).equals("Slot")) {
-                        ownere = getGrandOwnerJson(eprojId, erefId, e.getString(Sjm.OWNERID));
+                    String eprojId = e.get(Sjm.PROJECTID).getAsString();
+                    String erefId = e.get(Sjm.REFID).getAsString();
+                    JsonObject ownere = null;
+                    if (e.get(Sjm.TYPE).getAsString().equals("Property")) {
+                        ownere = getJsonBySysmlId(eprojId, erefId, e.get(Sjm.OWNERID).getAsString());
+                    } else if (e.get(Sjm.TYPE).getAsString().equals("Slot")) {
+                        ownere = getGrandOwnerJson(eprojId, erefId, e.get(Sjm.OWNERID).getAsString());
                     }
-                    if (ownere != null && ownere.has(Sjm.SYSMLID) && !found.contains(ownere.getString(Sjm.SYSMLID))) {
-                        finalResult.put(ownere);
-                        String key = ownere.getString(Sjm.PROJECTID) + " " +  ownere.getString(Sjm.REFID);
+                    if (ownere != null && ownere.has(Sjm.SYSMLID) && !found.contains(ownere.get(Sjm.SYSMLID).getAsString())) {
+                        finalResult.add(ownere);
+                        String key = ownere.get(Sjm.PROJECTID).getAsString() + " " +  ownere.get(Sjm.REFID).getAsString();
                         if (!bins.containsKey(key)) {
-                            bins.put(key, new JSONArray());
+                            bins.put(key, new JsonArray());
                         }
-                        bins.get(key).put(ownere);
-                        found.add(ownere.getString(Sjm.SYSMLID));
+                        bins.get(key).add(ownere);
+                        found.add(ownere.get(Sjm.SYSMLID).getAsString());
                     }
                 }
-                finalResult.put(e);
-                found.add(e.getString(Sjm.SYSMLID));
-                String key = e.getString(Sjm.PROJECTID) + " " +  e.getString(Sjm.REFID);
+                finalResult.add(e);
+                found.add(e.get(Sjm.SYSMLID).getAsString());
+                String key = e.get(Sjm.PROJECTID).getAsString() + " " +  e.get(Sjm.REFID).getAsString();
                 if (!bins.containsKey(key)) {
-                    bins.put(key, new JSONArray());
+                    bins.put(key, new JsonArray());
                 }
-                bins.get(key).put(e);
+                bins.get(key).add(e);
             }
-            for (Entry<String, JSONArray> entry: bins.entrySet()) {
+            for (Entry<String, JsonArray> entry: bins.entrySet()) {
                 String[] split = entry.getKey().split(" ");
                 projectId = split[0];
                 refId = split[1];
@@ -173,7 +176,7 @@ public class ModelSearch extends ModelPost {
                 util.addExtendedInformation(entry.getValue());
                 util.addExtraDocs(entry.getValue());
             }
-            top.put("elements", finalResult);
+            top.add("elements", finalResult);
             return top;
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -188,7 +191,7 @@ public class ModelSearch extends ModelPost {
      * @param sysmlId of the Element to find grandowner of
      * @return JSONObject
      */
-    private JSONObject getJsonBySysmlId(String projectId, String refId, String sysmlId) {
+    private JsonObject getJsonBySysmlId(String projectId, String refId, String sysmlId) {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         return emsNodeUtil.getNodeBySysmlid(sysmlId);
     }
@@ -201,7 +204,8 @@ public class ModelSearch extends ModelPost {
      * @param sysmlId of the Element to find grandowner of
      * @return JSONObject
      */
-    private JSONObject getGrandOwnerJson(String projectId, String refId, String sysmlId) {
-        return getJsonBySysmlId(projectId, refId, getJsonBySysmlId(projectId, refId, sysmlId).optString(Sjm.OWNERID));
+    private JsonObject getGrandOwnerJson(String projectId, String refId, String sysmlId) {
+        return getJsonBySysmlId(projectId, refId, 
+        		JsonUtil.getOptString(getJsonBySysmlId(projectId, refId, sysmlId), Sjm.OWNERID));
     }
 }

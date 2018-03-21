@@ -1590,6 +1590,7 @@ public class PostgresHelper implements GraphInterface {
             }
         } catch (PSQLException pe) {
             ServerErrorMessage em = pe.getServerErrorMessage();
+            logger.warn(em.toString());
             // Do nothing for duplicate found
             if (!em.getConstraint().equals("unique_organizations")) {
                 throw pe;

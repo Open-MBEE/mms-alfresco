@@ -17,12 +17,13 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.LogUtil;
@@ -58,7 +59,7 @@ public class ModelDelete extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject result = null;
+        JsonObject result = null;
 
         try {
             result = handleRequest(req, status, user);
@@ -77,16 +78,16 @@ public class ModelDelete extends AbstractJavaWebScript {
         return model;
     }
 
-    protected JSONObject handleRequest(WebScriptRequest req, final Status status, String user) throws JSONException, IOException {
-        SerialJSONObject result = new SerialJSONObject();
+    protected JsonObject handleRequest(WebScriptRequest req, final Status status, String user) throws IOException {
+        JsonObject result = new JsonObject();
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
-        JSONObject res = new JSONObject();
+        JsonObject res = new JsonObject();
         String commitId = UUID.randomUUID().toString();
-        JSONObject commit = new JSONObject();
-        commit.put(Sjm.ELASTICID, commitId);
-        JSONArray commitDeleted = new JSONArray();
-        JSONArray deletedElements = new JSONArray();
+        JsonObject commit = new JsonObject();
+        commit.addProperty(Sjm.ELASTICID, commitId);
+        JsonArray commitDeleted = new JsonArray();
+        JsonArray deletedElements = new JsonArray();
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -99,19 +100,23 @@ public class ModelDelete extends AbstractJavaWebScript {
             ids.add(elementId);
         } else {
             try {
-                JSONObject requestJson = new JSONObject(req.getContent().getContent());
+                JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
                 this.populateSourceApplicationFromJson(requestJson);
                 if (requestJson.has(Sjm.ELEMENTS)) {
-                    JSONArray elementsJson = requestJson.getJSONArray(Sjm.ELEMENTS);
+                    JsonArray elementsJson = requestJson.get(Sjm.ELEMENTS).getAsJsonArray();
                     if (elementsJson != null) {
-                        for (int ii = 0; ii < elementsJson.length(); ii++) {
-                            String id = elementsJson.getJSONObject(ii).getString(Sjm.SYSMLID);
+                        for (int ii = 0; ii < elementsJson.size(); ii++) {
+                            String id = elementsJson.get(ii).getAsJsonObject().get(Sjm.SYSMLID).getAsString();
                             if (!id.contains("holding_bin") && !id.contains("view_instances_bin")) {
                                 ids.add(id);
                             }
                         }
                     }
                 }
+            } catch (IllegalStateException e) { 
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
+            } catch (JsonParseException e) {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
             } catch (Exception e) {
                 response.append("Could not parse request body");
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, String.format("%s", LogUtil.getStackTrace(e)));
@@ -120,40 +125,40 @@ public class ModelDelete extends AbstractJavaWebScript {
         }
 
         for (String id : ids) {
-            if (emsNodeUtil.getNodeBySysmlid(id).length() > 0) {
-                JSONArray nodesToDelete = emsNodeUtil.getChildren(id);
-                for (int i = 0; i < nodesToDelete.length(); i++) {
-                    JSONObject node = nodesToDelete.getJSONObject(i);
-                    if (node != null && !elasticIds.contains(node.getString(Sjm.ELASTICID))) {
-                        deletedElements.put(node);
-                        JSONObject obj = new JSONObject();
-                        obj.put(Sjm.SYSMLID, node.getString(Sjm.SYSMLID));
-                        obj.put(Sjm.ELASTICID, node.getString(Sjm.ELASTICID));
-                        commitDeleted.put(obj);
-                        elasticIds.add(node.getString(Sjm.ELASTICID));
+            if (emsNodeUtil.getNodeBySysmlid(id).size() > 0) {
+                JsonArray nodesToDelete = emsNodeUtil.getChildren(id);
+                for (int i = 0; i < nodesToDelete.size(); i++) {
+                    JsonObject node = nodesToDelete.get(i).getAsJsonObject();
+                    if (!elasticIds.contains(node.get(Sjm.ELASTICID).getAsString())) {
+                        deletedElements.add(node);
+                        JsonObject obj = new JsonObject();
+                        obj.add(Sjm.SYSMLID, node.get(Sjm.SYSMLID));
+                        obj.add(Sjm.ELASTICID, node.get(Sjm.ELASTICID));
+                        commitDeleted.add(obj);
+                        elasticIds.add(node.get(Sjm.ELASTICID).getAsString());
                     }
                     log(Level.DEBUG, String.format("Node: %s", node));
                 }
             }
         }
 
-        if (deletedElements.length() > 0) {
-            result.put("addedElements", new JSONArray());
-            result.put("updatedElements", new JSONArray());
-            result.put("deletedElements", deletedElements);
-            commit.put("added", new JSONArray());
-            commit.put("updated", new JSONArray());
-            commit.put("deleted", commitDeleted);
-            commit.put(Sjm.CREATOR, user);
-            commit.put(Sjm.CREATED, date);
-            result.put("commit", commit);
+        if (deletedElements.size() > 0) {
+            result.add("addedElements", new JsonArray());
+            result.add("updatedElements", new JsonArray());
+            result.add("deletedElements", deletedElements);
+            commit.add("added", new JsonArray());
+            commit.add("updated", new JsonArray());
+            commit.add("deleted", commitDeleted);
+            commit.addProperty(Sjm.CREATOR, user);
+            commit.addProperty(Sjm.CREATED, date);
+            result.add("commit", commit);
             if (CommitUtil.sendDeltas(result, projectId, refId, requestSourceApplication, services, false, false)) {
                 if (!elasticIds.isEmpty()) {
                     emsNodeUtil.updateElasticRemoveRefs(elasticIds, "element");
                 }
-                res.put(Sjm.ELEMENTS, deletedElements);
-                res.put(Sjm.CREATOR, user);
-                res.put(Sjm.COMMITID, commitId);
+                res.add(Sjm.ELEMENTS, deletedElements);
+                res.addProperty(Sjm.CREATOR, user);
+                res.addProperty(Sjm.COMMITID, commitId);
             } else {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Commit failed, please check server logs for failed items");
                 return null;

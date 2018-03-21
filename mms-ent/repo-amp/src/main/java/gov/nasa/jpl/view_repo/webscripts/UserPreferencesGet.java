@@ -33,12 +33,12 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -72,8 +72,8 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         String username = req.getServiceMatch().getTemplateVars().get(USERNAME);
         Map<String, Object> model = new HashMap<>();
-        JSONArray success = new JSONArray();
-        JSONArray failure = new JSONArray();
+        JsonArray success = new JsonArray();
+        JsonArray failure = new JsonArray();
 
         Timer timer = new Timer();
         printHeader(user, logger, req, true);
@@ -82,15 +82,13 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
             try {
                 if (validateRequest(req, status)) {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
-                    JSONObject res = emsNodeUtil.getProfile(username);
-                    if (res.length() > 0 && res != null) {
-                        success.put(res);
+                    JsonObject res = emsNodeUtil.getProfile(username);
+                    if (res.size() > 0 && res != null) {
+                        success.add(res);
                     } else {
-                        failure.put(res);
+                        failure.add(res);
                     }
                 }
-            } catch (JSONException ex) {
-                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", ex);
             } catch (IOException e) {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
                     "Commit failed, please check server logs for failed items", e);
@@ -98,11 +96,11 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
         } else {
             log(Level.ERROR, HttpServletResponse.SC_UNAUTHORIZED, "You are not authorized to make this post");
         }
-        JSONObject response = new JSONObject();
-        response.put(Sjm.PROFILES, success);
+        JsonObject response = new JsonObject();
+        response.add(Sjm.PROFILES, success);
 
-        if (failure.length() > 0) {
-            response.put("failed", failure);
+        if (failure.size() > 0) {
+            response.add("failed", failure);
         }
 
         status.setCode(responseStatus.getCode());

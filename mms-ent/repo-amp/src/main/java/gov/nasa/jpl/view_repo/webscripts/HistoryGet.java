@@ -14,12 +14,12 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
@@ -69,26 +69,25 @@ public class HistoryGet extends ModelGet {
             logger.debug(user + " " + req.getURL());
         }
 
-        JSONObject top = new JSONObject();
-        JSONArray historyJson = handleRequest(req);
+        JsonObject top = new JsonObject();
+        JsonArray elementsJson = handleRequest(req);
+
         try {
-            if (historyJson.length() > 0) {
-                top.put(Sjm.COMMITS, historyJson);
+            if (elementsJson.size() > 0) {
+                top.add(Sjm.COMMITS, elementsJson);
             } else {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
             }
 
             if (!Utils.isNullOrEmpty(response.toString()))
-                top.put("message", response.toString());
+                top.addProperty("message", response.toString());
 
-        } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
         status.setCode(responseStatus.getCode());
-        model.put(Sjm.RES, top.toString(4));
+        model.put(Sjm.RES, top.toString());
 
         printFooter(user, logger, timer);
         return model;
@@ -107,8 +106,8 @@ public class HistoryGet extends ModelGet {
      * @param req
      * @return
      */
-    private JSONArray handleRequest(WebScriptRequest req) {
-        JSONArray jsonHist = new JSONArray();
+    private JsonArray handleRequest(WebScriptRequest req) {
+        JsonArray jsonHist = null;
         try {
             String[] idKeys = { "elementId", "artifactId" };
             String modelId = null;
@@ -122,7 +121,7 @@ public class HistoryGet extends ModelGet {
             if (modelId == null) {
                 logger.error("Model ID Null...");
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element");
-                return new JSONArray();
+                return new JsonArray();
             }
 
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), getRefId(req));
