@@ -162,7 +162,7 @@ public class CommitUtil {
     public static boolean isSite(JsonObject element) {
         return element.has(Sjm.ISSITE) && element.get(Sjm.ISSITE).getAsBoolean();
     }
-    
+
     public static JsonObject indexProfile(String id, JsonObject elements, String index) throws IOException {
         return eh.updateProfile(id, elements, index);
     }
@@ -254,7 +254,7 @@ public class CommitUtil {
                         Map<String, Object> updatedArtifact = new HashMap<>();
                         updatedArtifact.put(Sjm.ELASTICID, e.get(Sjm.ELASTICID).getAsString());
                         updatedArtifact.put(Sjm.SYSMLID, e.get(Sjm.SYSMLID).getAsString());
-                        updatedArtifact.put(DELETED, "false");
+                        updatedArtifact.put(DELETED, false);
                         updatedArtifact.put(LASTCOMMIT, commitElasticId);
                         artifactUpdates.add(updatedArtifact);
                     }
@@ -359,9 +359,9 @@ public class CommitUtil {
                         nodeInserts.add(node);
                     }
 
-                    if (e.has(Sjm.OWNERID) && !e.get(Sjm.OWNERID).isJsonNull() 
+                    if (e.has(Sjm.OWNERID) && !e.get(Sjm.OWNERID).isJsonNull()
                                     && e.has(Sjm.SYSMLID) && !e.get(Sjm.SYSMLID).isJsonNull()) {
-                        Pair<String, String> p = new Pair<>(e.get(Sjm.OWNERID).getAsString(), 
+                        Pair<String, String> p = new Pair<>(e.get(Sjm.OWNERID).getAsString(),
                                         e.get(Sjm.SYSMLID).getAsString());
                         addEdges.add(p);
                     }
@@ -415,7 +415,7 @@ public class CommitUtil {
                     pgh.deleteEdgesForNode(e.get(Sjm.SYSMLID).getAsString(), false, DbEdgeTypes.CHILDVIEW);
 
                     if (e.has(Sjm.OWNERID) && !e.get(Sjm.OWNERID).isJsonNull() && !e.get(Sjm.SYSMLID).isJsonNull()) {
-                        Pair<String, String> p = new Pair<>(e.get(Sjm.OWNERID).getAsString(), 
+                        Pair<String, String> p = new Pair<>(e.get(Sjm.OWNERID).getAsString(),
                                         e.get(Sjm.SYSMLID).getAsString());
                         addEdges.add(p);
                     }
@@ -440,7 +440,7 @@ public class CommitUtil {
                     if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
                         JsonArray owned = JsonUtil.getOptArray(e, Sjm.OWNEDATTRIBUTEIDS);
                         for (int j = 0; j < owned.size(); j++) {
-                            Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(), 
+                            Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(),
                                             owned.get(j).getAsString());
                             childViewEdges.add(p);
                         }
@@ -610,7 +610,7 @@ public class CommitUtil {
      * @param source    Source of the delta (e.g., MD, EVM, whatever, only necessary for MD so it can
      *                  ignore)
      * @return true if publish completed
-     * @throws JSONException
+     *
      */
     public static boolean sendDeltas(JsonObject deltaJson, String projectId, String workspaceId, String source,
         ServiceRegistry services, boolean withChildViews, boolean isArtifact) {
@@ -904,13 +904,13 @@ public class CommitUtil {
         JsonObject defaultValue = JsonUtil.getOptObject(element, Sjm.DEFAULTVALUE);
         JsonArray slotValues = JsonUtil.getOptArray(element, "value");
         if (JsonUtil.getOptString(defaultValue, Sjm.TYPE).equals("LiteralString")) {
-            processDocumentEdges(element.get(Sjm.SYSMLID).getAsString(), 
+            processDocumentEdges(element.get(Sjm.SYSMLID).getAsString(),
                             JsonUtil.getOptString(defaultValue, "value"), edges);
         }
         for (int i = 0; i < slotValues.size(); i++) {
             JsonObject val = JsonUtil.getOptObject(slotValues, i);
             if (JsonUtil.getOptString(val, Sjm.TYPE).equals("LiteralString")) {
-                processDocumentEdges(element.get(Sjm.SYSMLID).getAsString(), 
+                processDocumentEdges(element.get(Sjm.SYSMLID).getAsString(),
                                 JsonUtil.getOptString(val, "value"), edges);
             }
         }
@@ -981,7 +981,7 @@ public class CommitUtil {
     		return findKeyValueInJsonArray(jelem.getAsJsonArray(), keyMatch, text);
     	return new HashSet<>();
     }
-    
+
     public static Set<Object> findKeyValueInJsonObject(JsonObject json, String keyMatch, StringBuilder text) {
         Set<Object> result = new HashSet<>();
         for (Map.Entry<String, JsonElement> entry : json.entrySet()) {

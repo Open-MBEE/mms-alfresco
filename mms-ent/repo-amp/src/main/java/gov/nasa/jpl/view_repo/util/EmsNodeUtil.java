@@ -640,8 +640,8 @@ public class EmsNodeUtil {
                 o.remove(Sjm.QUALIFIEDNAME);
             }
 
-            if (!o.has(Sjm.OWNERID) || o.get(Sjm.OWNERID).isJsonNull() || o.get(Sjm.OWNERID).getAsString()
-                .equalsIgnoreCase("null")) {
+            if ((!o.has(Sjm.OWNERID) || o.get(Sjm.OWNERID).isJsonNull() || o.get(Sjm.OWNERID).getAsString()
+                .equalsIgnoreCase("null")) && !type.equals("Artifact")) {
                 o.addProperty(Sjm.OWNERID, holdingBinSysmlid);
             }
             if (!o.get(Sjm.TYPE).getAsString().equals(Sjm.ARTIFACT)) {
@@ -657,7 +657,7 @@ public class EmsNodeUtil {
                 JsonObject newObj = new JsonObject();
                 newObj.add(Sjm.SYSMLID, o.get(Sjm.SYSMLID));
                 newObj.add(Sjm.ELASTICID, o.get(Sjm.ELASTICID));
-                newObj.add(Sjm.TYPE, type);
+                newObj.addProperty(Sjm.TYPE, type);
                 // this for the artifact object, has extra key...
                 if (type.equals("Artifact")) {
                     newObj.add(Sjm.CONTENTTYPE, o.get(Sjm.CONTENTTYPE));
@@ -675,7 +675,7 @@ public class EmsNodeUtil {
                 parent.add(Sjm.ELASTICID, o.get(Sjm.ELASTICID));
                 parent.addProperty(Sjm.TYPE, type);
                 if (type.equals("Artifact")) {
-                    parent.addProperty(Sjm.CONTENTTYPE, o.getAsJsonPrimitive(Sjm.CONTENTTYPE));
+                    parent.add(Sjm.CONTENTTYPE, o.get(Sjm.CONTENTTYPE));
                 }
                 commitUpdated.add(parent);
                 newElements.add(o);
@@ -710,7 +710,7 @@ public class EmsNodeUtil {
     private static final String updateScript = "{\"script\": {\"inline\":"
                 + "\"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%2$s.removeAll([params.refId])}\","
                 + " \"params\":{\"refId\":\"%3$s\"}}}";
-    
+
     public void updateElasticRemoveRefs(Set<String> elasticIds, String type) {
         try {
             String scriptToRun = String.format(updateScript, Sjm.INREFIDS, Sjm.INREFIDS,
@@ -844,7 +844,7 @@ public class EmsNodeUtil {
                             for (int j = 0; j < childViews.size(); j++) {
                                 JsonObject childView = JsonUtil.getOptObject(childViews, j);
 
-                                JsonArray appliedStereotypeIds = 
+                                JsonArray appliedStereotypeIds =
                                                 JsonUtil.getOptArray(childView, Sjm.APPLIEDSTEREOTYPEIDS);
                                 String asids = (appliedStereotypeIds == null) ? "" : appliedStereotypeIds.toString();
                                 if (asids.contains("_17_0_1_232f03dc_1325612611695_581988_21583") || asids
@@ -861,7 +861,7 @@ public class EmsNodeUtil {
                                         commitDeleted.add(newObj);
                                     }
                                     JsonObject asi = emsNodeUtil
-                                        .getNodeBySysmlid(JsonUtil.getOptString(ownedAttribute, 
+                                        .getNodeBySysmlid(JsonUtil.getOptString(ownedAttribute,
                                                         Sjm.APPLIEDSTEREOTYPEINSTANCEID));
                                     if (!JsonUtil.getOptString(asi, Sjm.SYSMLID).equals("")) {
                                         deletedElements.add(asi);
@@ -872,7 +872,7 @@ public class EmsNodeUtil {
                                         commitDeleted.add(newObj);
                                     }
                                     JsonObject association =
-                                        emsNodeUtil.getNodeBySysmlid(JsonUtil.getOptString(ownedAttribute, 
+                                        emsNodeUtil.getNodeBySysmlid(JsonUtil.getOptString(ownedAttribute,
                                                         Sjm.ASSOCIATIONID));
                                     if (!JsonUtil.getOptString(association, Sjm.SYSMLID).equals("")) {
                                         deletedElements.add(association);
@@ -903,7 +903,7 @@ public class EmsNodeUtil {
                             }
                         }
                     } else {
-                        createProps.put(ownedAttribute.get(Sjm.TYPEID).getAsString(), 
+                        createProps.put(ownedAttribute.get(Sjm.TYPEID).getAsString(),
                                         ownedAttribute.get(Sjm.SYSMLID).getAsString());
                     }
                 } else {
@@ -1225,7 +1225,7 @@ public class EmsNodeUtil {
         qn.add(JsonUtil.getOptString(o, "name"));
         qid.add(JsonUtil.getOptString(o, Sjm.SYSMLID));
 
-        while (o.has(Sjm.OWNERID) && !JsonUtil.getOptString(o, Sjm.OWNERID).isEmpty() 
+        while (o.has(Sjm.OWNERID) && !JsonUtil.getOptString(o, Sjm.OWNERID).isEmpty()
                         && !o.get(Sjm.OWNERID).getAsString().equals("null")) {
             String sysmlid = JsonUtil.getOptString(o, Sjm.OWNERID);
             JsonObject owner = elementMap.get(sysmlid);
@@ -1382,7 +1382,7 @@ public class EmsNodeUtil {
             return;
         }
 
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.get(Sjm.SYSMLID).getAsString(), 
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.get(Sjm.SYSMLID).getAsString(),
                         mountsJson.get(Sjm.REFID).getAsString());
         JsonArray nodeList;
         Set<String> foundElements = new HashSet<>();
@@ -1445,7 +1445,7 @@ public class EmsNodeUtil {
         }
         if (!mountsJson.has(Sjm.MOUNTS)) {
             mountsJson = emsNodeUtil
-                .getProjectWithFullMounts(mountsJson.get(Sjm.SYSMLID).getAsString(), 
+                .getProjectWithFullMounts(mountsJson.get(Sjm.SYSMLID).getAsString(),
                                 mountsJson.get(Sjm.REFID).getAsString(), null);
         }
         JsonArray mountsArray = mountsJson.get(Sjm.MOUNTS).getAsJsonArray();
@@ -1753,7 +1753,7 @@ public class EmsNodeUtil {
 
             pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
 
-            if (pastElement != null && pastElement.has(Sjm.SYSMLID) 
+            if (pastElement != null && pastElement.has(Sjm.SYSMLID)
                             && deletedElementIds.containsKey(pastElement.get(Sjm.ELASTICID).getAsString())) {
                 pastElement = new JsonObject();
             }
@@ -1776,7 +1776,7 @@ public class EmsNodeUtil {
                     JsonObject commit = new JsonObject();
                     commit.addProperty(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID).toString());
                     commit.addProperty(Sjm.CREATOR, refCommit.get(Sjm.CREATOR).toString());
-                    commit.addProperty(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED).toString()));
+                    commit.addProperty(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
                     if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
                         commit.add(Sjm.COMMENT, commitJson.get(Sjm.COMMENT));
                     }
