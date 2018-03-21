@@ -74,7 +74,8 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
         	gson.toJson(this.json, writer);
         } catch (IOException e) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Failed to copy content to output stream: \n   accessor: " + this, e);
+                logger.debug("Failed to copy content to output stream:" + System.lineSeparator() + "accessor: " + this,
+                    e);
             }
         }
     }
@@ -99,7 +100,7 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
             return Channels.newInputStream(this.getDirectReadableChannel());
         } catch (ContentIOException e) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Failed to open stream onto channel: \n   accessor: " + this, e);
+                logger.debug("Failed to open stream onto channel:" + System.lineSeparator() + "accessor: " + this, e);
             }
         }
 

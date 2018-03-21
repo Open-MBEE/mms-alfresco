@@ -239,7 +239,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${basedir}/src/main/amp/web/mms/swagger-ui/mms.swagger.yaml</inputSpec>
+                            <inputSpec>${basedir}/src/main/amp/web/mms/mms.swagger.yaml</inputSpec>
                             <language>html2</language>
                             <configOptions>
                                 <output>${project.build.directory}/generated-sources</output>

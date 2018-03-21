@@ -135,14 +135,14 @@ public class GenerateOperationNames {
     public static void main( String[] args ) {
         //Debug.turnOn();
         TreeSet<String> minSet = minimalNecessaryAPI();
-        System.out.println( "minimal API:\n" +
+        System.out.println( "minimal API:" +
                             MoreToString.Helper.toString( minSet, false, false,
-                                                          null, null, "", "\n",
+                                                          null, null, "", "",
                                                           "", false ) );
         TreeSet<String> allowedSet = allLegalOperations();
-        System.out.println( "\n\n\nlegal operations\n" +
+        System.out.println( "legal operations" +
                             MoreToString.Helper.toString( allowedSet, false, false,
-                                                          null, null, "", "\n",
+                                                          null, null, "", "",
                                                           "", false ) );
     }
 }

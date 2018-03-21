@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import gov.nasa.jpl.view_repo.db.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import com.google.gson.JsonObject;
@@ -31,10 +32,6 @@ import com.google.gson.JsonNull;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.TimeUtils;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
-import gov.nasa.jpl.view_repo.db.ElasticResult;
-import gov.nasa.jpl.view_repo.db.Node;
-import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 
@@ -571,7 +568,6 @@ public class EmsNodeUtil {
 
         return result;
     }
-
     public JsonObject processPostJson(JsonArray elements, String user, Set<String> oldElasticIds,
         boolean overwriteJson, String src, String type) {
         return processPostJson(elements, user, oldElasticIds, overwriteJson, src, "", type);
@@ -661,6 +657,7 @@ public class EmsNodeUtil {
                 JsonObject newObj = new JsonObject();
                 newObj.add(Sjm.SYSMLID, o.get(Sjm.SYSMLID));
                 newObj.add(Sjm.ELASTICID, o.get(Sjm.ELASTICID));
+                newObj.add(Sjm.TYPE, type);
                 // this for the artifact object, has extra key...
                 if (type.equals("Artifact")) {
                     newObj.add(Sjm.CONTENTTYPE, o.get(Sjm.CONTENTTYPE));
@@ -676,6 +673,10 @@ public class EmsNodeUtil {
                 oldElasticIds.add(existingMap.get(sysmlid).getAsJsonObject().get(Sjm.ELASTICID).getAsString());
                 parent.addProperty(Sjm.SYSMLID, sysmlid);
                 parent.add(Sjm.ELASTICID, o.get(Sjm.ELASTICID));
+                parent.addProperty(Sjm.TYPE, type);
+                if (type.equals("Artifact")) {
+                    parent.addProperty(Sjm.CONTENTTYPE, o.getAsJsonPrimitive(Sjm.CONTENTTYPE));
+                }
                 commitUpdated.add(parent);
                 newElements.add(o);
             } else {
@@ -697,7 +698,6 @@ public class EmsNodeUtil {
         commit.addProperty(Sjm.CREATED, date);
         commit.addProperty(Sjm.PROJECTID, projectId);
         commit.addProperty(Sjm.SOURCE, src);
-        commit.addProperty(Sjm.TYPE, type);
         if (!comment.isEmpty()) {
             commit.addProperty(Sjm.COMMENT, comment);
         }
@@ -1859,5 +1859,8 @@ public class EmsNodeUtil {
         }
         return digest;
 
+    }
+    public Artifact getArtifact(String sysmlid, boolean withDeleted){
+        return pgh.getArtifactFromSysmlId(sysmlid, withDeleted);
     }
 }

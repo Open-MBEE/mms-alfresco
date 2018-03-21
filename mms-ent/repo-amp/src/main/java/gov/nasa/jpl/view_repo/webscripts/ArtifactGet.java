@@ -191,7 +191,6 @@ public class ArtifactGet extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap();
 
         if (validateRequest(req, status)) {
-
             JsonObject result = null;
             String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACTID);
             String projectId = getProjectId(req);
@@ -208,30 +207,30 @@ public class ArtifactGet extends AbstractJavaWebScript {
                     EmsNodeUtil.handleMountSearch(mountsJson, false, false, 0L, elementsToFind, results, null, "artifacts");
                     if (results.size() > 0) {
                         result = JsonUtil.getOptObject(results, 0);
+                                }
+                            } catch (IOException e) {
+                                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
+                                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                            }
+                            if (result != null) {
+                                JsonObject r = new JsonObject();
+                                JsonArray array = new JsonArray();
+                                array.add(result);
+                                r.add("artifacts", array);
+                                model.put(Sjm.RES, r);
+                            } else {
+                                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
+                            }
+                        } else {
+                            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "ArtifactId not supplied!\n");
                     }
-                } catch (IOException e) {
-                    log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
-                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-                }
-                if (result != null) {
-                    JsonObject r = new JsonObject();
-                    JsonArray array = new JsonArray();
-                    array.add(result);
-                    r.add("artifacts", array);
-                    model.put(Sjm.RES, r);
                 } else {
-                    log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid request!");
                 }
-            } else {
-                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "ArtifactId not supplied!\n");
+                status.setCode(responseStatus.getCode());
+                if (!model.containsKey(Sjm.RES)) {
+                    model.put(Sjm.RES, createResponseJson());
+                }
+                return model;
             }
-        } else {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid request!\n");
         }
-        status.setCode(responseStatus.getCode());
-        if (!model.containsKey(Sjm.RES)) {
-            model.put(Sjm.RES, createResponseJson());
-        }
-        return model;
-    }
-}

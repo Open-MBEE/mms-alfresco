@@ -323,7 +323,7 @@ public class NodeUtil {
 
         // find site; it must exist!
         if (targetSiteNode == null || !targetSiteNode.exists()) {
-            logger.error("Can't find node for site: " + orgId + "!\n");
+            logger.error("Can't find node for site: " + orgId + "!");
             return null;
         }
 
@@ -341,7 +341,7 @@ public class NodeUtil {
         }
 
         if (artifactNode == null || !artifactNode.exists()) {
-            logger.error("Failed to create new PNG artifact " + artifactId + "!\n");
+            logger.error("Failed to create new PNG artifact " + artifactId + "!");
             return null;
         }
 
@@ -369,7 +369,7 @@ public class NodeUtil {
         writer.putContent(content);
 
         ContentData contentData = writer.getContentData();
-        contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(finalType));
+        contentData = ContentData.setMimetype(contentData, finalType);
         contentData = ContentData.setEncoding(contentData, "UTF-8");
         services.getNodeService().setProperty(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
 

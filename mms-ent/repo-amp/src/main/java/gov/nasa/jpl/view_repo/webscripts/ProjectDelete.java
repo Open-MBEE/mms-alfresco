@@ -126,7 +126,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
      */
     protected ArrayList<String> getCommitElasticIDs(String projectId) {
         ArrayList<String> commitIds = new ArrayList<>();
-        logger.debug("Getting Commit Elastic IDs for \n" + projectId);
+        logger.debug("Getting Commit Elastic IDs for " + projectId);
 
         // Instantiate and configure pgh.
         pgh = new PostgresHelper();

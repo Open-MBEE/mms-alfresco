@@ -119,7 +119,7 @@ PostNewBranchForImage
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 location
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-	Sleep				${POST_DELAY_INDEXING}
+	Sleep				${BRANCH_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
@@ -181,6 +181,31 @@ GetImageInMountedProject
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 url		 location
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+PostArtifactToDelete
+	[Documentation]		"Post a png image to mms"
+	[Tags]				images		critical		0414
+	Create Session		mmstest  ${ROOT}
+    ${image_file} =		Binary Data	${CURDIR}${/}../../assets/unicursalhexagram.png
+    ${files} =			Create Dictionary	file	${image_file}
+    ${data} =			Create Dictionary	contentType=image/png	id=deleteArtifact
+	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts		data=${data}		files=${files}
+	Should Be Equal		${result.status_code}		${200}
+	Sleep				${POST_DELAY_INDEXING}
+
+DeleteArtifact
+    [Documentation]  "Test deleting an artifact"
+    [Tags]           crud       critical        0415
+	# Delete element
+	${result} =         requests.Delete          url=${ROOT}/projects/PA/refs/master/artifacts/deleteArtifact          headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	# Try to get element
+	${result} =         requests.Get         url=${ROOT}/projects/PA/refs/master/artifacts/deleteArtifact          headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${404}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 

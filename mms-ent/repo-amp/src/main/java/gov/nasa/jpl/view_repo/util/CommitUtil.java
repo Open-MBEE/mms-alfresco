@@ -267,7 +267,7 @@ public class CommitUtil {
                     sp = pgh.startTransaction();
                     pgh.runBatchQueries(artifactInserts, ARTIFACTS);
                     pgh.runBatchQueries(artifactUpdates, "artifactUpdates");
-                    pgh.updateLastCommits(commitElasticId, deletedSysmlIds);
+                    pgh.updateLastCommitsArtifacts(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                 } catch (Exception e) {
@@ -828,8 +828,9 @@ public class CommitUtil {
         if (jmsConnection != null) {
             status = jmsConnection.publish(json, eventType, refId, projectId);
             if (logger.isDebugEnabled()) {
-                String msg = "Event: " + eventType + ", RefId: " + refId + ", ProjectId: " + projectId + "\n";
-                msg += "JsonObject: " + json;
+                String msg =
+                    "Event: " + eventType + ", RefId: " + refId + ", ProjectId: " + projectId + System.lineSeparator();
+                msg += "JSONObject: " + json;
                 logger.debug(msg);
             }
         } else {

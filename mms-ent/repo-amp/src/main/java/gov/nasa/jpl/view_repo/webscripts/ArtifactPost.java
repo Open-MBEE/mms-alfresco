@@ -170,8 +170,8 @@ public class ArtifactPost extends AbstractJavaWebScript {
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
             results = emsNodeUtil
-                .processPostJson(delta, user, oldElasticIds, false, this.requestSourceApplication, 
-                                JsonUtil.getOptString(postJson, "comment"), Sjm.ARTIFACT);
+                .processPostJson(delta, user, oldElasticIds, false, this.requestSourceApplication,
+                    JsonUtil.getOptString(postJson, "comment"), Sjm.ARTIFACT);
             String commitId = results.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
             if (CommitUtil.sendDeltas(results, projectId, refId, requestSourceApplication, services, false, true)) {
                 if (!oldElasticIds.isEmpty()) {
@@ -184,7 +184,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 newElementsObject.addProperty(Sjm.CREATOR, user);
 
                 if (prettyPrint) {
-                	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     model.put(Sjm.RES, gson.toJson(newElementsObject));
                 } else {
                     model.put(Sjm.RES, newElementsObject);
@@ -204,7 +204,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
     }
 
     boolean handleArtifactPost(final WebScriptRequest req, final Status status, String user,
-                    JsonObject postJson) {
+        JsonObject postJson) {
 
         JsonObject resultJson = null;
         Map<String, Object> model = new HashMap<>();
@@ -219,7 +219,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         JsonObject project = emsNodeUtil.getProject(projectId);
         siteName = JsonUtil.getOptString(project, "orgId");
 
-        if (validateRequest(req, status)) {
+        if (validateRequest(req, status) && !siteName.isEmpty()) {
 
             extension = FilenameUtils.getExtension(filename);
             artifactId = postJson.get(Sjm.SYSMLID).getAsString();
@@ -238,63 +238,62 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 // :TODO check against checksum first, md5hash(content), if matching return the previous version
 
                 if (filePath != null) {
-                    artifact = NodeUtil.updateOrCreateArtifact(alfrescoId, filePath, 
-                                    JsonUtil.getOptString(postJson, Sjm.CONTENTTYPE), siteName, projectId, refId);
+                    artifact = NodeUtil.updateOrCreateArtifact(alfrescoId, filePath,
+                        JsonUtil.getOptString(postJson, Sjm.CONTENTTYPE), siteName, projectId, refId);
                 }
 
-                if (artifact == null) {
-                    log(HttpServletResponse.SC_BAD_REQUEST, "Was not able to create the artifact!\n");
-                    model.put(Sjm.RES, createResponseJson());
-                } else {
-                    String url = artifact.getUrl();
-                    if (url != null) {
-                        postJson.addProperty(Sjm.LOCATION , url.replace("/d/d/", "/service/api/node/content/"));
+                            if (artifact == null) {
+                                log(HttpServletResponse.SC_BAD_REQUEST, "Was not able to create the artifact!\n");
+                                model.put(Sjm.RES, createResponseJson());
+                            } else {
+                                String url = artifact.getUrl();
+                                if (url != null) {
+                                    postJson.addProperty(Sjm.LOCATION , url.replace("/d/d/", "/service/api/node/content/"));
+                                }
+                            }
+                        } else {
+                            log(HttpServletResponse.SC_BAD_REQUEST, "artifactId not supplied or content is empty!");
+                            model.put(Sjm.RES, createResponseJson());
+                        }
+                    } else {
+                        log(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, no sitename specified or no content provided!");
+                        model.put(Sjm.RES, createResponseJson());
                     }
+
+                    status.setCode(responseStatus.getCode());
+                    if (!model.containsKey(Sjm.RES)) {
+                        model.put(Sjm.RES, resultJson != null ? resultJson : createResponseJson());
+                    }
+
+                    return true;
                 }
 
-            } else {
-                log(HttpServletResponse.SC_BAD_REQUEST, "artifactId not supplied or content is empty!");
-                model.put(Sjm.RES, createResponseJson());
+            protected static Path saveToFilesystem(String filename, InputStream content) throws Throwable {
+                File tempDir = TempFileProvider.getTempDir();
+                Path filePath = Paths.get(tempDir.getAbsolutePath(), filename);
+                File file = new File(filePath.toString());
+
+                try (FileOutputStream out = new FileOutputStream(file)) {
+                    file.mkdirs();
+                    int i = 0;
+                    byte[] b = new byte[1024];
+                    while ((i = content.read(b)) != -1) {
+                        out.write(b, 0, i);
+                    }
+                    out.flush();
+                    out.close();
+                    return filePath;
+                } catch (Throwable ex) {
+                    throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
+                }
             }
-        } else {
-            log(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, no sitename specified or no content provided!\\n");
-            model.put(Sjm.RES, createResponseJson());
-        }
 
-        status.setCode(responseStatus.getCode());
-        if (!model.containsKey(Sjm.RES)) {
-            model.put(Sjm.RES, resultJson != null ? resultJson : createResponseJson());
-        }
+            @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
+                String elementId = req.getServiceMatch().getTemplateVars().get("elementid");
+                if (elementId != null && !checkRequestVariable(elementId, "elementid")) {
+                    return false;
+                }
 
-        return true;
-    }
-
-    protected static Path saveToFilesystem(String filename, InputStream content) throws Throwable {
-        File tempDir = TempFileProvider.getTempDir();
-        Path filePath = Paths.get(tempDir.getAbsolutePath(), filename);
-        File file = new File(filePath.toString());
-
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            file.mkdirs();
-            int i = 0;
-            byte[] b = new byte[1024];
-            while ((i = content.read(b)) != -1) {
-                out.write(b, 0, i);
+                return checkRequestContent(req);
             }
-            out.flush();
-            out.close();
-            return filePath;
-        } catch (Throwable ex) {
-            throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
         }
-    }
-
-    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        String elementId = req.getServiceMatch().getTemplateVars().get("elementid");
-        if (elementId != null && !checkRequestVariable(elementId, "elementid")) {
-            return false;
-        }
-
-        return checkRequestContent(req);
-    }
-}

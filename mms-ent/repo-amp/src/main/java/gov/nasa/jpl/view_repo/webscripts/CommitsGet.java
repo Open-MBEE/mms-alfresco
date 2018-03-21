@@ -20,7 +20,6 @@ import com.google.gson.JsonObject;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
 
 /**
  * @author dank
@@ -109,7 +108,6 @@ public class CommitsGet extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         JsonArray commitJson = new JsonArray();
         String commitId = req.getServiceMatch().getTemplateVars().get(COMMIT_ID);
-        String groupId = req.getParameter("contentType");
 
         if (commitId == null){
             logger.error("Did not find commit");

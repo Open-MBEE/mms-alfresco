@@ -107,7 +107,7 @@ public class OrgPost extends AbstractJavaWebScript {
                                 searcher.query(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, "fts-alfresco", "name:" + orgId);
 
                             if (result != null && result.length() > 0) {
-                                log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site restored.\n");
+                                log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site restored.");
                                 services.getNodeService().restoreNode(result.getRow(0).getNodeRef(), null, null, null);
                             } else {
                                 String sitePreset = "site-dashboard";
@@ -117,13 +117,13 @@ public class OrgPost extends AbstractJavaWebScript {
                                 if (!ShareUtils
                                     .constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
                                     log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                                        "Failed to create site.\n");
+                                        "Failed to create site.");
                                     logger.error(String
                                         .format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
                                     failure.add(projJson);
                                 } else {
                                     log(Level.INFO, HttpServletResponse.SC_OK,
-                                        "Organization " + orgName + " Site created.\n");
+                                        "Organization " + orgName + " Site created.");
                                 }
                             }
 

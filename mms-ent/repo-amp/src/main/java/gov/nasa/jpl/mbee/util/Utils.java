@@ -600,7 +600,7 @@ public class Utils {
   public static String spewObject(Object o, String indent,
                                   String prefix, String suffix ) {
     StringBuffer sb = new StringBuffer();
-    sb.append(indent + prefix + "\n");
+    sb.append(indent + prefix + "");
     Class<?> c = o.getClass();
     Method[] methods = c.getMethods();
     for (Method m : methods) {
@@ -616,10 +616,10 @@ public class Utils {
       if (m.getParameterTypes().length == 0) {
           sb.append(indent + m.getDeclaringClass() + ", "
               + m.toGenericString() + " --> "
-              + ClassUtils.runMethod(true, o, m).second + "\n");
+              + ClassUtils.runMethod(true, o, m).second + "");
       }
     }
-    sb.append(indent + suffix + "\n");
+    sb.append(indent + suffix + "");
     return sb.toString();
   }
 

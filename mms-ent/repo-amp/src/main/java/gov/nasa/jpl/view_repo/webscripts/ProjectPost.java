@@ -178,7 +178,7 @@ public class ProjectPost extends AbstractJavaWebScript {
         EmsScriptNode projectNode = getSiteNode(projectId);
 
         if (projectNode == null) {
-            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find project\n");
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find project");
             return HttpServletResponse.SC_NOT_FOUND;
         }
 
@@ -199,7 +199,7 @@ public class ProjectPost extends AbstractJavaWebScript {
             if (projectVersion != null) {
                 projectNode.createOrUpdateProperty(Acm.ACM_PROJECT_VERSION, projectVersion);
             }
-            log(Level.INFO, HttpServletResponse.SC_OK, "Project metadata updated.\n");
+            log(Level.INFO, HttpServletResponse.SC_OK, "Project metadata updated.");
         }
 
         return HttpServletResponse.SC_OK;
@@ -262,7 +262,7 @@ public class ProjectPost extends AbstractJavaWebScript {
             }
 
             if (branch == null) {
-                log(Level.WARN, HttpServletResponse.SC_BAD_REQUEST, "Projects must be created in master workspace.\n");
+                log(Level.WARN, HttpServletResponse.SC_BAD_REQUEST, "Projects must be created in master workspace.");
                 return HttpServletResponse.SC_BAD_REQUEST;
             }
         }
