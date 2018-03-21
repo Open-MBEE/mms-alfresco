@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import gov.nasa.jpl.view_repo.db.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -28,10 +29,6 @@ import org.json.JSONObject;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.TimeUtils;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
-import gov.nasa.jpl.view_repo.db.ElasticResult;
-import gov.nasa.jpl.view_repo.db.Node;
-import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 
@@ -1807,5 +1804,8 @@ public class EmsNodeUtil {
         }
         return digest;
 
+    }
+    public Artifact getArtifact(String sysmlid, boolean withDeleted){
+        return pgh.getArtifactFromSysmlId(sysmlid, withDeleted);
     }
 }
