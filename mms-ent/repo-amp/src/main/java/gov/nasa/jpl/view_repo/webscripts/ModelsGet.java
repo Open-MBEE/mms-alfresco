@@ -117,7 +117,7 @@ public class ModelsGet extends ModelGet {
             if (validateRequest(req, status)) {
                 try {
                     Long depth = getDepthFromRequest(req);
-                    result = handleRequest(req, depth);
+                    result = (!req.getContent().getContent().isEmpty()) ? handleRequest(req, depth) : getAllElements(req);
                     elementsJson = JsonUtil.getOptArray(result, Sjm.ELEMENTS);
                 } catch (IllegalStateException e) { 
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);

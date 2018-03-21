@@ -60,6 +60,8 @@ public class JsonUtil {
     }
 	
     public static JsonObject buildFromString(String str) {
+        if (str == null || str.isEmpty())
+            return new JsonObject();
         JsonParser parser = new JsonParser();
         return parser.parse(str).getAsJsonObject();
     }
