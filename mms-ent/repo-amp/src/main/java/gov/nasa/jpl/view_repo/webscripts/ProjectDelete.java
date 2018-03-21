@@ -18,15 +18,17 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
@@ -55,7 +57,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
-        JSONArray projects = new JSONArray();
+        JsonArray projects = new JsonArray();
         printHeader(user, logger, req);
         Timer timer = new Timer();
 
@@ -65,9 +67,9 @@ public class ProjectDelete extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
 
                 String projectId = getProjectId(req);
-                JSONObject project = emsNodeUtil.getProject(projectId);
+                JsonObject project = emsNodeUtil.getProject(projectId);
                 if (project != null) {
-                    projects.put(project);
+                    projects.add(project);
                 }
 
                 // Delete the site from share
@@ -84,19 +86,20 @@ public class ProjectDelete extends AbstractJavaWebScript {
                 dropDatabase(projectId);
                 deleteProjectFromProjectsTable(projectId);
             }
-        } catch (JSONException e) {
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response");
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
-        if(projects.length() == 0){
+        if(projects.size() == 0){
             model.put(Sjm.RES, createResponseJson());
         } else {
-            JSONObject json = new JSONObject();
-            json.put(Sjm.PROJECTS, projects);
+            JsonObject json = new JsonObject();
+            json.add(Sjm.PROJECTS, projects);
             if (prettyPrint) {
-                model.put(Sjm.RES, json.toString(4));
+            	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                model.put(Sjm.RES, gson.toJson(json));
             } else {
                 model.put(Sjm.RES, json);
             }

@@ -3,18 +3,17 @@ package gov.nasa.jpl.view_repo.webscripts;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.LogUtil;
@@ -48,24 +47,19 @@ public class MmsVersion extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
-        JSONObject mmsVersion;
+        JsonObject mmsVersion;
 
         if (logger.isDebugEnabled()) {
         	logger.debug("Checking MMS Versions");
         }
 
-        try {
-            mmsVersion = getMMSversion();
-            if (prettyPrint) {
-                model.put(Sjm.RES, mmsVersion.toString(4));
-            } else {
-                model.put(Sjm.RES, mmsVersion);
-            }
-        } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
-            model.put(Sjm.RES, createResponseJson());
+        mmsVersion = getMMSversion();
+        if (prettyPrint) {
+        	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        	model.put(Sjm.RES, gson.toJson(mmsVersion));
+        } else {
+        	model.put(Sjm.RES, mmsVersion);
         }
-
         status.setCode(responseStatus.getCode());
 
         printFooter(user, logger, timer);

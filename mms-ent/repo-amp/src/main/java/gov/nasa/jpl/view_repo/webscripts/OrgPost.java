@@ -29,7 +29,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.Acm;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
@@ -39,17 +39,17 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -82,24 +82,23 @@ public class OrgPost extends AbstractJavaWebScript {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         printHeader(user, logger, req);
         Timer timer = new Timer();
-        boolean restoredOrg = false;
 
         Map<String, Object> model = new HashMap<>();
 
-        JSONArray success = new JSONArray();
-        JSONArray failure = new JSONArray();
-
+        JsonArray success = new JsonArray();
+        JsonArray failure = new JsonArray();
+        
         try {
             if (validateRequest(req, status)) {
 
-                JSONObject json = (JSONObject) req.parseContent();
-                JSONArray elementsArray = json != null ? json.optJSONArray("orgs") : null;
-                if (elementsArray != null && elementsArray.length() > 0) {
-                    for (int i = 0; i < elementsArray.length(); i++) {
-                        JSONObject postJson = elementsArray.getJSONObject(i);
+                JsonObject json = JsonUtil.buildFromString(req.getContent().getContent());
+                JsonArray elementsArray = JsonUtil.getOptArray(json, "orgs");
+                if (elementsArray.size() > 0) {
+                    for (int i = 0; i < elementsArray.size(); i++) {
+                        JsonObject projJson = elementsArray.get(i).getAsJsonObject();
 
-                        String orgId = postJson.getString(Sjm.SYSMLID);
-                        String orgName = postJson.getString(Sjm.NAME);
+                        String orgId = projJson.get(Sjm.SYSMLID).getAsString();
+                        String orgName = projJson.get(Sjm.NAME).getAsString();
 
                         SiteInfo siteInfo = services.getSiteService().getSite(orgId);
                         if (siteInfo == null) {
@@ -113,15 +112,15 @@ public class OrgPost extends AbstractJavaWebScript {
                             } else {
                                 String sitePreset = "site-dashboard";
                                 String siteTitle =
-                                    (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;
-                                String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
+                                    (json != null && json.has(Sjm.NAME)) ? json.get(Sjm.NAME).getAsString() : orgName;
+                                String siteDescription = JsonUtil.getOptString(json, Sjm.DESCRIPTION);
                                 if (!ShareUtils
                                     .constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
                                     log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                                         "Failed to create site.");
                                     logger.error(String
                                         .format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
-                                    failure.put(postJson);
+                                    failure.add(projJson);
                                 } else {
                                     log(Level.INFO, HttpServletResponse.SC_OK,
                                         "Organization " + orgName + " Site created.");
@@ -129,22 +128,22 @@ public class OrgPost extends AbstractJavaWebScript {
                             }
 
                             if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
-                                JSONObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, postJson);
-                                success.put(res);
+                                JsonObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                                success.add(res);
                             }
 
                         } else {
                             EmsScriptNode site = new EmsScriptNode(siteInfo.getNodeRef(), services, response);
                             site.setProperty(Acm.ACM_NAME, orgName);
-                            JSONObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, postJson);
-                            if (res != null && res.optString(Sjm.SYSMLID) != null) {
+                            JsonObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                            if (res != null && !JsonUtil.getOptString(res, Sjm.SYSMLID).isEmpty()) {
                                 log(Level.INFO, HttpServletResponse.SC_OK,
-                                    "Organization " + orgName + " Site updated.");
-                                success.put(res);
+                                    "Organization " + orgName + " Site updated.\n");
+                                success.add(res);
                             } else {
                                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
-                                    "Organization " + orgName + " Site update failed.");
-                                failure.put(res);
+                                    "Organization " + orgName + " Site update failed.\n");
+                                failure.add(res);
                             }
                         }
                     }
@@ -152,17 +151,20 @@ public class OrgPost extends AbstractJavaWebScript {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request");
                 }
             }
-        } catch (JSONException e) {
+        } catch (IllegalStateException e) {
+            // get this when trying to turn JsonElement to a JsonObject, but no object was found
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "incorrect JSON from request");
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
-        JSONObject response = new JSONObject();
-        response.put(Sjm.ORGS, success);
+        JsonObject response = new JsonObject();
+        response.add(Sjm.ORGS, success);
 
-        if (failure.length() > 0) {
-            response.put("failed", failure);
+        if (failure.size() > 0) {
+            response.add("failed", failure);
         }
 
         status.setCode(responseStatus.getCode());

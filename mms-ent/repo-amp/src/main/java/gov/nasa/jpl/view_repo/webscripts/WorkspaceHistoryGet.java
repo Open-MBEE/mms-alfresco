@@ -11,12 +11,15 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
@@ -45,7 +48,7 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject object = null;
+        JsonObject object = null;
         String projectId = getProjectId(req);
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
@@ -55,7 +58,7 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript {
                 String wsID = req.getServiceMatch().getTemplateVars().get(REF_ID);
                 object = getRefHistory(req, projectId, wsID);
             }
-        } catch (JSONException e) {
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
@@ -66,14 +69,15 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript {
         } else {
             try {
                 if (!Utils.isNullOrEmpty(response.toString())) {
-                    object.put("message", response.toString());
+                    object.addProperty("message", response.toString());
                 }
                 if (prettyPrint || accept.contains("webp")) {
-                    model.put(Sjm.RES, object.toString(4));
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    model.put(Sjm.RES, gson.toJson(object));
                 } else {
                     model.put(Sjm.RES, object);
                 }
-            } catch (JSONException e) {
+            } catch (JsonParseException e) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 model.put(Sjm.RES, createResponseJson());
             }
@@ -86,9 +90,9 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript {
 
     }
 
-    protected JSONObject getRefHistory(WebScriptRequest req, String projectId, String refId) {
-        JSONObject json = new JSONObject();
-        JSONArray commits;
+    protected JsonObject getRefHistory(WebScriptRequest req, String projectId, String refId) {
+        JsonObject json = new JsonObject();
+        JsonArray commits;
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
         String limit = req.getParameter("limit");
         String commitId = req.getParameter("commitId");
@@ -101,8 +105,7 @@ public class WorkspaceHistoryGet extends AbstractJavaWebScript {
         } else {
             commits = emsNodeUtil.getRefHistory(refId, commitId, limitVal);
         }
-
-        json.put("commits", commits);
+        json.add("commits", commits);
         return json;
     }
 

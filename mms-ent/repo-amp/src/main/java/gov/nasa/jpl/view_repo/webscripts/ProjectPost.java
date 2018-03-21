@@ -31,7 +31,7 @@ import gov.nasa.jpl.view_repo.util.Acm;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
-import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
 import org.alfresco.repo.model.Repository;
@@ -41,12 +41,13 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -86,20 +87,20 @@ public class ProjectPost extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
-        JSONArray success = new JSONArray();
-        JSONArray failure = new JSONArray();
+        JsonArray success = new JsonArray();
+        JsonArray failure = new JsonArray();
 
         try {
             if (validateRequest(req, status)) {
 
-                JSONObject json = (JSONObject) req.parseContent();
-                JSONArray elementsArray = json.optJSONArray("projects");
+                JsonObject json = JsonUtil.buildFromString(req.getContent().getContent());
+                JsonArray elementsArray = JsonUtil.getOptArray(json, "projects");
                 String orgId = getOrgId(req);
 
-                if (elementsArray != null && elementsArray.length() > 0) {
-                    for (int i = 0; i < elementsArray.length(); i++) {
-                        JSONObject projJson = elementsArray.getJSONObject(i);
-                        String projectId = projJson.has(Sjm.SYSMLID) ? projJson.getString(Sjm.SYSMLID) : getProjectId(req);
+                if (elementsArray.size() > 0) {
+                    for (int i = 0; i < elementsArray.size(); i++) {
+                        JsonObject projJson = elementsArray.get(i).getAsJsonObject();
+                        String projectId = projJson.has(Sjm.SYSMLID) ? projJson.get(Sjm.SYSMLID).getAsString() : getProjectId(req);
                         if (validateProjectId(projectId)) {
 
                             if (orgId == null) {
@@ -119,9 +120,9 @@ public class ProjectPost extends AbstractJavaWebScript {
                                 }
 
                                 if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
-                                    success.put(projJson);
+                                    success.add(projJson);
                                 } else {
-                                    failure.put(projJson);
+                                    failure.add(projJson);
                                 }
 
                             } else {
@@ -133,29 +134,31 @@ public class ProjectPost extends AbstractJavaWebScript {
                                     log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                                         "Organization does not exist");
                                 }
-                                failure.put(projJson);
+                                failure.add(projJson);
                             }
                         } else {
                             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
                                 String.format("Invalid Project Id '%s' from client", projectId));
-                            failure.put(projJson);
+                            failure.add(projJson);
                         }
                     }
                 } else {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request");
                 }
             }
-        } catch (JSONException e) {
+        } catch (IllegalStateException e) { 
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
-        JSONObject response = new JSONObject();
-        response.put(Sjm.PROJECTS, success);
+        JsonObject response = new JsonObject();
+        response.add(Sjm.PROJECTS, success);
 
-        if (failure.length() > 0) {
-            response.put("failed", failure);
+        if (failure.size() > 0) {
+            response.add("failed", failure);
         }
 
         status.setCode(responseStatus.getCode());
@@ -171,7 +174,7 @@ public class ProjectPost extends AbstractJavaWebScript {
         return model;
     }
 
-    public int updateOrCreateProject(JSONObject jsonObject, String projectId) {
+    public int updateOrCreateProject(JsonObject jsonObject, String projectId) {
         EmsScriptNode projectNode = getSiteNode(projectId);
 
         if (projectNode == null) {
@@ -181,9 +184,9 @@ public class ProjectPost extends AbstractJavaWebScript {
 
         String projectVersion = null;
         if (jsonObject.has(Acm.JSON_SPECIALIZATION)) {
-            JSONObject specialization = jsonObject.getJSONObject(Acm.JSON_SPECIALIZATION);
+            JsonObject specialization = jsonObject.get(Acm.JSON_SPECIALIZATION).getAsJsonObject();
             if (specialization != null && specialization.has(Acm.JSON_PROJECT_VERSION)) {
-                projectVersion = specialization.getString(Acm.JSON_PROJECT_VERSION);
+                projectVersion = specialization.get(Acm.JSON_PROJECT_VERSION).getAsString();
             }
         }
         if (checkPermissions(projectNode, PermissionService.WRITE)) {
@@ -210,7 +213,7 @@ public class ProjectPost extends AbstractJavaWebScript {
      * @return HttpStatusResponse code for success of the POST request
      * @throws JSONException
      */
-    public int updateOrCreateProject(JSONObject jsonObject, String projectId, String orgId) {
+    public int updateOrCreateProject(JsonObject jsonObject, String projectId, String orgId) {
         // see if project exists for workspace
 
         // make sure Model package under site exists
@@ -225,8 +228,8 @@ public class ProjectPost extends AbstractJavaWebScript {
             EmsScriptNode projectContainerNode = site.childByNamePath(projectId);
             if (projectContainerNode == null) {
                 projectContainerNode = site.createFolder(projectId, null, null);
-                projectContainerNode.createOrUpdateProperty(Acm.CM_TITLE, jsonObject.optString(Sjm.NAME));
-                log(Level.INFO, HttpServletResponse.SC_OK, "Project folder created.");
+                projectContainerNode.createOrUpdateProperty(Acm.CM_TITLE, JsonUtil.getOptString(jsonObject, Sjm.NAME));
+                log(Level.INFO, HttpServletResponse.SC_OK, "Project folder created.\n");
             }
 
             EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary");
@@ -237,7 +240,7 @@ public class ProjectPost extends AbstractJavaWebScript {
             EmsScriptNode documentProjectContainer = documentLibrary.childByNamePath(projectId);
             if (documentProjectContainer == null) {
                 documentProjectContainer = documentLibrary.createFolder(projectId, null, null);
-                documentProjectContainer.createOrUpdateProperty(Acm.CM_TITLE, jsonObject.optString(Sjm.NAME));
+                documentProjectContainer.createOrUpdateProperty(Acm.CM_TITLE, JsonUtil.getOptString(jsonObject, Sjm.NAME));
             }
 
             EmsScriptNode refContainerNode = projectContainerNode.childByNamePath(REF_PATH_SEARCH);
@@ -249,9 +252,9 @@ public class ProjectPost extends AbstractJavaWebScript {
             if (branch == null) {
                 branch = refContainerNode.createFolder(NO_WORKSPACE_ID, null, null);
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
-                JSONObject masterWs = new JSONObject();
-                masterWs.put("id", NO_WORKSPACE_ID);
-                masterWs.put("name", NO_WORKSPACE_ID);
+                JsonObject masterWs = new JsonObject();
+                masterWs.addProperty("id", NO_WORKSPACE_ID);
+                masterWs.addProperty("name", NO_WORKSPACE_ID);
                 // :TODO going to have to check that index doesn't exist if ES doesn't already do this
                 emsNodeUtil.insertProjectIndex(projectId);
                 String elasticId = emsNodeUtil.insertSingleElastic(masterWs);
