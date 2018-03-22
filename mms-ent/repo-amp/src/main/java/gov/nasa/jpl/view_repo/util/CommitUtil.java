@@ -264,7 +264,7 @@ public class CommitUtil {
                     sp = pgh.startTransaction();
                     pgh.runBatchQueries(artifactInserts, ARTIFACTS);
                     pgh.runBatchQueries(artifactUpdates, "artifactUpdates");
-                    pgh.updateLastCommits(commitElasticId, deletedSysmlIds);
+                    pgh.updateLastCommitsArtifacts(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                 } catch (Exception e) {

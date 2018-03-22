@@ -219,7 +219,7 @@
                 }
             }
         },
-        "profiles": {
+        "profile": {
             "properties": {
                 "username": {
                     "type": "keyword"
