@@ -72,8 +72,9 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
         String username = req.getServiceMatch().getTemplateVars().get(USERNAME);
         Map<String, Object> model = new HashMap<>();
-        JsonArray success = new JsonArray();
-        JsonArray failure = new JsonArray();
+//        JsonArray success = new JsonArray();
+//        JsonArray failure = new JsonArray();
+        JsonObject response = new JsonObject();
 
         Timer timer = new Timer();
         printHeader(user, logger, req, true);
@@ -84,9 +85,9 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
                     JsonObject res = emsNodeUtil.getProfile(username);
                     if (res.size() > 0 && res != null) {
-                        success.add(res);
+                        response.add(Sjm.PROFILES, res);
                     } else {
-                        failure.add(res);
+                        response.add("failed", res);
                     }
                 }
             } catch (IOException e) {
@@ -95,12 +96,6 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
             }
         } else {
             log(Level.ERROR, HttpServletResponse.SC_UNAUTHORIZED, "You are not authorized to make this post");
-        }
-        JsonObject response = new JsonObject();
-        response.add(Sjm.PROFILES, success);
-
-        if (failure.size() > 0) {
-            response.add("failed", failure);
         }
 
         status.setCode(responseStatus.getCode());

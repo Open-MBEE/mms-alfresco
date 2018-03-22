@@ -190,7 +190,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         should.add(term);
         return query;
     }
-    
+
     /**
      * Returns the commit history of a element                           (1)
      * <p> Returns a JSONArray of objects that look this:
@@ -223,9 +223,9 @@ public class ElasticHelper implements ElasticsearchInterface {
             .addType(COMMIT)
             .build();
         SearchResult result = client.execute(search);
-        
+
         JsonArray array = new JsonArray();
-        
+
         if (result.isSucceeded() && result.getTotal() > 0) {
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
             for (int i = 0; i < hits.size(); i++) {
@@ -237,7 +237,7 @@ public class ElasticHelper implements ElasticsearchInterface {
                 array.add(o);
             }
         } else if (!result.isSucceeded()) {
-            throw new IOException(String.format("Elasticsearch error[%1$s]:%2$s", 
+            throw new IOException(String.format("Elasticsearch error[%1$s]:%2$s",
             		result.getResponseCode(), result.getErrorMessage()));
         }
         return array;
@@ -299,7 +299,7 @@ public class ElasticHelper implements ElasticsearchInterface {
     }
 
     private static final String elementCommitQuery = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
-    
+
     public JsonObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException {
         String query = String.format(elementCommitQuery, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
         // should passes a json array that is the terms array from above
@@ -448,7 +448,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         }
         if (result.elasticId == null)
         	throw new IOException("Unable to index node in elasticsearch");
-        
+
         k.addProperty(Sjm.ELASTICID, result.elasticId);
         result.current = k;
 
@@ -487,7 +487,7 @@ public class ElasticHelper implements ElasticsearchInterface {
             new Update.Builder(upsert.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(PROFILE)
                 .build());
         if (res.isSucceeded())
-            return res.getJsonObject().get("_source").getAsJsonObject();
+            return res.getJsonObject().get("get").getAsJsonObject().get("_source").getAsJsonObject();
         return new JsonObject();
     }
 
