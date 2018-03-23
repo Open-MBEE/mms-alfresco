@@ -1,89 +1,86 @@
 package gov.nasa.jpl.view_repo.actions;
 
 import gov.nasa.jpl.view_repo.util.EmsConfig;
+import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Jason Han
  */
 
-public class MigrationRunner {
+public class MigrationRunner extends AbstractPatch {
     static Logger logger = Logger.getLogger(MigrationRunner.class);
 
-    public static ServiceRegistry services = null;
-    public static ModuleDetails moduleDetails = null;
+    public ServiceRegistry services;
+    public static ModuleDetails moduleDetails;
 
-    private static final Map<String, Map<String, String>> migrationMap;
+    private static final List<String> migrationList;
 
     static {
-        migrationMap = new HashMap<>();
-        Map<String, String> previous = new LinkedHashMap<>();
-        previous.put("3.1.0", "migrationThreeTwoOh");
-        previous.put("3.2.0", "migrationThreeTwoOh");
-        previous.put("3.3.0", "migrationThreeThreeOh");
-        migrationMap.put("3.3.0", previous);
+        migrationList = new LinkedList<>();
+        migrationList.add("3.1.0");
+        migrationList.add("3.2.0");
+        migrationList.add("3.3.0");
     }
 
-    public static ServiceRegistry getServices() {
-        return getServiceRegistry();
+    public void setServices(ServiceRegistry services) {
+        this.services = services;
     }
 
-    public static void setServices(ServiceRegistry services) {
-        MigrationRunner.services = services;
-    }
-
-    public static ServiceRegistry getServiceRegistry() {
-        return services;
+    @Override
+    protected String applyInternal() throws Exception {
+        logger.info("Starting execution of patch");
+        StoreRef store = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+        NodeRef rootRef = services.getNodeService().getRootNode(store);
+        if (checkMigration(services, rootRef)) {
+            return null;
+        } else {
+            throw new Exception("Migration failed");
+        }
     }
 
     @SuppressWarnings("unchecked")
-    public static boolean checkMigration(ServiceRegistry services) {
-        setServices(services);
-        String previousVersion = getPreviousVersion();
+    public static boolean checkMigration(ServiceRegistry services, NodeRef root) {
+        String previousVersion = getPreviousVersion(services);
         String currentVersion = getCurrentVersion();
         if (isMigrationNeeded(previousVersion, currentVersion)) {
             logger.error("Migration Needed!");
-            if (migrationMap.containsKey(currentVersion)) {
+            if (migrationList.contains(currentVersion)) {
                 logger.error("Automigration path exists.");
-                Iterator it = migrationMap.get(currentVersion).entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<String, String> pair = (Map.Entry) it.next();
-                    String migrationFor = pair.getKey();
+                for (String migrationFor : migrationList) {
                     if (compareVersions(previousVersion, migrationFor) < 0) {
                         logger.error("Update path found");
-                        String methodToRun = pair.getValue();
-                        logger.error("methodToRun: " + methodToRun);
+                        logger.error("Migration For: " + migrationFor);
                         try {
-                            Method method = MigrationRunner.class.getMethod(methodToRun);
-                            logger.error("Invoking method: " + methodToRun);
-                            method.invoke(null);
-                        } catch (NoSuchMethodException nsme) {
+                            Class clazz = Class.forName("gov.nasa.jpl.view_repo.actions.migrations." + versionToClassname(migrationFor));
+                            Method method = clazz.getMethod("apply");
+                            logger.error("Invoking migration for: " + migrationFor);
+                            return (boolean) method.invoke(services, root);
+                        } catch (ClassNotFoundException | NoSuchMethodException nsme) {
                             logger.error("No migration");
                         } catch (IllegalAccessException | InvocationTargetException e) {
                             logger.error("Error invoking migration", e);
                         }
                     }
-                    it.remove();
                 }
             }
         }
         return false;
     }
 
-    public static String getPreviousVersion() {
+    public static String getPreviousVersion(ServiceRegistry services) {
         ModuleService moduleService =
             (ModuleService) services.getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
         List<ModuleDetails> modules = moduleService.getAllModules();
@@ -117,6 +114,10 @@ public class MigrationRunner {
         return version.indexOf('-') > -1 ? version.substring(0, version.indexOf('-')) : version;
     }
 
+    public static String versionToClassname(String version) {
+        return "Migrate_" + version.replace('.', '_');
+    }
+
     public static int compareVersions(String previous, String current) {
         String[] previousVersionString = cleanVersion(previous).split("\\.");
         int[] previousVersionArr = new int[previousVersionString.length];
@@ -145,14 +146,6 @@ public class MigrationRunner {
     }
 
     public static boolean isMigrationNeeded(String previousVersion, String currentVersion) {
-        return migrationMap.containsKey(cleanVersion(currentVersion)) && compareVersions(previousVersion, currentVersion) < 0;
-    }
-
-    public static void migrationThreeThreeOh() {
-        logger.error("RUNNING migrationThreeThreeOh");
-    }
-
-    public static void migrationThreeTwoOh() {
-        logger.error("RUNNING migrationThreeTwoOh");
+        return migrationList.contains(cleanVersion(currentVersion)) && compareVersions(previousVersion, currentVersion) < 0;
     }
 }
