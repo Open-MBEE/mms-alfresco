@@ -2,7 +2,11 @@ package gov.nasa.jpl.view_repo.util;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,6 +26,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 import gov.nasa.jpl.view_repo.db.*;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -1807,5 +1812,25 @@ public class EmsNodeUtil {
     }
     public Artifact getArtifact(String sysmlid, boolean withDeleted){
         return pgh.getArtifactFromSysmlId(sysmlid, withDeleted);
+    }
+
+    public static Path saveToFilesystem(String filename, InputStream content) throws Throwable {
+        File tempDir = TempFileProvider.getTempDir();
+        Path filePath = Paths.get(tempDir.getAbsolutePath(), filename);
+        File file = new File(filePath.toString());
+
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            file.mkdirs();
+            int i = 0;
+            byte[] b = new byte[1024];
+            while ((i = content.read(b)) != -1) {
+                out.write(b, 0, i);
+            }
+            out.flush();
+            out.close();
+            return filePath;
+        } catch (Throwable ex) {
+            throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
+        }
     }
 }

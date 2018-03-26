@@ -25,12 +25,8 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +38,6 @@ import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.util.TempFileProvider;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -62,7 +57,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(ArtifactPost.class);
 
     protected EmsScriptNode artifact = null;
-    protected EmsScriptNode pngArtifact = null;
     protected String filename = null;
     protected String artifactId = null;
     protected String extension = null;
@@ -74,8 +68,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
     protected String encoding = null;
 
     private final String NEWELEMENTS = "newElements";
-
-    public static boolean timeEvents = false;
 
     public ArtifactPost() {
         super();
@@ -118,7 +110,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     mimeType = tempContent.getMimetype();
                     encoding = tempContent.getEncoding();
 
-                    filePath = saveToFilesystem(filename, field.getInputStream());
+                    filePath = EmsNodeUtil.saveToFilesystem(filename, field.getInputStream());
                     content = new String(Files.readAllBytes(filePath));
 
                     logger.debug("filename: " + filename);
@@ -267,26 +259,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
         }
 
         return true;
-    }
-
-    protected static Path saveToFilesystem(String filename, InputStream content) throws Throwable {
-        File tempDir = TempFileProvider.getTempDir();
-        Path filePath = Paths.get(tempDir.getAbsolutePath(), filename);
-        File file = new File(filePath.toString());
-
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            file.mkdirs();
-            int i = 0;
-            byte[] b = new byte[1024];
-            while ((i = content.read(b)) != -1) {
-                out.write(b, 0, i);
-            }
-            out.flush();
-            out.close();
-            return filePath;
-        } catch (Throwable ex) {
-            throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
-        }
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {

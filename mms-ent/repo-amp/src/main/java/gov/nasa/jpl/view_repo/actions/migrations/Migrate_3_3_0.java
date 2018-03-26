@@ -61,7 +61,11 @@ public class Migrate_3_3_0 {
                     EmsScriptNode refNode = siteNode.childByNamePath(ref.first);
                     List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
                     for (FileInfo file : files) {
-                        logger.error(file.getName());
+                        if (!file.isFolder()) {
+                            logger.error(file.getName());
+                            logger.error(file.getModifiedDate());
+                            logger.error(file.getCreatedDate());
+                        }
                     }
                 }
             }
