@@ -304,17 +304,8 @@ public class EmsNodeUtil {
         JSONArray result = new JSONArray();
         int cId = pgh.getCommitId(commitId);
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId, cId, limit);
-        for (int i = 0; i < refCommits.size(); i++) {
-            Map<String, Object> refCommit = refCommits.get(i);
-            JSONObject commitJson = getCommitObject(refCommit.get(Sjm.SYSMLID).toString());
-            JSONObject commit = new JSONObject();
-            commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
-            commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
-            commit.put(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
-            if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
-                commit.put(Sjm.COMMENT, commitJson.getString(Sjm.COMMENT));
-            }
-            result.put(commit);
+        if (refCommits.size() > 0) {
+            result = processCommits(refCommits);
         }
 
         return result;
@@ -1439,6 +1430,15 @@ public class EmsNodeUtil {
         return null;
     }
 
+    public JSONArray getCommitObjects(List<String> commitIds) {
+        try {
+            return eh.getElementsFromElasticIds(commitIds, projectId);
+        } catch (IOException e) {
+            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return null;
+    }
+
     public void insertProjectIndex(String projectId) {
         try {
             eh.createIndex(projectId);
@@ -1715,18 +1715,7 @@ public class EmsNodeUtil {
             Timestamp time = new Timestamp(requestedTime.getTime());
             commits = pgh.getRefsCommits(refId, time, limit);
             if (commits.size() > 0) {
-                for (int i = 0; i < commits.size(); i++) {
-                    Map<String, Object> refCommit = commits.get(i);
-                    JSONObject commitJson = getCommitObject(refCommit.get(Sjm.SYSMLID).toString());
-                    JSONObject commit = new JSONObject();
-                    commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
-                    commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
-                    commit.put(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
-                    if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
-                        commit.put(Sjm.COMMENT, commitJson.getString(Sjm.COMMENT));
-                    }
-                    response.put(commit);
-                }
+                response = processCommits(commits);
             }
         } catch (ParseException e) {
             if (logger.isDebugEnabled()) {
@@ -1735,6 +1724,37 @@ public class EmsNodeUtil {
         }
 
         return response;
+    }
+
+    public JSONArray processCommits(List<Map<String, Object>> commits) {
+        JSONArray result = new JSONArray();
+        Map<String, JSONObject> commitObjectMap = new HashMap<>();
+        List<String> commitIds = new ArrayList<>();
+        for (int i = 0; i < commits.size(); i++) {
+            commitIds.add(commits.get(i).get(Sjm.SYSMLID).toString());
+        }
+
+        JSONArray commitObjects = getCommitObjects(commitIds);
+        if (commitObjects != null) {
+            for (int i = 0; i < commitObjects.length(); i++) {
+                commitObjectMap.put(commitObjects.getJSONObject(i).optString(Sjm.SYSMLID), commitObjects.getJSONObject(i));
+            }
+        }
+
+        for (int i = 0; i < commits.size(); i++) {
+            Map<String, Object> refCommit = commits.get(i);
+            JSONObject commitJson = commitObjectMap.getOrDefault(refCommit.get(Sjm.SYSMLID).toString(), null);
+            JSONObject commit = new JSONObject();
+            commit.put(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID));
+            commit.put(Sjm.CREATOR, refCommit.get(Sjm.CREATOR));
+            commit.put(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
+            if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
+                commit.put(Sjm.COMMENT, commitJson.getString(Sjm.COMMENT));
+            }
+            result.put(commit);
+        }
+
+        return result;
     }
 
     public JSONObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
