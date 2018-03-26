@@ -102,9 +102,7 @@ public class ModelPost extends AbstractJavaWebScript {
         Map<String, Object> result;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
 
-
         result = handleElementPost(req, status, user, contentType);
-
 
         printFooter(user, logger, timer);
 
@@ -129,7 +127,6 @@ public class ModelPost extends AbstractJavaWebScript {
             SerialJSONObject postJson = new SerialJSONObject(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
-
 
             String comment = postJson.optString(Sjm.COMMENT);
 
