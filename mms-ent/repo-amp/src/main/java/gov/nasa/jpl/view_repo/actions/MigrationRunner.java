@@ -56,22 +56,24 @@ public class MigrationRunner extends AbstractPatch {
         String previousVersion = getPreviousVersion(services);
         String currentVersion = getCurrentVersion();
         if (isMigrationNeeded(previousVersion, currentVersion)) {
-            logger.error("Migration Needed!");
+            logger.info("Migration Needed!");
             if (migrationList.contains(currentVersion)) {
-                logger.error("Automigration path exists.");
+                logger.info("Automigration path exists.");
                 for (String migrationFor : migrationList) {
                     if (compareVersions(previousVersion, migrationFor) < 0) {
-                        logger.error("Update path found");
-                        logger.error("Migration For: " + migrationFor);
+                        logger.info("Update path found");
+                        logger.info("Migration For: " + migrationFor);
                         try {
                             Class clazz = Class.forName("gov.nasa.jpl.view_repo.actions.migrations." + versionToClassname(migrationFor));
-                            Method method = clazz.getMethod("apply");
-                            logger.error("Invoking migration for: " + migrationFor);
-                            return (boolean) method.invoke(services, root);
-                        } catch (ClassNotFoundException | NoSuchMethodException nsme) {
-                            logger.error("No migration");
+                            Method method = clazz.getMethod("apply", ServiceRegistry.class);
+                            logger.info("Invoking migration for: " + migrationFor);
+                            return (boolean) method.invoke(null, services);
+                        } catch (ClassNotFoundException cnfe) {
+                            logger.info("No migration found: ", cnfe);
+                        } catch (NoSuchMethodException nsme) {
+                            logger.info("Error executing migration: ", nsme);
                         } catch (IllegalAccessException | InvocationTargetException e) {
-                            logger.error("Error invoking migration", e);
+                            logger.info("Error invoking migration", e);
                         }
                     }
                 }
@@ -87,7 +89,7 @@ public class MigrationRunner extends AbstractPatch {
         for (ModuleDetails module : modules) {
             if (module.getId().contains("mms-amp")) {
                 moduleDetails = module;
-                logger.error("MODULE VERSION IN DB: " + cleanVersion(module.getModuleVersionNumber().toString()));
+                logger.info("MODULE VERSION IN DB: " + cleanVersion(module.getModuleVersionNumber().toString()));
                 return "3.2.4";
                 //return cleanVersion(module.getModuleVersionNumber().toString());
             }
@@ -98,7 +100,7 @@ public class MigrationRunner extends AbstractPatch {
     public static String getCurrentVersion() {
         try {
             EmsConfig.setAlfrescoProperties(moduleDetails.getProperties());
-            logger.error("MODULE VERSION IN PROPERTIES: " + cleanVersion(EmsConfig.get("module.version")));
+            logger.info("MODULE VERSION IN PROPERTIES: " + cleanVersion(EmsConfig.get("module.version")));
             return cleanVersion(EmsConfig.get("module.version"));
         } catch (Exception e) {
             logger.error(e);
