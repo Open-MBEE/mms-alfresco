@@ -12,6 +12,7 @@ mms.properties
 /share/target/*
 /share-amp/target/*
 /solr-config/target/*
+/repo/overlays/*
 /runner/src/test/robotframework/libraries/*
 *.log
 *.log.*
