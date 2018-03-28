@@ -101,7 +101,7 @@ public class ClassUtils {
           this.referenceClass = cls != null ? cls : (obj == null ? null : obj.getClass());
           this.referenceArgTypes = referenceArgTypes;
       }
-      
+
       public boolean hasPreference() {
           if ( referenceObject != null ) return referenceObject instanceof HasPreference;
           if ( hasPreference == null && referenceClass != null ) {
@@ -172,13 +172,13 @@ public class ClassUtils {
                            + referenceArgTypes[ i ] );
           }
         }
-        
+
         boolean isPreferred = false;
         if ( referenceObject != null && bestCandidateArgTypes != null && hasPreference() ) {
             isPreferred = ((HasPreference)referenceObject).prefer( candidateArgTypes, bestCandidateArgTypes );
             if ( isPreferred ) System.out.println( "=====================  YEAH!  ======================" );
         }
-        
+
         if ( ( best == null )
             || ( !gotOkNumArgs && okNumArgs )
             || ( ( gotOkNumArgs == okNumArgs )
@@ -526,7 +526,7 @@ public class ClassUtils {
     return tryClassForName( className, initialize, null );
   }
 
-  public static Class< ? > classForName( String className ) throws ClassNotFoundException {
+  public static Class< ? > classForName( String className ) {
     if (Utils.isNullOrEmpty( className )) return null;
     Thread t = Thread.currentThread();
     Class< ? > cls = null;
@@ -558,11 +558,9 @@ public class ClassUtils {
     Class< ? > classForName = null;
     if ( myLoader == null ) myLoader = Utils.loader;
     //if ( myLoader == null ) myLoader = gov.nasa.jpl.ae.event.Expression.class.getClassLoader();
-    try {
-      classForName = classForName( className );
-    } catch ( ClassNotFoundException e1 ) {
-      // ignore
-    }
+
+      classForName = classForName(className);
+
     if ( classForName == null ) {
       try {
         if ( myLoader == null ) {
@@ -677,7 +675,7 @@ public class ClassUtils {
   // TODO -- expand to include member names, too: className -> memberName -> Class
   public static Map< String, Class< ? > > classCache =
       Collections.synchronizedMap( new HashMap< String, Class< ? > >() );
-  
+
 
   public static Class<?> getClassForName(String className, String memberName,
 		  								 String[] packages,  boolean initialize) {
@@ -751,7 +749,7 @@ public class ClassUtils {
       new HashMap< String, List<Class<?>> >();
 
   public static boolean optimistic = false;  // try to find again even if failed in the past
-  
+
   public static List< Class< ? > > getClassesForName( String className,
                                                         boolean initialize ) {
   //                                                    ClassLoader loader,
@@ -953,7 +951,7 @@ public class ClassUtils {
     return getConstructorForArgTypes( classForName, argTypes );
   }
 
-  
+
   public static Vector<Object> wrappedObjects( Object object, boolean propagate  ) {
       Vector< Object > list = new Vector<Object>();
       if ( object == null ) return list;
@@ -969,7 +967,7 @@ public class ClassUtils {
       }
       return list;
   }
-  
+
   public static boolean classMatches( Class<?> parentCls, Object object, boolean propagate ) {
       if ( object == null ) return false;
       Seen<Object> seen = null;
@@ -991,8 +989,8 @@ public class ClassUtils {
       }
       return false;
   }
-  
-  
+
+
     public static boolean classesMatch( Class< ? >[] parentClasses,
                                         Object[] instances, boolean propagate ) {
         if ( parentClasses == instances ) return true;
@@ -1018,7 +1016,7 @@ public class ClassUtils {
         }
         return true;
     }
-  
+
   public static Class<?>[] getClasses( Object[] objects ) {
     //return toClass( objects );
     Class< ? > argTypes[] = null;
@@ -1482,7 +1480,7 @@ public class ClassUtils {
   public static Method getMethodForArgTypes( Class< ? > cls, String callName,
                                              Class<?>[] argTypes, boolean complain ) {
       return getMethodForArgTypes( null, cls, callName, argTypes, complain );
-      
+
   }
   public static Method getMethodForArgTypes( Object object, Class< ? > cls, String callName,
                                              Class<?>[] argTypes, boolean complain ) {
@@ -1749,7 +1747,7 @@ public class ClassUtils {
   protected static final String[] candidateMethodNames =
           new String[]{ "getMember", "getValueNoPropagate", "getValue",
                         "getField", "get" };
-  
+
   /**
    * Get the value of the object's field with with the given fieldName using
    * reflection.
@@ -1764,7 +1762,7 @@ public class ClassUtils {
                                       boolean suppressExceptions ) {
       return getFieldValue( o, fieldName, true, suppressExceptions );
   }
-  
+
   public static Object getFieldValue( Object o, String fieldName,
                                       boolean tryMethods,
                                       boolean suppressExceptions ) {
@@ -1925,11 +1923,11 @@ public class ClassUtils {
     if ( !has ) has = hasMethod( c, memberName );
     return has;
   }
-  
+
 //  public static <T> Class<?> getEnumClass( Class<T> cls ) {
 //      Class<T> enumClass = cls;
 //      if ( enumClass.isEnum() ) return cls;
-//      for ( TypeVariable< Class<T> > t : 
+//      for ( TypeVariable< Class<T> > t :
 //            enumClass.getTypeParameters() ) {
 //          t.
 //      }
@@ -1944,7 +1942,7 @@ public class ClassUtils {
           Object[] constants = enumClass.getEnumConstants();
           if ( constants != null ) {
               for ( Object constant : constants ) {
-    
+
                   if ( constant != null
                        && ( "" + constant ).equals( constantName ) ) {
                       return constant;
@@ -1955,11 +1953,11 @@ public class ClassUtils {
       return null;
 //      else if ( enumClass.getClasses().length > 0 ) {
 //          for ( Class<?> c : enumClass.getDeclaredClasses() ) {
-//              
+//
 //          }
 //      }
   }
-  
+
   protected static final String[] idStrings = new String[] { "id", "ID", "Id" };
   protected static final String[] idMethodStrings =
           new String[] { "getId", "getID", "id", "ID" };
@@ -1999,7 +1997,7 @@ public class ClassUtils {
 
   protected static final String[] nameStrings =
           new String[] { "name", "NAME", "Name" };
-  protected static final String[] nameMethodStrings = 
+  protected static final String[] nameMethodStrings =
           new String[] { "getName", "get_name", "name", "NAME", "Name" };
 
   // REVIEW -- consider walking through the fields and methods and matching
@@ -2036,7 +2034,7 @@ public class ClassUtils {
     protected static final String[] typeMethodStrings =
             new String[] { "getType", "get_type", "type", "TYPE", "Type",
                           "getClass", "get_class", "class", "CLASS", "Class" };
-  
+
     // REVIEW -- consider walking through the fields and methods and matching
     // lowercase on "get" and "type"; Do the same for getId() and getName().
     // REVIEW -- consider genericizing as getMemberValue()
@@ -2459,7 +2457,7 @@ public class ClassUtils {
             // ignore
         }
     }
-    
+
     if ( object instanceof Collection ) {
         Collection<?> coll = (Collection<?>)object;
         if ( coll.size() == 1 ) {
@@ -2572,7 +2570,7 @@ public class ClassUtils {
     if ( v2 != null ) {
       if ( v1 != o2 || v2 != o1 ) {
         Class< ? > cls2 = v2.getClass();
-        if ( cls2 != cls && cls2 != cls1 && valuesEqual( v1, v2, cls2 ) ) return true;
+          return cls2 != cls && cls2 != cls1 && valuesEqual(v1, v2, cls2);
       }
     }
     return false;
