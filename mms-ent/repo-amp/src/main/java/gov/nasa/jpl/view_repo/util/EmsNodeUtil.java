@@ -264,7 +264,7 @@ public class EmsNodeUtil {
     }
 
     public JSONArray getNodesBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
-        List<String> elasticIds = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids), withDeleted);
+        List<String> elasticIds = pgh.getElasticIdsFromSysmlIdsNodes(new ArrayList<>(sysmlids), withDeleted);
         return getJSONBySysmlids(elasticIds, withChildViews);
     }
 
@@ -1850,7 +1850,7 @@ public class EmsNodeUtil {
             out.close();
             return filePath;
         } catch (Throwable ex) {
-            throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
+            throw new Throwable("Failed to save file to filesystem. " + ex.getMessage());
         }
     }
 }

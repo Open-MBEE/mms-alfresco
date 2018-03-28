@@ -291,16 +291,7 @@ public class PostgresHelper implements GraphInterface {
 
             PreparedStatement statement = prepareStatement(query);
             for (int i = 0; i < columnList.size(); i++) {
-                Object value = values.getOrDefault(columnList.get(i), null);
-                if (value instanceof String) {
-                    statement.setString(i + 1, (String) value);
-                } else if (value instanceof Integer) {
-                    statement.setInt(i + 1, (Integer) value);
-                } else if (value instanceof Boolean) {
-                    statement.setBoolean(i + 1, (Boolean) value);
-                } else if (value == null) {
-                    statement.setNull(i + 1, Types.NULL);
-                }
+                statementSetter(statement, values.getOrDefault(columnList.get(i), null), i);
             }
 
             if (logger.isDebugEnabled()) {
@@ -316,41 +307,23 @@ public class PostgresHelper implements GraphInterface {
         return -1;
     }
 
-    public void updateLastCommits(String value, List<String> sysmlIds) {
+    public void updateLastCommitsNodes(String value, List<String> sysmlIds) {
         if (sysmlIds == null || sysmlIds.isEmpty()) {
             return;
         }
-        int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
-        String starter = String.format("UPDATE \"nodes%s\" SET lastcommit = ? WHERE sysmlId IN (", workspaceId);
-        StringBuilder query = new StringBuilder(starter);
-        int count = 0;
-        int total = sysmlIds.size();
-        for (int i = 0; i < total; i++) {
-            query.append("?,");
-            count++;
-            if (((i + 1) % limit) == 0 || i == (total - 1)) {
-                query.setLength(query.length() - 1);
-                query.append(")");
-                List<Object> single = new LinkedList<>();
-                single.add(0, value);
-                for (int j = 0; j < count; j++) {
-                    single.add(j + 1, sysmlIds.remove(0));
-                }
-                List<List<Object>> values = new ArrayList<>();
-                values.add(single);
-                executeBulkStatements(query.toString(), values);
-                query = new StringBuilder(starter);
-                count = 0;
-            }
-        }
+        updateLastCommits(value, sysmlIds, "nodes");
     }
 
     public void updateLastCommitsArtifacts(String value, List<String> sysmlIds) {
         if (sysmlIds == null || sysmlIds.isEmpty()) {
             return;
         }
+        updateLastCommits(value, sysmlIds, "artifacts");
+    }
+
+    public void updateLastCommits(String value, List<String> sysmlIds, String type) {
+        String starter = String.format("UPDATE \"%s%s\" SET lastcommit = ? WHERE sysmlId IN (", type, workspaceId);
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
-        String starter = String.format("UPDATE \"artifacts%s\" SET lastcommit = ? WHERE sysmlId IN (", workspaceId);
         StringBuilder query = new StringBuilder(starter);
         int count = 0;
         int total = sysmlIds.size();
@@ -769,61 +742,22 @@ public class PostgresHelper implements GraphInterface {
         return false;
     }
 
-    public List<String> getElasticIdsFromSysmlIds(List<String> sysmlids, boolean withDeleted) {
-        List<String> elasticIds = new ArrayList<>();
-        if (sysmlids == null || sysmlids.isEmpty())
-            return elasticIds;
-
-        try {
-            String query = String.format("SELECT elasticid FROM \"nodes%s\" WHERE sysmlid IN (%s)", workspaceId,
-                "'" + String.join("','", sysmlids) + "'");
-            if (!withDeleted) {
-                query += "AND deleted = false";
-            }
-            ResultSet rs = execQuery(query);
-            while (rs.next()) {
-                elasticIds.add(rs.getString(1));
-            }
-        } catch (SQLException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-
-        return elasticIds;
+    public List<String> getElasticIdsFromSysmlIdsNodes(List<String> sysmlids, boolean withDeleted) {
+        return getElasticIdsFromSysmlIds(sysmlids, withDeleted, "nodes");
     }
 
     public List<String> getElasticIdsFromSysmlIdsArtifacts(List<String> sysmlids, boolean withDeleted) {
-        List<String> elasticIds = new ArrayList<>();
-        if (sysmlids == null || sysmlids.isEmpty())
-            return elasticIds;
-
-        try {
-            String query = String.format("SELECT elasticid FROM \"artifacts%s\" WHERE sysmlid IN (%s)", workspaceId,
-                "'" + String.join("','", sysmlids) + "'");
-            if (!withDeleted) {
-                query += "AND deleted = false";
-            }
-            ResultSet rs = execQuery(query);
-            while (rs.next()) {
-                elasticIds.add(rs.getString(1));
-            }
-        } catch (SQLException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-
-        return elasticIds;
+        return getElasticIdsFromSysmlIds(sysmlids, withDeleted, "artifacts");
     }
 
-    public List<String> getElasticIdsFromSysmlIdsArtifact(List<String> sysmlids, boolean withDeleted) {
+    public List<String> getElasticIdsFromSysmlIds(List<String> sysmlids, boolean withDeleted, String type) {
         List<String> elasticIds = new ArrayList<>();
-        if (sysmlids == null || sysmlids.isEmpty())
+        if (sysmlids == null || sysmlids.isEmpty()) {
             return elasticIds;
+        }
 
         try {
-            String query = String.format("SELECT elasticid FROM \"artifacts%s\" WHERE sysmlid IN (%s)", workspaceId,
+            String query = String.format("SELECT elasticid FROM \"%s%s\" WHERE sysmlid IN (%s)", type, workspaceId,
                 "'" + String.join("','", sysmlids) + "'");
             if (!withDeleted) {
                 query += "AND deleted = false";
@@ -1056,17 +990,7 @@ public class PostgresHelper implements GraphInterface {
             for (int i = 0; i < values.size(); i++) {
                 List<Object> value = values.get(i);
                 for (int j = 0; j < value.size(); j++) {
-                    Object val = value.get(j);
-                    if (val instanceof String) {
-                        statement.setString(j + 1, (String) val);
-                    } else if (val instanceof Integer) {
-                        statement.setInt(j + 1, (Integer) val);
-                    } else if (val instanceof Boolean) {
-                        statement.setBoolean(j + 1, (Boolean) val);
-                    } else if (val == null) {
-                        //Unlike the insert method, this should never happen, but I guess it doesn't hurt
-                        statement.setNull(i + 1, Types.NULL);
-                    }
+                    statementSetter(statement, value.get(j), j);
                 }
                 statement.addBatch();
                 count++;
@@ -1082,6 +1006,22 @@ public class PostgresHelper implements GraphInterface {
             }
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+    }
+
+    public void statementSetter(PreparedStatement statement, Object value, int index) {
+        try {
+            if (value instanceof String) {
+                statement.setString(index + 1, (String) value);
+            } else if (value instanceof Integer) {
+                statement.setInt(index + 1, (Integer) value);
+            } else if (value instanceof Boolean) {
+                statement.setBoolean(index + 1, (Boolean) value);
+            } else if (value == null) {
+                statement.setNull(index + 1, Types.NULL);
+            }
+        } catch (SQLException se) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(se)));
         }
     }
 

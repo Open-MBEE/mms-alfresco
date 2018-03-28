@@ -63,7 +63,7 @@ public interface GraphInterface {
 
     boolean edgeExists(String parent, String child, DbEdgeTypes dbet);
 
-    List<String> getElasticIdsFromSysmlIds(List<String> sysmlids, boolean withDeleted);
+    List<String> getElasticIdsFromSysmlIdsNodes(List<String> sysmlids, boolean withDeleted);
 
     Node getNodeFromSysmlId(String sysmlId);
 

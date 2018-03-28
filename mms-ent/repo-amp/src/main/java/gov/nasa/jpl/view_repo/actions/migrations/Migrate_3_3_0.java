@@ -38,8 +38,9 @@ public class Migrate_3_3_0 {
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("RUNNING migrationThreeThreeOh");
         PostgresHelper pgh = new PostgresHelper();
+        boolean noErrors = true;
 
-        String adminUserName = AuthenticationUtil.getAdminUserName();
+        final String adminUserName = AuthenticationUtil.getAdminUserName();
         AuthenticationUtil.setFullyAuthenticatedUser(adminUserName);
 
         FileFolderService fileFolderService = (FileFolderService) services
@@ -58,66 +59,74 @@ public class Migrate_3_3_0 {
 
             SiteInfo siteInfo = siteService.getSite(orgId);
             List<Map<String, Object>> projects = pgh.getProjects(orgId);
+
+            if (projects.size() < 1) {
+                continue;
+            }
+
             EmsScriptNode siteNode = new EmsScriptNode(siteInfo.getNodeRef(), services);
             logger.info("SiteNode loaded: " + siteNode.getName());
-            if (!siteNode.isDeleted()) {
-                for (Map<String, Object> project : projects) {
-                    String projectId = project.get(Sjm.SYSMLID).toString();
+            logger.info("Iterating through projects for " + siteNode.getName());
+            for (Map<String, Object> project : projects) {
+                String projectId = project.get(Sjm.SYSMLID).toString();
 
-                    EmsScriptNode projectNode = siteNode.childByNamePath(projectId);
-                    logger.info("ProjectNode loaded: " + projectNode.getName());
+                logger.info("ProjectID: " + projectId);
+                EmsScriptNode projectNode = siteNode.childByNamePath(projectId);
+                logger.info("ProjectNode loaded: " + projectNode.getName());
 
-                    ElasticHelper eh = new ElasticHelper();
+                ElasticHelper eh = new ElasticHelper();
 
-                    logger.info("Updating: " + projectId);
-                    pgh.setProject(projectId);
-                    pgh.execUpdate(
-                        "CREATE TABLE IF NOT EXISTS artifacts(id bigserial primary key, elasticId text not null unique, sysmlId text not null unique, lastCommit text, initialCommit text, deleted boolean default false);");
-                    pgh.execUpdate("CREATE INDEX IF NOT EXISTS artifactIndex on artifacts(id);");
-                    pgh.execUpdate("CREATE INDEX IF NOT EXISTS sysmlArtifactIndex on artifacts(sysmlId);");
+                logger.info("Updating: " + projectId);
+                pgh.setProject(projectId);
+                pgh.execUpdate(
+                    "CREATE TABLE IF NOT EXISTS artifacts(id bigserial primary key, elasticId text not null unique, sysmlId text not null unique, lastCommit text, initialCommit text, deleted boolean default false);");
+                pgh.execUpdate("CREATE INDEX IF NOT EXISTS artifactIndex on artifacts(id);");
+                pgh.execUpdate("CREATE INDEX IF NOT EXISTS sysmlArtifactIndex on artifacts(sysmlId);");
 
-                    List<Pair<String, String>> refs = pgh.getRefsElastic();
+                List<Pair<String, String>> refs = pgh.getRefsElastic();
 
-                    logger.info("Getting files");
-                    for (Pair<String, String> ref : refs) {
-                        EmsScriptNode refNode = projectNode.childByNamePath("/refs/" + ref.first);
+                logger.info("Getting files");
+                for (Pair<String, String> ref : refs) {
+                    EmsScriptNode refNode = projectNode.childByNamePath("/refs/" + ref.first);
 
-                        List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
-                        for (FileInfo file : files) {
-                            if (!file.isFolder()) {
-                                VersionHistory versionHistory = versionService.getVersionHistory(file.getNodeRef());
-                                Collection<Version> versions = versionHistory.getAllVersions();
-                                Iterator it = versions.iterator();
-                                while (it.hasNext()) {
-                                    Version version = (Version) it.next();
-                                    FileInfo frozenFile = fileFolderService.getFileInfo(version.getFrozenStateNodeRef());
-                                    String name = frozenFile.getName();
-                                    String creator = version.getFrozenModifier();
-                                    Date created = version.getFrozenModifiedDate();
-                                    String contentType = file.getContentData().getMimetype();
-                                    String commitId = UUID.randomUUID().toString();
-                                    String extension = FilenameUtils.getExtension(name);
-                                    String elasticId = UUID.randomUUID().toString();
-                                    String artifactId = name.substring(0, name.lastIndexOf('.'));
-                                    String alfrescoId = artifactId + System.currentTimeMillis() + "." + extension;
+                    List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
+                    for (FileInfo file : files) {
+                        if (!file.isFolder()) {
+                            VersionHistory versionHistory = versionService.getVersionHistory(file.getNodeRef());
+                            Collection<Version> versions = versionHistory.getAllVersions();
+                            Iterator it = versions.iterator();
+                            while (it.hasNext()) {
+                                Version version = (Version) it.next();
+                                FileInfo frozenFile = fileFolderService.getFileInfo(version.getFrozenStateNodeRef());
+                                String name = frozenFile.getName();
+                                String creator = version.getFrozenModifier();
+                                Date created = version.getFrozenModifiedDate();
+                                String contentType = file.getContentData().getMimetype();
+                                String commitId = UUID.randomUUID().toString();
+                                String extension = FilenameUtils.getExtension(name);
+                                String elasticId = UUID.randomUUID().toString();
+                                String artifactId = name.substring(0, name.lastIndexOf('.'));
+                                String alfrescoId = artifactId + System.currentTimeMillis() + "." + extension;
 
-                                    JSONObject artifactJson = new JSONObject();
-                                    artifactJson.put(Sjm.SYSMLID, alfrescoId);
-                                    artifactJson.put(Sjm.ELASTICID, elasticId);
-                                    artifactJson.put(Sjm.COMMITID, commitId);
-                                    artifactJson.put(Sjm.PROJECTID, projectId);
-                                    artifactJson.put(Sjm.REFID, ref.first);
-                                    artifactJson.put(Sjm.INREFIDS, new JSONArray().put(ref.first));
-                                    artifactJson.put(Sjm.CREATOR, creator);
-                                    artifactJson.put(Sjm.MODIFIER, creator);
-                                    artifactJson.put(Sjm.CREATED, df.format(created));
-                                    artifactJson.put(Sjm.MODIFIED, df.format(created));
+                                JSONObject artifactJson = new JSONObject();
+                                artifactJson.put(Sjm.SYSMLID, alfrescoId);
+                                artifactJson.put(Sjm.ELASTICID, elasticId);
+                                artifactJson.put(Sjm.COMMITID, commitId);
+                                artifactJson.put(Sjm.PROJECTID, projectId);
+                                artifactJson.put(Sjm.REFID, ref.first);
+                                artifactJson.put(Sjm.INREFIDS, new JSONArray().put(ref.first));
+                                artifactJson.put(Sjm.CREATOR, creator);
+                                artifactJson.put(Sjm.MODIFIER, creator);
+                                artifactJson.put(Sjm.CREATED, df.format(created));
+                                artifactJson.put(Sjm.MODIFIED, df.format(created));
 
-                                    JSONArray artifactJSONForElastic = new JSONArray();
-                                    artifactJSONForElastic.put(artifactJson);
+                                JSONArray artifactJSONForElastic = new JSONArray();
+                                artifactJSONForElastic.put(artifactJson);
 
+                                try {
                                     boolean bulkEntry =
-                                        eh.bulkIndexElements(artifactJSONForElastic, "added", true, projectId, Sjm.ARTIFACT.toLowerCase());
+                                        eh.bulkIndexElements(artifactJSONForElastic, "added", true, projectId,
+                                            Sjm.ARTIFACT.toLowerCase());
 
                                     if (bulkEntry) {
                                         JSONObject commitObject = new JSONObject();
@@ -137,7 +146,10 @@ public class Migrate_3_3_0 {
                                         commitObject.put("added", new JSONArray().put(0, commitArtifact));
 
                                         eh.indexElement(commitObject, projectId);
+                                        logger.info("JSON: " + commitObject);
                                     }
+                                } catch (Exception e) {
+                                    noErrors = false;
                                 }
                             }
                         }
@@ -146,6 +158,6 @@ public class Migrate_3_3_0 {
             }
         }
 
-        return false;
+        return noErrors;
     }
 }

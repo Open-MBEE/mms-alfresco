@@ -17,12 +17,6 @@
 
     <!-- add in the Actions -->
 
-    <bean id="workspaceDiff" class="gov.nasa.jpl.view_repo.actions.WorkspaceDiffActionExecuter"
-          parent="action-executer">
-        <property name="services" ref="ServiceRegistry"/>
-        <property name="repository" ref="repositoryHelper"/>
-    </bean>
-
     <bean id="extendPermissionModel" parent="permissionModelBootstrap">
         <property name="model" value="alfresco/extension/permissionDefinitionsExtension.xml"/>
     </bean>

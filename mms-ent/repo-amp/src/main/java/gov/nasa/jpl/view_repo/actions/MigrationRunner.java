@@ -23,8 +23,12 @@ import java.util.List;
 public class MigrationRunner extends AbstractPatch {
     static Logger logger = Logger.getLogger(MigrationRunner.class);
 
+    private static final String PATCH_ID = "gov.nasa.jpl.view_repo.actions.MigrationRunner";
+
     public ServiceRegistry services;
     public static ModuleDetails moduleDetails;
+
+    private static boolean isRunning = false;
 
     private static final List<String> migrationList;
 
@@ -45,7 +49,7 @@ public class MigrationRunner extends AbstractPatch {
         StoreRef store = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         NodeRef rootRef = services.getNodeService().getRootNode(store);
         if (checkMigration(services, rootRef)) {
-            return null;
+            return "Migration executed successfully";
         } else {
             throw new Exception("Migration failed");
         }
@@ -74,6 +78,8 @@ public class MigrationRunner extends AbstractPatch {
                             logger.info("Error executing migration: ", nsme);
                         } catch (IllegalAccessException | InvocationTargetException e) {
                             logger.info("Error invoking migration", e);
+                        } catch (Exception e) {
+                            logger.info("General Error: ", e);
                         }
                     }
                 }
