@@ -10,7 +10,7 @@ PostNewImage
 	Create Session		mmstest  ${ROOT}
     ${image_file} =		Binary Data	${CURDIR}${/}../../assets/arlaug.png
     ${files} =			Create Dictionary	file	${image_file}
-    ${data} =			Create Dictionary	contentType=image/png	id=mounts
+    ${data} =			Create Dictionary	contentType=foo/bar	id=mounts
 	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts		data=${data}		files=${files}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location
@@ -47,7 +47,7 @@ PostNewVersionOfImage
 	Create Session		mmstest  ${ROOT}
     ${image_file} =		Binary Data	${CURDIR}${/}../../assets/belgthor.png
     ${files} =			Create Dictionary	file	${image_file}
-    ${data} =			Create Dictionary	contentType=image/png	id=mounts
+    ${data} =			Create Dictionary	contentType=foo/bar	id=mounts
 	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts		data=${data}		files=${files}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location

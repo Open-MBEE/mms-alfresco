@@ -58,6 +58,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
     protected EmsScriptNode artifact = null;
     protected String filename = null;
+    protected String finalContentType = null;
     protected String artifactId = null;
     protected String extension = null;
     protected String content = null;
@@ -101,7 +102,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
         FormData.FormField[] fields = formData.getFields();
         try {
             for (FormData.FormField field : fields) {
-                logger.debug("field.getName(): " + field.getName());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("field.getName(): " + field.getName());
+                }
                 if (field.getName().equals("file") && field.getIsFile()) {
                     //String extension = FilenameUtils.getExtension();
                     //String filenameString = field.getFilename().substring(0, field.getFilename().lastIndexOf('.') - 1);
@@ -112,16 +115,23 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
                     filePath = EmsNodeUtil.saveToFilesystem(filename, field.getInputStream());
                     content = new String(Files.readAllBytes(filePath));
+                    finalContentType = Files.probeContentType(filePath);
 
-                    logger.debug("filename: " + filename);
-                    logger.debug("mimetype: " + mimeType);
-                    logger.debug("encoding: " + encoding);
-                    logger.debug("content: " + content);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("filename: " + filename);
+                        logger.debug("mimetype: " + mimeType);
+                        logger.debug("finalMimetype: " + finalContentType);
+                        logger.debug("encoding: " + encoding);
+                        logger.debug("content: " + content);
+                    }
                 } else {
                     String name = field.getName();
                     String value = field.getValue();
                     postJson.put(name, value);
-                    logger.debug("property name: " + name);
+
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("property name: " + name);
+                    }
                 }
             }
             postJson.put(Sjm.TYPE, "Artifact");
@@ -195,9 +205,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         JSONObject resultJson = null;
         Map<String, Object> model = new HashMap<>();
-        String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
-        if (!contentType.isEmpty() && postJson.optString(Sjm.CONTENTTYPE).isEmpty()) {
-            postJson.put(Sjm.CONTENTTYPE, contentType); //this would be wrong anyway if it gets here
+
+        if (!postJson.optString(Sjm.CONTENTTYPE).equals(finalContentType)) {
+            postJson.put(Sjm.CONTENTTYPE, finalContentType);
         }
 
         String projectId = getProjectId(req);
@@ -216,13 +226,12 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 resultJson.put("filename", filename);
                 // TODO: want full path here w/ path to site also, but Doris does not use it,
                 //		 so leaving it as is.
-                //resultJson.put("path", path);
+                postJson.put("path", filePath.toString());
                 //resultJson.put("site", siteName);
 
                 // Update or create the artifact if possible:
                 if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {
                     String alfrescoId = artifactId + System.currentTimeMillis() + "." + extension;
-                    // :TODO check against checksum first, md5hash(content), if matching return the previous version
 
                     if (filePath != null) {
                         artifact = NodeUtil.updateOrCreateArtifact(alfrescoId, filePath, postJson.optString(Sjm.CONTENTTYPE), siteName, projectId, refId);
