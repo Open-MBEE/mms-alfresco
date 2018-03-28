@@ -195,6 +195,9 @@ public class ElasticHelper implements ElasticsearchInterface {
                 o.put(Sjm.SYSMLID, hits.get(i).getAsJsonObject().get("_id").getAsString());
                 o.put(Sjm.CREATED, record.get(Sjm.CREATED));
                 o.put(Sjm.CREATOR, record.get(Sjm.CREATOR));
+                if (record.has(Sjm.COMMENT)) {
+                    o.put(Sjm.COMMENT, record.get(Sjm.COMMENT));
+                }
                 array.put(o);
             }
             return array;
@@ -248,37 +251,14 @@ public class ElasticHelper implements ElasticsearchInterface {
     }
 
     public JSONObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException {
-        JSONArray filter = new JSONArray();
-        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.COMMITID, elasticId)));
-        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.SYSMLID, sysmlid)));
-
-        JSONObject boolQuery = new JSONObject();
-        boolQuery.put("filter", filter);
-
-        JSONObject queryJson = new JSONObject().put("query", new JSONObject().put("bool", boolQuery));
-        // should passes a json array that is the terms array from above
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Search Query %s", queryJson.toString()));
-        }
-
-        Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
-            .addType(ELEMENT).build();
-        SearchResult result = client.execute(search);
-
-        if (result.isSucceeded()) {
-            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-            if (hits.size() > 0) {
-                JSONObject o = new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
-                o.put(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id").getAsString());
-                return o;
-            }
-        }
-        return null;
-
+        return getByCommitId(elasticId, sysmlid, index, ELEMENT);
     }
 
     public JSONObject getArtifactByCommitId(String elasticId, String sysmlid, String index) throws IOException {
+        return getByCommitId(elasticId, sysmlid, index, ARTIFACT);
+    }
+
+    public JSONObject getByCommitId(String elasticId, String sysmlid, String index, String type) throws IOException {
         JSONArray filter = new JSONArray();
         filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.COMMITID, elasticId)));
         filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.SYSMLID, sysmlid)));
@@ -287,14 +267,13 @@ public class ElasticHelper implements ElasticsearchInterface {
         boolQuery.put("filter", filter);
 
         JSONObject queryJson = new JSONObject().put("query", new JSONObject().put("bool", boolQuery));
-        // should passes a json array that is the terms array from above
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("Search Query %s", queryJson.toString()));
         }
 
         Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
-            .addType(ARTIFACT).build();
+            .addType(type).build();
         SearchResult result = client.execute(search);
 
         if (result.isSucceeded()) {
@@ -305,6 +284,7 @@ public class ElasticHelper implements ElasticsearchInterface {
                 return o;
             }
         }
+
         return null;
 
     }

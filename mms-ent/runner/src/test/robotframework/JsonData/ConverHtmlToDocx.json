@@ -1,5 +1,5 @@
 {
-    "name": "test-doc",
+    "name": "test doc",
     "body": "<html><head><title>Test File</title></head><span style=\"font-weight:bold\">Hello!</span></html>",
     "Content-Type": "text/html",
     "Accepts": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"

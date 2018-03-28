@@ -49,6 +49,7 @@
                     "type": "Element"
                 }
             ],
+            "comment": "This is a test comment.",
             "deleted": [],
             "source": "",
             "updated": []
