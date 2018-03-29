@@ -1711,6 +1711,28 @@ public class EmsNodeUtil {
         return pastElement == null ? new JSONObject() : pastElement;
     }
 
+    public JSONObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
+        JSONObject result = new JSONObject();
+
+        try {
+            // Get commit object and retrieve the refs commits
+            Map<String, Object> commit = pgh.getCommit(commitId);
+
+            Date date = (Date) commit.get(Sjm.TIMESTAMP);
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(date.getTime());
+            cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+            String timestamp = df.format(cal.getTime());
+
+            // Search for element at commit
+            result = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds, projectId);
+
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return result;
+    }
+
     public JSONArray getNearestCommitFromTimestamp(String refId, String timestamp, int limit) {
         Date requestedTime;
         List<Map<String, Object>> commits;
@@ -1762,28 +1784,6 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public JSONObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
-        JSONObject result = new JSONObject();
-
-        try {
-            // Get commit object and retrieve the refs commits
-            Map<String, Object> commit = pgh.getCommit(commitId);
-
-            Date date = (Date) commit.get(Sjm.TIMESTAMP);
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(date.getTime());
-            cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-            String timestamp = df.format(cal.getTime());
-
-            // Search for element at commit
-            result = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds, projectId);
-
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-        return result;
-    }
-
     public List<String> getModel() {
         List<String> model = new ArrayList();
 
@@ -1828,8 +1828,8 @@ public class EmsNodeUtil {
             logger.error(e);
         }
         return digest;
-
     }
+
     public Artifact getArtifact(String sysmlid, boolean withDeleted){
         return pgh.getArtifactFromSysmlId(sysmlid, withDeleted);
     }

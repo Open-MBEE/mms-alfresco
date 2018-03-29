@@ -2,7 +2,9 @@ package gov.nasa.jpl.view_repo.actions.migrations;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
+import gov.nasa.jpl.view_repo.db.GraphInterface;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -22,12 +24,18 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.UUID;
 
 public class Migrate_3_3_0 {
@@ -87,6 +95,18 @@ public class Migrate_3_3_0 {
 
                 logger.info("Getting files");
                 for (Pair<String, String> ref : refs) {
+
+                    pgh.setWorkspace(ref.first);
+                    Pair<String, Long> parentRef = pgh.getParentRef(ref.first);
+
+                    if (!ref.first.equals("master")) {
+                        pgh.execUpdate(String.format(
+                            "CREATE TABLE artifacts%s (LIKE artifacts INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
+                            ref.first));
+
+                        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, ref.first);
+                    }
+
                     EmsScriptNode refNode = projectNode.childByNamePath("/refs/" + ref.first);
 
                     List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
@@ -105,51 +125,92 @@ public class Migrate_3_3_0 {
                                 String commitId = UUID.randomUUID().toString();
                                 String extension = FilenameUtils.getExtension(name);
                                 String elasticId = UUID.randomUUID().toString();
-                                String artifactId = name.substring(0, name.lastIndexOf('.'));
-                                String alfrescoId = artifactId + System.currentTimeMillis() + "." + extension;
+                                String baseId = name.substring(0, name.lastIndexOf('.'));
+                                String artifactId = name.startsWith("img_") ? name : baseId + "_" + extension;
+                                //String alfrescoId = baseId + System.currentTimeMillis() + "." + extension;
 
-                                JSONObject artifactJson = new JSONObject();
-                                artifactJson.put(Sjm.SYSMLID, alfrescoId);
-                                artifactJson.put(Sjm.ELASTICID, elasticId);
-                                artifactJson.put(Sjm.COMMITID, commitId);
-                                artifactJson.put(Sjm.PROJECTID, projectId);
-                                artifactJson.put(Sjm.REFID, ref.first);
-                                artifactJson.put(Sjm.INREFIDS, new JSONArray().put(ref.first));
-                                artifactJson.put(Sjm.CREATOR, creator);
-                                artifactJson.put(Sjm.MODIFIER, creator);
-                                artifactJson.put(Sjm.CREATED, df.format(created));
-                                artifactJson.put(Sjm.MODIFIED, df.format(created));
+                                Calendar cal = Calendar.getInstance();
+                                cal.setTimeInMillis(created.getTime());
+                                cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+                                String timestamp = df.format(cal.getTime());
+                                List<String> inRefs = Arrays.asList(ref.first);
 
-                                JSONArray artifactJSONForElastic = new JSONArray();
-                                artifactJSONForElastic.put(artifactJson);
+                                JSONObject check = eh.getElementsLessThanOrEqualTimestamp(artifactId, timestamp, inRefs, projectId);
 
-                                try {
-                                    boolean bulkEntry =
-                                        eh.bulkIndexElements(artifactJSONForElastic, "added", true, projectId,
-                                            Sjm.ARTIFACT.toLowerCase());
+                                if (!check.has(Sjm.SYSMLID)) {
+                                    JSONObject artifactJson = new JSONObject();
+                                    artifactJson.put(Sjm.SYSMLID, artifactId);
+                                    artifactJson.put(Sjm.ELASTICID, elasticId);
+                                    artifactJson.put(Sjm.COMMITID, commitId);
+                                    artifactJson.put(Sjm.PROJECTID, projectId);
+                                    artifactJson.put(Sjm.REFID, ref.first);
+                                    artifactJson.put(Sjm.INREFIDS, new JSONArray().put(ref.first));
+                                    artifactJson.put(Sjm.CREATOR, creator);
+                                    artifactJson.put(Sjm.MODIFIER, creator);
+                                    artifactJson.put(Sjm.CREATED, df.format(created));
+                                    artifactJson.put(Sjm.MODIFIED, df.format(created));
 
-                                    if (bulkEntry) {
-                                        JSONObject commitObject = new JSONObject();
-                                        commitObject.put(Sjm.CREATED, created.toString());
-                                        commitObject.put(Sjm.CREATOR, creator);
-                                        commitObject.put(Sjm.SYSMLID, commitId);
-                                        commitObject.put(Sjm.PROJECTID, projectId);
-                                        commitObject.put(Sjm.TYPE, Sjm.ARTIFACT);
-                                        commitObject.put(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
+                                    JSONArray artifactJSONForElastic = new JSONArray();
+                                    artifactJSONForElastic.put(artifactJson);
 
-                                        JSONObject commitArtifact = new JSONObject();
-                                        commitArtifact.put(Sjm.SYSMLID, alfrescoId);
-                                        commitArtifact.put(Sjm.ELASTICID, elasticId);
-                                        commitArtifact.put(Sjm.TYPE, Sjm.ARTIFACT);
-                                        commitArtifact.put(Sjm.CONTENTTYPE, contentType);
+                                    try {
+                                        boolean bulkEntry =
+                                            eh.bulkIndexElements(artifactJSONForElastic, "added", true, projectId,
+                                                Sjm.ARTIFACT.toLowerCase());
 
-                                        commitObject.put("added", new JSONArray().put(0, commitArtifact));
+                                        if (bulkEntry) {
 
-                                        eh.indexElement(commitObject, projectId);
-                                        logger.info("JSON: " + commitObject);
+                                            JSONObject commitObject = new JSONObject();
+                                            commitObject.put(Sjm.CREATED, df.format(created));
+                                            commitObject.put(Sjm.CREATOR, creator);
+                                            commitObject.put(Sjm.SYSMLID, commitId);
+                                            commitObject.put(Sjm.PROJECTID, projectId);
+                                            commitObject.put(Sjm.TYPE, Sjm.ARTIFACT);
+                                            commitObject.put(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
+
+                                            JSONObject commitArtifact = new JSONObject();
+                                            commitArtifact.put(Sjm.SYSMLID, artifactId);
+                                            commitArtifact.put(Sjm.ELASTICID, elasticId);
+                                            commitArtifact.put(Sjm.TYPE, Sjm.ARTIFACT);
+                                            commitArtifact.put(Sjm.CONTENTTYPE, contentType);
+
+                                            commitObject.put("added", new JSONArray().put(0, commitArtifact));
+
+                                            eh.indexElement(commitObject, projectId);
+
+                                            logger.info("JSON: " + commitObject);
+                                        } else {
+                                            noErrors = false;
+                                        }
+                                    } catch (Exception e) {
+                                        noErrors = false;
                                     }
-                                } catch (Exception e) {
-                                    noErrors = false;
+                                } else {
+                                    elasticId = check.getString(Sjm.SYSMLID);
+                                }
+
+                                if (pgh.getArtifactFromSysmlId(artifactId, true) == null) {
+                                    Map<String, Object> map = new HashMap<>();
+                                    map.put("elasticId", elasticId);
+                                    map.put("sysmlId", artifactId);
+                                    map.put("initialCommit", commitId);
+                                    pgh.insert("artifacts" + ref.first, map);
+                                } else {
+                                    String query = String.format(
+                                        "UPDATE \"artifacts%s\" SET elasticId = ?, lastcommit = ?, deleted = ? WHERE sysmlId = ?",
+                                        ref.first);
+                                    PreparedStatement statement = pgh.prepareStatement(query);
+                                    statement.setString(1, elasticId);
+                                    statement.setString(2, commitId);
+                                    statement.setBoolean(3, false);
+                                    statement.setString(4, artifactId);
+                                    statement.execute();
+                                }
+
+                                int commitFromDb = pgh.getCommitId(elasticId);
+                                if (commitFromDb == 0) {
+                                    pgh.insertCommit(elasticId, GraphInterface.DbCommitTypes.COMMIT, creator,
+                                        new java.sql.Date(created.getTime()));
                                 }
                             }
                         }
@@ -159,5 +220,53 @@ public class Migrate_3_3_0 {
         }
 
         return noErrors;
+    }
+
+    public JSONObject getModelAtCommit(String commitId, PostgresHelper pgh, ElasticHelper eh, String projectId) {
+        JSONObject result = new JSONObject();
+        JSONArray artifacts = new JSONArray();
+        ArrayList<String> refsCommitsIds = new ArrayList<>();
+
+        Map<String, Object> commit = pgh.getCommit(commitId);
+        if (commit != null) {
+            String refId = commit.get(Sjm.REFID).toString();
+
+            List<Map<String, Object>> refsCommits = pgh.getRefsCommits(refId, (int) commit.get(Sjm.SYSMLID));
+            for (Map<String, Object> ref : refsCommits) {
+                refsCommitsIds.add((String) ref.get(Sjm.SYSMLID));
+            }
+
+            Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds, projectId);
+            List<String> artifactElasticIds = new ArrayList<>();
+
+            for (Map<String, Object> element : pgh.getAllArtifactsWithLastCommitTimestamp()) {
+                processElementForModelAtCommit(a, deletedElementIds, commit, commitId, refsCommitsIds, artifacts,
+                    artifactElasticIds);
+
+                if (((Date) element.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
+                    if (!deletedElementIds.containsKey((String) element.get(Sjm.ELASTICID))) {
+                        elasticIds.add((String) element.get(Sjm.ELASTICID));
+                    }
+                } else {
+                    pastElement = getElementAtCommit((String) element.get(Sjm.SYSMLID), commitId, refsCommitsIds);
+                }
+
+                if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds
+                    .containsKey(pastElement.getString(Sjm.ELASTICID))) {
+                    elements.put(pastElement);
+                }
+            }
+
+            try {
+                JSONArray artifactElastic = eh.getElementsFromElasticIds(artifactElasticIds, projectId);
+                for (int i = 0; i < artifactElastic.length(); i++) {
+                    artifacts.put(artifactElastic.getJSONObject(i));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            result.put(Sjm.ARTIFACTS, artifacts);
+        }
+        return result;
     }
 }

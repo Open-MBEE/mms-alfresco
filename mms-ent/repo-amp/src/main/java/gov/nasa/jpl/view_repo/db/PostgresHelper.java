@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.db;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -775,28 +776,39 @@ public class PostgresHelper implements GraphInterface {
         return elasticIds;
     }
 
-
     public Node getNodeFromSysmlId(String sysmlId) {
         return getNodeFromSysmlId(sysmlId, false);
     }
 
     public Node getNodeFromSysmlId(String sysmlId, boolean withDeleted) {
+        return (Node) getFromSysmlId(sysmlId, withDeleted, "nodes");
+    }
+
+    public Artifact getArtifactFromSysmlId(String sysmlId, boolean withDeleted) {
+        return (Artifact) getFromSysmlId(sysmlId, withDeleted, "artifacts");
+    }
+
+    public Object getFromSysmlId(String sysmlId, boolean withDeleted, String type) {
         try {
             PreparedStatement query;
             if (withDeleted) {
-                query = getConn().prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ?");
+                query = getConn().prepareStatement("SELECT * FROM \"" + type + workspaceId + "\" WHERE sysmlId = ?");
                 query.setString(1, sysmlId);
             } else {
                 query = getConn()
-                    .prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
+                    .prepareStatement("SELECT * FROM \"" + type + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
                 query.setString(1, sysmlId);
                 query.setBoolean(2, false);
             }
 
             ResultSet rs = query.executeQuery();
             if (rs.next()) {
-                return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5),
-                    rs.getString(6), rs.getBoolean(7));
+                if (type.equals("nodes")) {
+                    return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5), rs.getString(6), rs.getBoolean(7));
+                } else {
+                    return new Artifact(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
+                        rs.getBoolean(6));
+                }
             } else {
                 return null;
             }
@@ -867,37 +879,11 @@ public class PostgresHelper implements GraphInterface {
         return null;
     }
 
-    public Artifact getArtifactFromSysmlId(String sysmlId, boolean withDeleted) {
-        try {
-            PreparedStatement query;
-            StringBuilder queryString =
-                new StringBuilder("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
-            if (withDeleted) {
-                query = getConn().prepareStatement(queryString.toString());
-                query.setString(1, sysmlId);
-            } else {
-                queryString.append(" AND deleted = ?");
-                query = getConn().prepareStatement(queryString.toString());
-                query.setString(1, sysmlId);
-                query.setBoolean(2, false);
-            }
-
-            ResultSet rs = query.executeQuery();
-            if (rs.next()) {
-                return new Artifact(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
-                    rs.getBoolean(6));
-            } else {
-                return null;
-            }
-        } catch (SQLException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-        return null;
+    public String insertCommit(String elasticId, DbCommitTypes type, String creator) {
+        return insertCommit(elasticId, type, creator, null);
     }
 
-    public String insertCommit(String elasticId, DbCommitTypes type, String creator) {
+    public String insertCommit(String elasticId, DbCommitTypes type, String creator, Date time) {
         try {
             Map<String, Object> map = new HashMap<>();
             // we can hard code the commit type here....but we should still store the integer value
@@ -907,13 +893,18 @@ public class PostgresHelper implements GraphInterface {
             map.put("commitType", type.getValue());
             map.put("refId", workspaceId);
             map.put("creator", creator);
+            if (time != null) {
+                map.put("timestamp", new Timestamp(time.getTime()));
+            }
             insert("commits", map);
             if (parentId > 0) {
                 int childId = getHeadCommit();
-                PreparedStatement statement = prepareStatement("INSERT INTO commitParent (child, parent) VALUES (?,?)");
-                statement.setInt(1, childId);
-                statement.setInt(2, parentId);
-                statement.execute();
+                if (parentId != childId) {
+                    PreparedStatement statement = prepareStatement("INSERT INTO commitParent (child, parent) VALUES (?,?)");
+                    statement.setInt(1, childId);
+                    statement.setInt(2, parentId);
+                    statement.execute();
+                }
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -1017,6 +1008,8 @@ public class PostgresHelper implements GraphInterface {
                 statement.setInt(index + 1, (Integer) value);
             } else if (value instanceof Boolean) {
                 statement.setBoolean(index + 1, (Boolean) value);
+            } else if (value instanceof Timestamp) {
+                statement.setTimestamp(index + 1, (Timestamp) value);
             } else if (value == null) {
                 statement.setNull(index + 1, Types.NULL);
             }
@@ -2011,7 +2004,8 @@ public class PostgresHelper implements GraphInterface {
     public List<Pair<String, String>> getRefsElastic() {
         List<Pair<String, String>> result = new ArrayList<>();
         try {
-            PreparedStatement statement = prepareStatement("SELECT refId, elasticId FROM refs WHERE deleted = false");
+            PreparedStatement statement =
+                prepareStatement("SELECT refId, elasticId FROM refs WHERE deleted = false ORDER BY timestamp ASC");
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 result.add(new Pair<>(rs.getString(1), rs.getString(2)));

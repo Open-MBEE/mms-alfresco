@@ -224,10 +224,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 // Create return json:
                 resultJson = new JSONObject();
                 resultJson.put("filename", filename);
-                // TODO: want full path here w/ path to site also, but Doris does not use it,
-                //		 so leaving it as is.
-                postJson.put("path", filePath.toString());
-                //resultJson.put("site", siteName);
 
                 // Update or create the artifact if possible:
                 if (!Utils.isNullOrEmpty(artifactId) && !Utils.isNullOrEmpty(content)) {

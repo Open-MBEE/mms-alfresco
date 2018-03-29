@@ -63,7 +63,7 @@ import gov.nasa.jpl.view_repo.util.Sjm;
  * @author cinyoung
  */
 public class ArtifactsGet extends ArtifactGet {
-    static Logger logger = Logger.getLogger(ModelsGet.class);
+    static Logger logger = Logger.getLogger(ArtifactsGet.class);
 
     public ArtifactsGet() {
         super();
