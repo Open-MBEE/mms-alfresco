@@ -84,6 +84,8 @@ public class MigrationRunner extends AbstractPatch {
                     }
                 }
             }
+        } else {
+            return true;
         }
         return false;
     }
