@@ -2,7 +2,7 @@
     "groups": [
         {
             "_creator": "admin",
-            "_isSite": true,
+            "_isGroup": true,
             "_link": "/share/page/repository#filter=path|/Sites/initorg/documentLibrary/PA/SitePackageD",
             "_modifier": "admin",
             "_parentId": "SitePackageB",
@@ -15,7 +15,7 @@
         },
         {
             "_creator": "admin",
-            "_isSite": true,
+            "_isGroup": true,
             "_link": "/share/page/repository#filter=path|/Sites/initorg/documentLibrary/PA/SitePackageB",
             "_modifier": "admin",
             "_projectId": "PA",

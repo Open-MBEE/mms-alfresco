@@ -127,7 +127,7 @@ public class CommitUtil {
                 return DbNodeTypes.PROJECT;
             case "model":
             case "package":
-                if (isSite(e)) {
+                if (isGroup(e)) {
                     return DbNodeTypes.SITEANDPACKAGE;
                 } else {
                     return DbNodeTypes.PACKAGE;
@@ -157,8 +157,8 @@ public class CommitUtil {
         }
     }
 
-    public static boolean isSite(JSONObject element) {
-        return element.has(Sjm.ISSITE) && element.getBoolean(Sjm.ISSITE);
+    public static boolean isGroup(JSONObject element) {
+        return element.has(Sjm.ISGROUP) && element.getBoolean(Sjm.ISGROUP);
     }
     public static JSONObject indexProfile(String id, JSONObject elements, String index) throws IOException {
         return eh.updateProfile(id, elements, index);
@@ -707,7 +707,7 @@ public class CommitUtil {
         projectHoldingBin.put(Sjm.TYPE, "Package");
         projectHoldingBin.put(Sjm.URI, JSONObject.NULL);
         projectHoldingBin.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
-        projectHoldingBin.put(Sjm.ISSITE, false);
+        projectHoldingBin.put(Sjm.ISGROUP, false);
         projectHoldingBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
         projectHoldingBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
         projectHoldingBin.put(Sjm.DOCUMENTATION, "");
@@ -729,7 +729,7 @@ public class CommitUtil {
         viewInstanceBin.put(Sjm.TYPE, "Package");
         viewInstanceBin.put(Sjm.URI, JSONObject.NULL);
         viewInstanceBin.put(Sjm.APPLIEDSTEREOTYPEIDS, new JSONArray());
-        viewInstanceBin.put(Sjm.ISSITE, false);
+        viewInstanceBin.put(Sjm.ISGROUP, false);
         viewInstanceBin.put(Sjm.APPLIEDSTEREOTYPEINSTANCEID, JSONObject.NULL);
         viewInstanceBin.put(Sjm.CLIENTDEPENDENCYIDS, new JSONArray());
         viewInstanceBin.put(Sjm.DOCUMENTATION, "");
