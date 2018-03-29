@@ -179,7 +179,7 @@ public class Acm {
     public static final String JSON_CONNECTOR_TYPE = "connectorType";
 
     // Site packages additions:
-    public static final String JSON_IS_SITE = "isSite";
+    public static final String JSON_IS_SITE = "isGroup";
 
     public static final String JSON_UNTYPED = "Untyped";
     public static final String JSON_CLASSIFIER = "classifier";
