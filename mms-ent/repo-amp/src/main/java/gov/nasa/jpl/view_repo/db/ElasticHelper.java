@@ -346,15 +346,16 @@ public class ElasticHelper implements ElasticsearchInterface {
     public ElasticResult indexElement(JSONObject j, String index) throws IOException {
         // :TODO error handling
         ElasticResult result = new ElasticResult();
-        String eType = j.has(COMMIT) ? COMMIT : ELEMENT;
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("indexElement: %s", j));
         }
 
+        String eType = j.has(COMMIT) ? COMMIT : ELEMENT;
+
         JSONObject k;
         if (j.has(eType)) {
-            k = removeWrapper(j);
+            k = j.getJSONObject(eType);
         } else {
             k = j;
         }
@@ -514,18 +515,6 @@ public class ElasticHelper implements ElasticsearchInterface {
         Search search = new Search.Builder(queryJson.toString()).build();
         SearchResult result = client.execute(search);
         return new JSONObject(result.getJsonObject().toString());
-    }
-
-    private static JSONObject removeWrapper(JSONObject jsonObject) {
-        String eType = null;
-        JSONObject result = new JSONObject();
-        if (jsonObject.has(ELEMENT) || jsonObject.has(COMMIT)) {
-            eType = jsonObject.has(COMMIT) ? COMMIT : ELEMENT;
-        }
-        if (eType != null) {
-            result = jsonObject.getJSONObject(eType);
-        }
-        return result;
     }
 
     /**
