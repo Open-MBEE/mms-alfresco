@@ -96,8 +96,7 @@ public class MigrationRunner extends AbstractPatch {
             if (module.getId().contains("mms-amp")) {
                 moduleDetails = module;
                 logger.info("MODULE VERSION IN DB: " + cleanVersion(module.getModuleVersionNumber().toString()));
-                return "3.2.4";
-                //return cleanVersion(module.getModuleVersionNumber().toString());
+                return cleanVersion(module.getModuleVersionNumber().toString());
             }
         }
         return null;

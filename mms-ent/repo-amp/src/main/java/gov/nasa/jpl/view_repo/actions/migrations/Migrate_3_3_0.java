@@ -222,6 +222,7 @@ public class Migrate_3_3_0 {
         return noErrors;
     }
 
+    /*
     public JSONObject getModelAtCommit(String commitId, PostgresHelper pgh, ElasticHelper eh, String projectId) {
         JSONObject result = new JSONObject();
         JSONArray artifacts = new JSONArray();
@@ -269,4 +270,5 @@ public class Migrate_3_3_0 {
         }
         return result;
     }
+    */
 }
