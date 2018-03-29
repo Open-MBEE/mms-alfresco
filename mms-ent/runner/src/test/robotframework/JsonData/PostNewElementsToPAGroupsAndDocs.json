@@ -18,7 +18,7 @@
         },
         {
             "id": "SitePackageB",
-            "_isSite": true,
+            "_isGroup": true,
             "type": "Package",
             "name": "SitePackageB",
             "ownerId": "PackageA"
@@ -58,7 +58,7 @@
         },
         {
             "id": "SitePackageD",
-            "_isSite": true,
+            "_isGroup": true,
             "type": "Package",
             "name": "SitePackageD",
             "ownerId": "PackageC"

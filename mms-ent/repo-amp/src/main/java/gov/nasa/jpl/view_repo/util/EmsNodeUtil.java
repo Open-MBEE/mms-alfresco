@@ -1211,7 +1211,7 @@ public class EmsNodeUtil {
             String ownerName = owner.optString(Sjm.NAME);
             qn.add(ownerName);
 
-            if (siteCharacterizationId == null && CommitUtil.isSite(owner)) {
+            if (siteCharacterizationId == null && CommitUtil.isGroup(owner)) {
                 siteCharacterizationId = owner.optString(Sjm.SYSMLID);
             }
             o = owner;
