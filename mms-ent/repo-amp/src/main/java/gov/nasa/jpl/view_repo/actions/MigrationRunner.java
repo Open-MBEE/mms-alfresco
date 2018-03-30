@@ -84,10 +84,8 @@ public class MigrationRunner extends AbstractPatch {
                     }
                 }
             }
-        } else {
-            return true;
         }
-        return false;
+        return true;
     }
 
     public static String getPreviousVersion(ServiceRegistry services) {

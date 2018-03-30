@@ -6,6 +6,7 @@ import gov.nasa.jpl.view_repo.db.GraphInterface;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -24,7 +25,9 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,6 +88,7 @@ public class Migrate_3_3_0 {
                 ElasticHelper eh = new ElasticHelper();
 
                 logger.info("Updating: " + projectId);
+
                 pgh.setProject(projectId);
                 pgh.execUpdate(
                     "CREATE TABLE IF NOT EXISTS artifacts(id bigserial primary key, elasticId text not null unique, sysmlId text not null unique, lastCommit text, initialCommit text, deleted boolean default false);");
@@ -97,14 +101,40 @@ public class Migrate_3_3_0 {
                 for (Pair<String, String> ref : refs) {
 
                     pgh.setWorkspace(ref.first);
-                    Pair<String, Long> parentRef = pgh.getParentRef(ref.first);
 
                     if (!ref.first.equals("master")) {
                         pgh.execUpdate(String.format(
-                            "CREATE TABLE artifacts%s (LIKE artifacts INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
+                            "CREATE TABLE IF NOT EXISTS artifacts%s (LIKE artifacts INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
                             ref.first));
 
-                        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, ref.first);
+                        PreparedStatement parentStatement = pgh.prepareStatement(
+                            "SELECT commits.elasticid FROM refs JOIN commits ON refs.parentCommit = commits.id WHERE refs.refId = ? LIMIT 1");
+                        parentStatement.setString(1, ref.first);
+                        ResultSet rs = parentStatement.executeQuery();
+                        String parentCommit = null;
+                        if (rs.next()) {
+                            parentCommit = rs.getString(1);
+                        }
+
+                        if (parentCommit != null) {
+                            JSONArray parentArtifacts = getArtifactsAtCommit(parentCommit, pgh, eh, projectId);
+                            List<Map<String, Object>> artifactInserts = new ArrayList<>();
+                            for (int i = 0; i < parentArtifacts.length(); i++) {
+                                JSONObject parentArt = parentArtifacts.getJSONObject(i);
+
+                                if (pgh.getArtifactFromSysmlId(parentArt.getString(Sjm.SYSMLID), true) == null) {
+                                    Map<String, Object> artifact = new HashMap<>();
+                                    artifact.put(Sjm.ELASTICID, parentArt.getString(Sjm.ELASTICID));
+                                    artifact.put(Sjm.SYSMLID, parentArt.getString(Sjm.SYSMLID));
+                                    artifact.put("initialcommit", parentArt.getString(Sjm.ELASTICID));
+                                    artifact.put("lastcommit", parentArt.getString(Sjm.COMMITID));
+                                    artifactInserts.add(artifact);
+                                }
+                            }
+                            if (!artifactInserts.isEmpty()) {
+                                pgh.runBatchQueries(artifactInserts, "artifacts");
+                            }
+                        }
                     }
 
                     EmsScriptNode refNode = projectNode.childByNamePath("/refs/" + ref.first);
@@ -135,7 +165,8 @@ public class Migrate_3_3_0 {
                                 String timestamp = df.format(cal.getTime());
                                 List<String> inRefs = Arrays.asList(ref.first);
 
-                                JSONObject check = eh.getElementsLessThanOrEqualTimestamp(artifactId, timestamp, inRefs, projectId);
+                                JSONObject check =
+                                    eh.getElementsLessThanOrEqualTimestamp(artifactId, timestamp, inRefs, projectId);
 
                                 if (!check.has(Sjm.SYSMLID)) {
                                     JSONObject artifactJson = new JSONObject();
@@ -193,12 +224,12 @@ public class Migrate_3_3_0 {
                                     Map<String, Object> map = new HashMap<>();
                                     map.put("elasticId", elasticId);
                                     map.put("sysmlId", artifactId);
-                                    map.put("initialCommit", commitId);
-                                    pgh.insert("artifacts" + ref.first, map);
+                                    map.put("initialCommit", elasticId);
+                                    pgh.insert("artifacts" + (ref.first.equals("master") ? "" : ref.first), map);
                                 } else {
                                     String query = String.format(
                                         "UPDATE \"artifacts%s\" SET elasticId = ?, lastcommit = ?, deleted = ? WHERE sysmlId = ?",
-                                        ref.first);
+                                        ref.first.equals("master") ? "" : ref.first);
                                     PreparedStatement statement = pgh.prepareStatement(query);
                                     statement.setString(1, elasticId);
                                     statement.setString(2, commitId);
@@ -222,10 +253,10 @@ public class Migrate_3_3_0 {
         return noErrors;
     }
 
-    /*
-    public JSONObject getModelAtCommit(String commitId, PostgresHelper pgh, ElasticHelper eh, String projectId) {
-        JSONObject result = new JSONObject();
+    public static JSONArray getArtifactsAtCommit(String commitId, PostgresHelper pgh, ElasticHelper eh,
+        String projectId) {
         JSONArray artifacts = new JSONArray();
+        JSONObject pastElement = null;
         ArrayList<String> refsCommitsIds = new ArrayList<>();
 
         Map<String, Object> commit = pgh.getCommit(commitId);
@@ -241,20 +272,32 @@ public class Migrate_3_3_0 {
             List<String> artifactElasticIds = new ArrayList<>();
 
             for (Map<String, Object> element : pgh.getAllArtifactsWithLastCommitTimestamp()) {
-                processElementForModelAtCommit(a, deletedElementIds, commit, commitId, refsCommitsIds, artifacts,
-                    artifactElasticIds);
-
                 if (((Date) element.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
                     if (!deletedElementIds.containsKey((String) element.get(Sjm.ELASTICID))) {
-                        elasticIds.add((String) element.get(Sjm.ELASTICID));
+                        artifactElasticIds.add((String) element.get(Sjm.ELASTICID));
                     }
                 } else {
-                    pastElement = getElementAtCommit((String) element.get(Sjm.SYSMLID), commitId, refsCommitsIds);
+                    String sysmlId = (String) element.get(Sjm.SYSMLID);
+
+                    try {
+                        Map<String, Object> commitObj = pgh.getCommit(commitId);
+                        if (commitObj != null) {
+                            Date date = (Date) commitObj.get(Sjm.TIMESTAMP);
+                            Calendar cal = Calendar.getInstance();
+                            cal.setTimeInMillis(date.getTime());
+                            cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+                            String timestamp = df.format(cal.getTime());
+                            pastElement =
+                                eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refsCommitsIds, projectId);
+                        }
+                    } catch (Exception e) {
+                        logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                    }
                 }
 
                 if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds
                     .containsKey(pastElement.getString(Sjm.ELASTICID))) {
-                    elements.put(pastElement);
+                    artifacts.put(pastElement);
                 }
             }
 
@@ -266,9 +309,8 @@ public class Migrate_3_3_0 {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            result.put(Sjm.ARTIFACTS, artifacts);
         }
-        return result;
+
+        return artifacts;
     }
-    */
 }
