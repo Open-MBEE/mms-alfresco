@@ -2,6 +2,7 @@ package gov.nasa.jpl.view_repo.actions;
 
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
@@ -89,17 +90,18 @@ public class MigrationRunner extends AbstractPatch {
     }
 
     public static String getPreviousVersion(ServiceRegistry services) {
+        String response = null;
         ModuleService moduleService =
             (ModuleService) services.getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
         List<ModuleDetails> modules = moduleService.getAllModules();
         for (ModuleDetails module : modules) {
             if (module.getId().contains("mms-amp")) {
                 moduleDetails = module;
-                logger.info("MODULE VERSION IN DB: " + cleanVersion(module.getModuleVersionNumber().toString()));
-                return cleanVersion(module.getModuleVersionNumber().toString());
+                logger.info("MODULE VERSION IN DB: " + cleanVersion(moduleDetails.getModuleVersionNumber().toString()));
+                response = cleanVersion(moduleDetails.getModuleVersionNumber().toString());
             }
         }
-        return null;
+        return response;
     }
 
     public static String getCurrentVersion() {
