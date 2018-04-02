@@ -279,7 +279,7 @@ public class CommitUtil {
                     pgh.close();
                 }
                 try {
-                    eh.indexElement(delta, projectId); //initial commit may fail to read back but does get indexed
+                    eh.indexElement(delta.getJSONObject("commit"), projectId, ElasticHelper.COMMIT); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
@@ -550,7 +550,7 @@ public class CommitUtil {
                     pgh.close();
                 }
                 try {
-                    eh.indexElement(delta, projectId); //initial commit may fail to read back but does get indexed
+                    eh.indexElement(delta.getJSONObject("commit"), projectId, ElasticHelper.COMMIT); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
@@ -653,7 +653,7 @@ public class CommitUtil {
                 pgh.createOrganization(orgId, orgName);
                 eh.createIndex(defaultIndex);
                 orgJson.put(Sjm.ELASTICID, orgId);
-                result = eh.indexElement(orgJson, defaultIndex);
+                result = eh.indexElement(orgJson, defaultIndex, ElasticHelper.ELEMENT);
                 return result.current;
             } else {
                 pgh.updateOrganization(orgId, orgName);
@@ -748,13 +748,13 @@ public class CommitUtil {
         try {
             ElasticHelper eh = new ElasticHelper();
             eh.createIndex(projectSysmlid);
-            eProject = eh.indexElement(project, projectSysmlid);
+            eProject = eh.indexElement(project, projectSysmlid, ElasticHelper.ELEMENT);
             eh.refreshIndex();
 
             // only insert if the project does not exist already
             if (pgh.getNodeFromSysmlId(projectSysmlid) == null) {
-                eProjectHoldingBin = eh.indexElement(projectHoldingBin, projectSysmlid);
-                eViewInstanceBin = eh.indexElement(viewInstanceBin, projectSysmlid);
+                eProjectHoldingBin = eh.indexElement(projectHoldingBin, projectSysmlid, ElasticHelper.ELEMENT);
+                eViewInstanceBin = eh.indexElement(viewInstanceBin, projectSysmlid, ElasticHelper.ELEMENT);
                 eh.refreshIndex();
 
                 pgh.insertNode(eProject.elasticId, eProject.sysmlid, DbNodeTypes.PROJECT);

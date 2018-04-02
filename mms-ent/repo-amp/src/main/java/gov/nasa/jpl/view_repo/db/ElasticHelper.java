@@ -44,8 +44,8 @@ public class ElasticHelper implements ElasticsearchInterface {
     private static int termLimit = Integer.parseInt(EmsConfig.get("elastic.limit.term"));
     private static int readTimeout = 1000000000;
 
-    private static final String ELEMENT = "element";
-    private static final String COMMIT = "commit";
+    public static final String ELEMENT = "element";
+    public static final String COMMIT = "commit";
     private static final String PROFILE = "profile";
     private static final String ARTIFACT = "artifact";
 
@@ -340,24 +340,15 @@ public class ElasticHelper implements ElasticsearchInterface {
     /**
      * Index single JSON document by type                         (1)
      *
-     * @param j JSON document to index          (2)
+     * @param k JSON document to index          (2)
      * @return ElasticResult result
      */
-    public ElasticResult indexElement(JSONObject j, String index) throws IOException {
+    public ElasticResult indexElement(JSONObject k, String index, String eType) throws IOException {
         // :TODO error handling
         ElasticResult result = new ElasticResult();
 
         if (logger.isDebugEnabled()) {
-            logger.debug(String.format("indexElement: %s", j));
-        }
-
-        String eType = j.has(COMMIT) ? COMMIT : ELEMENT;
-
-        JSONObject k;
-        if (j.has(eType)) {
-            k = j.getJSONObject(eType);
-        } else {
-            k = j;
+            logger.debug(String.format("indexElement: %s", k));
         }
 
         if (k.has(Sjm.SYSMLID)) {
