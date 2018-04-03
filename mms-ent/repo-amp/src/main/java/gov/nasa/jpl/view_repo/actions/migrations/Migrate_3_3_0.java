@@ -178,6 +178,8 @@ public class Migrate_3_3_0 {
                                     artifactJson.put(Sjm.MODIFIER, creator);
                                     artifactJson.put(Sjm.CREATED, df.format(created));
                                     artifactJson.put(Sjm.MODIFIED, df.format(created));
+                                    artifactJson.put(Sjm.CONTENTTYPE, contentType);
+                                    artifactJson.put(Sjm.CHECKSUM, "");
 
                                     JSONArray artifactJSONForElastic = new JSONArray();
                                     artifactJSONForElastic.put(artifactJson);
@@ -190,20 +192,14 @@ public class Migrate_3_3_0 {
                                         if (bulkEntry) {
 
                                             JSONObject commitObject = new JSONObject();
+                                            commitObject.put(Sjm.ELASTICID, commitId);
                                             commitObject.put(Sjm.CREATED, df.format(created));
                                             commitObject.put(Sjm.CREATOR, creator);
-                                            commitObject.put(Sjm.SYSMLID, commitId);
                                             commitObject.put(Sjm.PROJECTID, projectId);
                                             commitObject.put(Sjm.TYPE, Sjm.ARTIFACT);
                                             commitObject.put(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
 
-                                            JSONObject commitArtifact = new JSONObject();
-                                            commitArtifact.put(Sjm.SYSMLID, artifactId);
-                                            commitArtifact.put(Sjm.ELASTICID, elasticId);
-                                            commitArtifact.put(Sjm.TYPE, Sjm.ARTIFACT);
-                                            commitArtifact.put(Sjm.CONTENTTYPE, contentType);
-
-                                            commitObject.put("added", new JSONArray().put(0, commitArtifact));
+                                            commitObject.put("added", new JSONArray().put(0, artifactJson));
 
                                             eh.indexElement(commitObject, projectId);
 
