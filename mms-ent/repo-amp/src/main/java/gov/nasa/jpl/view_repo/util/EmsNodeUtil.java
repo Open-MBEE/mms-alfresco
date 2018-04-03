@@ -1454,7 +1454,7 @@ public class EmsNodeUtil {
 
     public String insertSingleElastic(JSONObject o) {
         try {
-            ElasticResult r = eh.indexElement(o, projectId);
+            ElasticResult r = eh.indexElement(o, projectId, ElasticHelper.ELEMENT);
             return r.elasticId;
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
