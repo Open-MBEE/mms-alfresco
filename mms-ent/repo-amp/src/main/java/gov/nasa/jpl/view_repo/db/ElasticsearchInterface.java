@@ -29,7 +29,7 @@ public interface ElasticsearchInterface {
 
     JSONArray getElementsFromElasticIds(List<String> ids, String index) throws IOException;
 
-    ElasticResult indexElement(JSONObject j, String index) throws IOException;
+    ElasticResult indexElement(JSONObject j, String index, String eType) throws IOException;
 
     boolean refreshIndex() throws IOException;
 
