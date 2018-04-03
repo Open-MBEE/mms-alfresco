@@ -1,7 +1,9 @@
 package gov.nasa.jpl.view_repo.actions;
 
-import gov.nasa.jpl.view_repo.util.EmsConfig;
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.admin.registry.RegistryKey;
+import org.alfresco.repo.admin.registry.RegistryService;
+import org.alfresco.repo.module.ModuleComponentHelper;
 import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
@@ -10,8 +12,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.VersionNumber;
 import org.apache.log4j.Logger;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
@@ -27,21 +31,27 @@ public class MigrationRunner extends AbstractPatch {
     private static final String PATCH_ID = "gov.nasa.jpl.view_repo.actions.MigrationRunner";
 
     public ServiceRegistry services;
-    public static ModuleDetails moduleDetails;
+    public RegistryService registryService;
 
-    private static boolean isRunning = false;
+    private static final String REGISTRY_PATH_MODULES = "modules";
+    private static final String REGISTRY_PROPERTY_CURRENT_VERSION = "currentVersion";
+    private static final String MODULE_ID = "mms-amp";
 
-    private static final List<String> migrationList;
+    private static final List<ModuleVersionNumber> migrationList;
 
     static {
         migrationList = new LinkedList<>();
-        migrationList.add("3.1.0");
-        migrationList.add("3.2.0");
-        migrationList.add("3.3.0");
+        migrationList.add(new ModuleVersionNumber("3.1.0"));
+        migrationList.add(new ModuleVersionNumber("3.2.0"));
+        migrationList.add(new ModuleVersionNumber("3.3.0"));
     }
 
     public void setServices(ServiceRegistry services) {
         this.services = services;
+    }
+
+    public void setRegistryService(RegistryService registryService) {
+        this.registryService = registryService;
     }
 
     @Override
@@ -49,7 +59,7 @@ public class MigrationRunner extends AbstractPatch {
         logger.info("Starting execution of patch");
         StoreRef store = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         NodeRef rootRef = services.getNodeService().getRootNode(store);
-        if (checkMigration(services, rootRef)) {
+        if (checkMigration(services, registryService, rootRef)) {
             return "Migration executed successfully";
         } else {
             throw new Exception("Migration failed");
@@ -57,15 +67,15 @@ public class MigrationRunner extends AbstractPatch {
     }
 
     @SuppressWarnings("unchecked")
-    public static boolean checkMigration(ServiceRegistry services, NodeRef root) {
-        String previousVersion = getPreviousVersion(services);
-        String currentVersion = getCurrentVersion();
-        if (isMigrationNeeded(previousVersion, currentVersion)) {
+    public static boolean checkMigration(ServiceRegistry services, RegistryService registryService, NodeRef root) {
+        ModuleVersionNumber currentVersion = getCurrentVersion(registryService);
+        ModuleVersionNumber installedVersion = getInstalledVersion(services);
+        if (isMigrationNeeded(currentVersion, installedVersion)) {
             logger.info("Migration Needed!");
-            if (migrationList.contains(currentVersion)) {
+            if (migrationList.contains(installedVersion)) {
                 logger.info("Automigration path exists.");
-                for (String migrationFor : migrationList) {
-                    if (compareVersions(previousVersion, migrationFor) < 0) {
+                for (ModuleVersionNumber migrationFor : migrationList) {
+                    if (currentVersion.compareTo(migrationFor) < 0) {
                         logger.info("Update path found");
                         logger.info("Migration For: " + migrationFor);
                         try {
@@ -89,31 +99,45 @@ public class MigrationRunner extends AbstractPatch {
         return true;
     }
 
-    public static String getPreviousVersion(ServiceRegistry services) {
-        String response = null;
-        ModuleService moduleService =
-            (ModuleService) services.getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
-        List<ModuleDetails> modules = moduleService.getAllModules();
-        for (ModuleDetails module : modules) {
-            if (module.getId().contains("mms-amp")) {
-                moduleDetails = module;
-                logger.info("MODULE VERSION IN DB: " + cleanVersion(moduleDetails.getModuleVersionNumber().toString()));
-                response = cleanVersion(moduleDetails.getModuleVersionNumber().toString());
+    public static ModuleVersionNumber getCurrentVersion(RegistryService registryService) {
+        ModuleVersionNumber response = null;
+
+        RegistryKey moduleKeyCurrentVersion = new RegistryKey(
+                ModuleComponentHelper.URI_MODULES_1_0,
+                REGISTRY_PATH_MODULES, MODULE_ID, REGISTRY_PROPERTY_CURRENT_VERSION);
+        Serializable versionCurrent = registryService.getProperty(moduleKeyCurrentVersion);
+
+        if (versionCurrent != null) {
+            ModuleVersionNumber current = MigrationRunner.getModuleVersionNumber(versionCurrent);
+            if (current.toString().indexOf('-') > -1) {
+                response = MigrationRunner.getModuleVersionNumber(cleanVersion(current.toString()));
+            } else {
+                response = current;
             }
+            logger.info("Current Version: " + response.toString());
         }
+
         return response;
     }
 
-    public static String getCurrentVersion() {
-        try {
-            EmsConfig.setAlfrescoProperties(moduleDetails.getProperties());
-            logger.info("MODULE VERSION IN PROPERTIES: " + cleanVersion(EmsConfig.get("module.version")));
-            return cleanVersion(EmsConfig.get("module.version"));
-        } catch (Exception e) {
-            logger.error(e);
+    public static ModuleVersionNumber getInstalledVersion(ServiceRegistry services) {
+        ModuleVersionNumber response = null;
+
+        ModuleService moduleService =
+            (ModuleService) services.getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
+        ModuleDetails md = moduleService.getModule(MODULE_ID);
+
+        if (md != null) {
+            ModuleVersionNumber installed = md.getModuleVersionNumber();
+            if (installed.toString().indexOf('-') > -1) {
+                response = MigrationRunner.getModuleVersionNumber(cleanVersion(installed.toString()));
+            } else {
+                response = installed;
+            }
+            logger.info("Installed Version: " + response.toString());
         }
 
-        return null;
+        return response;
     }
 
     public static String cleanVersion(String version) {
@@ -123,38 +147,19 @@ public class MigrationRunner extends AbstractPatch {
         return version.indexOf('-') > -1 ? version.substring(0, version.indexOf('-')) : version;
     }
 
-    public static String versionToClassname(String version) {
-        return "Migrate_" + version.replace('.', '_');
+    public static String versionToClassname(ModuleVersionNumber version) {
+        String versionString = cleanVersion(version.toString());
+        return "Migrate_" + versionString.replace('.', '_');
     }
 
-    public static int compareVersions(String previous, String current) {
-        String[] previousVersionString = cleanVersion(previous).split("\\.");
-        int[] previousVersionArr = new int[previousVersionString.length];
-        String[] currentVersionString = cleanVersion(current).split("\\.");
-        int[] currentVersionArr = new int[currentVersionString.length];
-
-        for (int i = 0; i < previousVersionString.length; i++) {
-            previousVersionArr[i] = Integer.valueOf(previousVersionString[i]);
-        }
-
-        for (int i = 0; i < currentVersionString.length; i++) {
-            currentVersionArr[i] = Integer.valueOf(currentVersionString[i]);
-        }
-
-        int max =
-            previousVersionArr.length > currentVersionArr.length ? previousVersionArr.length : currentVersionArr.length;
-
-        for (int i = 0; i < max; i++) {
-            int prev = i < previousVersionArr.length ? previousVersionArr[i] : 0;
-            int curr = i < currentVersionArr.length ? currentVersionArr[i] : 0;
-            if (prev != curr) {
-                return prev < curr ? -1 : 1;
-            }
-        }
-        return 0;
+    public static boolean isMigrationNeeded(ModuleVersionNumber previousVersion, ModuleVersionNumber currentVersion) {
+        return migrationList.contains(currentVersion) && previousVersion.compareTo(currentVersion) < 0;
     }
 
-    public static boolean isMigrationNeeded(String previousVersion, String currentVersion) {
-        return migrationList.contains(cleanVersion(currentVersion)) && compareVersions(previousVersion, currentVersion) < 0;
+    protected static ModuleVersionNumber getModuleVersionNumber(Serializable moduleVersion) {
+        if (moduleVersion instanceof ModuleVersionNumber) return (ModuleVersionNumber) moduleVersion;
+        if (moduleVersion instanceof VersionNumber) return new ModuleVersionNumber((VersionNumber)moduleVersion);
+        if (moduleVersion instanceof String) return new ModuleVersionNumber((String)moduleVersion);
+        return null;
     }
 }
