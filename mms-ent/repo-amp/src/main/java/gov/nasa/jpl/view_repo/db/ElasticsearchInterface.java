@@ -20,8 +20,6 @@ public interface ElasticsearchInterface {
 
     JsonArray getCommitHistory(String sysmlid, String index) throws IOException;
 
-    Boolean checkForElasticIdInCommit(String sysmlid, String commitId, String index) throws IOException;
-
     JsonObject getCommitByElasticId(String id, String index) throws IOException;
 
     JsonObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException;

@@ -220,15 +220,6 @@ public class EmsNodeUtil {
         return pgh.getNodeFromSysmlId(sysmlId, true);
     }
 
-    public Boolean commitContainsElement(String elementId, String commitId) {
-        try {
-            return eh.checkForElasticIdInCommit(elementId, commitId, projectId);
-        } catch (IOException e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-        return false;
-    }
-
     public JsonObject getNodeBySysmlid(String sysmlid) {
         return getNodeBySysmlid(sysmlid, this.workspaceName, true);
     }

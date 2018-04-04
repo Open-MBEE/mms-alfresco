@@ -224,38 +224,6 @@ public class ElasticHelper implements ElasticsearchInterface {
         return array;
     }
 
-
-    public Boolean checkForElasticIdInCommit(String sysmlid, String commitId, String index) throws IOException {
-        JsonArray must = new JsonArray();
-        JsonObject term = new JsonObject();
-        JsonObject term1 = new JsonObject();
-        term.add("term", term1);
-        term1.addProperty("_id", commitId);
-        must.add(term);
-        must.add(getCommitBoolShouldQuery(sysmlid));
-        JsonObject boolQueryMust = new JsonObject();
-        boolQueryMust.add("must", must);
-        JsonObject query = new JsonObject();
-        JsonObject queryClause = new JsonObject();
-        queryClause.add("bool", boolQueryMust);
-        query.addProperty("size", resultLimit);
-        query.add("query", queryClause);
-        Search search = new Search.Builder(query.toString())
-        		.addIndex(index.toLowerCase()
-        		.replaceAll("\\s+",""))
-        		.addType(COMMIT)
-        		.build();
-        SearchResult result = client.execute(search);
-
-        if (!result.isSucceeded()) {
-            throw new IOException(String.format("Elasticsearch error[%1$s]:%2$s", result.getResponseCode(), result.getErrorMessage()));
-        }
-        if (result.getTotal() > 0) {
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Gets the JSON document of commit type using a elastic _id (1)
      *
