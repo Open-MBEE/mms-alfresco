@@ -170,10 +170,8 @@ public class ProjectDelete extends AbstractJavaWebScript {
 
         try {
             ElasticHelper elasticHelper = new ElasticHelper();
-            elasticHelper.deleteElasticElements("_projectId", projectId);
+            elasticHelper.deleteIndex(projectId);
         } catch (IOException e) {
-            logger.error(e.getMessage());
-        } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }

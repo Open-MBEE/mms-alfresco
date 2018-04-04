@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import io.searchbox.core.*;
+import io.searchbox.indices.DeleteIndex;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
@@ -97,6 +98,11 @@ public class ElasticHelper implements ElasticsearchInterface {
         if (!indexExists) {
             client.execute(new CreateIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build());
         }
+    }
+
+    public void deleteIndex(String index) throws IOException {
+        DeleteIndex indexExists = new DeleteIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build();
+        client.execute(indexExists);
     }
 
     /**
