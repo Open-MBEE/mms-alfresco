@@ -105,9 +105,7 @@ public class ModelPost extends AbstractJavaWebScript {
         Map<String, Object> result;
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
 
-
         result = handleElementPost(req, status, user, contentType);
-
 
         printFooter(user, logger, timer);
 
@@ -133,11 +131,10 @@ public class ModelPost extends AbstractJavaWebScript {
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
-
             String comment = JsonUtil.getOptString(postJson, Sjm.COMMENT);
 
             results = emsNodeUtil
-                .processPostJson(postJson.get(Sjm.ELEMENTS).getAsJsonArray(), 
+                .processPostJson(postJson.get(Sjm.ELEMENTS).getAsJsonArray(),
                                  user, oldElasticIds, overwriteJson,
                                  this.requestSourceApplication, comment, Sjm.ELEMENT);
 
@@ -157,8 +154,8 @@ public class ModelPost extends AbstractJavaWebScript {
                     }
                 }
 
-                newElementsObject.add(Sjm.ELEMENTS, extended ? 
-                                      emsNodeUtil.addExtendedInformation(filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req)) 
+                newElementsObject.add(Sjm.ELEMENTS, extended ?
+                                      emsNodeUtil.addExtendedInformation(filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req))
                                       : filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req));
                 if (results.has("rejectedElements")) {
                     newElementsObject.add(Sjm.REJECTED, results.get("rejectedElements"));

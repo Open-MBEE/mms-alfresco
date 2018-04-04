@@ -118,7 +118,7 @@ public class CommitsGet extends AbstractJavaWebScript {
         JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
 
         if (commitObject == null) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not insert into ElasticSearch");
+            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Commit object not found.");
         }
 
         commitJson.add(commitObject);

@@ -312,17 +312,8 @@ public class EmsNodeUtil {
         JsonArray result = new JsonArray();
         int cId = pgh.getCommitId(commitId);
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId, cId, limit);
-        for (int i = 0; i < refCommits.size(); i++) {
-            Map<String, Object> refCommit = refCommits.get(i);
-            JsonObject commitJson = getCommitObject(refCommit.get(Sjm.SYSMLID).toString());
-            JsonObject commit = new JsonObject();
-            commit.addProperty(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID).toString());
-            commit.addProperty(Sjm.CREATOR, refCommit.get(Sjm.CREATOR).toString());
-            commit.addProperty(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
-            if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
-                commit.add(Sjm.COMMENT, commitJson.get(Sjm.COMMENT));
-            }
-            result.add(commit);
+        if (refCommits.size() > 0) {
+            result = processCommits(refCommits);
         }
 
         return result;
@@ -568,6 +559,7 @@ public class EmsNodeUtil {
 
         return result;
     }
+
     public JsonObject processPostJson(JsonArray elements, String user, Set<String> oldElasticIds,
         boolean overwriteJson, String src, String type) {
         return processPostJson(elements, user, oldElasticIds, overwriteJson, src, "", type);
@@ -1028,8 +1020,8 @@ public class EmsNodeUtil {
                         newElements.add(propertyASI);
                         addedElements.add(propertyASI);
                         JsonObject newASI = new JsonObject();
-                        newASI.add(Sjm.SYSMLID, property.get(Sjm.SYSMLID));
-                        newASI.add(Sjm.ELASTICID, property.get(Sjm.ELASTICID));
+                        newASI.add(Sjm.SYSMLID, propertyASI.get(Sjm.SYSMLID));
+                        newASI.add(Sjm.ELASTICID, propertyASI.get(Sjm.ELASTICID));
                         commitAdded.add(newASI);
 
                         // Create Associations
@@ -1088,8 +1080,8 @@ public class EmsNodeUtil {
                         newElements.add(association);
                         addedElements.add(association);
                         JsonObject newAssociation = new JsonObject();
-                        newAssociation.add(Sjm.SYSMLID, property.get(Sjm.SYSMLID));
-                        newAssociation.add(Sjm.ELASTICID, property.get(Sjm.ELASTICID));
+                        newAssociation.add(Sjm.SYSMLID, association.get(Sjm.SYSMLID));
+                        newAssociation.add(Sjm.ELASTICID, association.get(Sjm.ELASTICID));
                         commitAdded.add(newAssociation);
 
                         // Create Association Property
@@ -1147,8 +1139,8 @@ public class EmsNodeUtil {
                         newElements.add(assocProperty);
                         addedElements.add(assocProperty);
                         JsonObject newAssociationProperty = new JsonObject();
-                        newAssociationProperty.add(Sjm.SYSMLID, property.get(Sjm.SYSMLID));
-                        newAssociationProperty.add(Sjm.ELASTICID, property.get(Sjm.ELASTICID));
+                        newAssociationProperty.add(Sjm.SYSMLID, assocProperty.get(Sjm.SYSMLID));
+                        newAssociationProperty.add(Sjm.ELASTICID, assocProperty.get(Sjm.ELASTICID));
                         commitAdded.add(newAssociationProperty);
 
                         ownedAttributesIds.add(propertySysmlId);
@@ -1244,7 +1236,7 @@ public class EmsNodeUtil {
             String ownerName = JsonUtil.getOptString(owner, Sjm.NAME);
             qn.add(ownerName);
 
-            if (siteCharacterizationId == null && CommitUtil.isSite(owner)) {
+            if (siteCharacterizationId == null && CommitUtil.isGroup(owner)) {
                 siteCharacterizationId = JsonUtil.getOptString(owner, Sjm.SYSMLID);
             }
             o = owner;
@@ -1469,6 +1461,15 @@ public class EmsNodeUtil {
         return null;
     }
 
+    public JsonArray getCommitObjects(List<String> commitIds) {
+        try {
+            return eh.getElementsFromElasticIds(commitIds, projectId);
+        } catch (IOException e) {
+            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return null;
+    }
+
     public void insertProjectIndex(String projectId) {
         try {
             eh.createIndex(projectId);
@@ -1479,7 +1480,7 @@ public class EmsNodeUtil {
 
     public String insertSingleElastic(JsonObject o) {
         try {
-            ElasticResult r = eh.indexElement(o, projectId);
+            ElasticResult r = eh.indexElement(o, projectId, ElasticHelper.ELEMENT);
             return r.elasticId;
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
@@ -1552,15 +1553,16 @@ public class EmsNodeUtil {
                     val = primitive.getAsNumber();
                 else
                     val = (Object) primitive;
+            } else {
+                val = (Object) value;
             }
-            else
-            	val = (Object) value;
             list.add(val);
         }
 
         return list;
     }
 
+    @SuppressWarnings("unchecked")
     private static boolean isEquivalent(Map<String, Object> map1, Map<String, Object> map2) {
         for (Map.Entry<String, Object> entry : map1.entrySet()) {
             Object value1 = entry.getValue();
@@ -1702,7 +1704,7 @@ public class EmsNodeUtil {
                     artifacts.add(artifactElastic.get(i));
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Error getting model: ", e);
             }
             result.add(Sjm.ELEMENTS, elements);
             result.add(Sjm.ARTIFACTS, artifacts);
@@ -1711,7 +1713,7 @@ public class EmsNodeUtil {
     }
 
     public void processElementForModelAtCommit(Map<String, Object> element, Map<String, String> deletedElementIds,
-        Map<String, Object> commit, String commitId, ArrayList<String> refsCommitsIds, JsonArray elements, List<String> elasticIds) {
+        Map<String, Object> commit, String commitId, List<String> refsCommitsIds, JsonArray elements, List<String> elasticIds) {
         JsonObject pastElement = null;
         if (((Date) element.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
             if (!deletedElementIds.containsKey((String) element.get(Sjm.ELASTICID))) {
@@ -1769,19 +1771,8 @@ public class EmsNodeUtil {
             requestedTime = df.parse(timestamp);
             Timestamp time = new Timestamp(requestedTime.getTime());
             commits = pgh.getRefsCommits(refId, time, limit);
-            if (commits.size() > 0) {
-                for (int i = 0; i < commits.size(); i++) {
-                    Map<String, Object> refCommit = commits.get(i);
-                    JsonObject commitJson = getCommitObject(refCommit.get(Sjm.SYSMLID).toString());
-                    JsonObject commit = new JsonObject();
-                    commit.addProperty(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID).toString());
-                    commit.addProperty(Sjm.CREATOR, refCommit.get(Sjm.CREATOR).toString());
-                    commit.addProperty(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
-                    if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
-                        commit.add(Sjm.COMMENT, commitJson.get(Sjm.COMMENT));
-                    }
-                    response.add(commit);
-                }
+            if (!commits.isEmpty()) {
+                response = processCommits(commits);
             }
         } catch (ParseException e) {
             if (logger.isDebugEnabled()) {
@@ -1790,6 +1781,38 @@ public class EmsNodeUtil {
         }
 
         return response;
+    }
+
+    public JsonArray processCommits(List<Map<String, Object>> commits) {
+        JsonArray result = new JsonArray();
+        Map<String, JsonObject> commitObjectMap = new HashMap<>();
+        List<String> commitIds = new ArrayList<>();
+        for (int i = 0; i < commits.size(); i++) {
+            commitIds.add(commits.get(i).get(Sjm.SYSMLID).toString());
+        }
+
+        JsonArray commitObjects = getCommitObjects(commitIds);
+        for (int i = 0; i < commitObjects.size(); i++) {
+            if (commitObjects.get(i).isJsonObject() && commitObjects.get(i).getAsJsonObject().has(Sjm.ELASTICID)) {
+                commitObjectMap.put(commitObjects.get(i).getAsJsonObject().get(Sjm.ELASTICID).toString(),
+                    commitObjects.get(i).getAsJsonObject());
+            }
+        }
+
+        for (int i = 0; i < commits.size(); i++) {
+            Map<String, Object> refCommit = commits.get(i);
+            JsonObject commitJson = commitObjectMap.getOrDefault(refCommit.get(Sjm.SYSMLID).toString(), null);
+            JsonObject commit = new JsonObject();
+            commit.addProperty(Sjm.SYSMLID, refCommit.get(Sjm.SYSMLID).toString());
+            commit.addProperty(Sjm.CREATOR, refCommit.get(Sjm.CREATOR).toString());
+            commit.addProperty(Sjm.CREATED, df.format(refCommit.get(Sjm.CREATED)));
+            if (commitJson != null && commitJson.has(Sjm.COMMENT)) {
+                commit.addProperty(Sjm.COMMENT, commitJson.get(Sjm.COMMENT).toString());
+            }
+            result.add(commit);
+        }
+
+        return result;
     }
 
     public JsonObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {

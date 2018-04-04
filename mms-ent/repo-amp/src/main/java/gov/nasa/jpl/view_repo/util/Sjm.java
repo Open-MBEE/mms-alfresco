@@ -132,7 +132,7 @@ public class Sjm {
     public static final String CREATOR = "_creator";
     public static final String EDITABLE = "_editable";
     public static final String ELASTICID = "_elasticId";
-    public static final String ISSITE = "_isSite";
+    public static final String ISGROUP = "_isGroup";
     public static final String MODIFIED = "_modified";
     public static final String MODIFIER = "_modifier";
     public static final String MOUNTS = "_mounts";

@@ -69,7 +69,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
             postJson = JsonUtil.buildFromString(req.getContent().getContent());
             if (postJson.has("name")) {
 
-                String docName = JsonUtil.getOptString(postJson, Sjm.NAME);
+                String docName = JsonUtil.getOptString(postJson, Sjm.NAME).replaceAll("[^a-zA-Z0-9.-]", "_");
                 String projectId = getProjectId(req);
                 String refId = getRefId(req);
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);

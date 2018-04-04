@@ -116,7 +116,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 if (field.getName().equals("file") && field.getIsFile()) {
                     //String extension = FilenameUtils.getExtension();
                     //String filenameString = field.getFilename().substring(0, field.getFilename().lastIndexOf('.') - 1);
-                    filename = field.getFilename();
+                    filename = field.getFilename().replaceAll("[^a-zA-Z0-9.-]", "_");
                     Content tempContent = field.getContent();
                     mimeType = tempContent.getMimetype();
                     encoding = tempContent.getEncoding();

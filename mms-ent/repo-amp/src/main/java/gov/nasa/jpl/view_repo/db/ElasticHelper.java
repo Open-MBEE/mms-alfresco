@@ -43,8 +43,8 @@ public class ElasticHelper implements ElasticsearchInterface {
     private static int termLimit = Integer.parseInt(EmsConfig.get("elastic.limit.term"));
     private static int readTimeout = 1000000000;
 
-    private static final String ELEMENT = "element";
-    private static final String COMMIT = "commit";
+    public static final String ELEMENT = "element";
+    public static final String COMMIT = "commit";
     private static final String PROFILE = "profile";
     private static final String ARTIFACT = "artifact";
 
@@ -234,6 +234,9 @@ public class ElasticHelper implements ElasticsearchInterface {
                 o.add(Sjm.SYSMLID, hits.get(i).getAsJsonObject().get("_id"));
                 o.add(Sjm.CREATED, record.get(Sjm.CREATED));
                 o.add(Sjm.CREATOR, record.get(Sjm.CREATOR));
+                if (record.has(Sjm.COMMENT)) {
+                    o.add(Sjm.COMMENT, record.get(Sjm.COMMENT));
+                }
                 array.add(o);
             }
         } else if (!result.isSucceeded()) {
@@ -266,12 +269,12 @@ public class ElasticHelper implements ElasticsearchInterface {
         		.build();
         SearchResult result = client.execute(search);
 
-        if (!result.isSucceeded())
-            throw new IOException(
-                    String.format("Elasticsearch error[%1$s]:%2$s",
-                            result.getResponseCode(), result.getErrorMessage()));
-        if (result.getTotal() > 0)
+        if (!result.isSucceeded()) {
+            throw new IOException(String.format("Elasticsearch error[%1$s]:%2$s", result.getResponseCode(), result.getErrorMessage()));
+        }
+        if (result.getTotal() > 0) {
             return true;
+        }
         return false;
     }
 
@@ -282,6 +285,9 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @return JSONObject o or null
      */
     public JsonObject getCommitByElasticId(String id, String index) throws IOException {
+        if (id == null) {
+            return null;
+        }
         Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(COMMIT).build();
 
         JestResult result = client.execute(get);
@@ -295,6 +301,7 @@ public class ElasticHelper implements ElasticsearchInterface {
             o.add(Sjm.SYSMLID, result.getJsonObject().get("_id"));
             return o;
         }
+
         return null;
     }
 
@@ -349,6 +356,7 @@ public class ElasticHelper implements ElasticsearchInterface {
                 return o;
             }
         }
+
         return null;
 
     }
@@ -419,38 +427,31 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param j JSON document to index          (2)
      * @return ElasticResult result
      */
-    public ElasticResult indexElement(JsonObject j, String index) throws IOException {
+    public ElasticResult indexElement(JsonObject j, String index, String eType) throws IOException {
         // :TODO error handling
         ElasticResult result = new ElasticResult();
-        String eType = j.has(COMMIT) ? COMMIT : ELEMENT;
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("indexElement: %s", j));
         }
 
-        JsonObject k;
-        if (j.has(eType)) {
-            k = removeWrapper(j);
-        } else {
-            k = j;
+        if (j.has(Sjm.SYSMLID)) {
+            result.sysmlid = j.get(Sjm.SYSMLID).getAsString();
         }
-
-        if (k.has(Sjm.SYSMLID)) {
-            result.sysmlid = k.get(Sjm.SYSMLID).getAsString();
-        }
-        if (k.has(Sjm.ELASTICID)) {
-            result.elasticId = client.execute(new Index.Builder(k.toString()).id(k.get(Sjm.ELASTICID).getAsString())
+        if (j.has(Sjm.ELASTICID)) {
+            result.elasticId = client.execute(new Index.Builder(j.toString()).id(j.get(Sjm.ELASTICID).getAsString())
                 .index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build()).getId();
         } else {
             result.elasticId = client.execute(
-                new Index.Builder(k.toString()).index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build())
+                new Index.Builder(j.toString()).index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build())
                 .getId();
         }
-        if (result.elasticId == null)
-        	throw new IOException("Unable to index node in elasticsearch");
+        if (result.elasticId == null) {
+            throw new IOException("Unable to index node in elasticsearch");
+        }
 
-        k.addProperty(Sjm.ELASTICID, result.elasticId);
-        result.current = k;
+        j.addProperty(Sjm.ELASTICID, result.elasticId);
+        result.current = j;
 
         return result;
     }
@@ -603,18 +604,6 @@ public class ElasticHelper implements ElasticsearchInterface {
         Search search = new Search.Builder(queryJson.toString()).build();
         SearchResult result = client.execute(search);
         return result.getJsonObject();
-    }
-
-    private static JsonObject removeWrapper(JsonObject jsonObject) {
-        String eType = null;
-        JsonObject result = new JsonObject();
-        if (jsonObject.has(ELEMENT) || jsonObject.has(COMMIT)) {
-            eType = jsonObject.has(COMMIT) ? COMMIT : ELEMENT;
-        }
-        if (eType != null) {
-            result = jsonObject.getAsJsonObject(eType);
-        }
-        return result;
     }
 
     /**
