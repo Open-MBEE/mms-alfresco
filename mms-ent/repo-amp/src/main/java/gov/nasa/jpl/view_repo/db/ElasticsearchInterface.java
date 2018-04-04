@@ -16,6 +16,8 @@ public interface ElasticsearchInterface {
 
     void createIndex(String index) throws IOException;
 
+    void deleteIndex(String index) throws IOException;
+
     JsonObject getElementByElasticId(String id, String index) throws IOException;
 
     JsonArray getCommitHistory(String sysmlid, String index) throws IOException;
@@ -39,8 +41,6 @@ public interface ElasticsearchInterface {
     JsonObject search(JsonObject queryJson) throws IOException;
 
     JsonObject bulkDeleteByType(String type, ArrayList<String> ids, String index);
-
-    JsonObject deleteElasticElements(String field, String projectId);
 
     JsonObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds, String index);
 
