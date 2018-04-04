@@ -1515,16 +1515,18 @@ public class EmsNodeUtil {
                 val = null;
             } else if (value.isJsonPrimitive()) {
                 JsonPrimitive primitive = value.getAsJsonPrimitive();
-                if (primitive.isBoolean())
+                if (primitive.isBoolean()) {
                     val = primitive.getAsBoolean();
-                else if (primitive.isString())
+                } else if (primitive.isString()) {
                     val = primitive.getAsString();
-                else if (primitive.isNumber())
+                } else if (primitive.isNumber()) {
                     val = primitive.getAsNumber();
-                else
-                    val = (Object) primitive;
-            } else
-            	val = (Object) value;
+                } else {
+                    val = primitive;
+                }
+            } else {
+                val = value;
+            }
             map.put(key, val);
         }
 
@@ -1545,16 +1547,17 @@ public class EmsNodeUtil {
             	val = null;
             } else if (value.isJsonPrimitive()) {
                 JsonPrimitive primitive = value.getAsJsonPrimitive();
-                if (primitive.isBoolean())
+                if (primitive.isBoolean()) {
                     val = primitive.getAsBoolean();
-                else if (primitive.isString())
+                } else if (primitive.isString()) {
                     val = primitive.getAsString();
-                else if (primitive.isNumber())
+                } else if (primitive.isNumber()) {
                     val = primitive.getAsNumber();
-                else
-                    val = (Object) primitive;
+                } else {
+                    val = primitive;
+                }
             } else {
-                val = (Object) value;
+                val = value;
             }
             list.add(val);
         }

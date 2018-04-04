@@ -6,7 +6,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.JsonUtil;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import gov.nasa.jpl.view_repo.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,10 +22,6 @@ import org.springframework.extensions.webscripts.WebScriptStatus;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
-import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
  * Copyright (C) 2005-2009 Alfresco Software Limited.
@@ -154,7 +152,18 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     if (templateModel.containsKey(Sjm.RES) && templateModel.get(Sjm.RES) != null) {
                         res.setContentType("application/json");
                         res.setContentEncoding("UTF-8");
-                        res.getWriter().write(templateModel.get(Sjm.RES).toString());
+                        if (templateModel.get(Sjm.RES) instanceof JsonObject) {
+                            JsonObject json = (JsonObject) templateModel.get(Sjm.RES);
+                            Map<String, Object> jsonMap = new Gson().fromJson(json, new TypeToken<Map<String, Object>>(){}.getType());
+                            JsonContentReader reader = new JsonContentReader(jsonMap);
+
+                            // get the content and stream directly to the response output stream
+                            // assuming the repository is capable of streaming in chunks, this should allow large files
+                            // to be streamed directly to the browser response stream.
+                            reader.getStreamContent(res.getOutputStream());
+                        } else {
+                            res.getWriter().write(templateModel.get(Sjm.RES).toString());
+                        }
                     }
                 }
             } finally {
@@ -280,7 +289,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             JsonObject project = JsonUtil.getOptObject(projects, i);
             if (project.has("orgId")) {
                 Boolean perm = SitePermission.hasPermission(
-                                project.get("orgId").getAsString(), 
+                                project.get("orgId").getAsString(),
                                 project.get(Sjm.SYSMLID).getAsString(), null, Permission.READ);
                 if (perm != null && perm) {
                     result.add(project);
