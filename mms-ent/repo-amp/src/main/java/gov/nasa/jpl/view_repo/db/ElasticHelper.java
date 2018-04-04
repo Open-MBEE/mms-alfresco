@@ -107,43 +107,21 @@ public class ElasticHelper implements ElasticsearchInterface {
      */
     public JsonObject getElementByElasticId(String id, String index) throws IOException {
         // Cannot use method for commit type
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(ELEMENT).build();
-
-        JestResult result = client.execute(get);
-
-        if (result.isSucceeded()) {
-            JsonObject o = result.getJsonObject().getAsJsonObject("_source");
-            o.add(Sjm.ELASTICID, result.getJsonObject().get("_id"));
-            return o;
-        }
-
-        return null;
+        return getByElasticId(id, index, ELEMENT);
     }
 
     public JsonObject getProfileByElasticId(String id, String index) throws IOException {
         // Cannot use method for commit type
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(PROFILE).build();
-
-        JestResult result = client.execute(get);
-
-        if (result.isSucceeded()) {
-            JsonObject o = result.getJsonObject().get("_source").getAsJsonObject();
-            o.add(Sjm.ELASTICID, result.getJsonObject().get("_id"));
-            return o;
-        }
-
-        return null;
+        return getByElasticId(id, index, PROFILE);
     }
 
-    /**
-     * Gets the JSON document of element type using a elastic _id (1)
-     *
-     * @param id _id elasticsearch property          (2)
-     * @return JSONObject o or null
-     */
     public JsonObject getElementByElasticIdArtifact(String id, String index) throws IOException {
         // Cannot use method for commit type
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(ARTIFACT).build();
+        return getByElasticId(id, index, ARTIFACT);
+    }
+
+    public JsonObject getByElasticId(String id, String index, String type) throws IOException {
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(type).build();
 
         JestResult result = client.execute(get);
 
