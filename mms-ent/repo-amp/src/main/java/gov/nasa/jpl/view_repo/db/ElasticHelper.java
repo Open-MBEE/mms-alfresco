@@ -596,41 +596,6 @@ public class ElasticHelper implements ElasticsearchInterface {
     }
 
     /**
-     * Performs a delete by query on ElasticSearch using the given field and id.
-     *
-     * @param field
-     * @param projectId
-     * @return JSON Response
-     */
-    // :TODO do we need to search for the project now?
-    public JsonObject deleteElasticElements(String field, String projectId){
-        JestResult result = null;
-        JsonObject query = new JsonObject();
-        JsonObject term = new JsonObject();
-        query.add("query", term);
-        JsonObject termv = new JsonObject();
-        termv.addProperty(field, projectId.toLowerCase().replaceAll("\\s+",""));
-        term.add("term", termv);
-
-        // Verbose statement to make sure it uses the correct delete by query class from searchbox.
-        DeleteByQuery deleteByQuery = new DeleteByQuery.Builder(query.toString())
-        		.addIndex(projectId.toLowerCase().replaceAll("\\s+",""))
-        		.build();
-
-        try {
-            result = client.execute(deleteByQuery);
-            if (!result.isSucceeded()) {
-                logger.error("Deleting Elastic Elements Failed!");
-                logger.error(result.getErrorMessage());
-            }
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-
-        }
-        return result.getJsonObject();
-    }
-
-    /**
      * Search elasticsearch for an element based on the sysmlids provided and timestamp. Elasticsearch will find all elements matching
      * the sysmlid then filter and sort by timestamp. If the element doesn't exist at the timestamp it will return null.
      *
