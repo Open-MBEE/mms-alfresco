@@ -104,7 +104,7 @@ public class ModelSearch extends ModelPost {
                 if (!Utils.isNullOrEmpty(response.toString())) {
                     top.addProperty("message", response.toString());
                 }
-                model.put(Sjm.RES, top.toString());
+                model.put(Sjm.RES, top);
             }
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);

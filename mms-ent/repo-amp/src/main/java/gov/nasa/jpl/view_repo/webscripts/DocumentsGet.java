@@ -63,7 +63,7 @@ public class DocumentsGet extends AbstractJavaWebScript {
 
         try {
             jsonObject.add(Sjm.DOCUMENTS, filterByPermission(handleProducts(req), req));
-            model.put(Sjm.RES, jsonObject.toString());
+            model.put(Sjm.RES, jsonObject);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }

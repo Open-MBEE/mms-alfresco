@@ -84,7 +84,7 @@ public class CommitsGet extends AbstractJavaWebScript {
         }
 
         status.setCode(responseStatus.getCode());
-        model.put("res", top.toString());
+        model.put("res", top);
 
         printFooter(user, logger, timer);
         return model;

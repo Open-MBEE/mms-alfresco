@@ -730,7 +730,7 @@ public class EmsNodeUtil {
                 }
             }
 
-            JsonArray ownedAttributesJSON = getNodesBySysmlids(ownedAttributeSet);
+            JsonArray ownedAttributesJSON = getNodesBySysmlids(ownedAttributeSet, false, false);
             Map<String, JsonObject> ownedAttributesMap = new HashMap<>();
             for (int i = 0; i < ownedAttributesJSON.size(); i++) {
                 //originally had optJsonObject, but then it wouldn't have the SYSMLID key in the next line
@@ -829,47 +829,22 @@ public class EmsNodeUtil {
                                     .contains("_17_0_1_407019f_1332453225141_893756_11936") || asids
                                     .contains("_11_5EAPbeta_be00301_1147420760998_43940_227") || asids
                                     .contains("_18_0beta_9150291_1392290067481_33752_4359")) {
-                                    if (!JsonUtil.getOptString(childView, Sjm.SYSMLID).equals("")) {
-                                        deletedElements.add(ownedAttribute);
-                                        oldElasticIds.add(ownedAttribute.get(Sjm.ELASTICID).getAsString());
-                                        JsonObject newObj = new JsonObject();
-                                        newObj.add(Sjm.SYSMLID, ownedAttribute.get(Sjm.SYSMLID));
-                                        newObj.add(Sjm.ELASTICID, ownedAttribute.get(Sjm.ELASTICID));
-                                        commitDeleted.add(newObj);
-                                    }
+                                    processChildViewDeleteCommit(childView, ownedAttribute, deletedElements, oldElasticIds, commitDeleted);
+
                                     JsonObject asi = emsNodeUtil.getNodeBySysmlid(
                                         JsonUtil.getOptString(ownedAttribute, Sjm.APPLIEDSTEREOTYPEINSTANCEID));
-                                    if (!JsonUtil.getOptString(asi, Sjm.SYSMLID).equals("")) {
-                                        deletedElements.add(asi);
-                                        oldElasticIds.add(asi.get(Sjm.ELASTICID).getAsString());
-                                        JsonObject newObj = new JsonObject();
-                                        newObj.add(Sjm.SYSMLID, asi.get(Sjm.SYSMLID));
-                                        newObj.add(Sjm.ELASTICID, asi.get(Sjm.ELASTICID));
-                                        commitDeleted.add(newObj);
-                                    }
+                                    processChildViewDeleteCommit(asi, asi, deletedElements, oldElasticIds, commitDeleted);
+
                                     JsonObject association = emsNodeUtil
                                         .getNodeBySysmlid(JsonUtil.getOptString(ownedAttribute, Sjm.ASSOCIATIONID));
-                                    if (!JsonUtil.getOptString(association, Sjm.SYSMLID).equals("")) {
-                                        deletedElements.add(association);
-                                        oldElasticIds.add(association.get(Sjm.ELASTICID).getAsString());
-                                        JsonObject newObj = new JsonObject();
-                                        newObj.add(Sjm.SYSMLID, association.get(Sjm.SYSMLID));
-                                        newObj.add(Sjm.ELASTICID, association.get(Sjm.ELASTICID));
-                                        commitDeleted.add(newObj);
-                                    }
+                                    processChildViewDeleteCommit(association, association, deletedElements, oldElasticIds, commitDeleted);
+
                                     JsonArray associationProps = JsonUtil.getOptArray(association, Sjm.OWNEDENDIDS);
                                     for (int k = 0; k < associationProps.size(); k++) {
                                         if (!JsonUtil.getOptString(associationProps, k).equals("")) {
                                             JsonObject assocProp = emsNodeUtil
                                                 .getNodeBySysmlid(JsonUtil.getOptString(associationProps, k));
-                                            if (!JsonUtil.getOptString(assocProp, Sjm.SYSMLID).equals("")) {
-                                                deletedElements.add(assocProp);
-                                                oldElasticIds.add(assocProp.get(Sjm.ELASTICID).getAsString());
-                                                JsonObject newObj = new JsonObject();
-                                                newObj.add(Sjm.SYSMLID, assocProp.get(Sjm.SYSMLID));
-                                                newObj.add(Sjm.ELASTICID, assocProp.get(Sjm.ELASTICID));
-                                                commitDeleted.add(newObj);
-                                            }
+                                            processChildViewDeleteCommit(assocProp, assocProp, deletedElements, oldElasticIds, commitDeleted);
                                         }
                                     }
                                 } else {
@@ -1138,6 +1113,18 @@ public class EmsNodeUtil {
 
         element.add(Sjm.OWNEDATTRIBUTEIDS, ownedAttributesIds);
         element.remove(Sjm.CHILDVIEWS);
+    }
+
+    private void processChildViewDeleteCommit(JsonObject element, JsonObject toDelete, JsonArray deletedElements,
+        Set<String> oldElasticIds, JsonArray commitDeleted) {
+        if (!JsonUtil.getOptString(element, Sjm.SYSMLID).equals("")) {
+            deletedElements.add(toDelete);
+            oldElasticIds.add(toDelete.get(Sjm.ELASTICID).getAsString());
+            JsonObject newObj = new JsonObject();
+            newObj.add(Sjm.SYSMLID, toDelete.get(Sjm.SYSMLID));
+            newObj.add(Sjm.ELASTICID, toDelete.get(Sjm.ELASTICID));
+            commitDeleted.add(newObj);
+        }
     }
 
     public String alterIdAggregationType(String aggregationType) {
