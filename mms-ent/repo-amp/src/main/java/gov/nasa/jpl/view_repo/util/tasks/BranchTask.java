@@ -8,13 +8,13 @@ import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.SerialJSONArray;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
@@ -36,7 +36,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-public class BranchTask implements Callable<SerialJSONObject>, Serializable {
+public class BranchTask implements Callable<JsonObject>, Serializable {
 
     private static final long serialVersionUID = 561464450547556131L;
 
@@ -65,7 +65,7 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
     private Boolean isTag;
     private String srcId;
     private String createdString;
-    private SerialJSONObject branchJson = new SerialJSONObject();
+    private JsonObject branchJson = null;
 
     private transient Timer timer;
     private transient ElasticHelper eh;
@@ -83,17 +83,23 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
     }
 
     @Override
-    public SerialJSONObject call () {
+    public JsonObject call () {
         return createBranch();
     }
 
-    private SerialJSONObject createBranch() {
+    // used in createBranch
+    private static final String refScript = "{\"script\": {\"inline\":"
+        + "\"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%2$s.add(params.refId)}"
+        + " else {ctx._source.%3$s = [params.refId]}\","
+        + " \"params\":{\"refId\":\"%4$s\"}}}";
+
+    private JsonObject createBranch() {
 
         timer = new Timer();
 
-        SerialJSONObject created = new SerialJSONObject(createdString);
-
-        branchJson.put("source", source);
+        JsonObject created = JsonUtil.buildFromString(createdString);
+        JsonObject bJson = new JsonObject();
+        bJson.addProperty("source", source);
 
         boolean hasCommit = (commitId != null && !commitId.isEmpty());
         boolean success = false;
@@ -106,23 +112,25 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
 
         try {
             eh = new ElasticHelper();
-            pgh.createBranchFromWorkspace(created.getString(Sjm.SYSMLID), created.getString(Sjm.NAME), elasticId,
+            pgh.createBranchFromWorkspace(created.get(Sjm.SYSMLID).getAsString(),
+            		created.get(Sjm.NAME).getAsString(), elasticId,
                 commitId, isTag);
 
             logger.info("Created branch");
 
             if (hasCommit) {
-                pgh.setWorkspace(created.getString(Sjm.SYSMLID));
+                pgh.setWorkspace(created.get(Sjm.SYSMLID).getAsString());
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
-                SerialJSONObject modelFromCommit = new SerialJSONObject(emsNodeUtil.getModelAtCommit(commitId).toString());
+                JsonObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
+
                 List<Map<String, Object>> nodeInserts = new ArrayList<>();
                 List<Map<String, Object>> artifactInserts = new ArrayList<>();
                 List<Map<String, Object>> edgeInserts = new ArrayList<>();
                 List<Map<String, Object>> childEdgeInserts = new ArrayList<>();
 
-                processNodesAndEdgesWithoutCommit(modelFromCommit.getJSONArray(Sjm.ELEMENTS),
-                    modelFromCommit.getJSONArray(Sjm.ARTIFACTS), nodeInserts, artifactInserts, edgeInserts,
-                    childEdgeInserts);
+                processNodesAndEdgesWithoutCommit(modelFromCommit.get(Sjm.ELEMENTS).getAsJsonArray(),
+                                modelFromCommit.get(Sjm.ARTIFACTS).getAsJsonArray(), nodeInserts,
+                                artifactInserts, edgeInserts, childEdgeInserts);
 
                 if (!nodeInserts.isEmpty()) {
                     insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
@@ -137,36 +145,31 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
                     insertForBranchInPast(pgh, childEdgeInserts, EDGES, projectId);
                 }
             } else {
-                pgh.setWorkspace(created.getString(Sjm.SYSMLID));
+                pgh.setWorkspace(created.get(Sjm.SYSMLID).getAsString());
             }
 
             Set<String> nodesToUpdate = pgh.getElasticIdsNodes();
-            String payload = new SerialJSONObject().put("script", new SerialJSONObject().put("inline",
-                "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
-                    + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
-                .put("params", new SerialJSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
+            String scriptToRun = String.format(refScript, Sjm.INREFIDS, Sjm.INREFIDS, Sjm.INREFIDS,
+                                               created.get(Sjm.SYSMLID).getAsString());
+            created.addProperty("status", "created");
 
             Set<String> artifactsToUpdate = pgh.getElasticIdsArtifacts();
-            String artifactsUpdate = new SerialJSONObject().put("script", new SerialJSONObject().put("inline",
-                "if(ctx._source.containsKey(\"" + Sjm.INREFIDS + "\")){ctx._source." + Sjm.INREFIDS
-                    + ".add(params.refId)} else {ctx._source." + Sjm.INREFIDS + " = [params.refId]}")
-                .put("params", new SerialJSONObject().put("refId", created.getString(Sjm.SYSMLID)))).toString();
 
             if (logger.isDebugEnabled()) {
-                logger.debug("inRefId update: " + payload);
+                logger.debug("inRefId update: " + scriptToRun);
             }
 
-            eh.bulkUpdateElements(nodesToUpdate, payload, projectId, "element");
-            eh.bulkUpdateElements(artifactsToUpdate, artifactsUpdate, projectId, "artifact");
+            eh.bulkUpdateElements(nodesToUpdate, scriptToRun, projectId, "element");
+            eh.bulkUpdateElements(artifactsToUpdate, scriptToRun, projectId, "artifact");
 
-            created.put("status", "created");
+            created.addProperty("status", "created");
 
             success = true;
 
         } catch (Exception e) {
             logger.info("Branch creation failed");
             logger.info(String.format("%s", LogUtil.getStackTrace(e)));
-            created.put("status", "failed");
+            created.addProperty("status", "failed");
         }
 
         try {
@@ -175,21 +178,25 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
             //Do nothing
         }
 
+        branchJson = bJson;
         done();
 
         if (success && isTag && hasCommit) {
-            pgh.setAsTag(created.getString(Sjm.SYSMLID));
+            pgh.setAsTag(created.get(Sjm.SYSMLID).getAsString());
         }
 
-        branchJson.put("createdRef", created);
-        return branchJson;
+        bJson.add("createdRef", created);
+        branchJson = bJson;
+        return bJson;
     }
 
     public void done() {
         CommitUtil.sendJmsMsg(branchJson, TYPE_BRANCH, srcId, projectId);
-        JSONObject created = new JSONObject(createdString);
-        String body = String.format("Branch %s started by %s has finished at %s", created.getString(Sjm.SYSMLID), created.optString(Sjm.CREATOR), this.timer);
-        String subject = String.format("Branch %s has finished at %s", created.getString(Sjm.SYSMLID), this.timer);
+        JsonObject created = JsonUtil.buildFromString(createdString);
+
+        String body = String.format("Branch %s started by %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(),
+                        JsonUtil.getOptString(created, Sjm.CREATOR), this.timer);
+        String subject = String.format("Branch %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(), this.timer);
 
         if (author != null) {
             try {
@@ -261,79 +268,75 @@ public class BranchTask implements Callable<SerialJSONObject>, Serializable {
         }
     }
 
-    public static void processNodesAndEdgesWithoutCommit(SerialJSONArray elements, SerialJSONArray artifacts,
-        List<Map<String, Object>> nodeInserts, List<Map<String, Object>> artifactInserts,
-        List<Map<String, Object>> edgeInserts, List<Map<String, Object>> childEdgeInserts) {
+    public static void processNodesAndEdgesWithoutCommit(JsonArray elements, JsonArray artifacts,
+                    List<Map<String, Object>> nodeInserts, List<Map<String, Object>> artifactInserts,
+                    List<Map<String, Object>> edgeInserts, List<Map<String, Object>> childEdgeInserts) {
 
         List<Pair<String, String>> addEdges = new ArrayList<>();
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
         List<String> uniqueEdge = new ArrayList<>();
 
-        for (int i = 0; i < artifacts.length(); i++) {
-            SerialJSONObject a = elements.getJSONObject(i);
+        for (int i = 0; i < artifacts.size(); i++) {
+            JsonObject a = artifacts.get(i).getAsJsonObject();
             Map<String, Object> artifact = new HashMap<>();
             if (a.has(Sjm.ELASTICID)) {
-                artifact.put(Sjm.ELASTICID, a.getString(Sjm.ELASTICID));
-                artifact.put(Sjm.SYSMLID, a.getString(Sjm.SYSMLID));
-                artifact.put(LASTCOMMIT, a.getString(Sjm.COMMITID));
+                artifact.put(Sjm.ELASTICID, a.get(Sjm.ELASTICID));
+                artifact.put(Sjm.SYSMLID, a.get(Sjm.SYSMLID));
+                artifact.put(LASTCOMMIT, a.get(Sjm.COMMITID));
                 artifact.put(DELETED, false);
                 artifactInserts.add(artifact);
             }
         }
 
-        for (int i = 0; i < elements.length(); i++) {
-            SerialJSONObject e = elements.getJSONObject(i);
+        for (int i = 0; i < elements.size(); i++) {
+            JsonObject e = elements.get(i).getAsJsonObject();
             Map<String, Object> node = new HashMap<>();
             int nodeType = CommitUtil.getNodeType(e).getValue();
 
             if (e.has(Sjm.ELASTICID)) {
-                node.put(Sjm.ELASTICID, e.getString(Sjm.ELASTICID));
-                node.put(Sjm.SYSMLID, e.getString(Sjm.SYSMLID));
+                node.put(Sjm.ELASTICID, e.get(Sjm.ELASTICID).getAsString());
+                node.put(Sjm.SYSMLID, e.get(Sjm.SYSMLID).getAsString());
                 node.put(NODETYPE, nodeType);
-                node.put(LASTCOMMIT, e.getString(Sjm.COMMITID));
+                node.put(LASTCOMMIT, e.get(Sjm.COMMITID).getAsString());
                 node.put(DELETED, false);
                 nodeInserts.add(node);
             }
 
-            if (e.has(Sjm.OWNERID) && e.getString(Sjm.OWNERID) != null && e.getString(Sjm.SYSMLID) != null) {
-                Pair<String, String> p = new Pair<>(e.getString(Sjm.OWNERID), e.getString(Sjm.SYSMLID));
+            if (e.has(Sjm.OWNERID) && !e.get(Sjm.OWNERID).isJsonNull() && !e.get(Sjm.OWNERID).getAsString().isEmpty()
+                && e.has(Sjm.SYSMLID) && !e.get(Sjm.SYSMLID).isJsonNull() && !e.get(Sjm.SYSMLID).getAsString()
+                .isEmpty()) {
+                Pair<String, String> p = new Pair<>(e.get(Sjm.OWNERID).getAsString(), e.get(Sjm.SYSMLID).getAsString());
                 addEdges.add(p);
             }
 
-            String doc = e.optString(Sjm.DOCUMENTATION);
-            if (doc != null && !doc.equals("")) {
-                CommitUtil.processDocumentEdges(e.getString(Sjm.SYSMLID), doc, viewEdges);
+            String doc = JsonUtil.getOptString(e, Sjm.DOCUMENTATION);
+            if (!doc.equals("")) {
+                CommitUtil.processDocumentEdges(e.get(Sjm.SYSMLID).getAsString(), doc, viewEdges);
             }
-            String type = e.optString(Sjm.TYPE);
+            String type = JsonUtil.getOptString(e, Sjm.TYPE);
             if (type.equals("Slot") || type.equals("Property") || type.equals("Port")) {
                 CommitUtil.processValueEdges(e, viewEdges);
             }
             if (e.has(Sjm.CONTENTS)) {
-                SerialJSONObject contents = e.optJSONObject(Sjm.CONTENTS);
-                if (contents != null) {
-                    CommitUtil.processContentsJson(e.getString(Sjm.SYSMLID), contents, viewEdges);
-                }
+                JsonObject contents = JsonUtil.getOptObject(e, Sjm.CONTENTS);
+                CommitUtil.processContentsJson(e.get(Sjm.SYSMLID).getAsString(), contents, viewEdges);
             } else if (e.has(Sjm.SPECIFICATION) && nodeType == GraphInterface.DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
-                SerialJSONObject iss = e.optJSONObject(Sjm.SPECIFICATION);
-                if (iss != null) {
-                    CommitUtil.processInstanceSpecificationSpecificationJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
-                    CommitUtil.processContentsJson(e.getString(Sjm.SYSMLID), iss, viewEdges);
-                }
+                JsonObject iss = JsonUtil.getOptObject(e, Sjm.SPECIFICATION);
+                CommitUtil.processInstanceSpecificationSpecificationJson(e.get(Sjm.SYSMLID).getAsString(), iss, viewEdges);
+                CommitUtil.processContentsJson(e.get(Sjm.SYSMLID).getAsString(), iss, viewEdges);
             }
             if (nodeType == GraphInterface.DbNodeTypes.VIEW.getValue() || nodeType == GraphInterface.DbNodeTypes.DOCUMENT.getValue()) {
-                JSONArray owned = e.optJSONArray(Sjm.OWNEDATTRIBUTEIDS);
-                if (owned != null) {
-                    for (int j = 0; j < owned.length(); j++) {
-                        Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), owned.getString(j));
-                        childViewEdges.add(p);
-                    }
+                JsonArray owned = JsonUtil.getOptArray(e, Sjm.OWNEDATTRIBUTEIDS);
+                for (int j = 0; j < owned.size(); j++) {
+                	Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(), owned.get(j).getAsString());
+                	childViewEdges.add(p);
                 }
             }
             if (CommitUtil.isPartProperty(e)) {
-                String typeid = e.optString(Sjm.TYPEID);
-                if (typeid != null) {
-                    Pair<String, String> p = new Pair<>(e.getString(Sjm.SYSMLID), typeid);
+                String typeid = JsonUtil.getOptString(e, Sjm.TYPEID);
+                if (!typeid.isEmpty()) {
+                    Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(), typeid);
                     childViewEdges.add(p);
                 }
             }

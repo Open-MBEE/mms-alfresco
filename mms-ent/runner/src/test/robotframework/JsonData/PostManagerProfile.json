@@ -1,5 +1,5 @@
 {
-    "profiles": {
+    "profile": {
         "username": "Manager",
         "profileSettings": "whatever the user wants to store"
     }

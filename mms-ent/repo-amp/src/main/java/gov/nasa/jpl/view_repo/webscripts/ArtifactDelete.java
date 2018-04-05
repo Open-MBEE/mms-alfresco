@@ -10,6 +10,8 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.db.Artifact;
 import gov.nasa.jpl.view_repo.util.*;
@@ -59,7 +61,7 @@ public class ArtifactDelete extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        JSONObject result = null;
+        JsonObject result = null;
 
         try {
             result = handleRequest(req, status, user);
@@ -78,17 +80,17 @@ public class ArtifactDelete extends AbstractJavaWebScript {
         return model;
     }
 
-    protected JSONObject handleRequest(WebScriptRequest req, final Status status, String user)
+    protected JsonObject handleRequest(WebScriptRequest req, final Status status, String user)
         throws JSONException, IOException {
-        SerialJSONObject result = new SerialJSONObject();
+        JsonObject result = new JsonObject();
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
-        JSONObject res = new JSONObject();
+        JsonObject res = new JsonObject();
         String commitId = UUID.randomUUID().toString();
-        JSONObject commit = new SerialJSONObject();
-        commit.put(Sjm.ELASTICID, commitId);
-        JSONArray commitDeleted = new SerialJSONArray();
-        JSONArray deletedElements = new SerialJSONArray();
+        JsonObject commit = new JsonObject();
+        commit.addProperty(Sjm.ELASTICID, commitId);
+        JsonArray commitDeleted = new JsonArray();
+        JsonArray deletedElements = new JsonArray();
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -100,13 +102,13 @@ public class ArtifactDelete extends AbstractJavaWebScript {
             ids.add(artifactId);
         } else {
             try {
-                JSONObject requestJson = new JSONObject(req.getContent().getContent());
+                JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
                 this.populateSourceApplicationFromJson(requestJson);
                 if (requestJson.has(Sjm.ARTIFACTS)) {
-                    JSONArray elementsJson = requestJson.getJSONArray(Sjm.ARTIFACTS);
+                    JsonArray elementsJson = requestJson.get(Sjm.ARTIFACTS).getAsJsonArray();
                     if (elementsJson != null) {
-                        for (int ii = 0; ii < elementsJson.length(); ii++) {
-                            String id = elementsJson.getJSONObject(ii).getString(Sjm.SYSMLID);
+                        for (int ii = 0; ii < elementsJson.size(); ii++) {
+                            String id = elementsJson.get(ii).getAsJsonObject().get(Sjm.SYSMLID).getAsString();
                             if (!id.contains("holding_bin") && !id.contains("view_instances_bin")) {
                                 ids.add(id);
                             }
@@ -121,27 +123,27 @@ public class ArtifactDelete extends AbstractJavaWebScript {
         }
         for (String id : ids) {
             Artifact artifact = emsNodeUtil.getArtifact(id, false);
-            JSONObject obj = new JSONObject();
-            obj.put(Sjm.SYSMLID, artifact.getSysmlId());
-            deletedElements.put(obj);
-            obj.put(Sjm.ELASTICID, artifact.getId());
-            commitDeleted.put(obj);
+            JsonObject obj = new JsonObject();
+            obj.addProperty(Sjm.SYSMLID, artifact.getSysmlId());
+            deletedElements.add(obj);
+            obj.addProperty(Sjm.ELASTICID, artifact.getId());
+            commitDeleted.add(obj);
         }
 
-        if (deletedElements.length() > 0) {
-            result.put("addedElements", new JSONArray());
-            result.put("updatedElements", new JSONArray());
-            result.put("deletedElements", deletedElements);
-            commit.put("added", new JSONArray());
-            commit.put("updated", new JSONArray());
-            commit.put("deleted", commitDeleted);
-            commit.put(Sjm.CREATOR, user);
-            commit.put(Sjm.CREATED, date);
-            result.put("commit", commit);
+        if (deletedElements.size() > 0) {
+            result.add("addedElements", new JsonArray());
+            result.add("updatedElements", new JsonArray());
+            result.add("deletedElements", deletedElements);
+            commit.add("added", new JsonArray());
+            commit.add("updated", new JsonArray());
+            commit.add("deleted", commitDeleted);
+            commit.addProperty(Sjm.CREATOR, user);
+            commit.addProperty(Sjm.CREATED, date);
+            result.add("commit", commit);
             if (CommitUtil.sendDeltas(result, projectId, refId, requestSourceApplication, services, false, true)) {
-                res.put(Sjm.ARTIFACTS, deletedElements);
-                res.put(Sjm.CREATOR, user);
-                res.put(Sjm.COMMITID, commitId);
+                res.add(Sjm.ARTIFACTS, deletedElements);
+                res.addProperty(Sjm.CREATOR, user);
+                res.addProperty(Sjm.COMMITID, commitId);
             } else {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
                     "Commit failed, please check server logs for failed items");

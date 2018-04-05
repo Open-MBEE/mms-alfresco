@@ -34,22 +34,25 @@ import javax.servlet.http.HttpServletResponse;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import gov.nasa.jpl.mbee.util.Timer;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
+import gov.nasa.jpl.mbee.util.Timer;
 
 // ASSUMPTIONS & Interesting things about the new model get
 // 1. always complete json for elements (no partial)
@@ -109,10 +112,9 @@ public class ModelPost extends AbstractJavaWebScript {
         return result;
     }
 
-    protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user,
-        String contentType) {
-        JSONObject newElementsObject = new JSONObject();
-        SerialJSONObject results;
+    protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user, String contentType) {
+        JsonObject newElementsObject = new JsonObject();
+        JsonObject results;
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
         boolean overwriteJson = Boolean.parseBoolean(req.getParameter("overwrite"));
@@ -124,17 +126,19 @@ public class ModelPost extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         try {
-            SerialJSONObject postJson = new SerialJSONObject(req.getContent().getContent());
+            logger.debug(String.format("Post Data: '%s'", req.getContent().getContent()));
+            JsonObject postJson = JsonUtil.buildFromString(req.getContent().getContent());
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
-            String comment = postJson.optString(Sjm.COMMENT);
+            String comment = JsonUtil.getOptString(postJson, Sjm.COMMENT);
 
             results = emsNodeUtil
-                .processPostJson(postJson.getJSONArray(Sjm.ELEMENTS), user, oldElasticIds, overwriteJson,
-                    this.requestSourceApplication, comment, Sjm.ELEMENT);
+                .processPostJson(postJson.get(Sjm.ELEMENTS).getAsJsonArray(),
+                                 user, oldElasticIds, overwriteJson,
+                                 this.requestSourceApplication, comment, Sjm.ELEMENT);
 
-            String commitId = results.getJSONObject("commit").getString(Sjm.ELASTICID);
+            String commitId = results.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
 
             if (CommitUtil
                 .sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews, false)) {
@@ -144,24 +148,25 @@ public class ModelPost extends AbstractJavaWebScript {
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
 
                 if (withChildViews) {
-                    for (int i = 0; i < results.getJSONArray(NEWELEMENTS).length(); i++) {
-                        SerialJSONObject childViews = emsNodeUtil.addChildViews(results.getJSONArray(NEWELEMENTS).getJSONObject(i));
-                        results.getJSONArray(NEWELEMENTS).replace(i, childViews);
+                	JsonArray array = results.get(NEWELEMENTS).getAsJsonArray();
+                    for (int i = 0; i < array.size(); i++) {
+                    	array.set(i, emsNodeUtil.addChildViews(array.get(i).getAsJsonObject()));
                     }
                 }
 
-                newElementsObject.put(Sjm.ELEMENTS, extended ?
-                    emsNodeUtil.addExtendedInformation(filterByPermission(results.getJSONArray(NEWELEMENTS), req)) :
-                    filterByPermission(results.getJSONArray(NEWELEMENTS), req));
+                newElementsObject.add(Sjm.ELEMENTS, extended ?
+                                      emsNodeUtil.addExtendedInformation(filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req))
+                                      : filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req));
                 if (results.has("rejectedElements")) {
-                    newElementsObject.put(Sjm.REJECTED, results.getJSONArray("rejectedElements"));
+                    newElementsObject.add(Sjm.REJECTED, results.get("rejectedElements"));
                 }
-                newElementsObject.put(Sjm.COMMITID, commitId);
-                newElementsObject.put(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
-                newElementsObject.put(Sjm.CREATOR, user);
+                newElementsObject.addProperty(Sjm.COMMITID, commitId);
+                newElementsObject.addProperty(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
+                newElementsObject.addProperty(Sjm.CREATOR, user);
 
                 if (prettyPrint) {
-                    model.put(Sjm.RES, newElementsObject.toString(4));
+                	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    model.put(Sjm.RES, gson.toJson(newElementsObject));
                 } else {
                     model.put(Sjm.RES, newElementsObject);
                 }
@@ -173,8 +178,12 @@ public class ModelPost extends AbstractJavaWebScript {
                 model.put(Sjm.RES, createResponseJson());
             }
 
+        } catch (IllegalStateException e) {
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
+            model.put(Sjm.RES, createResponseJson());
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            model.put(Sjm.RES, createResponseJson());
         }
 
         status.setCode(responseStatus.getCode());

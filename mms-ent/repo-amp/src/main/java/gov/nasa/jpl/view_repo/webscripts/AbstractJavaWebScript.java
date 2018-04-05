@@ -35,21 +35,23 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import gov.nasa.jpl.mbee.util.Debug;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
@@ -65,7 +67,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     private static Logger logger = Logger.getLogger(AbstractJavaWebScript.class);
 
     static boolean checkMmsVersions = false;
-    private JSONObject privateRequestJSON = null;
+    private JsonObject privateRequestJSON = null;
 
     // injected members
     protected ServiceRegistry services;        // get any of the Alfresco services
@@ -363,7 +365,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     }
 
     protected void printFooter(String user, Logger logger, Timer timer) {
-        logger.info(String.format("%s %s", user, timer));
+        logger.info(String.format("%d %s %s", getResponseStatus().getCode(), user, timer));
     }
 
     protected void printHeader(String user, Logger logger, WebScriptRequest req) {
@@ -373,8 +375,13 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     protected void printHeader(String user, Logger logger, WebScriptRequest req, boolean skipReq) {
         logger.info(String.format("%s %s", user, req.getURL()));
         try {
-            if (!skipReq && req.parseContent() != null) {
-                logger.info(String.format("%s", req.parseContent()));
+            if (!skipReq) {
+                JsonParser parser = new JsonParser();
+                String content = req.getContent().getContent();
+                if (content != null && !content.isEmpty()) {
+                    parser.parse(content);
+                    logger.info(String.format("%s", content));
+                }
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
@@ -439,19 +446,8 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      * @param postJson
      * @throws JSONException
      */
-    protected void populateSourceApplicationFromJson(JSONObject postJson) throws JSONException {
-        requestSourceApplication = postJson.optString("source");
-    }
-
-    /**
-     * This needs to be called with the incoming JSON request to populate the local source
-     * variable that is used in the sendDeltas call.
-     *
-     * @param postJson
-     * @throws JSONException
-     */
-    protected void populateSourceApplicationFromJson(SerialJSONObject postJson) throws JSONException {
-        requestSourceApplication = postJson.optString("source");
+    protected void populateSourceApplicationFromJson(JsonObject postJson) {
+        requestSourceApplication = JsonUtil.getOptString(postJson, "source");
     }
 
     /**
@@ -494,9 +490,9 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         // Calls getBooleanArg to check if they have request for mms version
         // TODO: Possibly remove this and implement as an aspect?
         boolean incorrectVersion = true;
-        JSONObject jsonRequest = null;
+        JsonObject jsonRequest = null;
         char logCase = '0';
-        JSONObject jsonVersion = null;
+        JsonObject jsonVersion = null;
         String mmsVersion = null;
 
         // Checks if the argument is mmsVersion and returns the value specified
@@ -517,7 +513,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
             jsonRequest = getRequestJSON(req);
 
             if (jsonRequest != null) {
-                paramVal = jsonRequest.optString("mmsVersion");
+                paramVal = JsonUtil.getOptString(jsonRequest, "mmsVersion");
             }
         }
 
@@ -583,9 +579,9 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      *
      * @return JSONObject mmsVersion
      */
-    public static JSONObject getMMSversion() {
-        JSONObject version = new JSONObject();
-        version.put("mmsVersion", NodeUtil.getMMSversion());
+    public static JsonObject getMMSversion() {
+        JsonObject version = new JsonObject();
+        version.addProperty("mmsVersion", NodeUtil.getMMSversion());
         return version;
     }
 
@@ -619,15 +615,18 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      */
     private void setRequestJSON(WebScriptRequest req) {
 
+        JsonParser parser = new JsonParser();
         try {
-            privateRequestJSON = (JSONObject) req.parseContent();
+            JsonElement parsed = parser.parse(req.getContent().getContent());
+            privateRequestJSON = parsed.isJsonNull() ? new JsonObject() :
+                parsed.getAsJsonObject();
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not retrieve JSON");
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
     }
 
-    private JSONObject getRequestJSON(WebScriptRequest req) {
+    private JsonObject getRequestJSON(WebScriptRequest req) {
         // Returns immediately if requestJSON has already been set before checking MMS Versions
         if (privateRequestJSON == null) {
             return null;
