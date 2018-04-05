@@ -99,14 +99,15 @@ public class CommitUtil {
         QueueConfig queueConfig = config.getQueueConfig(name);
         if (queueConfig.getItemListenerConfigs().isEmpty()) {
             logger.info("Creating new queue named: " + name);
-            queueConfig.addItemListenerConfig(new ItemListenerConfig("gov.nasa.jpl.view_repo.util.QueueConsumer", true));
+            queueConfig
+                .addItemListenerConfig(new ItemListenerConfig("gov.nasa.jpl.view_repo.util.QueueConsumer", true));
             config.addQueueConfig(queueConfig);
         }
     }
 
     public static DbNodeTypes getNodeType(JsonObject e) {
 
-        String type = e.get(Sjm.TYPE).getAsString().toLowerCase();
+        String type = e.has(Sjm.TYPE) ? e.get(Sjm.TYPE).getAsString().toLowerCase() : "";
 
         if ((type.contains("class") || type.contains("generalization") || type.contains("dependency")) && e
             .has(Sjm.APPLIEDSTEREOTYPEIDS)) {
@@ -167,7 +168,8 @@ public class CommitUtil {
         return eh.updateProfile(id, elements, index);
     }
 
-    private static boolean bulkElasticEntry(JsonArray elements, String operation, boolean refresh, String index, String type) {
+    private static boolean bulkElasticEntry(JsonArray elements, String operation, boolean refresh, String index,
+        String type) {
         if (elements.size() > 0) {
             try {
                 boolean bulkEntry = eh.bulkIndexElements(elements, operation, refresh, index, type);
@@ -260,7 +262,6 @@ public class CommitUtil {
                     }
                 }
 
-                List<String> nullParents;
                 Savepoint sp = null;
                 try {//do node insert, updates, and containment edge updates
                     //do bulk delete edges for affected sysmlids here - delete containment, view and childview
@@ -282,7 +283,8 @@ public class CommitUtil {
                     pgh.close();
                 }
                 try {
-                    eh.indexElement(delta.get("commit").getAsJsonObject(), projectId, ElasticHelper.COMMIT); //initial commit may fail to read back but does get indexed
+                    eh.indexElement(delta.get("commit").getAsJsonObject(), projectId,
+                        ElasticHelper.COMMIT); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
@@ -310,7 +312,8 @@ public class CommitUtil {
 
     }
 
-    private static boolean processDeltasForDb(JsonObject delta, String projectId, String refId, JsonObject jmsPayload, ServiceRegistry services) {
+    private static boolean processDeltasForDb(JsonObject delta, String projectId, String refId, JsonObject jmsPayload,
+        ServiceRegistry services) {
         // :TODO write to elastic for elements, write to postgres, write to elastic for commits
         // :TODO should return a 500 here to stop writes if one insert fails
         PostgresHelper pgh = new PostgresHelper();
@@ -334,8 +337,8 @@ public class CommitUtil {
         List<Pair<String, String>> viewEdges = new ArrayList<>();
         List<Pair<String, String>> childViewEdges = new ArrayList<>();
 
-        if (bulkElasticEntry(added, "added", true, projectId, "element") && bulkElasticEntry(updated, "updated",
-            true, projectId, "element")) {
+        if (bulkElasticEntry(added, "added", true, projectId, "element") && bulkElasticEntry(updated, "updated", true,
+            projectId, "element")) {
 
             try {
                 List<Map<String, Object>> nodeInserts = new ArrayList<>();
@@ -359,10 +362,10 @@ public class CommitUtil {
                         nodeInserts.add(node);
                     }
 
-                    if (e.has(Sjm.OWNERID) && !e.get(Sjm.OWNERID).isJsonNull()
-                                    && e.has(Sjm.SYSMLID) && !e.get(Sjm.SYSMLID).isJsonNull()) {
-                        Pair<String, String> p = new Pair<>(e.get(Sjm.OWNERID).getAsString(),
-                                        e.get(Sjm.SYSMLID).getAsString());
+                    if (e.has(Sjm.OWNERID) && !e.get(Sjm.OWNERID).isJsonNull() && e.has(Sjm.SYSMLID) && !e
+                        .get(Sjm.SYSMLID).isJsonNull()) {
+                        Pair<String, String> p =
+                            new Pair<>(e.get(Sjm.OWNERID).getAsString(), e.get(Sjm.SYSMLID).getAsString());
                         addEdges.add(p);
                     }
 
@@ -387,14 +390,17 @@ public class CommitUtil {
                     if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
                         JsonArray owned = JsonUtil.getOptArray(e, Sjm.OWNEDATTRIBUTEIDS);
                         for (int j = 0; j < owned.size(); j++) {
-                            Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(), owned.get(j).getAsString());
+                            Pair<String, String> p =
+                                new Pair<>(e.get(Sjm.SYSMLID).getAsString(), owned.get(j).getAsString());
                             childViewEdges.add(p);
                         }
                     }
                     if (isPartProperty(e)) {
-                        String typeid = JsonUtil.getOptString(e, Sjm.TYPEID);
-                        Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(), typeid);
-                        childViewEdges.add(p);
+                        String typeId = JsonUtil.getOptString(e, Sjm.TYPEID);
+                        if (!typeId.isEmpty()) {
+                            Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(), typeId);
+                            childViewEdges.add(p);
+                        }
                     }
                 }
 
@@ -415,8 +421,8 @@ public class CommitUtil {
                     pgh.deleteEdgesForNode(e.get(Sjm.SYSMLID).getAsString(), false, DbEdgeTypes.CHILDVIEW);
 
                     if (e.has(Sjm.OWNERID) && !e.get(Sjm.OWNERID).isJsonNull() && !e.get(Sjm.SYSMLID).isJsonNull()) {
-                        Pair<String, String> p = new Pair<>(e.get(Sjm.OWNERID).getAsString(),
-                                        e.get(Sjm.SYSMLID).getAsString());
+                        Pair<String, String> p =
+                            new Pair<>(e.get(Sjm.OWNERID).getAsString(), e.get(Sjm.SYSMLID).getAsString());
                         addEdges.add(p);
                     }
                     String doc = JsonUtil.getOptString(e, Sjm.DOCUMENTATION);
@@ -440,15 +446,15 @@ public class CommitUtil {
                     if (nodeType == DbNodeTypes.VIEW.getValue() || nodeType == DbNodeTypes.DOCUMENT.getValue()) {
                         JsonArray owned = JsonUtil.getOptArray(e, Sjm.OWNEDATTRIBUTEIDS);
                         for (int j = 0; j < owned.size(); j++) {
-                            Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(),
-                                            owned.get(j).getAsString());
+                            Pair<String, String> p =
+                                new Pair<>(e.get(Sjm.SYSMLID).getAsString(), owned.get(j).getAsString());
                             childViewEdges.add(p);
                         }
                     }
                     if (isPartProperty(e)) {
-                        String typeid = JsonUtil.getOptString(e, Sjm.TYPEID);
-                        if (typeid != null) {
-                            Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(), typeid);
+                        String typeId = JsonUtil.getOptString(e, Sjm.TYPEID);
+                        if (!typeId.isEmpty()) {
+                            Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(), typeId);
                             childViewEdges.add(p);
                         }
                     }
@@ -549,7 +555,8 @@ public class CommitUtil {
                     pgh.close();
                 }
                 try {
-                    eh.indexElement(delta.get("commit").getAsJsonObject(), projectId, ElasticHelper.COMMIT); //initial commit may fail to read back but does get indexed
+                    eh.indexElement(delta.get("commit").getAsJsonObject(), projectId,
+                        ElasticHelper.COMMIT); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
@@ -610,7 +617,6 @@ public class CommitUtil {
      * @param source    Source of the delta (e.g., MD, EVM, whatever, only necessary for MD so it can
      *                  ignore)
      * @return true if publish completed
-     *
      */
     public static boolean sendDeltas(JsonObject deltaJson, String projectId, String workspaceId, String source,
         ServiceRegistry services, boolean withChildViews, boolean isArtifact) {
@@ -641,7 +647,8 @@ public class CommitUtil {
         return true;
     }
 
-    public static JsonObject sendOrganizationDelta(String orgId, String orgName, JsonObject orgJson) throws PSQLException {
+    public static JsonObject sendOrganizationDelta(String orgId, String orgName, JsonObject orgJson)
+        throws PSQLException {
         PostgresHelper pgh = new PostgresHelper();
 
         String defaultIndex = EmsConfig.get("elastic.index.element");
@@ -809,9 +816,8 @@ public class CommitUtil {
 
         initHazelcastQueue(String.format("%s-%s", projectId, createdId));
         BlockingQueue<BranchTask> queue = hzInstance.getQueue(String.format("%s-%s", projectId, createdId));
-        BranchTask task = new BranchTask(
-            projectId, srcId, created.toString(), elasticId, isTag, source, commitId, user
-        );
+        BranchTask task =
+            new BranchTask(projectId, srcId, created.toString(), elasticId, isTag, source, commitId, user);
 
         try {
             queue.put(task);
@@ -904,14 +910,14 @@ public class CommitUtil {
         JsonObject defaultValue = JsonUtil.getOptObject(element, Sjm.DEFAULTVALUE);
         JsonArray slotValues = JsonUtil.getOptArray(element, "value");
         if (JsonUtil.getOptString(defaultValue, Sjm.TYPE).equals("LiteralString")) {
-            processDocumentEdges(element.get(Sjm.SYSMLID).getAsString(),
-                            JsonUtil.getOptString(defaultValue, "value"), edges);
+            processDocumentEdges(element.get(Sjm.SYSMLID).getAsString(), JsonUtil.getOptString(defaultValue, "value"),
+                edges);
         }
         for (int i = 0; i < slotValues.size(); i++) {
             JsonObject val = JsonUtil.getOptObject(slotValues, i);
             if (JsonUtil.getOptString(val, Sjm.TYPE).equals("LiteralString")) {
-                processDocumentEdges(element.get(Sjm.SYSMLID).getAsString(),
-                                JsonUtil.getOptString(val, "value"), edges);
+                processDocumentEdges(element.get(Sjm.SYSMLID).getAsString(), JsonUtil.getOptString(val, "value"),
+                    edges);
             }
         }
     }
@@ -968,18 +974,18 @@ public class CommitUtil {
                         }
                     }
                 } catch (JsonSyntaxException ex) {
-                	logger.warn(String.format("unable to parse json in element %s", sysmlId));
+                    logger.warn(String.format("unable to parse json in element %s", sysmlId));
                 }
             }
         }
     }
 
     public static Set<Object> findKeyValueInJsonElement(JsonElement jelem, String keyMatch, StringBuilder text) {
-    	if (jelem.isJsonObject())
-    		return findKeyValueInJsonObject(jelem.getAsJsonObject(), keyMatch, text);
-    	else if (jelem.isJsonArray())
-    		return findKeyValueInJsonArray(jelem.getAsJsonArray(), keyMatch, text);
-    	return new HashSet<>();
+        if (jelem.isJsonObject())
+            return findKeyValueInJsonObject(jelem.getAsJsonObject(), keyMatch, text);
+        else if (jelem.isJsonArray())
+            return findKeyValueInJsonArray(jelem.getAsJsonArray(), keyMatch, text);
+        return new HashSet<>();
     }
 
     public static Set<Object> findKeyValueInJsonObject(JsonObject json, String keyMatch, StringBuilder text) {

@@ -10,7 +10,6 @@ import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.SerialJSONObject;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.log4j.Logger;
 
@@ -66,7 +65,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
     private Boolean isTag;
     private String srcId;
     private String createdString;
-    private SerialJSONObject branchJson = null;
+    private JsonObject branchJson = null;
 
     private transient Timer timer;
     private transient ElasticHelper eh;
@@ -93,7 +92,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         + "\"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%2$s.add(params.refId)}"
         + " else {ctx._source.%3$s = [params.refId]}\","
         + " \"params\":{\"refId\":\"%4$s\"}}}";
-    
+
     private JsonObject createBranch() {
 
         timer = new Timer();
@@ -101,7 +100,6 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         JsonObject created = JsonUtil.buildFromString(createdString);
         JsonObject bJson = new JsonObject();
         bJson.addProperty("source", source);
-        //branchJson.put("source", source);
 
         boolean hasCommit = (commitId != null && !commitId.isEmpty());
         boolean success = false;
@@ -114,7 +112,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
 
         try {
             eh = new ElasticHelper();
-            pgh.createBranchFromWorkspace(created.get(Sjm.SYSMLID).getAsString(), 
+            pgh.createBranchFromWorkspace(created.get(Sjm.SYSMLID).getAsString(),
             		created.get(Sjm.NAME).getAsString(), elasticId,
                 commitId, isTag);
 
@@ -123,14 +121,14 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
             if (hasCommit) {
                 pgh.setWorkspace(created.get(Sjm.SYSMLID).getAsString());
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
-                JsonObject modelFromCommit = JsonUtil.deepCopy(emsNodeUtil.getModelAtCommit(commitId));
+                JsonObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
 
                 List<Map<String, Object>> nodeInserts = new ArrayList<>();
                 List<Map<String, Object>> artifactInserts = new ArrayList<>();
                 List<Map<String, Object>> edgeInserts = new ArrayList<>();
                 List<Map<String, Object>> childEdgeInserts = new ArrayList<>();
 
-                processNodesAndEdgesWithoutCommit(modelFromCommit.get(Sjm.ELEMENTS).getAsJsonArray(), 
+                processNodesAndEdgesWithoutCommit(modelFromCommit.get(Sjm.ELEMENTS).getAsJsonArray(),
                                 modelFromCommit.get(Sjm.ARTIFACTS).getAsJsonArray(), nodeInserts,
                                 artifactInserts, edgeInserts, childEdgeInserts);
 
@@ -180,24 +178,23 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
             //Do nothing
         }
 
-        branchJson = new SerialJSONObject(bJson.toString());
+        branchJson = bJson;
         done();
 
         if (success && isTag && hasCommit) {
             pgh.setAsTag(created.get(Sjm.SYSMLID).getAsString());
         }
 
-        //branchJson.put("createdRef", created);
         bJson.add("createdRef", created);
-        branchJson = new SerialJSONObject(bJson.toString());
+        branchJson = bJson;
         return bJson;
     }
 
     public void done() {
-        CommitUtil.sendJmsMsg(branchJson.getJSONObject(), TYPE_BRANCH, srcId, projectId);
+        CommitUtil.sendJmsMsg(branchJson, TYPE_BRANCH, srcId, projectId);
         JsonObject created = JsonUtil.buildFromString(createdString);
-        
-        String body = String.format("Branch %s started by %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(), 
+
+        String body = String.format("Branch %s started by %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(),
                         JsonUtil.getOptString(created, Sjm.CREATOR), this.timer);
         String subject = String.format("Branch %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(), this.timer);
 
@@ -271,7 +268,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         }
     }
 
-    public static void processNodesAndEdgesWithoutCommit(JsonArray elements, JsonArray artifacts, 
+    public static void processNodesAndEdgesWithoutCommit(JsonArray elements, JsonArray artifacts,
                     List<Map<String, Object>> nodeInserts, List<Map<String, Object>> artifactInserts,
                     List<Map<String, Object>> edgeInserts, List<Map<String, Object>> childEdgeInserts) {
 
@@ -281,8 +278,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         List<String> uniqueEdge = new ArrayList<>();
 
         for (int i = 0; i < artifacts.size(); i++) {
-            // BUGBUG: looping through artifacts, but getting elements
-            JsonObject a = elements.get(i).getAsJsonObject();
+            JsonObject a = artifacts.get(i).getAsJsonObject();
             Map<String, Object> artifact = new HashMap<>();
             if (a.has(Sjm.ELASTICID)) {
                 artifact.put(Sjm.ELASTICID, a.get(Sjm.ELASTICID));
@@ -307,8 +303,9 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
                 nodeInserts.add(node);
             }
 
-            if (e.has(Sjm.OWNERID) && !e.get(Sjm.OWNERID).getAsString().isEmpty() 
-            		&& e.has(Sjm.SYSMLID) && !e.get(Sjm.SYSMLID).getAsString().isEmpty()) {
+            if (e.has(Sjm.OWNERID) && !e.get(Sjm.OWNERID).isJsonNull() && !e.get(Sjm.OWNERID).getAsString().isEmpty()
+                && e.has(Sjm.SYSMLID) && !e.get(Sjm.SYSMLID).isJsonNull() && !e.get(Sjm.SYSMLID).getAsString()
+                .isEmpty()) {
                 Pair<String, String> p = new Pair<>(e.get(Sjm.OWNERID).getAsString(), e.get(Sjm.SYSMLID).getAsString());
                 addEdges.add(p);
             }

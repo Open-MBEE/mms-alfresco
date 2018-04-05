@@ -128,7 +128,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             } else {
                 statusCode = HttpServletResponse.SC_FORBIDDEN;
             }
-        } catch (IllegalStateException e) { 
+        } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to get object from JSON request");
         } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
@@ -161,7 +161,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
     }
 
     public JsonObject createWorkSpace(String projectId, String sourceWorkId, String newWorkName, String commitId,
-        JsonObject jsonObject, String user, Status status) throws JsonParseException {
+        JsonObject jsonObject, String user, Status status) {
         status.setCode(HttpServletResponse.SC_OK);
         if (Debug.isOn()) {
             Debug.outln(
@@ -199,7 +199,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson = jarr.get(0).getAsJsonObject();  // Will only post/update one workspace
             sourceWorkspaceId = JsonUtil.getOptString(wsJson, "parentRefId");
             srcJson = emsNodeUtil.getRefJson(sourceWorkspaceId);
-            newWorkspaceId = JsonUtil.getOptString(wsJson, "id"); // alfresco id of workspace node
+            newWorkspaceId = JsonUtil.getOptString(wsJson, Sjm.SYSMLID, null); // alfresco id of workspace node
 
             workspaceName = JsonUtil.getOptString(wsJson, "name"); // user or auto-generated name, ems:workspace_name
             isTag = JsonUtil.getOptString(wsJson, "type", "Branch").equals("Tag");
@@ -226,6 +226,9 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.addProperty(Sjm.SYSMLID, newWorkspaceId);
             wsJson.addProperty(Sjm.NAME, workspaceName);
             wsJson.addProperty(Sjm.COMMITID, commitId == null || commitId.isEmpty() ? emsNodeUtil.getHeadCommit() : commitId);
+            if (desc != null && !desc.isEmpty()) {
+                wsJson.addProperty(Sjm.DESCRIPTION, desc);
+            }
             wsJson.addProperty(Sjm.CREATED, date);
             wsJson.addProperty(Sjm.CREATOR, user);
             wsJson.addProperty(Sjm.MODIFIED, date);
@@ -248,7 +251,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                     dstWs.setProperty("cm:name", dstWs.getName());
 
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
-                        jsonObject != null ? JsonUtil.getOptString(jsonObject, "source") : null, commitId, services);
+                        JsonUtil.getOptString(jsonObject, "source", null), commitId, services);
 
                     finalWorkspace = dstWs;
                 }

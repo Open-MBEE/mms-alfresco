@@ -50,6 +50,8 @@ import java.util.Map;
 public class UserPreferencesPost extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(OrgPost.class);
 
+    private static String elementIndex = EmsConfig.get("elastic.index.element");
+
     public UserPreferencesPost() {
         super();
     }
@@ -83,9 +85,9 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
                     // Post request is always a single object
                     JsonObject postJsonTop = JsonUtil.buildFromString(req.getContent().getContent());
                     JsonObject postJson = postJsonTop.get(Sjm.PROFILES).getAsJsonObject();
-                    
+
                     // creates a new document if one didn't exist, otherwise updates existing document
-                    JsonObject res = CommitUtil.indexProfile(username, postJson, "mms");
+                    JsonObject res = CommitUtil.indexProfile(username, postJson, elementIndex);
                     if (res != null && res.size() > 0) {
                         response.add(Sjm.PROFILES, res);
                     } else {

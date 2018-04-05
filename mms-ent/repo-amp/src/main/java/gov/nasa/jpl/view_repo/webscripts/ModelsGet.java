@@ -117,9 +117,10 @@ public class ModelsGet extends ModelGet {
             if (validateRequest(req, status)) {
                 try {
                     Long depth = getDepthFromRequest(req);
-                    result = (!req.getContent().getContent().isEmpty()) ? handleRequest(req, depth) : getAllElements(req);
+                    result =
+                        (!req.getContent().getContent().isEmpty()) ? handleRequest(req, depth) : getAllElements(req);
                     elementsJson = JsonUtil.getOptArray(result, Sjm.ELEMENTS);
-                } catch (IllegalStateException e) { 
+                } catch (IllegalStateException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
                 } catch (JsonParseException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
@@ -143,7 +144,8 @@ public class ModelsGet extends ModelGet {
                             JsonObject errorPayload = new JsonObject();
                             errorPayload.addProperty("code", HttpServletResponse.SC_NOT_FOUND);
                             errorPayload.add(Sjm.SYSMLID, errors.get(i));
-                            errorPayload.addProperty("message", String.format("Element %s was not found", errors.get(i).getAsString()));
+                            errorPayload.addProperty("message",
+                                String.format("Element %s was not found", errors.get(i).getAsString()));
                             errorPayload.addProperty("severity", level);
                             errorMessages.add(errorPayload);
                         }
@@ -184,8 +186,7 @@ public class ModelsGet extends ModelGet {
      * @return
      * @throws IOException
      */
-    private JsonObject handleRequest(WebScriptRequest req, final Long maxDepth)
-        throws JsonParseException, IOException, SQLException {
+    private JsonObject handleRequest(WebScriptRequest req, final Long maxDepth) throws IOException {
         JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
         if (requestJson.has(Sjm.ELEMENTS)) {
             JsonArray elementsToFindJson = requestJson.get(Sjm.ELEMENTS).getAsJsonArray();
@@ -211,8 +212,9 @@ public class ModelsGet extends ModelGet {
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
             JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
 
-            String timestamp =
-                commitObject != null && commitObject.has(Sjm.CREATED) ? commitObject.get(Sjm.CREATED).getAsString() : null;
+            String timestamp = commitObject != null && commitObject.has(Sjm.CREATED) ?
+                commitObject.get(Sjm.CREATED).getAsString() :
+                null;
 
             EmsNodeUtil
                 .handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found, timestamp, null);
@@ -232,30 +234,26 @@ public class ModelsGet extends ModelGet {
      * @return
      * @throws IOException
      */
-    private JsonObject getAllElements(WebScriptRequest req) throws IOException {
+    private JsonObject getAllElements(WebScriptRequest req) {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
 
-        JsonArray elements = new JsonArray();
         JsonObject extendedElements = new JsonObject();
         JsonObject result = new JsonObject();
 
         if (commitId == null) {
-            Set<String> uniqueElements = new HashSet<>();
             List<String> elementsToFindJson = emsNodeUtil.getModel();
-            for (int i = 0; i < elementsToFindJson.size(); i++) {
-                uniqueElements.add(elementsToFindJson.get(i));
-            }
-            elements = emsNodeUtil.getJsonBySysmlids(new ArrayList<>(uniqueElements), false);
+            JsonArray elements = emsNodeUtil.getJsonByElasticIds(elementsToFindJson, false);
             result.add(Sjm.ELEMENTS, elements);
         } else {
             result = emsNodeUtil.getModelAtCommit(commitId);
         }
-        if (extended) {
-            extendedElements.add(Sjm.ELEMENTS, emsNodeUtil.addExtendedInformation(result.get(Sjm.ELEMENTS).getAsJsonArray()));
+        if (extended && commitId == null) {
+            extendedElements
+                .add(Sjm.ELEMENTS, emsNodeUtil.addExtendedInformation(result.get(Sjm.ELEMENTS).getAsJsonArray()));
             return extendedElements;
         }
         return result;

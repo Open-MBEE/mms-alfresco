@@ -8,6 +8,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -65,6 +67,13 @@ public class HistoryGet extends ModelGet {
 
         Map<String, Object> model = new HashMap<>();
 
+        String[] accepts = req.getHeaderValues("Accept");
+        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Accept: %s", accept));
+        }
+
         if (logger.isDebugEnabled()) {
             logger.debug(user + " " + req.getURL());
         }
@@ -87,8 +96,12 @@ public class HistoryGet extends ModelGet {
         }
 
         status.setCode(responseStatus.getCode());
-        model.put(Sjm.RES, top.toString());
-
+        if (prettyPrint || accept.contains("webp")) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            model.put(Sjm.RES, gson.toJson(top));
+        } else {
+            model.put(Sjm.RES, top);
+        }
         printFooter(user, logger, timer);
         return model;
     }
@@ -107,7 +120,7 @@ public class HistoryGet extends ModelGet {
      * @return
      */
     private JsonArray handleRequest(WebScriptRequest req) {
-        JsonArray jsonHist = null;
+        JsonArray jsonHist = new JsonArray();
         try {
             String[] idKeys = { "elementId", "artifactId" };
             String modelId = null;
@@ -121,7 +134,7 @@ public class HistoryGet extends ModelGet {
             if (modelId == null) {
                 logger.error("Model ID Null...");
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element");
-                return new JsonArray();
+                return jsonHist;
             }
 
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), getRefId(req));

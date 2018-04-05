@@ -34,8 +34,7 @@ import java.util.Map;
 public class HtmlConverterPost extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(HtmlConverterPost.class);
 
-    private StringBuffer response = new StringBuffer();
-    MimeTypes allTypes = MimeTypes.getDefaultMimeTypes();
+    private final MimeTypes allTypes = MimeTypes.getDefaultMimeTypes();
 
     public HtmlConverterPost() {
         super();
@@ -122,7 +121,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
 
         PandocConverter pandocConverter = new PandocConverter(filename, format);
 
-        Path filePath = Paths.get(PandocConverter.PANDOC_DATA_DIR + "/" + pandocConverter.getOutputFile());
+        Path filePath = Paths.get(PandocConverter.PANDOC_DATA_DIR + File.separator + pandocConverter.getOutputFile());
 
         EmsScriptNode artifact = null;
 
@@ -133,7 +132,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
             String artifactId = postJson.get(Sjm.NAME).getAsString() + System.currentTimeMillis() + format;
             artifact = NodeUtil.updateOrCreateArtifact(artifactId, filePath, format, siteName, projectId, refId);
 
-            sendEmail(artifact);
+            sendEmail(artifact, format);
             if (artifact == null) {
                 logger.error(String.format("Failed to create HTML to %s artifact in Alfresco.", format));
             } else {
@@ -149,31 +148,40 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
         return artifact;
     }
 
-    protected void sendEmail(EmsScriptNode node) {
+    protected void sendEmail(EmsScriptNode node, String format) {
         String status = (node != null) ? "completed" : "completed with errors";
-        String subject = String.format("HTML to PDF generation %s.", status);
-        String msg = buildEmailMessage(node);
+        String subject = String.format("HTML to %s generation %s.", format, status);
+        String msg = buildEmailMessage(node, format);
         ActionUtil.sendEmailToModifier(node, msg, subject, services);
         if (logger.isDebugEnabled())
             logger.debug("Completed HTML to PDF generation.");
 
     }
 
-    protected String buildEmailMessage(EmsScriptNode pdfNode) {
+    protected String buildEmailMessage(EmsScriptNode artifactNode, String format) {
         StringBuffer buf = new StringBuffer();
         HostnameGet hostnameGet = new HostnameGet(this.repository, this.services);
         String contextUrl = hostnameGet.getAlfrescoUrl() + "/share/page/document-details?nodeRef=";
 
-        if (pdfNode == null) {
-            buf.append(
-                "HTML to PDF generation completed with errors. Please review the below link for detailed information.");
+        if (artifactNode == null) {
+            buf.append("HTML to ");
+            buf.append(format.toUpperCase());
+            buf.append(" generation completed with errors. Please review the below link for detailed information.");
         } else {
-            buf.append("HTML to PDF generation succeeded.");
+            buf.append("HTML to ");
+            buf.append(format.toUpperCase());
+            buf.append(" generation succeeded.");
             buf.append(System.lineSeparator());
             buf.append(System.lineSeparator());
-            buf.append("You can access the PDF file at ");
-            buf.append(contextUrl + pdfNode.getNodeRef().getStoreRef().getProtocol() + "://" + pdfNode.getNodeRef()
-                .getStoreRef().getIdentifier() + "/" + pdfNode.getNodeRef().getId());
+            buf.append("You can access the ");
+            buf.append(format.toUpperCase());
+            buf.append(" file at ");
+            buf.append(contextUrl);
+            buf.append(artifactNode.getNodeRef().getStoreRef().getProtocol());
+            buf.append("://");
+            buf.append(artifactNode.getNodeRef().getStoreRef().getIdentifier());
+            buf.append("/");
+            buf.append(artifactNode.getNodeRef().getId());
         }
 
         buf.append(System.lineSeparator());

@@ -1,12 +1,7 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -113,7 +108,7 @@ public class ModelDelete extends AbstractJavaWebScript {
                         }
                     }
                 }
-            } catch (IllegalStateException e) { 
+            } catch (IllegalStateException e) {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
             } catch (JsonParseException e) {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
@@ -124,8 +119,9 @@ public class ModelDelete extends AbstractJavaWebScript {
             }
         }
 
+        List<String> deletedNodes = new ArrayList<>();
         for (String id : ids) {
-            if (emsNodeUtil.getNodeBySysmlid(id).size() > 0) {
+            if (!deletedNodes.contains(id) && emsNodeUtil.getNodeBySysmlid(id).size() > 0) {
                 JsonArray nodesToDelete = emsNodeUtil.getChildren(id);
                 for (int i = 0; i < nodesToDelete.size(); i++) {
                     JsonObject node = nodesToDelete.get(i).getAsJsonObject();
@@ -136,6 +132,7 @@ public class ModelDelete extends AbstractJavaWebScript {
                         obj.add(Sjm.ELASTICID, node.get(Sjm.ELASTICID));
                         commitDeleted.add(obj);
                         elasticIds.add(node.get(Sjm.ELASTICID).getAsString());
+                        deletedNodes.add(node.get(Sjm.SYSMLID).getAsString());
                     }
                     log(Level.DEBUG, String.format("Node: %s", node));
                 }

@@ -286,32 +286,4 @@ public class ModelGet extends AbstractJavaWebScript {
 
         return depth;
     }
-
-    /**
-     * Recurse a view hierarchy to get all allowed elements
-     *
-     * @param rootSysmlid Root view to find elements for
-     * @param req         WebScriptRequest
-     * @return JSONArray of elements
-     * @throws SQLException SQL error
-     * @throws IOException  IO error
-     */
-
-    protected JsonArray handleElementHierarchy(String rootSysmlid, WebScriptRequest req)
-        throws SQLException, IOException {
-        String projectId = getProjectId(req);
-        String refId = getRefId(req);
-        Long depth = getDepthFromRequest(req);
-
-        boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
-
-        JsonObject mountsJson = new JsonObject();
-        mountsJson.addProperty(Sjm.SYSMLID, projectId);
-        mountsJson.addProperty(Sjm.REFID, refId);
-        JsonArray result = new JsonArray();
-        Set<String> elementsToFind = new HashSet<>();
-        elementsToFind.add(rootSysmlid);
-        EmsNodeUtil.handleMountSearch(mountsJson, extended, false, depth, elementsToFind, result);
-        return result;
-    }
 }

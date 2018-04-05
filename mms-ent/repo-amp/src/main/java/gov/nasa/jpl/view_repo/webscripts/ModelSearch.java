@@ -106,7 +106,7 @@ public class ModelSearch extends ModelPost {
                 }
                 model.put(Sjm.RES, top.toString());
             }
-        } catch (IllegalStateException e) { 
+        } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
         } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse the JSON request", e);
@@ -123,7 +123,7 @@ public class ModelSearch extends ModelPost {
         return model;
     }
 
-    private JsonObject executeSearchRequest(WebScriptRequest req, JsonObject json) throws IOException {
+    private JsonObject executeSearchRequest(WebScriptRequest req, JsonObject json) {
         JsonObject top = new JsonObject();
 
         String projectId = getProjectId(req);
@@ -205,7 +205,7 @@ public class ModelSearch extends ModelPost {
      * @return JSONObject
      */
     private JsonObject getGrandOwnerJson(String projectId, String refId, String sysmlId) {
-        return getJsonBySysmlId(projectId, refId, 
+        return getJsonBySysmlId(projectId, refId,
         		JsonUtil.getOptString(getJsonBySysmlId(projectId, refId, sysmlId), Sjm.OWNERID));
     }
 }

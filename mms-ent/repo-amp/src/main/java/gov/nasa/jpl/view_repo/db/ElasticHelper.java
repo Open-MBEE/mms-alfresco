@@ -49,6 +49,8 @@ public class ElasticHelper implements ElasticsearchInterface {
     private static final String PROFILE = "profile";
     private static final String ARTIFACT = "artifact";
 
+    private static final String COMMIT_QUERY = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
+
     public void init(String elasticHost) {
 
         JestClientFactory factory = new JestClientFactory(){
@@ -257,47 +259,23 @@ public class ElasticHelper implements ElasticsearchInterface {
         return null;
     }
 
-    private static final String elementCommitQuery = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
-
     public JsonObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException {
-        String query = String.format(elementCommitQuery, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
-        // should passes a json array that is the terms array from above
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Search Query %s", query));
-        }
-
-        Search search = new Search.Builder(query).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
-            .addType(ELEMENT).build();
-        SearchResult result = client.execute(search);
-
-        if (!result.isSucceeded() && result.getResponseCode() != 404) {
-            throw new IOException(
-                    String.format("Elasticsearch error[%1$s]:%2$s",
-                            result.getResponseCode(), result.getErrorMessage()));
-        }
-        else if (result.isSucceeded()) {
-            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-            if (hits.size() > 0){
-            	JsonObject o = hits.get(0).getAsJsonObject().getAsJsonObject("_source");
-                o.add(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id"));
-                return o;
-            }
-        }
-        return null;
+        return getByCommitId(elasticId, sysmlid, index, ELEMENT);
     }
 
-    private static final String artifactCommitQuery = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
-
     public JsonObject getArtifactByCommitId(String elasticId, String sysmlid, String index) throws IOException {
-        String query = String.format(artifactCommitQuery, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
+        return getByCommitId(elasticId, sysmlid, index, ARTIFACT);
+    }
+
+    private JsonObject getByCommitId(String elasticId, String sysmlid, String index, String type) throws IOException {
+        String query = String.format(COMMIT_QUERY, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("Search Query %s", query));
         }
 
         Search search = new Search.Builder(query).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
-            .addType(ARTIFACT).build();
+            .addType(type).build();
         SearchResult result = client.execute(search);
 
         if (result.isSucceeded()) {
@@ -310,7 +288,6 @@ public class ElasticHelper implements ElasticsearchInterface {
         }
 
         return null;
-
     }
 
     /**
