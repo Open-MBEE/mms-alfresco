@@ -1,8 +1,6 @@
 {
-    "profiles": [
-        {
-            "profileSettings": "whatever the user wants to store",
-            "username": "Manager"
-        }
-    ]
+    "profile": {
+        "profileSettings": "whatever the user wants to store",
+        "username": "Manager"
+    }
 }

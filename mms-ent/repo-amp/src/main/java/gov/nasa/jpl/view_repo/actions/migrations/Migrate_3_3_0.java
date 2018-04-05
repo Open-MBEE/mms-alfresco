@@ -1,5 +1,7 @@
 package gov.nasa.jpl.view_repo.actions.migrations;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.GraphInterface;
@@ -20,8 +22,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.sql.PreparedStatement;
@@ -115,17 +115,17 @@ public class Migrate_3_3_0 {
                         }
 
                         if (parentCommit != null) {
-                            JSONArray parentArtifacts = getArtifactsAtCommit(parentCommit, pgh, eh, projectId);
+                            JsonArray parentArtifacts = getArtifactsAtCommit(parentCommit, pgh, eh, projectId);
                             List<Map<String, Object>> artifactInserts = new ArrayList<>();
-                            for (int i = 0; i < parentArtifacts.length(); i++) {
-                                JSONObject parentArt = parentArtifacts.getJSONObject(i);
+                            for (int i = 0; i < parentArtifacts.size(); i++) {
+                                JsonObject parentArt = parentArtifacts.get(i).getAsJsonObject();
 
-                                if (pgh.getArtifactFromSysmlId(parentArt.getString(Sjm.SYSMLID), true) == null) {
+                                if (pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true) == null) {
                                     Map<String, Object> artifact = new HashMap<>();
-                                    artifact.put(Sjm.ELASTICID, parentArt.getString(Sjm.ELASTICID));
-                                    artifact.put(Sjm.SYSMLID, parentArt.getString(Sjm.SYSMLID));
-                                    artifact.put("initialcommit", parentArt.getString(Sjm.ELASTICID));
-                                    artifact.put("lastcommit", parentArt.getString(Sjm.COMMITID));
+                                    artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
+                                    artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
+                                    artifact.put("initialcommit", parentArt.get(Sjm.ELASTICID).getAsString());
+                                    artifact.put("lastcommit", parentArt.get(Sjm.COMMITID).getAsString());
                                     artifactInserts.add(artifact);
                                 }
                             }
@@ -163,26 +163,28 @@ public class Migrate_3_3_0 {
                                 String timestamp = df.format(cal.getTime());
                                 List<String> inRefs = Arrays.asList(ref.first);
 
-                                JSONObject check =
+                                JsonObject check =
                                     eh.getElementsLessThanOrEqualTimestamp(artifactId, timestamp, inRefs, projectId);
 
                                 if (!check.has(Sjm.SYSMLID)) {
-                                    JSONObject artifactJson = new JSONObject();
-                                    artifactJson.put(Sjm.SYSMLID, artifactId);
-                                    artifactJson.put(Sjm.ELASTICID, elasticId);
-                                    artifactJson.put(Sjm.COMMITID, commitId);
-                                    artifactJson.put(Sjm.PROJECTID, projectId);
-                                    artifactJson.put(Sjm.REFID, ref.first);
-                                    artifactJson.put(Sjm.INREFIDS, new JSONArray().put(ref.first));
-                                    artifactJson.put(Sjm.CREATOR, creator);
-                                    artifactJson.put(Sjm.MODIFIER, creator);
-                                    artifactJson.put(Sjm.CREATED, df.format(created));
-                                    artifactJson.put(Sjm.MODIFIED, df.format(created));
-                                    artifactJson.put(Sjm.CONTENTTYPE, contentType);
-                                    artifactJson.put(Sjm.CHECKSUM, "");
+                                    JsonObject artifactJson = new JsonObject();
+                                    artifactJson.addProperty(Sjm.SYSMLID, artifactId);
+                                    artifactJson.addProperty(Sjm.ELASTICID, elasticId);
+                                    artifactJson.addProperty(Sjm.COMMITID, commitId);
+                                    artifactJson.addProperty(Sjm.PROJECTID, projectId);
+                                    artifactJson.addProperty(Sjm.REFID, ref.first);
+                                    JsonArray inRefIds = new JsonArray();
+                                    inRefIds.add(ref.first);
+                                    artifactJson.add(Sjm.INREFIDS, inRefIds);
+                                    artifactJson.addProperty(Sjm.CREATOR, creator);
+                                    artifactJson.addProperty(Sjm.MODIFIER, creator);
+                                    artifactJson.addProperty(Sjm.CREATED, df.format(created));
+                                    artifactJson.addProperty(Sjm.MODIFIED, df.format(created));
+                                    artifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
+                                    artifactJson.addProperty(Sjm.CHECKSUM, "");
 
-                                    JSONArray artifactJSONForElastic = new JSONArray();
-                                    artifactJSONForElastic.put(artifactJson);
+                                    JsonArray artifactJSONForElastic = new JsonArray();
+                                    artifactJSONForElastic.add(artifactJson);
 
                                     try {
                                         boolean bulkEntry =
@@ -191,17 +193,19 @@ public class Migrate_3_3_0 {
 
                                         if (bulkEntry) {
 
-                                            JSONObject commitObject = new JSONObject();
-                                            commitObject.put(Sjm.ELASTICID, commitId);
-                                            commitObject.put(Sjm.CREATED, df.format(created));
-                                            commitObject.put(Sjm.CREATOR, creator);
-                                            commitObject.put(Sjm.PROJECTID, projectId);
-                                            commitObject.put(Sjm.TYPE, Sjm.ARTIFACT);
-                                            commitObject.put(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
+                                            JsonObject commitObject = new JsonObject();
+                                            commitObject.addProperty(Sjm.ELASTICID, commitId);
+                                            commitObject.addProperty(Sjm.CREATED, df.format(created));
+                                            commitObject.addProperty(Sjm.CREATOR, creator);
+                                            commitObject.addProperty(Sjm.PROJECTID, projectId);
+                                            commitObject.addProperty(Sjm.TYPE, Sjm.ARTIFACT);
+                                            commitObject.addProperty(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
 
-                                            commitObject.put("added", new JSONArray().put(0, artifactJson));
+                                            JsonArray added = new JsonArray();
+                                            added.set(0, artifactJson);
+                                            commitObject.add("added", added);
 
-                                            eh.indexElement(commitObject, projectId);
+                                            eh.indexElement(commitObject, projectId, ElasticHelper.COMMIT);
 
                                             logger.info("JSON: " + commitObject);
                                         } else {
@@ -211,7 +215,7 @@ public class Migrate_3_3_0 {
                                         noErrors = false;
                                     }
                                 } else {
-                                    elasticId = check.getString(Sjm.SYSMLID);
+                                    elasticId = check.get(Sjm.SYSMLID).getAsString();
                                 }
 
                                 if (pgh.getArtifactFromSysmlId(artifactId, true) == null) {
@@ -247,10 +251,10 @@ public class Migrate_3_3_0 {
         return noErrors;
     }
 
-    public static JSONArray getArtifactsAtCommit(String commitId, PostgresHelper pgh, ElasticHelper eh,
+    public static JsonArray getArtifactsAtCommit(String commitId, PostgresHelper pgh, ElasticHelper eh,
         String projectId) {
-        JSONArray artifacts = new JSONArray();
-        JSONObject pastElement = null;
+        JsonArray artifacts = new JsonArray();
+        JsonObject pastElement = null;
         ArrayList<String> refsCommitsIds = new ArrayList<>();
 
         Map<String, Object> commit = pgh.getCommit(commitId);
@@ -290,15 +294,15 @@ public class Migrate_3_3_0 {
                 }
 
                 if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds
-                    .containsKey(pastElement.getString(Sjm.ELASTICID))) {
-                    artifacts.put(pastElement);
+                    .containsKey(pastElement.get(Sjm.ELASTICID).getAsString())) {
+                    artifacts.add(pastElement);
                 }
             }
 
             try {
-                JSONArray artifactElastic = eh.getElementsFromElasticIds(artifactElasticIds, projectId);
-                for (int i = 0; i < artifactElastic.length(); i++) {
-                    artifacts.put(artifactElastic.getJSONObject(i));
+                JsonArray artifactElastic = eh.getElementsFromElasticIds(artifactElasticIds, projectId);
+                for (int i = 0; i < artifactElastic.size(); i++) {
+                    artifacts.add(artifactElastic.get(i).getAsJsonObject());
                 }
             } catch (IOException e) {
                 e.printStackTrace();

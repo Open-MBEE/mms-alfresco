@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.gson.JsonPrimitive;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
@@ -1012,6 +1013,18 @@ public class PostgresHelper implements GraphInterface {
                 statement.setTimestamp(index + 1, (Timestamp) value);
             } else if (value == null) {
                 statement.setNull(index + 1, Types.NULL);
+            } else if (value instanceof JsonPrimitive) {
+                JsonPrimitive primitive = ((JsonPrimitive) value).getAsJsonPrimitive();
+                if (primitive.isBoolean()) {
+                    statement.setBoolean(index + 1, primitive.getAsBoolean());
+                } else if (primitive.isString()) {
+                    statement.setString(index + 1, primitive.getAsString());
+                } else if (primitive.isNumber()) {
+                    statement.setInt(index + 1, primitive.getAsInt());
+                } else {
+                    logger.info(String.format("Unable to set value: %s", primitive));
+                    logger.info(String.format("Class is: %s", primitive.getClass()));
+                }
             }
         } catch (SQLException se) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(se)));
@@ -1523,6 +1536,7 @@ public class PostgresHelper implements GraphInterface {
             }
         } catch (PSQLException pe) {
             ServerErrorMessage em = pe.getServerErrorMessage();
+            logger.warn(em.toString());
             // Do nothing for duplicate found
             if (!em.getConstraint().equals("unique_organizations")) {
                 throw pe;

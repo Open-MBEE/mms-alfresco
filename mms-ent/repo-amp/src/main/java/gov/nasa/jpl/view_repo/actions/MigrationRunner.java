@@ -153,6 +153,9 @@ public class MigrationRunner extends AbstractPatch {
     }
 
     public static boolean isMigrationNeeded(ModuleVersionNumber previousVersion, ModuleVersionNumber currentVersion) {
+        if (currentVersion == null || previousVersion == null) {
+            return false;
+        }
         return migrationList.contains(currentVersion) && previousVersion.compareTo(currentVersion) < 0;
     }
 

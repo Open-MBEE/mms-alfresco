@@ -38,13 +38,21 @@ public class JsonContentReader extends AbstractContentReader implements ContentR
 
     public JsonContentReader(Map<String, Object> json) throws JsonProcessingException {
         this(om.writeValueAsBytes(json), "store://");
-        modified = (String) json.get(Sjm.MODIFIED);
-        size = json.keySet().size();
+        setModified((String) json.get(Sjm.MODIFIED));
+        setSize(json.keySet().size());
     }
 
     public JsonContentReader(byte[] json, String url) {
         super(url);
         this.json = json;
+    }
+
+    public void setModified(String modified) {
+        this.modified = modified;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
     }
 
     public byte[] getJson() {

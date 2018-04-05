@@ -6,11 +6,12 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.JsonContentReader;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import gov.nasa.jpl.view_repo.util.*;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -19,9 +20,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WebScriptStatus;
 
-import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.Sjm;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 /**
  * Copyright (C) 2005-2009 Alfresco Software Limited.
@@ -152,9 +152,9 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     if (templateModel.containsKey(Sjm.RES) && templateModel.get(Sjm.RES) != null) {
                         res.setContentType("application/json");
                         res.setContentEncoding("UTF-8");
-                        if (templateModel.get(Sjm.RES) instanceof JSONObject) {
-                            JSONObject json = (JSONObject) templateModel.get(Sjm.RES);
-                            Map<String, Object> jsonMap = EmsNodeUtil.toMap(json);
+                        if (templateModel.get(Sjm.RES) instanceof JsonObject) {
+                            JsonObject json = (JsonObject) templateModel.get(Sjm.RES);
+                            Map<String, Object> jsonMap = new Gson().fromJson(json, new TypeToken<Map<String, Object>>(){}.getType());
                             JsonContentReader reader = new JsonContentReader(jsonMap);
 
                             // get the content and stream directly to the response output stream
@@ -283,56 +283,57 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         return SitePermission.hasPermission(siteId, projectId, refId, permissionType);
     }
 
-    JSONArray filterProjectByPermission(JSONArray projects) {
-        JSONArray result = new JSONArray();
-        for (int i = 0; i < projects.length(); i++) {
-            JSONObject project = projects.optJSONObject(i);
-            if (project != null && project.has("orgId")) {
-                Boolean perm = SitePermission
-                    .hasPermission(project.getString("orgId"), project.getString(Sjm.SYSMLID), null, Permission.READ);
+    JsonArray filterProjectByPermission(JsonArray projects) {
+        JsonArray result = new JsonArray();
+        for (int i = 0; i < projects.size(); i++) {
+            JsonObject project = JsonUtil.getOptObject(projects, i);
+            if (project.has("orgId")) {
+                Boolean perm = SitePermission.hasPermission(
+                                project.get("orgId").getAsString(),
+                                project.get(Sjm.SYSMLID).getAsString(), null, Permission.READ);
                 if (perm != null && perm) {
-                    result.put(project);
+                    result.add(project);
                 }
             }
         }
         return result;
     }
 
-    JSONArray filterOrgsByPermission(JSONArray orgs) {
-        JSONArray result = new JSONArray();
-        for (int i = 0; i < orgs.length(); i++) {
-            JSONObject org = orgs.optJSONObject(i);
-            if (org != null && org.has("id")) {
-                Boolean perm = SitePermission.hasPermission(org.getString("id"), null, null, Permission.READ);
+    JsonArray filterOrgsByPermission(JsonArray orgs) {
+        JsonArray result = new JsonArray();
+        for (int i = 0; i < orgs.size(); i++) {
+            JsonObject org = JsonUtil.getOptObject(orgs, i);
+            if (org.has("id")) {
+                Boolean perm = SitePermission.hasPermission(org.get("id").getAsString(), null, null, Permission.READ);
                 if (perm != null && perm) {
-                    result.put(org);
+                    result.add(org);
                 }
             }
         }
         return result;
     }
 
-    JSONArray filterByPermission(JSONArray elements, WebScriptRequest req) {
-        JSONArray result = new JSONArray();
+    JsonArray filterByPermission(JsonArray elements, WebScriptRequest req) {
+        JsonArray result = new JsonArray();
         Map<String, Map<Permission, Boolean>> permCache = new HashMap<>();
         Map<String, String> projectSite = new HashMap<>();
         String refId = AbstractJavaWebScript.getRefId(req);
         String projectId = AbstractJavaWebScript.getProjectId(req);
 
-        for (int i = 0; i < elements.length(); i++) {
-            JSONObject el = elements.optJSONObject(i);
-            String refId2 = el.has(Sjm.REFID) ? el.getString(Sjm.REFID) : refId;
-            String projectId2 = el.has(Sjm.PROJECTID) ? el.getString(Sjm.PROJECTID) : projectId;
-            JSONObject element =
+        for (int i = 0; i < elements.size(); i++) {
+            JsonObject el = JsonUtil.getOptObject(elements, i);
+            String refId2 = el.has(Sjm.REFID) ? el.get(Sjm.REFID).getAsString() : refId;
+            String projectId2 = el.has(Sjm.PROJECTID) ? el.get(Sjm.PROJECTID).getAsString() : projectId;
+            JsonObject element =
                 filterElementByPermission(el, projectId2, refId2, Permission.READ, permCache, projectSite);
             if (element != null) {
-                result.put(element);
+                result.add(element);
             }
         }
         return result;
     }
 
-    private JSONObject filterElementByPermission(JSONObject element, String projectId, String refId,
+    private JsonObject filterElementByPermission(JsonObject element, String projectId, String refId,
         Permission permission, Map<String, Map<Permission, Boolean>> permCache, Map<String, String> projectSite) {
         // temp fix to skip permission checking
         Boolean hasPerm;
@@ -370,7 +371,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     permCache.put(cacheKey, writePermMap);
                 }
             }
-            element.put(Sjm.EDITABLE, editable);
+            element.addProperty(Sjm.EDITABLE, editable);
             return element;
         }
         return null;

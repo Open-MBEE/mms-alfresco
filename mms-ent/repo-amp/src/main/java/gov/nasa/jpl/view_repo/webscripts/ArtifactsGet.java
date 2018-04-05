@@ -44,18 +44,20 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.mbee.util.Utils;
 
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
@@ -109,57 +111,54 @@ public class ArtifactsGet extends ArtifactGet {
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
         Map<String, Object> model = new HashMap<>();
-        JSONArray elementsJson = new JSONArray();
-        JSONArray errors = new JSONArray();
-        JSONObject result = new JSONObject();
+        JsonArray elementsJson = new JsonArray();
+        JsonArray errors = new JsonArray();
+        JsonObject result = new JsonObject();
 
         try {
 
             if (validateRequest(req, status)) {
-                try {
-                    result = handleRequest(req);
-                    elementsJson = result.optJSONArray(Sjm.ARTIFACTS);
-                } catch (JSONException e) {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
-                }
+                result = handleRequest(req);
+                elementsJson = JsonUtil.getOptArray(result, Sjm.ARTIFACTS);
             }
 
-            JSONObject top = new JSONObject();
-            if (elementsJson != null && elementsJson.length() > 0) {
-                JSONArray elements = filterByPermission(elementsJson, req);
-                if (elements.length() == 0) {
+            JsonObject top = new JsonObject();
+            if (elementsJson != null && elementsJson.size() > 0) {
+                JsonArray elements = filterByPermission(elementsJson, req);
+                if (elements.size() == 0) {
                     log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
                 }
 
-                top.put(Sjm.ARTIFACTS, elements);
+                top.add(Sjm.ARTIFACTS, elements);
 
-                JSONArray errorMessages = new JSONArray();
+                JsonArray errorMessages = new JsonArray();
                 for (String level : Sjm.ERRORLEVELS) {
-                    errors = result.optJSONArray(level);
-                    if (errors != null && errors.length() > 0) {
-                        for (int i = 0; i < errors.length(); i++) {
-                            JSONObject errorPayload = new JSONObject();
-                            errorPayload.put("code", HttpServletResponse.SC_NOT_FOUND);
-                            errorPayload.put(Sjm.SYSMLID, errors.get(i));
-                            errorPayload.put("message", String.format("Element %s was not found", errors.get(i)));
-                            errorPayload.put("severity", level);
-                            errorMessages.put(errorPayload);
+                    errors = JsonUtil.getOptArray(result, level);
+                    if (errors != null && errors.size() > 0) {
+                        for (int i = 0; i < errors.size(); i++) {
+                            JsonObject errorPayload = new JsonObject();
+                            errorPayload.addProperty("code", HttpServletResponse.SC_NOT_FOUND);
+                            errorPayload.add(Sjm.SYSMLID, errors.get(i));
+                            errorPayload.addProperty("message", String.format("Element %s was not found", errors.get(i)));
+                            errorPayload.addProperty("severity", level);
+                            errorMessages.add(errorPayload);
                         }
                     }
                 }
 
-                if (errorMessages.length() > 0) {
-                    top.put("messages", errorMessages);
+                if (errorMessages.size() > 0) {
+                    top.add("messages", errorMessages);
                 }
 
                 if (prettyPrint || accept.contains("webp")) {
-                    model.put(Sjm.RES, top.toString(4));
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    model.put(Sjm.RES, gson.toJson(top));
                 } else {
                     model.put(Sjm.RES, top);
                 }
             } else {
                 log(Level.INFO, HttpServletResponse.SC_OK, "No elements found");
-                top.put(Sjm.ARTIFACTS, new JSONArray());
+                top.add(Sjm.ARTIFACTS, new JsonArray());
                 model.put(Sjm.RES, top);
             }
         } catch (Exception e) {
@@ -181,38 +180,40 @@ public class ArtifactsGet extends ArtifactGet {
      * @return
      * @throws IOException
      */
-    private JSONObject handleRequest(WebScriptRequest req)
-        throws JSONException, IOException, SQLException {
-        JSONObject requestJson = (JSONObject) req.parseContent();
+    private JsonObject handleRequest(WebScriptRequest req)
+        throws IOException, SQLException {
+        JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
         if (requestJson.has(Sjm.ARTIFACTS)) {
-            JSONArray elementsToFindJson = requestJson.getJSONArray(Sjm.ARTIFACTS);
+            JsonArray elementsToFindJson = requestJson.get(Sjm.ARTIFACTS).getAsJsonArray();
 
             String refId = getRefId(req);
             String projectId = getProjectId(req);
             String commitId = req.getParameter(Sjm.COMMITID.replace("_",""));
 
-            JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+            JsonObject mountsJson = new JsonObject();
+            mountsJson.addProperty(Sjm.SYSMLID, projectId);
+            mountsJson.addProperty(Sjm.REFID, refId);
 
-            JSONArray found = new JSONArray();
-            JSONObject result = new JSONObject();
+            JsonArray found = new JsonArray();
+            JsonObject result = new JsonObject();
 
             Set<String> uniqueElements = new HashSet<>();
-            for (int i = 0; i < elementsToFindJson.length(); i++) {
-                uniqueElements.add(elementsToFindJson.getJSONObject(i).getString(Sjm.SYSMLID));
+            for (int i = 0; i < elementsToFindJson.size(); i++) {
+                uniqueElements.add(elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
             }
 
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            JSONObject commitObject = emsNodeUtil.getCommitObject(commitId);
+            JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
 
             String timestamp =
-                commitObject != null && commitObject.has(Sjm.CREATED) ? commitObject.getString(Sjm.CREATED) : null;
+                commitObject != null && commitObject.has(Sjm.CREATED) ? commitObject.get(Sjm.CREATED).getAsString() : null;
 
             EmsNodeUtil.handleMountSearch(mountsJson, false, false, 0L, uniqueElements, found, timestamp, "artifacts");
-            result.put(Sjm.ARTIFACTS, found);
-            result.put(Sjm.WARN, uniqueElements);
+            result.add(Sjm.ARTIFACTS, found);
+            JsonUtil.addStringSet(result, Sjm.WARN, uniqueElements);
             return result;
         } else {
-            return new JSONObject();
+            return new JsonObject();
         }
     }
 }
