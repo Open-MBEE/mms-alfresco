@@ -205,8 +205,7 @@ public class JmsConnection implements ConnectionInterface {
         } catch (Exception e) {
             logger.error("JMS exception caught, probably means JMS broker not up");
             status = false;
-        } finally {
-            // Clean up
+        } finally { // Clean up
             session.close();
             connection.close();
         }
