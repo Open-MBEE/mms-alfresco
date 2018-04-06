@@ -1945,7 +1945,7 @@ public class PostgresHelper implements GraphInterface {
             statement.executeUpdate();
 
             execUpdate(String
-                .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s", sanitizeRefId(refId),
+                .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s, artifacts%1$s FROM %2$s", sanitizeRefId(refId),
                     EmsConfig.get("pg.user")));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
