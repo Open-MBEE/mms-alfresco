@@ -250,8 +250,8 @@ public class PostgresHelper implements GraphInterface {
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("execQuery: %s", query));
         }
-        try {
-            return getConn().createStatement().executeQuery(query);
+        try ( Connection conn = getConn() ) {
+            return conn.createStatement().executeQuery(query);
         } catch (SQLException e) {
             if (logger.isDebugEnabled()) {
                 logger.error(String.format("%s", LogUtil.getStackTrace(e)));
@@ -456,6 +456,7 @@ public class PostgresHelper implements GraphInterface {
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
+            statement.close();
             closeConfig();
         }
 
