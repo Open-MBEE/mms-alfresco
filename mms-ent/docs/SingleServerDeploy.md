@@ -30,21 +30,14 @@ Install MMS on CentOS 7.x
     * Set and uncomment a cluster.name (same for all) and a node.name (unique for each cluster).  
     * Set path.data to the location where you mount the volume ES, (i.e. /mnt/elasticsearch this must be set in etc/fstab and mounted.
     * `chown -R elasticsearch:elasticsearch /mnt/elasticsearch/`
-    * define network.host, bind to 0.0.0.0 so it binds to all interfaces otherwise it won't listen to the private.
-
-3. Add and open the elasticsearch port: 
-    * `firewall-cmd --zone=internal --permanent --add-port=9200/tcp`
-    * `firewall-cmd --zone=internal --permanent --add-port=9300/tcp`
-    * `firewall-cmd --reload`
-    * `firewall-cmd  --list-all`, make sure the ports exist
     
-4. Enable the elasticsearch service
+3. Enable the elasticsearch service
     * `systemctl enable elasticsearch.service`
     
-5. Start the elasticsearch service
+4. Start the elasticsearch service
     * `systemctl start elasticsearch.service`
     
-6. Check the state of the elasticsearch service
+5. Check the state of the elasticsearch service
     * `curl -XGET 'http://localhost:9200/_cluster/state?pretty'`
 
 ## Install and configure Postgresql 9.3.x (Optional if using the Alfresco installer which includes Postgresql)
