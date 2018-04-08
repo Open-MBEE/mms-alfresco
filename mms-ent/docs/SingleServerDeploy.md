@@ -1,4 +1,4 @@
-Install & Build Open-MBEE on CentOS 7.x
+Install MMS on CentOS 7.x
 ===
 
 ### Update OS and install OpenJDK
