@@ -512,6 +512,10 @@ public class ElasticHelper implements ElasticsearchInterface {
         Search search = new Search.Builder(queryJson.toString()).build();
         SearchResult result = client.execute(search);
 
+        if (result == null) {
+            return top;
+        }
+
         if (result.getTotal() > 0) {
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
             for (int i = 0; i < hits.size(); i++) {
