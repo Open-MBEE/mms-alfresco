@@ -217,7 +217,7 @@ public class Migrate_3_3_0 {
                                             commitObject.addProperty(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
 
                                             JsonArray added = new JsonArray();
-                                            added.set(0, artifactJson);
+                                            added.add(artifactJson);
                                             commitObject.add("added", added);
 
                                             eh.indexElement(commitObject, projectId, ElasticHelper.COMMIT);
