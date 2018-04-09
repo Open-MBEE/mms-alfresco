@@ -76,8 +76,7 @@ public class MigrationRunner extends AbstractPatch {
                 logger.info("Automigration path exists.");
                 for (ModuleVersionNumber migrationFor : migrationList) {
                     if (currentVersion.compareTo(migrationFor) < 0) {
-                        logger.info("Update path found");
-                        logger.info("Migration For: " + migrationFor);
+                        logger.info("Upgrade path found");
                         try {
                             Class clazz = Class.forName("gov.nasa.jpl.view_repo.actions.migrations." + versionToClassname(migrationFor));
                             Method method = clazz.getMethod("apply", ServiceRegistry.class);

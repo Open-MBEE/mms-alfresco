@@ -45,7 +45,7 @@ public class Migrate_3_3_0 {
     private static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     public static boolean apply(ServiceRegistry services) throws Exception {
-        logger.info("RUNNING migrationThreeThreeOh");
+        logger.info("Running Migrate_3_3_0");
         PostgresHelper pgh = new PostgresHelper();
         boolean noErrors = true;
 
@@ -81,6 +81,11 @@ public class Migrate_3_3_0 {
 
                 logger.info("ProjectID: " + projectId);
                 EmsScriptNode projectNode = siteNode.childByNamePath(projectId);
+
+                if (projectNode == null) {
+                    logger.info("ProjectNode not found for: " + projectId);
+                }
+
                 logger.info("ProjectNode loaded: " + projectNode.getName());
 
                 ElasticHelper eh = new ElasticHelper();
@@ -98,10 +103,12 @@ public class Migrate_3_3_0 {
                 logger.info("Getting files");
                 for (Pair<String, String> ref : refs) {
 
-                    logger.info("RefId: " + ref.first);
-                    logger.info("RefName: " + ref.second);
+                    String refId = ref.first.replace("_", "-");
 
-                    pgh.setWorkspace(ref.first);
+                    logger.info("RefId: " + refId);
+                    logger.info("RefName: " + refId);
+
+                    pgh.setWorkspace(refId);
 
                     if (!ref.first.equals("master")) {
                         pgh.execUpdate(String.format(
@@ -138,14 +145,10 @@ public class Migrate_3_3_0 {
                         }
                     }
 
-                    EmsScriptNode refNode = projectNode.childByNamePath("/refs/" + ref.first);
+                    EmsScriptNode refNode = projectNode.childByNamePath("/refs/" + refId);
 
                     if (refNode == null) {
-                        refNode = projectNode.childByNamePath("/refs/" + ref.second);
-                    }
-
-                    if (refNode == null) {
-                        logger.info("Ref not found: " + ref.first);
+                        logger.info("Ref not found: " + refId);
                         continue;
                     }
 
@@ -173,7 +176,7 @@ public class Migrate_3_3_0 {
                                 cal.setTimeInMillis(created.getTime());
                                 cal.setTimeZone(TimeZone.getTimeZone("GMT"));
                                 String timestamp = df.format(cal.getTime());
-                                List<String> inRefs = Arrays.asList(ref.first);
+                                List<String> inRefs = Arrays.asList(refId);
 
                                 JsonObject check =
                                     eh.getElementsLessThanOrEqualTimestamp(artifactId, timestamp, inRefs, projectId);
@@ -184,9 +187,9 @@ public class Migrate_3_3_0 {
                                     artifactJson.addProperty(Sjm.ELASTICID, elasticId);
                                     artifactJson.addProperty(Sjm.COMMITID, commitId);
                                     artifactJson.addProperty(Sjm.PROJECTID, projectId);
-                                    artifactJson.addProperty(Sjm.REFID, ref.first);
+                                    artifactJson.addProperty(Sjm.REFID, refId);
                                     JsonArray inRefIds = new JsonArray();
-                                    inRefIds.add(ref.first);
+                                    inRefIds.add(refId);
                                     artifactJson.add(Sjm.INREFIDS, inRefIds);
                                     artifactJson.addProperty(Sjm.CREATOR, creator);
                                     artifactJson.addProperty(Sjm.MODIFIER, creator);
@@ -221,9 +224,11 @@ public class Migrate_3_3_0 {
 
                                             logger.info("JSON: " + commitObject);
                                         } else {
+                                            logger.info("Bulk insert failed for: " + projectId);
                                             noErrors = false;
                                         }
                                     } catch (Exception e) {
+                                        logger.info("Exception when indexing elements for: " + projectId, e);
                                         noErrors = false;
                                     }
                                 } else {
