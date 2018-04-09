@@ -78,14 +78,16 @@ Install MMS on CentOS 7.x
 See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.2/concepts/master-ch-install.html)
 
 ## Installing MMS
-1. Install MMS AMPs for Alfresco repository and share
+1. Grab the latest mms-amp and mms-share-amp from the github release page:
+    * `https://github.com/Open-MBEE/mms/releases`
+2. Install MMS AMPs for Alfresco repository and share
     * Change to your tomcat webapps directory, where alfresco.war and share.war is located
         * `java -jar ../bin/alfresco-mmt.jar install $YOUR_PATH/mms-amp.amp alfresco.war -force`
         * `java -jar ../bin/alfresco-mmt.jar install $YOUR_PATH/mms-share-amp.amp share.war -force`
         
     * Create and edit the mms.properties file in the $TOMCAT_HOME/shared/classes directory (You can copy mms-ent/mms.properties.example)
     
-2. Start tomcat
+3. Start tomcat
     * Run either one of these
         * `systemctl start tomcat`
         
