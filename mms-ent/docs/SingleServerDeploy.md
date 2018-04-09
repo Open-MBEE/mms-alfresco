@@ -23,8 +23,6 @@ Install MMS on CentOS 7.x
     type=rpm-md
     ```
     * `yum install -y elasticsearch`
-    * `systemctl enable elasticsearch.service`
-    * `systemctl start elasticsearch.service`
     
 2. Edit elasticsearch config located at /etc/elasticsearch/elasticsearch.yml.  
     * Set and uncomment a cluster.name (same for all) and a node.name (unique for each cluster).  
