@@ -98,6 +98,9 @@ public class Migrate_3_3_0 {
                 logger.info("Getting files");
                 for (Pair<String, String> ref : refs) {
 
+                    logger.info("RefId: " + ref.first);
+                    logger.info("RefName: " + ref.second);
+
                     pgh.setWorkspace(ref.first);
 
                     if (!ref.first.equals("master")) {
@@ -136,6 +139,15 @@ public class Migrate_3_3_0 {
                     }
 
                     EmsScriptNode refNode = projectNode.childByNamePath("/refs/" + ref.first);
+
+                    if (refNode == null) {
+                        refNode = projectNode.childByNamePath("/refs/" + ref.second);
+                    }
+
+                    if (refNode == null) {
+                        logger.info("Ref not found: " + ref.first);
+                        continue;
+                    }
 
                     List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
                     for (FileInfo file : files) {
