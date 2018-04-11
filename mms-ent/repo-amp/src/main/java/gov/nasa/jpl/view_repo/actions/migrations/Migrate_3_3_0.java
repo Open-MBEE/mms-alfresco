@@ -176,7 +176,7 @@ public class Migrate_3_3_0 {
                                 cal.setTimeInMillis(created.getTime());
                                 cal.setTimeZone(TimeZone.getTimeZone("GMT"));
                                 String timestamp = df.format(cal.getTime());
-                                List<String> inRefs = Arrays.asList(refId);
+                                List<String> inRefs = Arrays.asList(refId, "master");
 
                                 JsonObject check =
                                     eh.getElementsLessThanOrEqualTimestamp(artifactId, timestamp, inRefs, projectId);
