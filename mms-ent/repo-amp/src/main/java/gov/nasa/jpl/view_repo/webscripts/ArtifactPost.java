@@ -268,7 +268,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         return true;
     }
 
-    protected static Path saveToFilesystem(String filename, InputStream content) throws Throwable {
+    public static Path saveToFilesystem(String filename, InputStream content) throws Throwable {
         File tempDir = TempFileProvider.getTempDir();
         Path filePath = Paths.get(tempDir.getAbsolutePath(), filename);
         File file = new File(filePath.toString());

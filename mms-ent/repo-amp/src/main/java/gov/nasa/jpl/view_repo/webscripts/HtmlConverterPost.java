@@ -127,7 +127,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
 
         try {
             // Convert HTML to Doc
-            pandocConverter.convert(JsonUtil.getOptString(postJson, "body"));
+            pandocConverter.convert(JsonUtil.getOptString(postJson, "body"), JsonUtil.getOptString(postJson, "body"));
 
             String artifactId = postJson.get(Sjm.NAME).getAsString() + System.currentTimeMillis() + format;
             artifact = NodeUtil.updateOrCreateArtifact(artifactId, filePath, format, siteName, projectId, refId);
