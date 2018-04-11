@@ -95,7 +95,7 @@ public class PandocConverter {
         Path cssTempFile = null;
 
         StringBuilder command = new StringBuilder();
-        command.append(String.format("%s --from=html", this.pandocExec));
+        command.append(String.format("%s --mathml --from=html+raw_html", this.pandocExec));
         if (!cssString.isEmpty()) {
             try {
                 String cssName = String
@@ -117,8 +117,6 @@ public class PandocConverter {
         try {
             Process process = Runtime.getRuntime().exec(command.toString());
             OutputStream out = process.getOutputStream();
-            out.write(title.getBytes());
-            out.flush();
             out.write(inputString.getBytes());
             out.flush();
             out.close();
