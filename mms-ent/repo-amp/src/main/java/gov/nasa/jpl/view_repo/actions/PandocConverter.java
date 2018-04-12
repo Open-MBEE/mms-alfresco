@@ -95,7 +95,7 @@ public class PandocConverter {
         Path cssTempFile = null;
 
         StringBuilder command = new StringBuilder();
-        command.append(String.format("%s --mathml --from=html+raw_html+simple_tables", this.pandocExec));
+        command.append(String.format("%s --mathml --variable=title: --from=html+raw_html+simple_tables", this.pandocExec));
         if (!cssString.isEmpty()) {
             try {
                 String cssName = String
