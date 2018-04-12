@@ -691,13 +691,12 @@ public class EmsNodeUtil {
         return result;
     }
 
-    private static final String updateScript = "{\"script\": {\"inline\":"
-        + "\"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%2$s.removeAll([params.refId])}\","
-        + " \"params\":{\"refId\":\"%3$s\"}}}";
+    private static final String updateScript =
+        "{\"script\": {\"inline\":\"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%1$s.removeAll([params.refId])}\", \"params\":{\"refId\":\"%2$s\"}}}";
 
     public void updateElasticRemoveRefs(Set<String> elasticIds, String type) {
         try {
-            String scriptToRun = String.format(updateScript, Sjm.INREFIDS, Sjm.INREFIDS, this.workspaceName);
+            String scriptToRun = String.format(updateScript, Sjm.INREFIDS, this.workspaceName);
             logger.debug(String.format("elastic script: %s", scriptToRun));
             eh.bulkUpdateElements(elasticIds, scriptToRun, projectId, type);
         } catch (IOException ex) {
@@ -1483,27 +1482,7 @@ public class EmsNodeUtil {
         for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
             String key = entry.getKey();
             JsonElement value = object.get(key);
-            Object val;
-            if (value.isJsonArray()) {
-                val = toList(value.getAsJsonArray());
-            } else if (value.isJsonObject()) {
-                val = toMap(value.getAsJsonObject());
-            } else if (value.isJsonNull()) {
-                val = null;
-            } else if (value.isJsonPrimitive()) {
-                JsonPrimitive primitive = value.getAsJsonPrimitive();
-                if (primitive.isBoolean()) {
-                    val = primitive.getAsBoolean();
-                } else if (primitive.isString()) {
-                    val = primitive.getAsString();
-                } else if (primitive.isNumber()) {
-                    val = primitive.getAsNumber();
-                } else {
-                    val = primitive;
-                }
-            } else {
-                val = value;
-            }
+            Object val = getValue(value);
             map.put(key, val);
         }
 
@@ -1515,31 +1494,38 @@ public class EmsNodeUtil {
 
         for (int i = 0; i < array.size(); i++) {
             JsonElement value = array.get(i);
-            Object val;
-            if (value.isJsonArray()) {
-                val = toList(value.getAsJsonArray());
-            } else if (value.isJsonObject()) {
-                val = toMap(value.getAsJsonObject());
-            } else if (value.isJsonNull()) {
-                val = null;
-            } else if (value.isJsonPrimitive()) {
-                JsonPrimitive primitive = value.getAsJsonPrimitive();
-                if (primitive.isBoolean()) {
-                    val = primitive.getAsBoolean();
-                } else if (primitive.isString()) {
-                    val = primitive.getAsString();
-                } else if (primitive.isNumber()) {
-                    val = primitive.getAsNumber();
-                } else {
-                    val = primitive;
-                }
-            } else {
-                val = value;
-            }
+            Object val = getValue(value);
             list.add(val);
         }
 
         return list;
+    }
+
+    public static Object getValue(JsonElement value) {
+        Object val;
+
+        if (value.isJsonArray()) {
+            val = toList(value.getAsJsonArray());
+        } else if (value.isJsonObject()) {
+            val = toMap(value.getAsJsonObject());
+        } else if (value.isJsonNull()) {
+            val = null;
+        } else if (value.isJsonPrimitive()) {
+            JsonPrimitive primitive = value.getAsJsonPrimitive();
+            if (primitive.isBoolean()) {
+                val = primitive.getAsBoolean();
+            } else if (primitive.isString()) {
+                val = primitive.getAsString();
+            } else if (primitive.isNumber()) {
+                val = primitive.getAsNumber();
+            } else {
+                val = primitive;
+            }
+        } else {
+            val = value;
+        }
+
+        return val;
     }
 
     @SuppressWarnings("unchecked")

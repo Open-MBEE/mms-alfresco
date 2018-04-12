@@ -33,9 +33,11 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -43,6 +45,8 @@ public class Migrate_3_3_0 {
 
     static Logger logger = Logger.getLogger(Migrate_3_3_0.class);
     private static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    private static final String refScript =
+        "{\"script\": {\"inline\": \"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%1$s.add(params.refId)} else {ctx._source.%1$s = [params.refId]}\", \"params\":{\"refId\":\"%2$s\"}}}";
 
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
@@ -130,7 +134,8 @@ public class Migrate_3_3_0 {
                             for (int i = 0; i < parentArtifacts.size(); i++) {
                                 JsonObject parentArt = parentArtifacts.get(i).getAsJsonObject();
 
-                                if (pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true) == null) {
+                                if (pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true)
+                                    == null) {
                                     Map<String, Object> artifact = new HashMap<>();
                                     artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
                                     artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
@@ -170,13 +175,13 @@ public class Migrate_3_3_0 {
                                 String elasticId = UUID.randomUUID().toString();
                                 String baseId = name.substring(0, name.lastIndexOf('.'));
                                 String artifactId = name.startsWith("img_") ? name : baseId + "_" + extension;
-                                //String alfrescoId = baseId + System.currentTimeMillis() + "." + extension;
 
                                 Calendar cal = Calendar.getInstance();
                                 cal.setTimeInMillis(created.getTime());
                                 cal.setTimeZone(TimeZone.getTimeZone("GMT"));
                                 String timestamp = df.format(cal.getTime());
-                                List<String> inRefs = Arrays.asList(refId, "master");
+                                List<String> inRefs =
+                                    refId.equals("master") ? Arrays.asList(refId, "master") : Arrays.asList(refId);
 
                                 JsonObject check =
                                     eh.getElementsLessThanOrEqualTimestamp(artifactId, timestamp, inRefs, projectId);
@@ -214,7 +219,8 @@ public class Migrate_3_3_0 {
                                             commitObject.addProperty(Sjm.CREATOR, creator);
                                             commitObject.addProperty(Sjm.PROJECTID, projectId);
                                             commitObject.addProperty(Sjm.TYPE, Sjm.ARTIFACT);
-                                            commitObject.addProperty(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
+                                            commitObject
+                                                .addProperty(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
 
                                             JsonArray added = new JsonArray();
                                             added.add(artifactJson);
@@ -222,7 +228,7 @@ public class Migrate_3_3_0 {
 
                                             eh.indexElement(commitObject, projectId, ElasticHelper.COMMIT);
 
-                                            logger.info("JSON: " + commitObject);
+                                            logger.info("Indexed JSON: " + commitObject);
                                         } else {
                                             logger.info("Bulk insert failed for: " + projectId);
                                             noErrors = false;
@@ -233,6 +239,11 @@ public class Migrate_3_3_0 {
                                     }
                                 } else {
                                     elasticId = check.get(Sjm.SYSMLID).getAsString();
+                                    commitId = check.get(Sjm.COMMITID).getAsString();
+                                    String scriptToRun = String.format(refScript, Sjm.INREFIDS, refId);
+                                    Set<String> artifactsToUpdate = new HashSet<>();
+                                    artifactsToUpdate.add(elasticId);
+                                    eh.bulkUpdateElements(artifactsToUpdate, scriptToRun, projectId, "artifact");
                                 }
 
                                 if (pgh.getArtifactFromSysmlId(artifactId, true) == null) {

@@ -71,7 +71,8 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
     private transient ElasticHelper eh;
     private transient PostgresHelper pgh;
 
-    public BranchTask(String projectId, String srcId, String createdString, String elasticId, Boolean isTag, String source, String commitId, String author) {
+    public BranchTask(String projectId, String srcId, String createdString, String elasticId, Boolean isTag,
+        String source, String commitId, String author) {
         this.projectId = projectId;
         this.elasticId = elasticId;
         this.source = source;
@@ -82,16 +83,13 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         this.author = author;
     }
 
-    @Override
-    public JsonObject call () {
+    @Override public JsonObject call() {
         return createBranch();
     }
 
     // used in createBranch
-    private static final String refScript = "{\"script\": {\"inline\":"
-        + "\"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%2$s.add(params.refId)}"
-        + " else {ctx._source.%3$s = [params.refId]}\","
-        + " \"params\":{\"refId\":\"%4$s\"}}}";
+    private static final String refScript =
+        "{\"script\": {\"inline\": \"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%1$s.add(params.refId)} else {ctx._source.%1$s = [params.refId]}\", \"params\":{\"refId\":\"%2$s\"}}}";
 
     private JsonObject createBranch() {
 
@@ -112,9 +110,8 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
 
         try {
             eh = new ElasticHelper();
-            pgh.createBranchFromWorkspace(created.get(Sjm.SYSMLID).getAsString(),
-            		created.get(Sjm.NAME).getAsString(), elasticId,
-                commitId, isTag);
+            pgh.createBranchFromWorkspace(created.get(Sjm.SYSMLID).getAsString(), created.get(Sjm.NAME).getAsString(),
+                elasticId, commitId, isTag);
 
             logger.info("Created branch");
 
@@ -129,8 +126,8 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
                 List<Map<String, Object>> childEdgeInserts = new ArrayList<>();
 
                 processNodesAndEdgesWithoutCommit(modelFromCommit.get(Sjm.ELEMENTS).getAsJsonArray(),
-                                modelFromCommit.get(Sjm.ARTIFACTS).getAsJsonArray(), nodeInserts,
-                                artifactInserts, edgeInserts, childEdgeInserts);
+                    modelFromCommit.get(Sjm.ARTIFACTS).getAsJsonArray(), nodeInserts, artifactInserts, edgeInserts,
+                    childEdgeInserts);
 
                 if (!nodeInserts.isEmpty()) {
                     insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
@@ -149,8 +146,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
             }
 
             Set<String> nodesToUpdate = pgh.getElasticIdsNodes();
-            String scriptToRun = String.format(refScript, Sjm.INREFIDS, Sjm.INREFIDS, Sjm.INREFIDS,
-                                               created.get(Sjm.SYSMLID).getAsString());
+            String scriptToRun = String.format(refScript, Sjm.INREFIDS, created.get(Sjm.SYSMLID).getAsString());
             created.addProperty("status", "created");
 
             Set<String> artifactsToUpdate = pgh.getElasticIdsArtifacts();
@@ -194,9 +190,11 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         CommitUtil.sendJmsMsg(branchJson, TYPE_BRANCH, srcId, projectId);
         JsonObject created = JsonUtil.buildFromString(createdString);
 
-        String body = String.format("Branch %s started by %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(),
-                        JsonUtil.getOptString(created, Sjm.CREATOR), this.timer);
-        String subject = String.format("Branch %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(), this.timer);
+        String body = String
+            .format("Branch %s started by %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(),
+                JsonUtil.getOptString(created, Sjm.CREATOR), this.timer);
+        String subject =
+            String.format("Branch %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(), this.timer);
 
         if (author != null) {
             try {
@@ -231,11 +229,10 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
                 }
 
                 Authenticator auth = null;
-                if(!smtpUser.isEmpty() && !smtpPass.isEmpty()) {
+                if (!smtpUser.isEmpty() && !smtpPass.isEmpty()) {
                     props.put(prefix + ".auth", "true");
                     auth = new Authenticator() {
-                        @Override
-                        protected PasswordAuthentication getPasswordAuthentication() {
+                        @Override protected PasswordAuthentication getPasswordAuthentication() {
                             return new PasswordAuthentication(smtpUser, smtpPass);
                         }
                     };
@@ -269,8 +266,8 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
     }
 
     public static void processNodesAndEdgesWithoutCommit(JsonArray elements, JsonArray artifacts,
-                    List<Map<String, Object>> nodeInserts, List<Map<String, Object>> artifactInserts,
-                    List<Map<String, Object>> edgeInserts, List<Map<String, Object>> childEdgeInserts) {
+        List<Map<String, Object>> nodeInserts, List<Map<String, Object>> artifactInserts,
+        List<Map<String, Object>> edgeInserts, List<Map<String, Object>> childEdgeInserts) {
 
         List<Pair<String, String>> addEdges = new ArrayList<>();
         List<Pair<String, String>> viewEdges = new ArrayList<>();
@@ -321,16 +318,19 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
             if (e.has(Sjm.CONTENTS)) {
                 JsonObject contents = JsonUtil.getOptObject(e, Sjm.CONTENTS);
                 CommitUtil.processContentsJson(e.get(Sjm.SYSMLID).getAsString(), contents, viewEdges);
-            } else if (e.has(Sjm.SPECIFICATION) && nodeType == GraphInterface.DbNodeTypes.INSTANCESPECIFICATION.getValue()) {
+            } else if (e.has(Sjm.SPECIFICATION) && nodeType == GraphInterface.DbNodeTypes.INSTANCESPECIFICATION
+                .getValue()) {
                 JsonObject iss = JsonUtil.getOptObject(e, Sjm.SPECIFICATION);
-                CommitUtil.processInstanceSpecificationSpecificationJson(e.get(Sjm.SYSMLID).getAsString(), iss, viewEdges);
+                CommitUtil
+                    .processInstanceSpecificationSpecificationJson(e.get(Sjm.SYSMLID).getAsString(), iss, viewEdges);
                 CommitUtil.processContentsJson(e.get(Sjm.SYSMLID).getAsString(), iss, viewEdges);
             }
-            if (nodeType == GraphInterface.DbNodeTypes.VIEW.getValue() || nodeType == GraphInterface.DbNodeTypes.DOCUMENT.getValue()) {
+            if (nodeType == GraphInterface.DbNodeTypes.VIEW.getValue()
+                || nodeType == GraphInterface.DbNodeTypes.DOCUMENT.getValue()) {
                 JsonArray owned = JsonUtil.getOptArray(e, Sjm.OWNEDATTRIBUTEIDS);
                 for (int j = 0; j < owned.size(); j++) {
-                	Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(), owned.get(j).getAsString());
-                	childViewEdges.add(p);
+                    Pair<String, String> p = new Pair<>(e.get(Sjm.SYSMLID).getAsString(), owned.get(j).getAsString());
+                    childViewEdges.add(p);
                 }
             }
             if (CommitUtil.isPartProperty(e)) {
