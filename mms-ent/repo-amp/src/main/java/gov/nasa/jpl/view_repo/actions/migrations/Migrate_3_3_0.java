@@ -253,9 +253,9 @@ public class Migrate_3_3_0 {
                                     statement.execute();
                                 }
 
-                                int commitFromDb = pgh.getCommitId(elasticId);
+                                int commitFromDb = pgh.getCommitId(commitId);
                                 if (commitFromDb == 0) {
-                                    pgh.insertCommit(elasticId, GraphInterface.DbCommitTypes.COMMIT, creator,
+                                    pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator,
                                         new java.sql.Date(created.getTime()));
                                 }
                             }
