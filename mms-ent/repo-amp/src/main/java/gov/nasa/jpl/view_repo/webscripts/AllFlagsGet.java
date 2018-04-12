@@ -69,7 +69,7 @@ public class AllFlagsGet extends FlagSet {
         } else if (path.equalsIgnoreCase( "skipSvgToPng" )) {
             return false;
         }
-        return false;
+        return true;
     }
 
 
