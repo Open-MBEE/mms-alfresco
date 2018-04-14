@@ -47,7 +47,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import gov.nasa.jpl.mbee.util.Debug;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
@@ -232,13 +231,13 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
                 logger.info(msg);
                 break;
             case Level.DEBUG_INT:
-                if (Debug.isOn()) {
+                if (logger.isDebugEnabled()) {
                     logger.debug(msg);
                 }
                 break;
             default:
                 // TODO: investigate if this the default thing to do
-                if (Debug.isOn()) {
+                if (logger.isDebugEnabled()) {
                     logger.debug(msg);
                 }
                 break;
@@ -332,7 +331,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      * assigned "false" (ignoring case).
      */
     public static boolean getBooleanArg(WebScriptRequest req, String name, boolean defaultValue) {
-        if (!Utils.toSet(req.getParameterNames()).contains(name)) {
+        if (!Arrays.asList(req.getParameterNames()).contains(name)) {
             return defaultValue;
         }
         String paramVal = req.getParameter(name);
@@ -444,7 +443,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      * variable that is used in the sendDeltas call.
      *
      * @param postJson
-     * @throws JSONException
      */
     protected void populateSourceApplicationFromJson(JsonObject postJson) {
         requestSourceApplication = JsonUtil.getOptString(postJson, "source");
@@ -599,7 +597,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      * @author dank
      */
     public static String getStringArg(WebScriptRequest req, String name, String defaultValue) {
-        if (!Utils.toSet(req.getParameterNames()).contains(name)) {
+        if (!Arrays.asList(req.getParameterNames()).contains(name)) {
             return defaultValue;
         }
         return req.getParameter(name);

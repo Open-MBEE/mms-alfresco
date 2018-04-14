@@ -56,7 +56,6 @@ import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
-import gov.nasa.jpl.mbee.util.Debug;
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
@@ -163,8 +162,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
     public JsonObject createWorkSpace(String projectId, String sourceWorkId, String newWorkName, String commitId,
         JsonObject jsonObject, String user, Status status) {
         status.setCode(HttpServletResponse.SC_OK);
-        if (Debug.isOn()) {
-            Debug.outln(
+        if (logger.isDebugEnabled()) {
+            logger.debug(
                 "createWorkSpace(sourceWorkId=" + sourceWorkId + ", newWorkName=" + newWorkName + ", commitId=" + commitId
                     + ", jsonObject=" + jsonObject + ", user=" + user + ", status=" + status + ")");
         }
@@ -259,14 +258,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         } else {
             // Workspace was found, so update it:
             if (existingRef.getId() != null) {
-                if (existingRef.isDeleted()) {
-
-                    existingRef.removeAspect("ems:Deleted");
-                    log(Level.INFO, HttpServletResponse.SC_OK, "Workspace undeleted and modified");
-
-                } else {
-                    log(Level.INFO, "Workspace is modified", HttpServletResponse.SC_OK);
-                }
+                log(Level.INFO, "Workspace is modified", HttpServletResponse.SC_OK);
                 finalWorkspace = existingRef;
             } else {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Workspace not found.");

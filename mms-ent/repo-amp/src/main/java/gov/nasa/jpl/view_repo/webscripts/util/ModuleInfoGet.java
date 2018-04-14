@@ -53,21 +53,6 @@ public class ModuleInfoGet extends DeclarativeWebScript {
         return model;
     }
 
-
-    //Placed within for testing purposes!
-    // TODO: Remove once finished with MmsVersion service
-    public static JsonObject checkMMSversion(WebScriptRequest req) {
-        boolean matchVersions = AbstractJavaWebScript.getBooleanArg(req, "mmsVersion", false);
-        JsonObject jsonVersion = null;
-        String mmsVersion = NodeUtil.getMMSversion();
-        if (logger.isDebugEnabled()) logger.debug("Check versions?" + matchVersions);
-        if (matchVersions) {
-            jsonVersion = new JsonObject();
-            jsonVersion.addProperty("version", mmsVersion);
-        }
-        return jsonVersion;
-    }
-
     public void setServices(ServiceRegistry registry) {
         services = registry;
     }
