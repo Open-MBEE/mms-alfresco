@@ -235,7 +235,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.addProperty("status", "creating");
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
 
-            if (!NO_WORKSPACE_ID.equals(sourceWorkspaceId) && srcWs.getId() == null) {
+            if (!NO_WORKSPACE_ID.equals(sourceWorkspaceId) && srcWs == null) {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Source workspace not found.");
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);
                 return null;
@@ -245,7 +245,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
                 if (dstWs != null) {
                     // keep history of the branch
-                    String srcId = srcWs.getName().equals(NO_WORKSPACE_ID) ? NO_WORKSPACE_ID : srcWs.getId();
+                    String srcId = srcWs.getName();
                     dstWs.setProperty("cm:title", newWorkspaceId + "_" + srcId);
                     dstWs.setProperty("cm:name", dstWs.getName());
 
