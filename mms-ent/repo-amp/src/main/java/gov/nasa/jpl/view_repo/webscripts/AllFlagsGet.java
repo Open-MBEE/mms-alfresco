@@ -1,6 +1,5 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
-import gov.nasa.jpl.mbee.util.Debug;
 import gov.nasa.jpl.view_repo.util.NodeUtil;
 
 public class AllFlagsGet extends FlagSet {
@@ -32,10 +31,7 @@ public class AllFlagsGet extends FlagSet {
         if (path.equalsIgnoreCase( "all" )) {
             return false;
         }
-        if (path.equalsIgnoreCase ("debug")) {
-            if ( val ) Debug.turnOn();
-            else Debug.turnOff();
-        } else if (path.equalsIgnoreCase("checkMmsVersions")){
+       if (path.equalsIgnoreCase("checkMmsVersions")){
             AbstractJavaWebScript.checkMmsVersions = val;
         } else if (path.equalsIgnoreCase("skipSvgToPng")){
             NodeUtil.skipSvgToPng = val;
@@ -54,9 +50,7 @@ public class AllFlagsGet extends FlagSet {
             return true;
         }
 
-        if (path.equalsIgnoreCase ("debug")) {
-            return Debug.isOn();
-        } else if (path.equalsIgnoreCase("checkMmsVersions")){
+        if (path.equalsIgnoreCase("checkMmsVersions")){
                 return AbstractJavaWebScript.checkMmsVersions;
 		} else if (path.equalsIgnoreCase( "skipSvgToPng" )) {
 			return NodeUtil.skipSvgToPng;

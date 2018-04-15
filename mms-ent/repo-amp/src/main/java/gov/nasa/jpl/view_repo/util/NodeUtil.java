@@ -34,48 +34,20 @@ import org.apache.log4j.Logger;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
-import gov.nasa.jpl.mbee.util.Debug;
-
 public class NodeUtil {
 
     static Logger logger = Logger.getLogger(NodeUtil.class);
 
     /* static flags and constants */
 
-
-    protected static boolean insideTransactionNow = false;
-    protected static Map<Long, Boolean> insideTransactionNowMap = new LinkedHashMap<>();
     protected static Map<Long, UserTransaction> transactionMap =
         Collections.synchronizedMap(new LinkedHashMap<Long, UserTransaction>());
-
-    public static synchronized boolean isInsideTransactionNow() {
-        Boolean b = insideTransactionNowMap.get(Thread.currentThread().getId());
-        if (b != null)
-            return b;
-        return insideTransactionNow;
-    }
 
     public static UserTransaction getTransaction() {
         return transactionMap.get(Thread.currentThread().getId());
     }
 
-    public static UserTransaction createTransaction() {
-        UserTransaction trx = services.getTransactionService().getNonPropagatingUserTransaction();
-        transactionMap.put(Thread.currentThread().getId(), trx);
-        return trx;
-    }
-
-    public static synchronized void setInsideTransactionNow(boolean b) {
-        insideTransactionNow = b;
-        insideTransactionNowMap.put(Thread.currentThread().getId(), b);
-    }
-
     public static boolean skipSvgToPng = false;
-
-    // Set the flag to time events that occur during a model post using the
-    // timers
-    // below
-    public static boolean timeEvents = false;
 
     public static ServiceRegistry services = null;
     public static Repository repository = null;
@@ -124,13 +96,6 @@ public class NodeUtil {
     public static QName createQName(String s, ServiceRegistry services) {
         if (s == null)
             return null;
-        if (Acm.getJSON2ACM().keySet().contains(s)) {
-            String possibleString = Acm.getACM2JSON().get(s);
-            // Bad mapping, ie type, just use the original string:
-            if (possibleString != null) {
-                s = possibleString;
-            }
-        }
         QName qname;
         if (s.indexOf("{") != -1) {
             qname = QName.createQName(s);
@@ -146,9 +111,7 @@ public class NodeUtil {
         if (services == null)
             services = getServiceRegistry();
         if (services == null || services.getNodeLocatorService() == null) {
-            if (Debug.isOn()) {
-                logger.debug("getCompanyHome() failed, no services or no nodeLocatorService: " + services);
-            }
+            logger.error("getCompanyHome() failed, no services or no nodeLocatorService: " + services);
         }
         NodeRef companyHomeNodeRef =
             services != null ? services.getNodeLocatorService().getNode("companyhome", null, null) : null;
@@ -207,20 +170,6 @@ public class NodeUtil {
         return result;
     }
 
-    public static NodeRef getNodeRefFromNodeId(String store, String id) {
-        List<NodeRef> nodeRefs = NodeRef.getNodeRefs(store + id);
-        if (!nodeRefs.isEmpty()) {
-            NodeRef ref = nodeRefs.get(0);
-            if (ref != null) {
-                EmsScriptNode node = new EmsScriptNode(ref, services);
-                if (node.scriptNodeExists()) {
-                    return ref;
-                }
-            }
-        }
-        return null;
-    }
-
     public static boolean exists(EmsScriptNode node) {
         return exists(node, false);
     }
@@ -260,7 +209,7 @@ public class NodeUtil {
             if (createIfNotFound && homes != null && homes.exists()) {
                 homeFolderScriptNode = homes.createFolder(userName, null, null);
             } else {
-                Debug.error("Error! No user homes folder!");
+                logger.error("Error! No user homes folder!");
             }
         }
         if (!exists(homeFolderScriptNode) && exists(homeFolderNode)) {
@@ -351,14 +300,10 @@ public class NodeUtil {
         if (!artifactNode.hasAspect("cm:indexControl")) {
             artifactNode.addAspect("cm:indexControl");
         }
-        if (!artifactNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
-            artifactNode.addAspect(Acm.ACM_IDENTIFIABLE);
-        }
 
         artifactNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
         artifactNode.createOrUpdateProperty("cm:isIndexed", true);
         artifactNode.createOrUpdateProperty("cm:isContentIndexed", false);
-        artifactNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Creating artifact with indexing: " + artifactNode.getProperty("cm:isIndexed"));
@@ -378,22 +323,6 @@ public class NodeUtil {
 
     public static String getHostname() {
         return services.getSysAdminParams().getAlfrescoHost();
-    }
-
-    public static EmsScriptNode getOrCreateContentNode(EmsScriptNode parent, String cmName, ServiceRegistry services) {
-        // See if node already exists.
-        EmsScriptNode node = parent.childByNamePath(cmName);
-
-        if (!exists(node)) {
-            if (node != null) {
-                Debug.error(true, false, "Error! tried to create " + cmName + " in parent, " + parent
-                    + ", but a deleted or corrupt node of the same name exists.  Renaming to a_" + cmName + ".");
-                cmName = "a_" + cmName;
-                return getOrCreateContentNode(parent, cmName, services);
-            }
-            node = parent.createNode(cmName, "cm:content");
-        }
-        return node;
     }
 
     /**

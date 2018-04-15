@@ -980,14 +980,6 @@ public class CommitUtil {
         }
     }
 
-    public static Set<Object> findKeyValueInJsonElement(JsonElement jelem, String keyMatch, StringBuilder text) {
-        if (jelem.isJsonObject())
-            return findKeyValueInJsonObject(jelem.getAsJsonObject(), keyMatch, text);
-        else if (jelem.isJsonArray())
-            return findKeyValueInJsonArray(jelem.getAsJsonArray(), keyMatch, text);
-        return new HashSet<>();
-    }
-
     public static Set<Object> findKeyValueInJsonObject(JsonObject json, String keyMatch, StringBuilder text) {
         Set<Object> result = new HashSet<>();
         for (Map.Entry<String, JsonElement> entry : json.entrySet()) {

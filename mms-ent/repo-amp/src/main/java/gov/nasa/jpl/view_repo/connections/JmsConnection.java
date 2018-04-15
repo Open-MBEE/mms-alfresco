@@ -39,7 +39,7 @@ public class JmsConnection implements ConnectionInterface {
     private static Map<String, ConnectionInfo> connectionMap = null;
 
     protected static Map<String, ConnectionInfo> getConnectionMap() {
-        if (Utils.isNullOrEmpty(connectionMap)) {
+        if (connectionMap == null || connectionMap.isEmpty()) {
             connectionMap = new HashMap<String, ConnectionInfo>();
             initConnectionInfo(CommitUtil.TYPE_BRANCH);
             initConnectionInfo(CommitUtil.TYPE_DELTA);
@@ -125,7 +125,7 @@ public class JmsConnection implements ConnectionInterface {
     /**
      * Changed method to synchronized to JMS message can be sent out with appropriate refId and projectIds
      * without race condition.
-     */ 
+     */
     public synchronized boolean publish(JsonObject json, String eventType, String refId, String projectId) {
         boolean result = false;
         json.addProperty("sequence", sequenceId++);
@@ -283,7 +283,7 @@ public class JmsConnection implements ConnectionInterface {
         }
 
         if (json.has("uri")) {
-            ci.uri = json.get("uri").isJsonNull() ? 
+            ci.uri = json.get("uri").isJsonNull() ?
                             null : json.get("uri").getAsString();
         }
         if (json.has("connFactory")) {
