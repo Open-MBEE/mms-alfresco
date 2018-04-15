@@ -548,8 +548,10 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @return JSONObject Result
      */
     public JsonObject bulkDeleteByType(String type, ArrayList<String> ids, String index) {
-        if (ids.size() == 0)
+        if (ids.isEmpty()) {
             return new JsonObject();
+        }
+
         JestResult result = null;
         try {
             ArrayList<Delete> deleteList = new ArrayList<>();
@@ -571,8 +573,9 @@ public class ElasticHelper implements ElasticsearchInterface {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         JsonObject o = new JsonObject();
-        if (result != null)
+        if (result != null) {
             o = result.getJsonObject();
+        }
         return o;
     }
 

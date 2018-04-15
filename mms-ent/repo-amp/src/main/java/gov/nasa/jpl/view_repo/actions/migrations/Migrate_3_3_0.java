@@ -240,7 +240,7 @@ public class Migrate_3_3_0 {
                                         noErrors = false;
                                     }
                                 } else {
-                                    elasticId = check.get(Sjm.SYSMLID).getAsString();
+                                    elasticId = check.get(Sjm.ELASTICID).getAsString();
                                     commitId = check.get(Sjm.COMMITID).getAsString();
                                     String scriptToRun = String.format(refScript, Sjm.INREFIDS, refId);
                                     Set<String> artifactsToUpdate = new HashSet<>();
@@ -252,6 +252,7 @@ public class Migrate_3_3_0 {
                                     Map<String, Object> map = new HashMap<>();
                                     map.put("elasticId", elasticId);
                                     map.put("sysmlId", artifactId);
+                                    map.put("lastCommit", commitId);
                                     map.put("initialCommit", elasticId);
                                     pgh.insert("artifacts" + (ref.first.equals("master") ? "" : ref.first), map);
                                 } else {
