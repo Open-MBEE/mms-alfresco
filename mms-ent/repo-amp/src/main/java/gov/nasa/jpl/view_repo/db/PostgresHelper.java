@@ -2006,15 +2006,24 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public List<Pair<String, String>> getRefsElastic() {
+        return getRefsElastic(false);
+    }
+
+    public List<Pair<String, String>> getRefsElastic(boolean includeDeleted) {
         List<Pair<String, String>> result = new ArrayList<>();
-        try {
-            PreparedStatement statement =
-                prepareStatement("SELECT refId, elasticId FROM refs WHERE deleted = false ORDER BY timestamp ASC");
-            ResultSet rs = statement.executeQuery();
+        StringBuilder query = new StringBuilder("SELECT refId, elasticId FROM refs ");
+        if (!includeDeleted) {
+            query.append("WHERE deleted = false ");
+        }
+        query.append("ORDER BY timestamp ASC");
+
+        PreparedStatement statement =
+            prepareStatement(query.toString());
+
+        try(ResultSet rs = statement.executeQuery()) {
             while (rs.next()) {
                 result.add(new Pair<>(rs.getString(1), rs.getString(2)));
             }
-
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {

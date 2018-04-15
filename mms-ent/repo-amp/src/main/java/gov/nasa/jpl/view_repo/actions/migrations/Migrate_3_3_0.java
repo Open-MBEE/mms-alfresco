@@ -102,7 +102,9 @@ public class Migrate_3_3_0 {
                 pgh.execUpdate("CREATE INDEX IF NOT EXISTS artifactIndex on artifacts(id);");
                 pgh.execUpdate("CREATE INDEX IF NOT EXISTS sysmlArtifactIndex on artifacts(sysmlId);");
 
-                List<Pair<String, String>> refs = pgh.getRefsElastic();
+                pgh.execUpdate("DROP TABLE IF EXISTS commitParent");
+
+                List<Pair<String, String>> refs = pgh.getRefsElastic(true);
 
                 logger.info("Getting files");
                 for (Pair<String, String> ref : refs) {
@@ -118,8 +120,6 @@ public class Migrate_3_3_0 {
                         pgh.execUpdate(String.format(
                             "CREATE TABLE IF NOT EXISTS artifacts%s (LIKE artifacts INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
                             ref.first));
-
-                        pgh.execUpdate("DROP TABLE IF EXISTS commitParent");
 
                         PreparedStatement parentStatement = pgh.prepareStatement(
                             "SELECT commits.elasticid FROM refs JOIN commits ON refs.parentCommit = commits.id WHERE refs.refId = ? LIMIT 1");
