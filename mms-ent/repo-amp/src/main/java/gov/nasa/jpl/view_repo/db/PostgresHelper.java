@@ -900,12 +900,6 @@ public class PostgresHelper implements GraphInterface {
             insert("commits", map);
             if (parentId > 0) {
                 int childId = getHeadCommit();
-                if (parentId != childId) {
-                    PreparedStatement statement = prepareStatement("INSERT INTO commitParent (child, parent) VALUES (?,?)");
-                    statement.setInt(1, childId);
-                    statement.setInt(2, parentId);
-                    statement.execute();
-                }
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -1676,10 +1670,6 @@ public class PostgresHelper implements GraphInterface {
                 "CREATE TABLE commits(id bigserial primary key, elasticId text not null unique, refId text not null, timestamp timestamp default current_timestamp, commitType bigserial, creator text, FOREIGN KEY(commitType) REFERENCES commitType (id) ON DELETE CASCADE);");
             execUpdate("CREATE INDEX commitIndex on commits(id);");
             execUpdate("CREATE INDEX commitElasticIdIndex on commits(elasticId);");
-
-            execUpdate(
-                "CREATE TABLE commitParent(id bigserial primary key, child integer NOT NULL, parent integer not null, FOREIGN KEY(child) REFERENCES commits(id) ON DELETE CASCADE, FOREIGN KEY(parent) REFERENCES commits(id) ON DELETE CASCADE, constraint unique_parents unique(child, parent));");
-            execUpdate("CREATE INDEX commitParentIndex on commitParent(id)");
 
             execUpdate(
                 "CREATE TABLE refs(id bigserial primary key, parent text not null, refId text not null unique, refName text not null, parentCommit integer, elasticId text, tag boolean DEFAULT false, timestamp timestamp DEFAULT current_timestamp, deleted boolean DEFAULT false);");

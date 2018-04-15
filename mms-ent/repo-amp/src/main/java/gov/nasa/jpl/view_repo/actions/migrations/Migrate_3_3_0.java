@@ -119,6 +119,8 @@ public class Migrate_3_3_0 {
                             "CREATE TABLE IF NOT EXISTS artifacts%s (LIKE artifacts INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
                             ref.first));
 
+                        pgh.execUpdate("DROP TABLE IF EXISTS commitParent");
+
                         PreparedStatement parentStatement = pgh.prepareStatement(
                             "SELECT commits.elasticid FROM refs JOIN commits ON refs.parentCommit = commits.id WHERE refs.refId = ? LIMIT 1");
                         parentStatement.setString(1, ref.first);
