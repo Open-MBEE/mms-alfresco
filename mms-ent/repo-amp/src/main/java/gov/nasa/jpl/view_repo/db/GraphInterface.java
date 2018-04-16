@@ -87,7 +87,7 @@ public interface GraphInterface {
 
     void insertEdge(String parentSysmlId, String childSysmlId, DbEdgeTypes edgeType);
 
-    Map<String, String> getCommitAndTimestamp(String lookUp, String value);
+    Map<String, String> getCommitAndTimestamp(String lookUp, Object value);
 
     Long getTimestamp(String lookUp, String value);
 

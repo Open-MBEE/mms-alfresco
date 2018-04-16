@@ -898,9 +898,6 @@ public class PostgresHelper implements GraphInterface {
                 map.put("timestamp", new Timestamp(time.getTime()));
             }
             insert("commits", map);
-            if (parentId > 0) {
-                int childId = getHeadCommit();
-            }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1117,15 +1114,15 @@ public class PostgresHelper implements GraphInterface {
         return 0;
     }
 
-    public Map<String, String> getCommitAndTimestamp(String lookUp, String value) {
+    public Map<String, String> getCommitAndTimestamp(String lookUp, Object value) {
         return getCommitAndTimestamp(lookUp, value, "=");
     }
 
-    public Map<String, String> getCommitAndTimestamp(String lookUp, String value, String operator) {
+    public Map<String, String> getCommitAndTimestamp(String lookUp, Object value, String operator) {
         return getCommitAndTimestamp(lookUp, value, operator, 0);
     }
 
-    public Map<String, String> getCommitAndTimestamp(String lookUp, String value, String operator, int limit) {
+    public Map<String, String> getCommitAndTimestamp(String lookUp, Object value, String operator, int limit) {
         Map<String, String> commit = new HashMap<>();
         try {
             StringBuilder query = new StringBuilder(String
@@ -1137,10 +1134,10 @@ public class PostgresHelper implements GraphInterface {
             }
 
             PreparedStatement statement = prepareStatement(query.toString());
-            statement.setString(1, value);
+            statementSetter(statement, value, 0);
 
             if (limit > 0) {
-                statement.setInt(2, limit);
+                statementSetter(statement, limit, 1);
             }
 
             ResultSet rs = statement.executeQuery();

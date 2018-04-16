@@ -9,6 +9,7 @@ import gov.nasa.jpl.view_repo.db.GraphInterface;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.model.ContentModel;
@@ -34,14 +35,12 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Scanner;
@@ -55,8 +54,12 @@ public class Migrate_3_3_0 {
     private static final String refScript =
         "{\"script\": {\"inline\": \"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%1$s.add(params.refId)} else {ctx._source.%1$s = [params.refId]}\", \"params\":{\"refId\":\"%2$s\"}}}";
 
-    private static final String searchQuery =
-        "{\"query\": {\"bool\": {\"must\": [{\"bool\": {\"should\": [{\"term\": {\"id\": \"%s\"}},{\"term\": {\"created\": \"%s\"}}]}}],\"filter\": [{\"bool\": {\"should\": [{\"bool\": {\"must\": [{\"term\": {\"_projectId\": \"%s\"}},{\"term\": {\"_inRefIds\": \"%s\"}}]}}]}}]}},\"from\": 0,\"size\": 1}";
+    private static final String artifactToElementScript =
+        "{\"script\": {\"inline\": \"ctx._source._artifacts = [ctx._source.id + \"_svg\", ctx._source.id + \"_png\"]}\"}}";
+
+    private static final String searchQuery = "{\"query\":{\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}, \"from\": 0, \"size\": 1}";
+
+    private static final String ingestPipeline = "{\"description\": \"MMS 3.3.0 Migration Step - Rename isSite to isGroup\", \"processors\": [\"rename\": {\"field\": \"_isSite\", \"target_field\": \"_isGroup\"}]";
 
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
@@ -83,7 +86,7 @@ public class Migrate_3_3_0 {
 
             SiteInfo siteInfo = siteService.getSite(orgId);
 
-            pgh.getConn("config").prepareStatement("DROP TABLE IF EXISTS projectMounts");
+            pgh.getConn("config").prepareStatement("DROP TABLE IF EXISTS projectMounts").execute();
 
             List<Map<String, Object>> projects = pgh.getProjects(orgId);
             if (projects.isEmpty()) {
@@ -94,6 +97,7 @@ public class Migrate_3_3_0 {
             logger.info("SiteNode loaded: " + siteNode.getName());
             logger.info("Iterating through projects for " + siteNode.getName());
             for (Map<String, Object> project : projects) {
+
                 String projectId = project.get(Sjm.SYSMLID).toString();
 
                 logger.info("ProjectID: " + projectId);
@@ -107,6 +111,9 @@ public class Migrate_3_3_0 {
                 logger.info("ProjectNode loaded: " + projectNode.getName());
 
                 ElasticHelper eh = new ElasticHelper();
+                //Reindex to rename fields
+
+                eh.refreshIndex();
 
                 logger.info("Updating: " + projectId);
 
@@ -123,6 +130,7 @@ public class Migrate_3_3_0 {
                 logger.info("Getting files");
                 for (Pair<String, String> ref : refs) {
                     Set<String> artifactsToUpdate = new HashSet<>();
+                    Set<String> mdArtifacts = new HashSet<>();
 
                     String refId = ref.first.replace("_", "-");
 
@@ -188,10 +196,13 @@ public class Migrate_3_3_0 {
                     for (FileInfo file : files) {
                         if (!file.isFolder()) {
                             VersionHistory versionHistory = versionService.getVersionHistory(file.getNodeRef());
-                            Collection<Version> versions = versionHistory.getAllVersions();
-                            Iterator it = versions.iterator();
-                            while (it.hasNext()) {
-                                Version version = (Version) it.next();
+                            List<Version> versions = new ArrayList<>(versionHistory.getAllVersions());
+                            ListIterator it = versions.listIterator(versions.size());
+
+                            String artifactId = null;
+
+                            while (it.hasPrevious()) {
+                                Version version = (Version) it.previous();
                                 FileInfo frozenFile = fileFolderService.getFileInfo(version.getFrozenStateNodeRef());
                                 String name = frozenFile.getName();
                                 String url = frozenFile.getContentData().getContentUrl();
@@ -203,15 +214,16 @@ public class Migrate_3_3_0 {
                                 String extension = FilenameUtils.getExtension(name);
                                 String elasticId = UUID.randomUUID().toString();
                                 String baseId = name.substring(0, name.lastIndexOf('.'));
-                                String artifactId = name.startsWith("img_") ? name : baseId + "_" + extension;
 
-                                Calendar cal = Calendar.getInstance();
-                                cal.setTimeInMillis(created.getTime());
-                                cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-                                String timestamp = df.format(cal.getTime());
+                                if (!baseId.startsWith("img_")) {
+                                    mdArtifacts.add(baseId);
+                                    artifactId = baseId + "_" + extension;
+                                } else {
+                                    artifactId = name;
+                                }
 
-                                JsonObject check = eh.getElementsLessThanOrEqualTimestamp(artifactId, timestamp,
-                                    new ArrayList<String>(), projectId);
+                                String checkQuery = String.format(searchQuery, projectId, artifactId, df.format(created));
+                                JsonObject check = eh.search(JsonUtil.buildFromString(checkQuery));
 
                                 if (!check.has(Sjm.SYSMLID)) {
                                     JsonObject artifactJson = new JsonObject();
@@ -286,7 +298,6 @@ public class Migrate_3_3_0 {
                                     commitId = check.get(Sjm.COMMITID).getAsString();
                                 }
 
-
                                 if (pgh.getArtifactFromSysmlId(artifactId, true) == null) {
                                     Map<String, Object> map = new HashMap<>();
                                     map.put("elasticId", elasticId);
@@ -307,19 +318,26 @@ public class Migrate_3_3_0 {
                                 }
 
                                 Map<String, String> commitFromDb =
-                                    pgh.getCommitAndTimestamp("timestamp", Long.toString(created.getTime()));
+                                    pgh.getCommitAndTimestamp("timestamp", new Timestamp(created.getTime()));
                                 if (commitFromDb.isEmpty()) {
                                     pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator,
                                         new java.sql.Date(created.getTime()));
                                 }
+                            } // End of While Loop
 
-                                artifactsToUpdate.add(elasticId);
+                            Artifact latestArtifact = pgh.getArtifactFromSysmlId(artifactId, true);
+                            if (latestArtifact != null) {
+                                artifactsToUpdate.add(latestArtifact.getElasticId());
                             }
                         }
                     }
 
-                    String scriptToRun = String.format(refScript, Sjm.INREFIDS, refId);
-                    eh.bulkUpdateElements(artifactsToUpdate, scriptToRun, projectId, "artifact");
+                    String refScriptToRun = String.format(refScript, Sjm.INREFIDS, refId);
+                    eh.bulkUpdateElements(artifactsToUpdate, refScriptToRun, projectId, "artifact");
+
+                    if (!mdArtifacts.isEmpty()) {
+                        eh.bulkUpdateElements(mdArtifacts, artifactToElementScript, projectId, "element");
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@ import java.util.Set;
 
 import io.searchbox.core.*;
 import io.searchbox.indices.DeleteIndex;
+import io.searchbox.indices.reindex.Reindex;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
@@ -105,6 +106,24 @@ public class ElasticHelper implements ElasticsearchInterface {
     public void deleteIndex(String index) throws IOException {
         DeleteIndex indexExists = new DeleteIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build();
         client.execute(indexExists);
+    }
+
+    public void applyMapping(String index) throws IOException {
+
+    }
+
+    public void reIndex(String index) throws IOException {
+        reIndex(index, null);
+    }
+
+    public void reIndex(String index, JsonObject script) throws IOException {
+        String indexEscaped = index.toLowerCase().replaceAll("\\s+", "");
+        Reindex.Builder reindexBuilder = new Reindex.Builder(indexEscaped, indexEscaped);
+        if (script != null) {
+            reindexBuilder.script(script);
+        }
+        Reindex reindex = reindexBuilder.build();
+        client.execute(reindex);
     }
 
     /**
