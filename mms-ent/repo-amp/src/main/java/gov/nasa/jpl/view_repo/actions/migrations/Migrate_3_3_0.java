@@ -3,6 +3,7 @@ package gov.nasa.jpl.view_repo.actions.migrations;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import gov.nasa.jpl.mbee.util.Pair;
+import gov.nasa.jpl.view_repo.db.Artifact;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.GraphInterface;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +54,9 @@ public class Migrate_3_3_0 {
     private static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     private static final String refScript =
         "{\"script\": {\"inline\": \"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%1$s.add(params.refId)} else {ctx._source.%1$s = [params.refId]}\", \"params\":{\"refId\":\"%2$s\"}}}";
+
+    private static final String searchQuery =
+        "{\"query\": {\"bool\": {\"must\": [{\"bool\": {\"should\": [{\"term\": {\"id\": \"%s\"}},{\"term\": {\"created\": \"%s\"}}]}}],\"filter\": [{\"bool\": {\"should\": [{\"bool\": {\"must\": [{\"term\": {\"_projectId\": \"%s\"}},{\"term\": {\"_inRefIds\": \"%s\"}}]}}]}}]}},\"from\": 0,\"size\": 1}";
 
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
@@ -132,12 +137,14 @@ public class Migrate_3_3_0 {
                             ref.first));
 
                         PreparedStatement parentStatement = pgh.prepareStatement(
-                            "SELECT commits.elasticid FROM refs JOIN commits ON refs.parentCommit = commits.id WHERE refs.refId = ? LIMIT 1");
+                            "SELECT commits.elasticid, refs.parent FROM refs JOIN commits ON refs.parentCommit = commits.id WHERE refs.refId = ? LIMIT 1");
                         parentStatement.setString(1, ref.first);
                         ResultSet rs = parentStatement.executeQuery();
                         String parentCommit = null;
+                        String parentRefId = null;
                         if (rs.next()) {
                             parentCommit = rs.getString(1);
+                            parentRefId = rs.getString(2).equals("") ? "master" : rs.getString(2);
                         }
 
                         if (parentCommit != null) {
@@ -148,12 +155,20 @@ public class Migrate_3_3_0 {
 
                                 if (pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true)
                                     == null) {
-                                    Map<String, Object> artifact = new HashMap<>();
-                                    artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
-                                    artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
-                                    artifact.put("initialcommit", parentArt.get(Sjm.ELASTICID).getAsString());
-                                    artifact.put("lastcommit", parentArt.get(Sjm.COMMITID).getAsString());
-                                    artifactInserts.add(artifact);
+
+                                    pgh.setWorkspace(parentRefId);
+                                    Artifact parentArtNode =
+                                        pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true);
+                                    pgh.setWorkspace(refId);
+
+                                    if (parentArtNode != null) {
+                                        Map<String, Object> artifact = new HashMap<>();
+                                        artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
+                                        artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
+                                        artifact.put("initialcommit", parentArtNode.getInitialCommit());
+                                        artifact.put("lastcommit", parentArt.get(Sjm.COMMITID).getAsString());
+                                        artifactInserts.add(artifact);
+                                    }
                                 }
                             }
                             if (!artifactInserts.isEmpty()) {
@@ -194,11 +209,9 @@ public class Migrate_3_3_0 {
                                 cal.setTimeInMillis(created.getTime());
                                 cal.setTimeZone(TimeZone.getTimeZone("GMT"));
                                 String timestamp = df.format(cal.getTime());
-                                List<String> inRefs =
-                                    refId.equals("master") ? Arrays.asList(refId, "master") : Arrays.asList(refId);
 
-                                JsonObject check =
-                                    eh.getElementsLessThanOrEqualTimestamp(artifactId, timestamp, inRefs, projectId);
+                                JsonObject check = eh.getElementsLessThanOrEqualTimestamp(artifactId, timestamp,
+                                    new ArrayList<String>(), projectId);
 
                                 if (!check.has(Sjm.SYSMLID)) {
                                     JsonObject artifactJson = new JsonObject();
@@ -215,7 +228,8 @@ public class Migrate_3_3_0 {
                                     artifactJson.addProperty(Sjm.CREATED, df.format(created));
                                     artifactJson.addProperty(Sjm.MODIFIED, df.format(created));
                                     artifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
-                                    artifactJson.addProperty(Sjm.LOCATION, url.replace("/d/d/", "/service/api/node/content/"));
+                                    artifactJson
+                                        .addProperty(Sjm.LOCATION, url.replace("/d/d/", "/service/api/node/content/"));
                                     InputStream is =
                                         contentService.getReader(frozenFile.getNodeRef(), ContentModel.PROP_CONTENT)
                                             .getContentInputStream();
@@ -272,6 +286,7 @@ public class Migrate_3_3_0 {
                                     commitId = check.get(Sjm.COMMITID).getAsString();
                                 }
 
+
                                 if (pgh.getArtifactFromSysmlId(artifactId, true) == null) {
                                     Map<String, Object> map = new HashMap<>();
                                     map.put("elasticId", elasticId);
@@ -291,8 +306,9 @@ public class Migrate_3_3_0 {
                                     statement.execute();
                                 }
 
-                                int commitFromDb = pgh.getCommitId(commitId);
-                                if (commitFromDb == 0) {
+                                Map<String, String> commitFromDb =
+                                    pgh.getCommitAndTimestamp("timestamp", Long.toString(created.getTime()));
+                                if (commitFromDb.isEmpty()) {
                                     pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator,
                                         new java.sql.Date(created.getTime()));
                                 }
