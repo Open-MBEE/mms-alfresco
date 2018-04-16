@@ -6,13 +6,16 @@ import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.GraphInterface;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.version.Version;
@@ -24,6 +27,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
@@ -38,6 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Scanner;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -66,14 +71,17 @@ public class Migrate_3_3_0 {
         for (Map<String, String> org : orgs) {
             String orgId = org.get("orgId");
             SiteService siteService = services.getSiteService();
+            ContentService contentService = services.getContentService();
             VersionService versionService = services.getVersionService();
 
             logger.info("SiteService loaded");
 
             SiteInfo siteInfo = siteService.getSite(orgId);
-            List<Map<String, Object>> projects = pgh.getProjects(orgId);
 
-            if (projects.size() < 1) {
+            pgh.getConn("config").prepareStatement("DROP TABLE IF EXISTS projectMounts");
+
+            List<Map<String, Object>> projects = pgh.getProjects(orgId);
+            if (projects.isEmpty()) {
                 continue;
             }
 
@@ -88,6 +96,7 @@ public class Migrate_3_3_0 {
 
                 if (projectNode == null) {
                     logger.info("ProjectNode not found for: " + projectId);
+                    continue;
                 }
 
                 logger.info("ProjectNode loaded: " + projectNode.getName());
@@ -108,6 +117,7 @@ public class Migrate_3_3_0 {
 
                 logger.info("Getting files");
                 for (Pair<String, String> ref : refs) {
+                    Set<String> artifactsToUpdate = new HashSet<>();
 
                     String refId = ref.first.replace("_", "-");
 
@@ -169,6 +179,8 @@ public class Migrate_3_3_0 {
                                 Version version = (Version) it.next();
                                 FileInfo frozenFile = fileFolderService.getFileInfo(version.getFrozenStateNodeRef());
                                 String name = frozenFile.getName();
+                                String url = frozenFile.getContentData().getContentUrl();
+
                                 String creator = version.getFrozenModifier();
                                 Date created = version.getFrozenModifiedDate();
                                 String contentType = file.getContentData().getMimetype();
@@ -203,7 +215,14 @@ public class Migrate_3_3_0 {
                                     artifactJson.addProperty(Sjm.CREATED, df.format(created));
                                     artifactJson.addProperty(Sjm.MODIFIED, df.format(created));
                                     artifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
-                                    artifactJson.addProperty(Sjm.CHECKSUM, "");
+                                    artifactJson.addProperty(Sjm.LOCATION, url.replace("/d/d/", "/service/api/node/content/"));
+                                    InputStream is =
+                                        contentService.getReader(frozenFile.getNodeRef(), ContentModel.PROP_CONTENT)
+                                            .getContentInputStream();
+                                    Scanner s = new Scanner(is).useDelimiter("\\A");
+                                    if (s.hasNext()) {
+                                        artifactJson.addProperty(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(s.next()));
+                                    }
 
                                     JsonArray artifactJSONForElastic = new JsonArray();
                                     artifactJSONForElastic.add(artifactJson);
@@ -225,8 +244,17 @@ public class Migrate_3_3_0 {
                                                 .addProperty(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
 
                                             JsonArray added = new JsonArray();
-                                            added.add(artifactJson);
+
+                                            JsonObject simpleArtifactJson = new JsonObject();
+                                            simpleArtifactJson.addProperty(Sjm.SYSMLID, artifactId);
+                                            simpleArtifactJson.addProperty(Sjm.ELASTICID, elasticId);
+                                            simpleArtifactJson.addProperty(Sjm.TYPE, Sjm.ARTIFACT);
+                                            simpleArtifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
+
+                                            added.add(simpleArtifactJson);
                                             commitObject.add("added", added);
+                                            commitObject.add("updated", new JsonArray());
+                                            commitObject.add("deleted", new JsonArray());
 
                                             eh.indexElement(commitObject, projectId, ElasticHelper.COMMIT);
 
@@ -242,10 +270,6 @@ public class Migrate_3_3_0 {
                                 } else {
                                     elasticId = check.get(Sjm.ELASTICID).getAsString();
                                     commitId = check.get(Sjm.COMMITID).getAsString();
-                                    String scriptToRun = String.format(refScript, Sjm.INREFIDS, refId);
-                                    Set<String> artifactsToUpdate = new HashSet<>();
-                                    artifactsToUpdate.add(elasticId);
-                                    eh.bulkUpdateElements(artifactsToUpdate, scriptToRun, projectId, "artifact");
                                 }
 
                                 if (pgh.getArtifactFromSysmlId(artifactId, true) == null) {
@@ -272,9 +296,14 @@ public class Migrate_3_3_0 {
                                     pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator,
                                         new java.sql.Date(created.getTime()));
                                 }
+
+                                artifactsToUpdate.add(elasticId);
                             }
                         }
                     }
+
+                    String scriptToRun = String.format(refScript, Sjm.INREFIDS, refId);
+                    eh.bulkUpdateElements(artifactsToUpdate, scriptToRun, projectId, "artifact");
                 }
             }
         }

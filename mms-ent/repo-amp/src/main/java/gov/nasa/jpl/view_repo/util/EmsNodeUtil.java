@@ -1817,23 +1817,7 @@ public class EmsNodeUtil {
     }
 
     public static String md5Hash(String str) {
-        StringBuilder sb = new StringBuilder();
-
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(str.getBytes());
-
-            for (byte data : md.digest()) {
-                String hex = Integer.toHexString(0xff & data);
-                if (hex.length() == 1) {
-                    sb.append('0');
-                }
-                sb.append(hex);
-            }
-        } catch (NoSuchAlgorithmException e) {
-            logger.error(e);
-        }
-        return sb.toString();
+        return DigestUtils.md5Hex(str);
     }
 
     public JsonObject getProfile(String id) throws IOException {

@@ -18,12 +18,3 @@ create table projects
   constraint unique_projects unique(orgId, projectId)
 );
 create index projectIdIndex on projects(projectid);
-
-create table projectMounts
-(
-  id bigserial primary key,
-  projectId integer references projects(id) not null,
-  mountId integer references projects(id) not null,
-  constraint unique_projectmounts unique(projectId, mountId)
-);
-create index mountIndex on projectMounts(projectId);
