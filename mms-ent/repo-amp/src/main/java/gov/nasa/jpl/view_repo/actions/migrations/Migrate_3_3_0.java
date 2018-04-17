@@ -57,7 +57,7 @@ public class Migrate_3_3_0 {
     private static final String artifactToElementScript =
         "{\"script\": {\"inline\": \"ctx._source._artifacts = [ctx._source.id + \"_svg\", ctx._source.id + \"_png\"]}\"}}";
 
-    private static final String searchQuery = "{\"query\":{\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}, \"from\": 0, \"size\": 1}";
+    private static final String searchQuery = "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
 
     private static final String ingestPipeline = "{\"description\": \"MMS 3.3.0 Migration Step - Rename isSite to isGroup\", \"processors\": [\"rename\": {\"field\": \"_isSite\", \"target_field\": \"_isGroup\"}]";
 
@@ -203,9 +203,9 @@ public class Migrate_3_3_0 {
 
                             while (it.hasPrevious()) {
                                 Version version = (Version) it.previous();
-                                FileInfo frozenFile = fileFolderService.getFileInfo(version.getFrozenStateNodeRef());
-                                String name = frozenFile.getName();
-                                String url = frozenFile.getContentData().getContentUrl();
+                                FileInfo versionedFile = fileFolderService.getFileInfo(version.getVersionedNodeRef());
+                                String name = versionedFile.getName();
+                                String url = versionedFile.getContentData().getContentUrl();
 
                                 String creator = version.getFrozenModifier();
                                 Date created = version.getFrozenModifiedDate();
@@ -223,7 +223,8 @@ public class Migrate_3_3_0 {
                                 }
 
                                 String checkQuery = String.format(searchQuery, projectId, artifactId, df.format(created));
-                                JsonObject check = eh.search(JsonUtil.buildFromString(checkQuery));
+                                JsonObject checkQueryObj = JsonUtil.buildFromString(checkQuery);
+                                JsonObject check = eh.search(checkQueryObj);
 
                                 if (!check.has(Sjm.SYSMLID)) {
                                     JsonObject artifactJson = new JsonObject();
@@ -232,9 +233,6 @@ public class Migrate_3_3_0 {
                                     artifactJson.addProperty(Sjm.COMMITID, commitId);
                                     artifactJson.addProperty(Sjm.PROJECTID, projectId);
                                     artifactJson.addProperty(Sjm.REFID, refId);
-                                    JsonArray inRefIds = new JsonArray();
-                                    inRefIds.add(refId);
-                                    artifactJson.add(Sjm.INREFIDS, inRefIds);
                                     artifactJson.addProperty(Sjm.CREATOR, creator);
                                     artifactJson.addProperty(Sjm.MODIFIER, creator);
                                     artifactJson.addProperty(Sjm.CREATED, df.format(created));
@@ -243,7 +241,7 @@ public class Migrate_3_3_0 {
                                     artifactJson
                                         .addProperty(Sjm.LOCATION, url.replace("/d/d/", "/service/api/node/content/"));
                                     InputStream is =
-                                        contentService.getReader(frozenFile.getNodeRef(), ContentModel.PROP_CONTENT)
+                                        contentService.getReader(versionedFile.getNodeRef(), ContentModel.PROP_CONTENT)
                                             .getContentInputStream();
                                     Scanner s = new Scanner(is).useDelimiter("\\A");
                                     if (s.hasNext()) {
@@ -281,6 +279,8 @@ public class Migrate_3_3_0 {
                                             commitObject.add("added", added);
                                             commitObject.add("updated", new JsonArray());
                                             commitObject.add("deleted", new JsonArray());
+                                            commitObject.addProperty(Sjm.PROJECTID, projectId);
+                                            commitObject.addProperty(Sjm.REFID, refId);
 
                                             eh.indexElement(commitObject, projectId, ElasticHelper.COMMIT);
 
@@ -319,7 +319,7 @@ public class Migrate_3_3_0 {
 
                                 Map<String, String> commitFromDb =
                                     pgh.getCommitAndTimestamp("timestamp", new Timestamp(created.getTime()));
-                                if (commitFromDb.isEmpty()) {
+                                if (commitFromDb == null) {
                                     pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator,
                                         new java.sql.Date(created.getTime()));
                                 }
