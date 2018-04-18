@@ -55,7 +55,7 @@ public class Migrate_3_3_0 {
         "{\"script\": {\"inline\": \"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%1$s.add(params.refId)} else {ctx._source.%1$s = [params.refId]}\", \"params\":{\"refId\":\"%2$s\"}}}";
 
     private static final String artifactToElementScript =
-        "{\"script\": {\"inline\": \"ctx._source._artifacts = [ctx._source.id + \"_svg\", ctx._source.id + \"_png\"]}\"}}";
+        "{\"script\": {\"inline\": \"ctx._source._artifactIds = [ctx._source.id + \"_svg\", ctx._source.id + \"_png\"]}\"}}";
 
     private static final String searchQuery = "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
 
@@ -336,7 +336,11 @@ public class Migrate_3_3_0 {
                     eh.bulkUpdateElements(artifactsToUpdate, refScriptToRun, projectId, "artifact");
 
                     if (!mdArtifacts.isEmpty()) {
-                        eh.bulkUpdateElements(mdArtifacts, artifactToElementScript, projectId, "element");
+                        List<String> mdArtifactList = new ArrayList<>(mdArtifacts);
+                        List<String> nodeElasticIds = pgh.getElasticIdsFromSysmlIdsNodes(mdArtifactList, false);
+                        Set<String> elasticSet = new HashSet<>(nodeElasticIds);
+                        elasticSet.addAll(nodeElasticIds);
+                        eh.bulkUpdateElements(elasticSet, artifactToElementScript, projectId, "element");
                     }
                 }
             }
