@@ -59,11 +59,14 @@ public class Migrate_3_3_0 {
 
     private static final String searchQuery = "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
 
-    private static final String ingestPipeline = "{\"description\": \"MMS 3.3.0 Migration Step - Rename isSite to isGroup\", \"processors\": [\"rename\": {\"field\": \"_isSite\", \"target_field\": \"_isGroup\"}]";
+    private static final String renameScript =
+        "{\"query\": { \"match_all\":{} }, \"script\": {\"inline\": \"if(ctx._source.containsKey(\"_isSite\")){ctx._source._isGroup = ctx._source.remove(\"_isSite\")}\"}}";
 
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
         PostgresHelper pgh = new PostgresHelper();
+        ElasticHelper eh = new ElasticHelper();
+
         boolean noErrors = true;
 
         final String adminUserName = AuthenticationUtil.getAdminUserName();
@@ -75,6 +78,13 @@ public class Migrate_3_3_0 {
         logger.info("FileFolderService loaded");
 
         List<Map<String, String>> orgs = pgh.getOrganizations(null);
+
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        InputStream resourceAsStream = classLoader.getResourceAsStream("mapping_template.json");
+        Scanner s = new Scanner(resourceAsStream).useDelimiter("\\A");
+        if (s.hasNext()) {
+            eh.applyTemplate(s.next());
+        }
 
         for (Map<String, String> org : orgs) {
             String orgId = org.get("orgId");
@@ -110,10 +120,8 @@ public class Migrate_3_3_0 {
 
                 logger.info("ProjectNode loaded: " + projectNode.getName());
 
-                ElasticHelper eh = new ElasticHelper();
                 //Reindex to rename fields
-
-                eh.refreshIndex();
+                eh.updateByQuery(projectId, renameScript);
 
                 logger.info("Updating: " + projectId);
 
@@ -243,9 +251,9 @@ public class Migrate_3_3_0 {
                                     InputStream is =
                                         contentService.getReader(versionedFile.getNodeRef(), ContentModel.PROP_CONTENT)
                                             .getContentInputStream();
-                                    Scanner s = new Scanner(is).useDelimiter("\\A");
-                                    if (s.hasNext()) {
-                                        artifactJson.addProperty(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(s.next()));
+                                    Scanner s2 = new Scanner(is).useDelimiter("\\A");
+                                    if (s2.hasNext()) {
+                                        artifactJson.addProperty(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(s2.next()));
                                     }
 
                                     JsonArray artifactJSONForElastic = new JsonArray();

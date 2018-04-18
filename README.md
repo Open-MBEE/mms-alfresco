@@ -54,7 +54,7 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 ### 1. Install and Configure ElasticSearch
 *   Download ElasticSearch 5.X
 *   Install ElasticSearch
-*   Start ElasticSearch then run `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms-mappings.sh`
+*   Start ElasticSearch then run `mms-ent/repo-amp/src/main/resources/mms-mappings.sh`
 
 ### 2. Install and Configure PostgreSQL
 *   Download PostgreSQL 9.x
@@ -65,7 +65,7 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
     *  Create a `mms` user (referenced by pg.user in your `mms-ent/mms.properties` file)
        *  Ensure you set a password (referenced by pg.pass)
     *  Create a `mms` database ( referenced by pg.name)
-*   Execute `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql`
+*   Execute `mms-ent/repo-amp/src/main/resources/mms.sql`
     * windows CMD e.g.: `psql -h localhost -p 5432 -U mms -d mms -v schema=public < C:\path\to\mms\repo\mms.sql`
 
 ### 3. Install and Configure ActiveMQ

@@ -9,7 +9,7 @@ import java.util.Set;
 
 import io.searchbox.core.*;
 import io.searchbox.indices.DeleteIndex;
-import io.searchbox.indices.reindex.Reindex;
+import io.searchbox.indices.template.PutTemplate;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
@@ -49,6 +49,8 @@ public class ElasticHelper implements ElasticsearchInterface {
     public static final String COMMIT = "commit";
     private static final String PROFILE = "profile";
     private static final String ARTIFACT = "artifact";
+
+    private static final String DEFAULT_MAPPING_TYPE = "_default_";
 
     private static final String COMMIT_QUERY = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
 
@@ -108,22 +110,17 @@ public class ElasticHelper implements ElasticsearchInterface {
         client.execute(indexExists);
     }
 
-    public void applyMapping(String index) throws IOException {
-
+    public void applyTemplate(String mapping) throws IOException {
+        PutTemplate.Builder putMappingBuilder =
+            new PutTemplate.Builder("template", mapping);
+        client.execute(putMappingBuilder.build());
     }
 
-    public void reIndex(String index) throws IOException {
-        reIndex(index, null);
-    }
-
-    public void reIndex(String index, JsonObject script) throws IOException {
-        String indexEscaped = index.toLowerCase().replaceAll("\\s+", "");
-        Reindex.Builder reindexBuilder = new Reindex.Builder(indexEscaped, indexEscaped);
-        if (script != null) {
-            reindexBuilder.script(script);
-        }
-        Reindex reindex = reindexBuilder.build();
-        client.execute(reindex);
+    public void updateByQuery(String index, String payload) throws IOException {
+        UpdateByQuery updateByQuery =
+            new UpdateByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(ELEMENT)
+                .build();
+        client.execute(updateByQuery);
     }
 
     /**
