@@ -132,7 +132,7 @@ public class Sjm {
     public static final String CREATOR = "_creator";
     public static final String EDITABLE = "_editable";
     public static final String ELASTICID = "_elasticId";
-    public static final String ISSITE = "_isSite";
+    public static final String ISGROUP = "_isGroup";
     public static final String MODIFIED = "_modified";
     public static final String MODIFIER = "_modifier";
     public static final String MOUNTS = "_mounts";
@@ -156,7 +156,7 @@ public class Sjm {
     public static final String LOCATION = "location";
     public static final String ELEMENT = "Element";
     public static final String ARTIFACT = "Artifact";
-    public static final String PROFILES = "profiles";
+    public static final String PROFILES = "profile";
 
 
     public static final Map<String, String> STEREOTYPEIDS;

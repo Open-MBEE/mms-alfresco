@@ -1,10 +1,14 @@
 package gov.nasa.jpl.view_repo.actions;
 
 import gov.nasa.jpl.view_repo.util.EmsConfig;
+import gov.nasa.jpl.view_repo.webscripts.ArtifactPost;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 /**
  * @author Dan Karlsson
@@ -16,7 +20,6 @@ public class PandocConverter {
     private PandocOutputFormat pandocOutputFormat;
     private String outputFile = EmsConfig.get("pandoc.output.filename");
     private String pdfEngine = EmsConfig.get("pandoc.pdfengine");
-    private boolean useCustomCss = false;
     public static final String PANDOC_DATA_DIR = EmsConfig.get("pandoc.output.dir");
 
 
@@ -81,7 +84,7 @@ public class PandocConverter {
         return this.outputFile + "." + this.pandocOutputFormat.getFormatName();
     }
 
-    public void convert(String inputString) {
+    public void convert(String inputString, String cssString) {
 
         String title = StringUtils.substringBetween(inputString, "<title>", "</title>");
         if (title == null) {
@@ -90,8 +93,21 @@ public class PandocConverter {
             title += System.lineSeparator();
         }
 
+        Path cssTempFile = null;
+
         StringBuilder command = new StringBuilder();
-        command.append(String.format("%s -f html", this.pandocExec));
+        command.append(String.format("%s --from=html", this.pandocExec));
+        if (!cssString.isEmpty()) {
+            try {
+                String cssName = String
+                    .format("%s%s.css", Thread.currentThread().getName(), Long.toString(System.currentTimeMillis()));
+                cssTempFile =
+                    ArtifactPost.saveToFilesystem(cssName, new ByteArrayInputStream(cssString.getBytes()));
+                command.append(String.format(" --css=%s", cssTempFile.toString()));
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
+        }
         if (this.pandocOutputFormat.getFormatName().equals("pdf")) {
             command.append(String.format(" --pdf-engine=%s", this.pdfEngine));
         }
@@ -114,12 +130,15 @@ public class PandocConverter {
             throw new RuntimeException("Could not execute. Maybe pandoc is not in PATH?: " + command.toString(), ex);
         } catch (Throwable e) {
             throw new RuntimeException(e);
+        } finally {
+            if (cssTempFile != null && !cssTempFile.toFile().delete()) {
+                throw new RuntimeException("Could not delete temporary css file");
+            }
         }
 
         if (status != 0) {
             throw new RuntimeException(
                 "Conversion failed with status code: " + status + ". Command executed: " + command.toString());
         }
-        useCustomCss = false;
     }
 }

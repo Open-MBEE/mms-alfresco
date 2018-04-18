@@ -66,7 +66,7 @@ PostNewElementsToPAChildView
 	${post_json} =		Get File		${CURDIR}/../../JsonData/PostElementsToPAAddChildView.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements?childviews=true		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		id		ownerId		_appliedStereotypeIds		associationId		memberEndIds		ownedEndIds		ownedAttributeIds		appliedStereotypeInstanceId		stereotypedElementId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -90,7 +90,7 @@ ReorderChildViewAcrossMountsFromPA
 	${post_json} =		Get File		${CURDIR}/../../JsonData/ReorderChildViewAcrossMountsFromPA.json
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements?childviews=true		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		id		ownerId		_appliedStereotypeIds		associationId		memberEndIds		ownedEndIds		ownedAttributeIds
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		id		ownerId		_appliedStereotypeIds		associationId		memberEndIds		ownedEndIds		ownedAttributeIds		appliedStereotypeInstanceId		stereotypedElementId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}

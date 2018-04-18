@@ -27,35 +27,29 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.util.*;
-import org.alfresco.service.cmr.version.Version;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.db.Node;
 
 /**
  * Descriptor in /view-repo/src/main/amp/config/alfresco/extension/templates/webscripts
@@ -107,7 +101,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap();
-        JSONObject top = new JSONObject();
+        JsonObject top = new JsonObject();
 
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
@@ -119,29 +113,28 @@ public class ArtifactGet extends AbstractJavaWebScript {
         // :TODO refactor to handle the response consistently
         try {
             if (isCommit) {
-                JSONArray commitJsonToArray = new JSONArray();
-                JSONObject commitJson = handleCommitRequest(req);
-                commitJsonToArray.put(commitJson);
-                if (commitJson.length() == 0) {
+                JsonArray commitJsonToArray = new JsonArray();
+                JsonObject commitJson = handleCommitRequest(req);
+                commitJsonToArray.add(commitJson);
+                if (commitJson.size() == 0) {
                     log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
                 }
-                if (commitJson != null && commitJson.length() > 0) {
-                    top.put(Sjm.ARTIFACTS, filterByPermission(commitJsonToArray, req));
+                if (commitJson != null && commitJson.size() > 0) {
+                    top.add(Sjm.ARTIFACTS, filterByPermission(commitJsonToArray, req));
                 }
-                if (top.has(Sjm.ARTIFACTS) && top.getJSONArray(Sjm.ARTIFACTS).length() < 1) {
+                if (top.has(Sjm.ARTIFACTS) && top.get(Sjm.ARTIFACTS).getAsJsonArray().size() < 1) {
                     log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
                 }
                 status.setCode(responseStatus.getCode());
                 if (prettyPrint || accept.contains("webp")) {
-                    model.put(Sjm.RES, top.toString(4));
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    model.put(Sjm.RES, gson.toJson(top));
                 } else {
                     model.put(Sjm.RES, top);
                 }
             } else {
                 model = handleArtifactGet(req, status, accept);
             }
-        } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
@@ -151,7 +144,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
         return model;
     }
 
-    private JSONObject handleCommitRequest(WebScriptRequest req) {
+    private JsonObject handleCommitRequest(WebScriptRequest req) {
         // getElement at commit
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -160,8 +153,8 @@ public class ArtifactGet extends AbstractJavaWebScript {
         String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACTID);
         String commitId = req.getParameter(COMMITID);
         if (emsNodeUtil.getArtifactById(artifactId, true) != null) {
-            JSONObject artifact = emsNodeUtil.getArtifactByArtifactAndCommitId(commitId, artifactId);
-            if (artifact == null || artifact.length() == 0) {
+            JsonObject artifact = emsNodeUtil.getArtifactByArtifactAndCommitId(commitId, artifactId);
+            if (artifact == null || artifact.size() == 0) {
                 // :TODO I don't think this logic needs to be changed at all for Artifact
                 //this is true if element id and artifact id are mutually unique
                 return emsNodeUtil.getElementAtCommit(artifactId, commitId);
@@ -170,64 +163,67 @@ public class ArtifactGet extends AbstractJavaWebScript {
             }
         }
 
-        JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
+        JsonObject mountsJson = new JsonObject();
+        mountsJson.addProperty(Sjm.SYSMLID, projectId);
+        mountsJson.addProperty(Sjm.REFID, refId);
         // convert commitId to timestamp
-        String commit = emsNodeUtil.getCommitObject(commitId).getString(Sjm.CREATED);
+        String commit = emsNodeUtil.getCommitObject(commitId).get(Sjm.CREATED).getAsString();
 
-        JSONArray result = new JSONArray();
+        JsonArray result = new JsonArray();
         Set<String> elementsToFind = new HashSet<>();
         elementsToFind.add(artifactId);
 
         try {
             EmsNodeUtil.handleMountSearch(mountsJson, false, false, 0L, elementsToFind, result, commit, "artifacts");
-            if (result.length() > 0) {
-                return result.optJSONObject(0);
+            if (result.size() > 0) {
+                return JsonUtil.getOptObject(result, 0);
             }
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find artifact %s at commit %s", artifactId,
                 commitId);
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return new JSONObject();
+        return new JsonObject();
     }
 
     protected Map<String, Object> handleArtifactGet(WebScriptRequest req, Status status, String accept) {
 
-        Map<String, Object> model = new HashMap();
+        Map<String, Object> model = new HashMap<>();
 
         if (validateRequest(req, status)) {
+            JsonObject result = null;
+            String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACTID);
+            String projectId = getProjectId(req);
+            String refId = getRefId(req);
+            if (artifactId != null) {
+                JsonObject mountsJson = new JsonObject();
+                mountsJson.addProperty(Sjm.SYSMLID, projectId);
+                mountsJson.addProperty(Sjm.REFID, refId);
 
-            try {
-                JSONObject result = null;
-                String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACTID);
-                String projectId = getProjectId(req);
-                String refId = getRefId(req);
-                if (artifactId != null) {
-                    JSONObject mountsJson = new JSONObject().put(Sjm.SYSMLID, projectId).put(Sjm.REFID, refId);
-
-                    JSONArray results = new JSONArray();
-                    Set<String> elementsToFind = new HashSet<>();
-                    elementsToFind.add(artifactId);
-                    try {
-                        EmsNodeUtil.handleMountSearch(mountsJson, false, false, 0L, elementsToFind, results, null, "artifacts");
-                        if (results.length() > 0) {
-                            result = results.optJSONObject(0);
-                        }
-                    } catch (IOException e) {
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!");
-                        logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                JsonArray results = new JsonArray();
+                Set<String> elementsToFind = new HashSet<>();
+                elementsToFind.add(artifactId);
+                try {
+                    EmsNodeUtil
+                        .handleMountSearch(mountsJson, false, false, 0L, elementsToFind, results, null, "artifacts");
+                    if (results.size() > 0) {
+                        result = JsonUtil.getOptObject(results, 0);
                     }
-                    if (result != null) {
-                        model.put(Sjm.RES, new JSONObject().put("artifacts", new JSONArray().put(result)));
-                    } else {
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!");
-                    }
-                } else {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "ArtifactId not supplied!");
+                } catch (IOException e) {
+                    log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
+                    logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
-            } catch (JSONException e) {
-                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Issues creating return JSON");
-                logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+                if (result != null) {
+                    JsonObject r = new JsonObject();
+                    JsonArray array = new JsonArray();
+                    array.add(result);
+                    r.add("artifacts", array);
+                    model.put(Sjm.RES, r);
+                } else {
+                    log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Artifact not found!\n");
+                }
+            } else {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "ArtifactId not supplied!\n");
             }
         } else {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid request!");

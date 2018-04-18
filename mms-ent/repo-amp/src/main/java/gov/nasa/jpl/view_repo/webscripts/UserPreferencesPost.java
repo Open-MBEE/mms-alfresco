@@ -33,12 +33,11 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -50,6 +49,8 @@ import java.util.Map;
  */
 public class UserPreferencesPost extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(OrgPost.class);
+
+    private static String elementIndex = EmsConfig.get("elastic.index.element");
 
     public UserPreferencesPost() {
         super();
@@ -74,7 +75,7 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
         Timer timer = new Timer();
         printHeader(user, logger, req, true);
 
-        JSONObject response = new JSONObject();
+        JsonObject response = new JsonObject();
 
         Map<String, Object> model = new HashMap<>();
         // :TODO Weak check for authorization
@@ -82,18 +83,17 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
             try {
                 if (validateRequest(req, status)) {
                     // Post request is always a single object
-                    SerialJSONObject postJson =
-                        new SerialJSONObject(req.getContent().getContent()).getJSONObject(Sjm.PROFILES);
+                    JsonObject postJsonTop = JsonUtil.buildFromString(req.getContent().getContent());
+                    JsonObject postJson = postJsonTop.get(Sjm.PROFILES).getAsJsonObject();
+
                     // creates a new document if one didn't exist, otherwise updates existing document
-                    JSONObject res = CommitUtil.indexProfile(username, postJson, "mms");
-                    if (res != null && res.length() > 0) {
-                        response.append(Sjm.PROFILES, res);
+                    JsonObject res = CommitUtil.indexProfile(username, postJson, elementIndex);
+                    if (res != null && res.size() > 0) {
+                        response.add(Sjm.PROFILES, res);
                     } else {
-                        response.append("failed", res);
+                        response.add("failed", res);
                     }
                 }
-            } catch (JSONException ex) {
-                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", ex);
             } catch (IOException e) {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
                     "Commit failed, please check server logs for failed items", e);
