@@ -98,7 +98,7 @@ def find_dupes(hits):
     for hit in hits:
         id = hit['_id']
         added = hit['_source']['added']
-        if 'source' in hit:
+        if 'source' in hit['_source']:
             if hit['source'].lower() == 'magicdraw':
                 continue
         elif len(added) > 5000:
@@ -117,8 +117,11 @@ def find_correct_id(es, d):
         id=d[3])
     source = search_for_ids['_source']
     ass_obj, association_obj = get_assoication(es, d, source)
-    app_obj = get_sterotype(es, d, source)
-    owned_obj = get_sterotype(es, d, source, association_obj)
+    app_obj = get_stereotype(es, d, source)
+    if association_obj is not None:
+        owned_obj = get_owned_end(es, d, source, association_obj)
+    else:
+        return None
     if ass_obj is not None and association_obj is not None:
         update_added.append(ass_obj)
     else:
@@ -143,7 +146,7 @@ def get_assoication(es, d, source):
     else:
         return None, None
 
-def get_sterotype(es, d, source):
+def get_stereotype(es, d, source):
     appliedStereotypeInstanceId_obj = es.search(
     index=d[1],
     doc_type='element',
