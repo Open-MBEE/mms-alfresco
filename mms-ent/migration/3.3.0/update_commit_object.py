@@ -1,10 +1,12 @@
 import urllib2
+from datetime import datetime
 import json
 import sys
 import getpass
 import util
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
+import logging
 
 '''
 Created on March 26, 2018
@@ -16,79 +18,70 @@ Searches through all commit objects, checks for duplicate ids, removes and trans
 
 
 def main(args):
+    commits_missing_info = []
     es = Elasticsearch([{'host': 'localhost', 'port': '9200'}], timeout=300)
-    # util.base_url = 'https://opencae.jpl.nasa.gov'
-    # print(util.base_url)
-    # username = 'lauram'
-    # password = getpass.getpass()
-    # # need auth to get projects from the rest API
-    # util.auth_key = {"username": username, "password": password}
-    # util.ticket = util.get_ticket()
+    util.base_url = 'https://opencae.jpl.nasa.gov'
+    print(util.base_url)
+    username = 'lauram'
+    password = getpass.getpass()
+    # need auth to get projects from the rest API
+    util.auth_key = {"username": username, "password": password}
+    util.ticket = util.get_ticket()
     # Get all the projects
     projectsIds = None
-    #:TODO have multiple examples, run a removal script
-    # try:
-    #     projects = get_projects(util.base_url, util.ticket)
-    #     projectIds = list(projects)
-    # except urllib2.HTTPError as err:
-    #     print(err.code)
-    #     print("The script stopped here")
-    #     sys.exit(0)
-    # print(projectIds)
+
+    try:
+        projects = get_projects(util.base_url, util.ticket)
+        projectIds = list(projects)
+    except urllib2.HTTPError as err:
+        print(err.code)
+        print("The script stopped here")
+        sys.exit(0)
+    print(projectIds)
+    # Get every dupe that isn't a intial commit
     dupes = []
-    # for index in es.indices.get('*'):
-    #     print("We working on dis index  " + index)
-    #     first_page = es.search(
-    #         index=index,
-    #         doc_type='commit',
-    #         scroll='2m',
-    #         size=1000)
-    #     s_id = first_page['_scroll_id']
-    #     #scroll_size = first_page['hits']['total']
-    #     #iterate = es.scroll(scroll_id=s_id, scroll="2m")
-    #     #scroll_id = iterate['_scroll_id']
-    #     dupes = dupes + iterate_scroll(es, s_id)
-
-    # first_page = es.search(
-    #     index='project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63',
-    #     doc_type='commit',
-    #     scroll='2m',
-    #     size=10000)
-    # dupes = find_dupes(first_page.get('hits').get('hits'))
-    # s_id = first_page['_scroll_id']
-    # dupes = dupes + iterate_scroll(es, s_id)
-    # print(dupes)
-
-    dupes = [('669964e1-9f47-4d90-8512-798b44cd1bd3', 'project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63', 'MMS_1519155626332_5bb79ad0-f61c-4210-9072-d94485061592', '118e64f3-c4af-4933-8f7e-c27efdb4d194')]
-    #
+    for index in es.indices.get('*'):
+        print("We working on dis index  " + index)
+        first_page = es.search(
+            index=index,
+            doc_type='commit',
+            scroll='2m',
+            size=1000)
+        dupes = dupes + find_dupes(first_page.get('hits').get('hits'))
+        s_id = first_page['_scroll_id']
+        dupes = dupes + iterate_scroll(es, s_id)
+        print('Starting to remove dupes for project ' + index + ' There are this many dupes: ' + str(len(dupes)))
+    print(str(len(dupes)) + " There are this many dupes in " + util.base_url )
+    # This updates all the projects with dupes for the entire org
     project_actions = []
     for d in dupes:
         new_added = find_correct_id(es, d)
-        print(json.dumps(new_added, indent=4, sort_keys=True))
-        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        if new_added is None:
+            commits_missing_info.append(d)
+            continue
         search_for_ids = es.get(
             index=d[1],
             doc_type='commit',
             id=d[0])
         added = search_for_ids['_source']['added']
-        print(json.dumps(search_for_ids, indent=4, sort_keys=True))
-        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        # Add entries that are not dupes
         for entry in added:
             if entry['id'] == d[2] and entry['_elasticId'] == d[3]:
                 continue
             else:
                 new_added.append(entry)
+        # add the dupe once
         new_added.append({'id': entry['id'],'_elasticId':entry['_elasticId']})
-        print(json.dumps(new_added, indent=4, sort_keys=True))
-        print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         project_actions.append(add_actions(new_added, d[0], 'commit', d[1]))
     helpers.bulk(es, project_actions)
-    search_for_ids = es.get(
-        index=d[1],
-        doc_type='commit',
-        id=d[0])
-    print(json.dumps(search_for_ids, indent=4, sort_keys=True))
+    # if some commits were skipped print them
+    if len(commits_missing_info) > 0 :
+        print_errors(commits_missing_info)
 
+def print_errors(commits_missing):
+    logging.basicConfig(filename=str(datetime.now().time()) +'commit.log',level=logging.ERROR)
+    for commit in commits_missing:
+        logging.error('This dupe is missing info ' + commit[0] + ' in project ' + commit[1])
 
 def iterate_scroll(es, scroll_id):
     iterate= es.scroll(scroll_id=scroll_id, scroll= "2m")
@@ -105,9 +98,6 @@ def find_dupes(hits):
     for hit in hits:
         id = hit['_id']
         added = hit['_source']['added']
-        #projectId = hit.get('_source').get('_projectId').lower()
-        # if hit.get('_source').get('_projectId') is None:
-        #     print(hit)
         if 'source' in hit:
             if hit['source'].lower() == 'magicdraw':
                 continue
@@ -119,69 +109,54 @@ def find_dupes(hits):
                 ids.append((id, projectId, entry['id'], entry['_elasticId']))
     return list(set([x for x in ids if ids.count(x) > 1]))
 
-# def find_correct_ids(es, dupes):
-#     updates = []
-#     for d in dupes:
-#         search_for_ids = es.get(
-#             index=d[1],
-#             doc_type='element',
-#             id=d[3])
-#         source = search_for_ids['_source']
-#         association_obj = es.search(
-#             index=d[1],
-#             doc_type='element',
-#             body= define_query(d[0], source.get('associationId')))
-#         appliedStereotypeInstanceId_obj = es.search(
-#             index=d[1],
-#             doc_type='element',
-#             body=define_query(d[0], source.get('appliedStereotypeInstanceId')))
-#         ownedEndId_obj = es.search(
-#             index=d[1],
-#             doc_type='element',
-#             body=define_query(d[0], appliedStereotypeInstanceId_obj.get('ownedEndIds')[0]))
-#
-#         o = {'associationId': association_obj.get('_source').get('_elasticId'),
-#              'appliedStereotypeInstanceId': appliedStereotypeInstanceId_obj.get('_source').get('_elasticId'),
-#              'ownedEndId': ownedEndId_obj.get('_source').get('_elasticId'),
-#              'commitId': d[0],
-#              'sysmlid':d[2],
-#              'elasticId':d[3]}
-#         updates.append(o)
-#     return updates
-
 def find_correct_id(es, d):
     update_added = []
     search_for_ids = es.get(
         index=d[1],
         doc_type='element',
         id=d[3])
-    #print(json.dumps(search_for_ids, indent=4, sort_keys=True))
-    #print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     source = search_for_ids['_source']
+    ass_obj, association_obj = get_assoication(es, d, source)
+    app_obj = get_sterotype(es, d, source)
+    owned_obj = get_sterotype(es, d, source, association_obj)
+    if ass_obj is not None and association_obj is not None:
+        update_added.append(ass_obj)
+    else:
+        return None
+    if app_obj is not None:
+        update_added.append(app_obj)
+    else:
+        return None
+    if owned_obj is not None:
+        update_added.append(owned_obj)
+    else:
+        return None
+    return update_added
+
+def get_assoication(es, d, source):
     association_obj = es.search(
         index=d[1],
         doc_type='element',
         body= define_query(d[0], source.get('associationId')))
-    ass_obj = {'id': association_obj.get('hits').get('hits')[0].get('_source').get('id'), '_elasticId': association_obj.get('hits').get('hits')[0].get('_source').get('_elasticId')}
-    update_added.append(ass_obj)
-    #print(json.dumps(association_obj, indent=4, sort_keys=True))
-    #print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    if association_obj is not None:
+        return {'id': association_obj.get('hits').get('hits')[0].get('_source').get('id'), '_elasticId': association_obj.get('hits').get('hits')[0].get('_source').get('_elasticId')}, association_obj
+    else:
+        return None, None
+
+def get_sterotype(es, d, source):
     appliedStereotypeInstanceId_obj = es.search(
-        index=d[1],
-        doc_type='element',
-        body=define_query(d[0], source.get('appliedStereotypeInstanceId')))
-    # print(json.dumps(appliedStereotypeInstanceId_obj, indent=4, sort_keys=True))
-    app_obj = {'id': appliedStereotypeInstanceId_obj.get('hits').get('hits')[0].get('_source').get('id') ,'_elasticId': appliedStereotypeInstanceId_obj.get('hits').get('hits')[0].get('_source').get('_elasticId')}
-    update_added.append(app_obj)
+    index=d[1],
+    doc_type='element',
+    body=define_query(d[0], source.get('appliedStereotypeInstanceId')))
+    return {'id': appliedStereotypeInstanceId_obj.get('hits').get('hits')[0].get('_source').get('id') ,'_elasticId': appliedStereotypeInstanceId_obj.get('hits').get('hits')[0].get('_source').get('_elasticId')}
+
+def get_owned_end(es, d , source, association_obj):
     ownedEndId_obj = es.search(
         index=d[1],
         doc_type='element',
         body=define_query(d[0], association_obj.get('hits').get('hits')[0].get('_source').get('ownedEndIds')[0]))
-    owned_obj = {'id': ownedEndId_obj.get('hits').get('hits')[0].get('_source').get('id'), '_elasticId': ownedEndId_obj.get('hits').get('hits')[0].get('_source').get('_elasticId')}
-    update_added.append(owned_obj)
-    # print(json.dumps(ownedEndId_obj, indent=4, sort_keys=True))
-    # print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    return update_added
+    return {'id': ownedEndId_obj.get('hits').get('hits')[0].get('_source').get('id'), '_elasticId': ownedEndId_obj.get('hits').get('hits')[0].get('_source').get('_elasticId')}
+
 
 def define_query(commitId, sysmlid):
     return {
@@ -241,3 +216,15 @@ if __name__ == '__main__':
 # curl -X POST 'localhost:9200/project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63/commit/669964e1-9f47-4d90-8512-798b44cd1bd3/_update' -H 'Content-Type: application/json' -d '{"doc" : {"added" : []}}'
 
 # curl -X GET 'localhost:9200/project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63/commit/669964e1-9f47-4d90-8512-798b44cd1bd3'
+    # print(json.dumps(ownedEndId_obj, indent=4, sort_keys=True))
+    # print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    # first_page = es.search(
+    #     index='project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63',
+    #     doc_type='commit',
+    #     scroll='2m',
+    #     size=10000)
+    # dupes = find_dupes(first_page.get('hits').get('hits'))
+    # s_id = first_page['_scroll_id']
+    # dupes = dupes + iterate_scroll(es, s_id)
+    # print(dupes)
+#dupes = [('669964e1-9f47-4d90-8512-798b44cd1bd3', 'project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63', 'MMS_1519155626332_5bb79ad0-f61c-4210-9072-d94485061592', '118e64f3-c4af-4933-8f7e-c27efdb4d194')]
