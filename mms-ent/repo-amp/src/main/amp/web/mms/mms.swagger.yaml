@@ -13,6 +13,7 @@ tags:
 - name: "project"
 - name: "ref"
 - name: "element"
+- name: "artifact"
 - name: "other"
 security:
 - Basic: []
@@ -770,10 +771,6 @@ paths:
       operationId: "getArtifacts"
       parameters:
       - in: "query"
-        name: "extended"
-        description: ""
-        type: "boolean"
-      - in: "query"
         name: "commitId"
         description: ""
         type: "string"
@@ -805,14 +802,6 @@ paths:
         schema:
           $ref: "#/definitions/Artifacts"
         required: true
-      - in: "query"
-        name: "depth"
-        description: ""
-        type: "integer"
-      - in: "query"
-        name: "extended"
-        description: ""
-        type: "boolean"
       - in: "query"
         name: "commitId"
         description: ""
@@ -863,16 +852,33 @@ paths:
     post:
       tags:
       - "artifact"
-      summary: "Create and/or update artifact(s)"
+      summary: "Create and/or update artifact"
       description: ""
-      operationId: "postArtifacts"
+      operationId: "postArtifact"
+      consumes:
+        - multipart/form-data
       parameters:
-      - in: "body"
-        name: "body"
-        description: ""
-        schema:
-          $ref: "#/definitions/Artifacts"
-        required: true
+        - in: "formData"
+          name: "id"
+          type: "string"
+          required: true
+        - in: "formData"
+          name: "file"
+          type: "file"
+          required: true
+        - in: "formData"
+          name: "contentType"
+          type: "string"
+          description: "When the content type cannot be automatically detected, this explicitly defined value is used."
+        - in: "formData"
+          name: "name"
+          type: "string"
+        - in: "formData"
+          name: "source"
+          type: "string"
+        - in: "formData"
+          name: "comment"
+          type: "string"
       responses:
         200:
           description: "OK"
@@ -1185,13 +1191,18 @@ definitions:
     required:
     - "id"
     - "contentType"
-    - "file"
+    - "checksum"
+    - "location"
     properties:
+      id:
+        type: "string"
       contentType:
         type: "string"
-      file:
+      checksum:
         type: "string"
-      id:
+      location:
+        type: "string"
+      name:
         type: "string"
     additionalProperties:
       type: "object"
