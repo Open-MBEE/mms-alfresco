@@ -86,7 +86,7 @@ def find_dupes(hits):
         id = hit['_id']
         added = hit['_source']['added']
         if 'source' in hit['_source']:
-            if hit['source'].lower() == 'magicdraw':
+            if hit['_source']['source'].lower() == 'magicdraw':
                 continue
         elif len(added) > 5000:
             continue
