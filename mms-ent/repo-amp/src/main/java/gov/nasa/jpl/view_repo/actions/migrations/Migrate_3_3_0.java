@@ -27,6 +27,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
+import org.springframework.extensions.surf.util.URLEncoder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -213,7 +214,10 @@ public class Migrate_3_3_0 {
                                 Version version = (Version) it.previous();
                                 FileInfo versionedFile = fileFolderService.getFileInfo(version.getVersionedNodeRef());
                                 String name = versionedFile.getName();
-                                String url = versionedFile.getContentData().getContentUrl();
+                                String url = String.format("/service/api/node/content/%s/%s/%s/%s",
+                                    version.getVersionedNodeRef().getStoreRef().getProtocol(),
+                                    version.getVersionedNodeRef().getStoreRef().getIdentifier(),
+                                    version.getVersionedNodeRef().getId(), URLEncoder.encode(versionedFile.getName()));
 
                                 String creator = version.getFrozenModifier();
                                 Date created = version.getFrozenModifiedDate();
@@ -247,11 +251,12 @@ public class Migrate_3_3_0 {
                                     artifactJson.addProperty(Sjm.MODIFIED, df.format(created));
                                     artifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
                                     artifactJson
-                                        .addProperty(Sjm.LOCATION, url.replace("/d/d/", "/service/api/node/content/"));
+                                        .addProperty(Sjm.LOCATION, url);
                                     InputStream is =
                                         contentService.getReader(versionedFile.getNodeRef(), ContentModel.PROP_CONTENT)
                                             .getContentInputStream();
                                     Scanner s2 = new Scanner(is).useDelimiter("\\A");
+
                                     if (s2.hasNext()) {
                                         artifactJson.addProperty(Sjm.CHECKSUM, EmsNodeUtil.md5Hash(s2.next()));
                                     }
