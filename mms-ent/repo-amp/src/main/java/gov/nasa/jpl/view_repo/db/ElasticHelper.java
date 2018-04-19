@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.searchbox.cluster.UpdateSettings;
 import io.searchbox.core.*;
 import io.searchbox.indices.DeleteIndex;
 import io.searchbox.indices.template.PutTemplate;
@@ -119,6 +120,11 @@ public class ElasticHelper implements ElasticsearchInterface {
             new UpdateByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
                 .build();
         client.execute(updateByQuery);
+    }
+
+    public void updateClusterSettings(String payload) throws IOException {
+        UpdateSettings updateSettings = new UpdateSettings.Builder(payload).build();
+        client.execute(updateSettings);
     }
 
     /**

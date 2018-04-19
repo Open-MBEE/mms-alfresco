@@ -52,6 +52,9 @@ public class Migrate_3_3_0 {
 
     static Logger logger = Logger.getLogger(Migrate_3_3_0.class);
     private static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+    private static final String transientSettings = "{\"transient\": {\"script.max_compilations_per_minute\":120}}";
+
     private static final String refScript =
         "{\"script\": {\"inline\": \"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%1$s.add(params.refId)} else {ctx._source.%1$s = [params.refId]}\", \"params\":{\"refId\":\"%2$s\"}}}";
 
@@ -64,12 +67,15 @@ public class Migrate_3_3_0 {
         "{\"query\": { \"match_all\":{} }, \"script\": {\"inline\": \"if(ctx._source.containsKey(\"_isSite\")){ctx._source._isGroup = ctx._source.remove(\"_isSite\")}\"}}";
 
     private static final String deleteCommitFix =
-        "\"script\": {\"inline\": \"if(!ctx._source.containsKey(\"_projectId\")){ctx._source._projectId = params.projectId}; if(!ctx._source.containsKey(\"_refId\")){ctx._source._refId = params.refId}\", \"params\": {\"projectId\": \"%s\", \"refId\":\"%s\"}}}";
+        "{\"script\": {\"inline\": \"if(!ctx._source.containsKey(\\\"_projectId\\\")){ctx._source._projectId = params.projectId} if(!ctx._source.containsKey(\\\"_refId\\\")){ctx._source._refId = params.refId}\", \"params\": {\"projectId\": \"%s\", \"refId\":\"%s\"}}}";
 
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
         PostgresHelper pgh = new PostgresHelper();
         ElasticHelper eh = new ElasticHelper();
+
+        // Temporarily increase max_complications_per_minute
+        eh.updateClusterSettings(transientSettings);
 
         boolean noErrors = true;
 

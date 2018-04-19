@@ -57,45 +57,47 @@ public class MigrationRunner extends AbstractPatch {
     @Override
     protected String applyInternal() throws Exception {
         logger.info("Starting execution of patch");
-        StoreRef store = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-        NodeRef rootRef = services.getNodeService().getRootNode(store);
-        if (checkMigration(services, registryService, rootRef)) {
+        if (checkMigration(services, registryService)) {
             return "Migration executed successfully";
         } else {
             throw new Exception("Migration failed");
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static boolean checkMigration(ServiceRegistry services, RegistryService registryService, NodeRef root) {
+    public static boolean checkMigration(ServiceRegistry services, RegistryService registryService) {
         ModuleVersionNumber currentVersion = getCurrentVersion(registryService);
         ModuleVersionNumber installedVersion = getInstalledVersion(services);
         if (isMigrationNeeded(currentVersion, installedVersion)) {
             logger.info("Migration Needed!");
             if (migrationList.contains(installedVersion)) {
-                logger.info("Automigration path exists.");
+                logger.info("Migration path exists.");
                 for (ModuleVersionNumber migrationFor : migrationList) {
                     if (currentVersion.compareTo(migrationFor) < 0) {
                         logger.info("Upgrade path found");
-                        try {
-                            Class clazz = Class.forName("gov.nasa.jpl.view_repo.actions.migrations." + versionToClassname(migrationFor));
-                            Method method = clazz.getMethod("apply", ServiceRegistry.class);
-                            logger.info("Invoking migration for: " + migrationFor);
-                            return (boolean) method.invoke(null, services);
-                        } catch (ClassNotFoundException cnfe) {
-                            logger.info("No migration found: ", cnfe);
-                        } catch (NoSuchMethodException nsme) {
-                            logger.info("Error executing migration: ", nsme);
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            logger.info("Error invoking migration", e);
-                        } catch (Exception e) {
-                            logger.info("General Error: ", e);
-                        }
+                        runMigration(migrationFor, services);
                     }
                 }
             }
         }
         return true;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void runMigration(ModuleVersionNumber migrationFor, ServiceRegistry services) {
+        try {
+            Class clazz = Class.forName("gov.nasa.jpl.view_repo.actions.migrations." + versionToClassname(migrationFor));
+            Method method = clazz.getMethod("apply", ServiceRegistry.class);
+            logger.info("Invoking migration for: " + migrationFor);
+            method.invoke(null, services);
+        } catch (ClassNotFoundException cnfe) {
+            logger.info("No migration found: ", cnfe);
+        } catch (NoSuchMethodException nsme) {
+            logger.info("Error executing migration: ", nsme);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            logger.info("Error invoking migration", e);
+        } catch (Exception e) {
+            logger.info("General Error: ", e);
+        }
     }
 
     public static ModuleVersionNumber getCurrentVersion(RegistryService registryService) {
