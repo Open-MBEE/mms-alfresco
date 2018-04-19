@@ -20,7 +20,7 @@ def main(args):
     commits_missing_info = []
     es = Elasticsearch([{'host': 'localhost', 'port': '9200'}], timeout=300)
     # Get every dupe that isn't a intial commit
-    dupes = []
+    dupes = {}
     for index in es.indices.get('*'):
         print("We working on dis index  " + index)
         first_page = es.search(
@@ -28,9 +28,9 @@ def main(args):
             doc_type='commit',
             scroll='2m',
             size=1000)
-        dupes = dupes.update(find_dupes(first_page.get('hits').get('hits')))
+        dupes.update(find_dupes(first_page.get('hits').get('hits')))
         s_id = first_page['_scroll_id']
-        dupes = dupes.update(iterate_scroll(es, s_id))
+        dupes.update(iterate_scroll(es, s_id))
         print('Starting to remove dupes for project ' + index + ' There are this many dupes: ' + str(len(dupes)))
     print(str(len(dupes)) + " There are this many dupes in this org.")
     print(dupes)
