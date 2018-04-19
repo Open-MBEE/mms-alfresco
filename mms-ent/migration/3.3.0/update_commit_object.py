@@ -28,39 +28,41 @@ def main(args):
             doc_type='commit',
             scroll='2m',
             size=1000)
-        dupes = dupes + find_dupes(first_page.get('hits').get('hits'))
+        dupes = dupes.update(find_dupes(first_page.get('hits').get('hits')))
         s_id = first_page['_scroll_id']
-        dupes = dupes + iterate_scroll(es, s_id)
+        dupes = dupes.update(iterate_scroll(es, s_id))
         print('Starting to remove dupes for project ' + index + ' There are this many dupes: ' + str(len(dupes)))
-    print(str(len(dupes)) + " There are this many dupes in " + util.base_url)
-    if len(dupes) > 10000:
-        print('The number of dupes was too large to update at once')
-        sys.exit(0)
-    # This updates all the projects with dupes for the entire org
-    project_actions = []
-    for d in dupes:
-        new_added = find_correct_id(es, d)
-        if new_added is None:
-            commits_missing_info.append(d)
-            continue
-        search_for_ids = es.get(
-            index=d[1],
-            doc_type='commit',
-            id=d[0])
-        added = search_for_ids['_source']['added']
-        # Add entries that are not dupes
-        for entry in added:
-            if entry['id'] == d[2] and entry['_elasticId'] == d[3]:
-                continue
-            else:
-                new_added.append(entry)
-        # add the dupe once
-        new_added.append({'id': entry['id'], '_elasticId': entry['_elasticId']})
-        project_actions.append(add_actions(new_added, d[0], 'commit', d[1]))
-    helpers.bulk(es, project_actions)
-    # if some commits were skipped print them
-    if len(commits_missing_info) > 0:
-        print_errors(commits_missing_info)
+    print(str(len(dupes)) + " There are this many dupes in this org.")
+    print(dupes)
+    #TODO: group the duplicates by commit
+    # if len(dupes) > 10000:
+    #     print('The number of dupes was too large to update at once')
+    #     sys.exit(0)
+    # # This updates all the projects with dupes for the entire org
+    # project_actions = []
+    # for d in dupes:
+    #     new_added = find_correct_id(es, d)
+    #     if new_added is None:
+    #         commits_missing_info.append(d)
+    #         continue
+    #     search_for_ids = es.get(
+    #         index=d[1],
+    #         doc_type='commit',
+    #         id=d[0])
+    #     added = search_for_ids['_source']['added']
+    #     # Add entries that are not dupes
+    #     for entry in added:
+    #         if entry['id'] == d[2] and entry['_elasticId'] == d[3]:
+    #             continue
+    #         else:
+    #             new_added.append(entry)
+    #     # add the dupe once
+    #     new_added.append({'id': entry['id'], '_elasticId': entry['_elasticId']})
+    #     project_actions.append(add_actions(new_added, d[0], 'commit', d[1]))
+    # helpers.bulk(es, project_actions)
+    # # if some commits were skipped print them
+    # if len(commits_missing_info) > 0:
+    #     print_errors(commits_missing_info)
 
 
 def print_errors(commits_missing):
@@ -75,13 +77,13 @@ def iterate_scroll(es, scroll_id):
     hits = iterate.get('hits').get('hits')
     result = find_dupes(hits)
     if hits:
-        return result + iterate_scroll(es, s_id)
+        return result.update(iterate_scroll(es, s_id))
     else:
         return result
 
 
 def find_dupes(hits):
-    ids = []
+    dup_by_commit = {}
     for hit in hits:
         id = hit['_id']
         added = hit['_source']['added']
@@ -91,10 +93,13 @@ def find_dupes(hits):
         elif len(added) > 5000:
             continue
         else:
+            ids = []
             for entry in added:
                 projectId = hit['_source']['_projectId'].lower()
-                ids.append((id, projectId, entry['id'], entry['_elasticId']))
-    return list(set([x for x in ids if ids.count(x) > 1]))
+                ids.append(((projectId, entry['id'], entry['_elasticId'])))
+            dup = list(set([x for x in ids if ids.count(x) > 1]))
+            dup_by_commit[id] = dup
+    return dup_by_commit
 
 
 def find_correct_id(es, d):
@@ -104,7 +109,7 @@ def find_correct_id(es, d):
         doc_type='element',
         id=d[3])
     source = search_for_ids['_source']
-    ass_obj, association_obj = get_assoication(es, d, source)
+    ass_obj, association_obj = get_association(es, d, source)
     app_obj = get_stereotype(es, d, source)
     if association_obj is not None:
         owned_obj = get_owned_end(es, d, source, association_obj)
@@ -125,12 +130,11 @@ def find_correct_id(es, d):
     return update_added
 
 
-def get_assoication(es, d, source):
+def get_association(es, d, source):
     association_obj = es.search(
         index=d[1],
         doc_type='element',
         body=define_query(d[0], source.get('associationId')))
-    print("THIS IS THE TYPE" + str(type(association_obj)))
     if association_obj is not None and len(association_obj.get('hits').get('hits')) > 0:
         return {'id': association_obj.get('hits').get('hits')[0].get('_source').get('id'),
                 '_elasticId': association_obj.get('hits').get('hits')[0].get('_source').get(
@@ -223,7 +227,7 @@ if __name__ == '__main__':
 
 # curl -X POST 'localhost:9200/project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63/commit/669964e1-9f47-4d90-8512-798b44cd1bd3/_update' -H 'Content-Type: application/json' -d '{"doc" : {"added" : []}}'
 
-# curl -X GET 'localhost:9200/project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63/commit/669964e1-9f47-4d90-8512-798b44cd1bd3'
+# curl -X GET 'localhost:9200/project-411c7459-4e09-4dda-b534-4b1fa7aaa140/commit/361169dc-25ec-416a-9cb8-d1fae420266f'
 # print(json.dumps(ownedEndId_obj, indent=4, sort_keys=True))
 # print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 # first_page = es.search(
