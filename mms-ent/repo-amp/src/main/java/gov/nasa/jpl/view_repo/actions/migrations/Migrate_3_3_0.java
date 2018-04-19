@@ -63,6 +63,9 @@ public class Migrate_3_3_0 {
     private static final String renameScript =
         "{\"query\": { \"match_all\":{} }, \"script\": {\"inline\": \"if(ctx._source.containsKey(\"_isSite\")){ctx._source._isGroup = ctx._source.remove(\"_isSite\")}\"}}";
 
+    private static final String deleteCommitFix =
+        "\"script\": {\"inline\": \"if(!ctx._source.containsKey(\"_projectId\")){ctx._source._projectId = params.projectId}; if(!ctx._source.containsKey(\"_refId\")){ctx._source._refId = params.refId}\", \"params\": {\"projectId\": \"%s\", \"refId\":\"%s\"}}}";
+
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
         PostgresHelper pgh = new PostgresHelper();
@@ -122,7 +125,7 @@ public class Migrate_3_3_0 {
                 logger.info("ProjectNode loaded: " + projectNode.getName());
 
                 //Reindex to rename fields
-                eh.updateByQuery(projectId, renameScript);
+                eh.updateByQuery(projectId, renameScript, "element");
 
                 logger.info("Updating: " + projectId);
 
@@ -200,6 +203,17 @@ public class Migrate_3_3_0 {
                         logger.info("Ref not found: " + refId);
                         continue;
                     }
+
+                    Set<String> refCommitElastics = new HashSet<>();
+                    List<Map<String, Object>> refCommits = pgh.getRefsCommits(ref.first);
+                    for (Map<String, Object> refCommit : refCommits) {
+                        // Elastic ID for commit map is actually id not elasticid
+                        if (refCommit.containsKey(Sjm.SYSMLID)) {
+                            refCommitElastics.add(refCommit.get(Sjm.SYSMLID).toString());
+                        }
+                    }
+                    String deleteFixToRun = String.format(deleteCommitFix, projectId, refId);
+                    eh.bulkUpdateElements(refCommitElastics, deleteFixToRun, projectId, "commit");
 
                     List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
                     for (FileInfo file : files) {

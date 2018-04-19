@@ -50,8 +50,6 @@ public class ElasticHelper implements ElasticsearchInterface {
     private static final String PROFILE = "profile";
     private static final String ARTIFACT = "artifact";
 
-    private static final String DEFAULT_MAPPING_TYPE = "_default_";
-
     private static final String COMMIT_QUERY = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
 
     public void init(String elasticHost) {
@@ -116,9 +114,9 @@ public class ElasticHelper implements ElasticsearchInterface {
         client.execute(putMappingBuilder.build());
     }
 
-    public void updateByQuery(String index, String payload) throws IOException {
+    public void updateByQuery(String index, String payload, String type) throws IOException {
         UpdateByQuery updateByQuery =
-            new UpdateByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(ELEMENT)
+            new UpdateByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
                 .build();
         client.execute(updateByQuery);
     }
