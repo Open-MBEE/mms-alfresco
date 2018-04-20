@@ -216,7 +216,7 @@ public class Migrate_3_3_0 {
                     List<Map<String, Object>> refCommits = pgh.getRefsCommits(ref.first);
                     for (Map<String, Object> refCommit : refCommits) {
                         // Elastic ID for commit map is actually id not elasticid
-                        if (refCommit.containsKey(Sjm.SYSMLID) && !initialCommit
+                        if (refCommit.containsKey(Sjm.SYSMLID) && initialCommit != null && !initialCommit
                             .equals(refCommit.get(Sjm.SYSMLID).toString())) {
                             refCommitElastics.add(refCommit.get(Sjm.SYSMLID).toString());
                         }
