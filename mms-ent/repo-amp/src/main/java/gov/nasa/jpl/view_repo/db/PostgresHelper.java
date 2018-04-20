@@ -2128,6 +2128,24 @@ public class PostgresHelper implements GraphInterface {
         return result;
     }
 
+    public String getProjectInitialCommit() {
+        PreparedStatement statement =
+            prepareStatement("SELECT elasticid FROM commits WHERE id = (SELECT min(id) FROM commits)");
+
+        try {
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return null;
+    }
+
     public List<Pair<String, String>> getTags() {
         List<Pair<String, String>> result = new ArrayList<>();
         try {

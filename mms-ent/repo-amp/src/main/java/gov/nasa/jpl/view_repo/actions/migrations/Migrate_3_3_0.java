@@ -59,12 +59,12 @@ public class Migrate_3_3_0 {
         "{\"script\": {\"inline\": \"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%1$s.add(params.refId)} else {ctx._source.%1$s = [params.refId]}\", \"params\":{\"refId\":\"%2$s\"}}}";
 
     private static final String artifactToElementScript =
-        "{\"script\": {\"inline\": \"ctx._source._artifactIds = [ctx._source.id + \\\"_svg\\\", ctx._source.id + \\\"_png\\\"]\"}}";
+        "{\"query\": { \"term\":{\"id\":[\"%s\"]} }, \"script\": {\"inline\": \"ctx._source._artifactIds = [ctx._source.id + \\\"_svg\\\", ctx._source.id + \\\"_png\\\"]\"}}";
 
     private static final String searchQuery = "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
 
     private static final String renameScript =
-        "{\"query\": { \"match_all\":{} }, \"script\": {\"inline\": \"if(ctx._source.containsKey(\"_isSite\")){ctx._source._isGroup = ctx._source.remove(\"_isSite\")}\"}}";
+        "{\"query\": { \"exists\":{\"field\":\"_isSite\"} }, \"script\": {\"inline\": \"ctx._source._isGroup = ctx._source.remove(\"_isSite\")\"}}";
 
     private static final String deleteCommitFix =
         "{\"script\": {\"inline\": \"if(!ctx._source.containsKey(\\\"_projectId\\\")){ctx._source._projectId = params.projectId} if(!ctx._source.containsKey(\\\"_refId\\\")){ctx._source._refId = params.refId}\", \"params\": {\"projectId\": \"%s\", \"refId\":\"%s\"}}}";
@@ -74,7 +74,7 @@ public class Migrate_3_3_0 {
         PostgresHelper pgh = new PostgresHelper();
         ElasticHelper eh = new ElasticHelper();
 
-        // Temporarily increase max_complications_per_minute
+        // Temporarily increase max_compilations_per_minute
         eh.updateClusterSettings(transientSettings);
 
         boolean noErrors = true;
@@ -142,6 +142,8 @@ public class Migrate_3_3_0 {
                 pgh.execUpdate("CREATE INDEX IF NOT EXISTS sysmlArtifactIndex on artifacts(sysmlId);");
 
                 pgh.execUpdate("DROP TABLE IF EXISTS commitParent");
+
+                String initialCommit = pgh.getProjectInitialCommit();
 
                 List<Pair<String, String>> refs = pgh.getRefsElastic(true);
 
@@ -214,7 +216,8 @@ public class Migrate_3_3_0 {
                     List<Map<String, Object>> refCommits = pgh.getRefsCommits(ref.first);
                     for (Map<String, Object> refCommit : refCommits) {
                         // Elastic ID for commit map is actually id not elasticid
-                        if (refCommit.containsKey(Sjm.SYSMLID)) {
+                        if (refCommit.containsKey(Sjm.SYSMLID) && !initialCommit
+                            .equals(refCommit.get(Sjm.SYSMLID).toString())) {
                             refCommitElastics.add(refCommit.get(Sjm.SYSMLID).toString());
                         }
                     }
@@ -265,6 +268,7 @@ public class Migrate_3_3_0 {
                                     artifactJson.addProperty(Sjm.COMMITID, commitId);
                                     artifactJson.addProperty(Sjm.PROJECTID, projectId);
                                     artifactJson.addProperty(Sjm.REFID, refId);
+                                    artifactJson.add(Sjm.INREFIDS, new JsonArray());
                                     artifactJson.addProperty(Sjm.CREATOR, creator);
                                     artifactJson.addProperty(Sjm.MODIFIER, creator);
                                     artifactJson.addProperty(Sjm.CREATED, df.format(created));
@@ -369,11 +373,9 @@ public class Migrate_3_3_0 {
                     eh.bulkUpdateElements(artifactsToUpdate, refScriptToRun, projectId, "artifact");
 
                     if (!mdArtifacts.isEmpty()) {
-                        List<String> mdArtifactList = new ArrayList<>(mdArtifacts);
-                        List<String> nodeElasticIds = pgh.getElasticIdsFromSysmlIdsNodes(mdArtifactList, false);
-                        Set<String> elasticSet = new HashSet<>(nodeElasticIds);
-                        elasticSet.addAll(nodeElasticIds);
-                        eh.bulkUpdateElements(elasticSet, artifactToElementScript, projectId, "element");
+                        String artifactToElementScriptToRun =
+                            String.format(artifactToElementScript, String.join("\\\",\\\"", mdArtifacts));
+                        eh.updateByQuery(projectId, artifactToElementScriptToRun, "element");
                     }
                 }
             }
