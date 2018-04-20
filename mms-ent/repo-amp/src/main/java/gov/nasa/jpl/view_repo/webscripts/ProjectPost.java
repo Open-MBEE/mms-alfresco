@@ -71,6 +71,8 @@ public class ProjectPost extends AbstractJavaWebScript {
 
     private static final String REF_PATH = "refs";
     private static final String REF_PATH_SEARCH = "/" + REF_PATH;
+    private static final String JSON_SPECIALIZATION = "specialization";
+    private static final String JSON_PROJECT_VERSION = "projectVersion";
 
     /**
      * Webscript entry point
@@ -178,13 +180,30 @@ public class ProjectPost extends AbstractJavaWebScript {
         EmsScriptNode projectNode = getSiteNode(projectId);
 
         if (projectNode == null) {
-            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find project");
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find project\n");
             return HttpServletResponse.SC_NOT_FOUND;
         }
 
-        if (checkPermissions(projectNode, PermissionService.WRITE)) {
-            log(Level.INFO, HttpServletResponse.SC_OK, "Project metadata updated.");
+        String projectVersion = null;
+        if (jsonObject.has(JSON_SPECIALIZATION)) {
+            JsonObject specialization = jsonObject.getAsJsonObject(JSON_SPECIALIZATION);
+            if (specialization != null && specialization.has(JSON_PROJECT_VERSION)) {
+                projectVersion = specialization.get(JSON_PROJECT_VERSION).getAsString();
+            }
         }
+        if (checkPermissions(projectNode, PermissionService.WRITE)) {
+            String oldId = (String) projectNode.getProperty("sysml:id");
+            boolean idChanged = !projectId.equals(oldId);
+            if (idChanged) {
+                projectNode.createOrUpdateProperty("sysml:id", projectId);
+            }
+            projectNode.createOrUpdateProperty("sysml:type", "Project");
+            if (projectVersion != null) {
+                projectNode.createOrUpdateProperty("sysml:projectVersion", projectVersion);
+            }
+            log(Level.INFO, HttpServletResponse.SC_OK, "Project metadata updated.\n");
+        }
+
         return HttpServletResponse.SC_OK;
     }
 

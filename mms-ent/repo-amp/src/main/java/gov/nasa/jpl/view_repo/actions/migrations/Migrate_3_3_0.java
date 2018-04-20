@@ -67,7 +67,10 @@ public class Migrate_3_3_0 {
         "{\"query\": { \"exists\":{\"field\":\"_isSite\"} }, \"script\": {\"inline\": \"ctx._source._isGroup = ctx._source.remove(\"_isSite\")\"}}";
 
     private static final String deleteCommitFix =
-        "{\"script\": {\"inline\": \"if(!ctx._source.containsKey(\\\"_projectId\\\")){ctx._source._projectId = params.projectId} if(!ctx._source.containsKey(\\\"_refId\\\")){ctx._source._refId = params.refId}\", \"params\": {\"projectId\": \"%s\", \"refId\":\"%s\"}}}";
+        "{\"script\": {\"inline\": \"if(!ctx._source.containsKey(\\\"_projectId\\\")){ctx._source._projectId = params.projectId}\", \"params\": {\"projectId\": \"%s\"}}}";
+
+    private static final String ivanFix =
+        "{\"script\": {\"inline\": \"for (int i=0; i < ctx._source.added.size(); i++) {ctx._source.added[i].type = \"element\"} for (int i=0; i < ctx._source.updated.size(); i++) {ctx._source.updated[i].type = \"element\"} for (int i=0; i < ctx._source.deleted.size(); i++) {ctx._source.deleted[i].type = \"element\"}\"}}";
 
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
@@ -148,9 +151,10 @@ public class Migrate_3_3_0 {
                 List<Pair<String, String>> refs = pgh.getRefsElastic(true);
 
                 logger.info("Getting files");
+
+                Set<String> mdArtifacts = new HashSet<>();
                 for (Pair<String, String> ref : refs) {
                     Set<String> artifactsToUpdate = new HashSet<>();
-                    Set<String> mdArtifacts = new HashSet<>();
 
                     String refId = ref.first.replace("_", "-");
 
@@ -221,7 +225,7 @@ public class Migrate_3_3_0 {
                             refCommitElastics.add(refCommit.get(Sjm.SYSMLID).toString());
                         }
                     }
-                    String deleteFixToRun = String.format(deleteCommitFix, projectId, refId);
+                    String deleteFixToRun = String.format(deleteCommitFix, projectId);
                     eh.bulkUpdateElements(refCommitElastics, deleteFixToRun, projectId, "commit");
 
                     List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
@@ -371,12 +375,11 @@ public class Migrate_3_3_0 {
 
                     String refScriptToRun = String.format(refScript, Sjm.INREFIDS, refId);
                     eh.bulkUpdateElements(artifactsToUpdate, refScriptToRun, projectId, "artifact");
-
-                    if (!mdArtifacts.isEmpty()) {
-                        String artifactToElementScriptToRun =
-                            String.format(artifactToElementScript, String.join("\\\",\\\"", mdArtifacts));
-                        eh.updateByQuery(projectId, artifactToElementScriptToRun, "element");
-                    }
+                }
+                if (!mdArtifacts.isEmpty()) {
+                    String artifactToElementScriptToRun =
+                        String.format(artifactToElementScript, String.join("\\\",\\\"", mdArtifacts));
+                    eh.updateByQuery(projectId, artifactToElementScriptToRun, "element");
                 }
             }
         }
