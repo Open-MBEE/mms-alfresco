@@ -21,6 +21,7 @@ def main(args):
     es = Elasticsearch([{'host': 'localhost', 'port': '9200'}], timeout=300)
     # Get every dupe that isn't a intial commit
     dupes = {}
+    temp = {'blah':'blah'}
     for index in es.indices.get('*'):
         print("We working on dis index  " + index)
         first_page = es.search(
@@ -30,11 +31,12 @@ def main(args):
             size=1000)
         dupes.update(find_dupes(first_page.get('hits').get('hits')))
         s_id = first_page['_scroll_id']
-        dupes.update(iterate_scroll(es, s_id))
+       # print(str(type(iterate_scroll(es, s_id))) +"   "+str(len(iterate_scroll(es, s_id))))
+        temp = iterate_scroll(es, s_id, dupes)
         print('Starting to remove dupes for project ' + index + ' There are this many dupes: ' + str(len(dupes)))
     print(str(len(dupes)) + " There are this many dupes in this org.")
     print(dupes)
-    #TODO: group the duplicates by commit
+    # TODO: group the duplicates by commit
     # if len(dupes) > 10000:
     #     print('The number of dupes was too large to update at once')
     #     sys.exit(0)
@@ -71,15 +73,15 @@ def print_errors(commits_missing):
         logging.error('This dupe is missing info ' + commit[0] + ' in project ' + commit[1])
 
 
-def iterate_scroll(es, scroll_id):
+def iterate_scroll(es, scroll_id, dupes):
     iterate = es.scroll(scroll_id=scroll_id, scroll="2m")
     s_id = iterate['_scroll_id']
     hits = iterate.get('hits').get('hits')
-    result = find_dupes(hits)
+    dupes.update(find_dupes(hits))
     if hits:
-        return result.update(iterate_scroll(es, s_id))
-    else:
-        return result
+        temp = iterate_scroll(es, s_id,dupes)
+        if temp is not None:
+            dupes.update(temp)
 
 
 def find_dupes(hits):
@@ -94,11 +96,14 @@ def find_dupes(hits):
             continue
         else:
             ids = []
+            dup = []
             for entry in added:
                 projectId = hit['_source']['_projectId'].lower()
                 ids.append(((projectId, entry['id'], entry['_elasticId'])))
-            dup = list(set([x for x in ids if ids.count(x) > 1]))
-            dup_by_commit[id] = dup
+            dups = list(set([x for x in ids if ids.count(x) > 1]))
+            if dups and dups is not None:
+                dup.append(dups)
+                dup_by_commit[id] = dup
     return dup_by_commit
 
 
@@ -203,6 +208,29 @@ def get_projects(base_url, ticket):
         projectId = project['id']
         project_ids.append(projectId.lower())
     return set(project_ids)
+
+def check_all(es):
+    dupes = []
+    for index in es.indices.get('*'):
+        first_page = es.search(
+            index=index,
+            doc_type='commit',
+            scroll='2m',
+            size=1000)
+        s_id = first_page['_scroll_id']
+        iterate = es.scroll(scroll_id=s_id, scroll="2m")
+        dupes = double_check(es, s_id)
+    return dupes
+
+def double_check(es, s_id):
+    iterate= es.scroll(scroll_id=s_id, scroll= "2m")
+    s_id = iterate['_scroll_id']
+    hits = iterate.get('hits').get('hits')
+    result = find_dupes(hits)
+    if hits:
+        return result.update(iterate_scroll(es, s_id))
+    else:
+        return result
 
 
 if __name__ == '__main__':
