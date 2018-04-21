@@ -180,28 +180,12 @@ public class ProjectPost extends AbstractJavaWebScript {
         EmsScriptNode projectNode = getSiteNode(projectId);
 
         if (projectNode == null) {
-            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find project\n");
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find project");
             return HttpServletResponse.SC_NOT_FOUND;
         }
 
-        String projectVersion = null;
-        if (jsonObject.has(JSON_SPECIALIZATION)) {
-            JsonObject specialization = jsonObject.getAsJsonObject(JSON_SPECIALIZATION);
-            if (specialization != null && specialization.has(JSON_PROJECT_VERSION)) {
-                projectVersion = specialization.get(JSON_PROJECT_VERSION).getAsString();
-            }
-        }
         if (checkPermissions(projectNode, PermissionService.WRITE)) {
-            String oldId = (String) projectNode.getProperty("sysml:id");
-            boolean idChanged = !projectId.equals(oldId);
-            if (idChanged) {
-                projectNode.createOrUpdateProperty("sysml:id", projectId);
-            }
-            projectNode.createOrUpdateProperty("sysml:type", "Project");
-            if (projectVersion != null) {
-                projectNode.createOrUpdateProperty("sysml:projectVersion", projectVersion);
-            }
-            log(Level.INFO, HttpServletResponse.SC_OK, "Project metadata updated.\n");
+            log(Level.INFO, HttpServletResponse.SC_OK, "Project metadata updated.");
         }
 
         return HttpServletResponse.SC_OK;

@@ -70,7 +70,7 @@ public class Migrate_3_3_0 {
         "{\"script\": {\"inline\": \"if(!ctx._source.containsKey(\\\"_projectId\\\")){ctx._source._projectId = params.projectId}\", \"params\": {\"projectId\": \"%s\"}}}";
 
     private static final String ivanFix =
-        "{\"\": { \"match_all\": {} }, \"script\": {\"inline\": \"for (int i = 0; i < ctx._source.added.size(); i++) {ctx._source.added[i].type = \"element\"} for (int i = 0; i < ctx._source.updated.size(); i++) {ctx._source.updated[i].type = \"element\"} for (int i = 0; i < ctx._source.deleted.size(); i++) {ctx._source.deleted[i].type = \"element\"}\"}}";
+        "{\"query\": { \"match_all\": {} }, \"script\": {\"inline\": \"for (int i = 0; i < ctx._source.added.size(); i++) {ctx._source.added[i].type = \"element\"} for (int i = 0; i < ctx._source.updated.size(); i++) {ctx._source.updated[i].type = \"element\"} for (int i = 0; i < ctx._source.deleted.size(); i++) {ctx._source.deleted[i].type = \"element\"}\"}}";
 
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
