@@ -59,18 +59,18 @@ public class Migrate_3_3_0 {
         "{\"script\": {\"inline\": \"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%1$s.add(params.refId)} else {ctx._source.%1$s = [params.refId]}\", \"params\":{\"refId\":\"%2$s\"}}}";
 
     private static final String artifactToElementScript =
-        "{\"query\": { \"terms\":{\"id\":[\"%s\"]} }, \"script\": {\"inline\": \"ctx._source._artifactIds = [ctx._source.id + \\\"_svg\\\", ctx._source.id + \\\"_png\\\"]\"}}";
+        "{\"query\": {\"terms\":{\"id\":[\"%s\"]} }, \"script\": {\"inline\": \"ctx._source._artifactIds = [ctx._source.id + \\\"_svg\\\", ctx._source.id + \\\"_png\\\"]\"}}";
 
     private static final String searchQuery = "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
 
     private static final String renameScript =
-        "{\"query\": { \"exists\":{\"field\":\"_isSite\"} }, \"script\": {\"inline\": \"ctx._source._isGroup = ctx._source.remove(\"_isSite\")\"}}";
+        "{\"query\": {\"exists\":{\"field\":\"_isSite\"} }, \"script\": {\"inline\": \"ctx._source._isGroup = ctx._source.remove(\"_isSite\")\"}}";
 
     private static final String deleteCommitFix =
         "{\"script\": {\"inline\": \"if(!ctx._source.containsKey(\\\"_projectId\\\")){ctx._source._projectId = params.projectId}\", \"params\": {\"projectId\": \"%s\"}}}";
 
     private static final String ivanFix =
-        "{\"script\": {\"inline\": \"for (int i=0; i < ctx._source.added.size(); i++) {ctx._source.added[i].type = \"element\"} for (int i=0; i < ctx._source.updated.size(); i++) {ctx._source.updated[i].type = \"element\"} for (int i=0; i < ctx._source.deleted.size(); i++) {ctx._source.deleted[i].type = \"element\"}\"}}";
+        "{\"\": { \"match_all\": {} }, \"script\": {\"inline\": \"for (int i = 0; i < ctx._source.added.size(); i++) {ctx._source.added[i].type = \"element\"} for (int i = 0; i < ctx._source.updated.size(); i++) {ctx._source.updated[i].type = \"element\"} for (int i = 0; i < ctx._source.deleted.size(); i++) {ctx._source.deleted[i].type = \"element\"}\"}}";
 
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
@@ -135,6 +135,7 @@ public class Migrate_3_3_0 {
 
                 //Reindex to rename fields
                 eh.updateByQuery(projectId, renameScript, "element");
+                eh.updateByQuery(projectId, ivanFix, "commit");
 
                 logger.info("Updating: " + projectId);
 
@@ -229,6 +230,8 @@ public class Migrate_3_3_0 {
                     eh.bulkUpdateElements(refCommitElastics, deleteFixToRun, projectId, "commit");
 
                     List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
+                    String realCreator = null;
+                    Date realCreated = null;
                     for (FileInfo file : files) {
                         if (!file.isFolder()) {
                             VersionHistory versionHistory = versionService.getVersionHistory(file.getNodeRef());
@@ -248,8 +251,14 @@ public class Migrate_3_3_0 {
 
                                 String modifier = version.getFrozenModifier();
                                 Date modified = version.getFrozenModifiedDate();
-                                String creator = version.getCreator();
-                                Date created = version.getCreatedDate();
+                                if (realCreator == null) {
+                                    realCreator = version.getFrozenModifier();
+                                }
+                                if (realCreated == null) {
+                                    realCreated = version.getFrozenModifiedDate();
+                                }
+                                String creator = realCreator;
+                                Date created = realCreated;
                                 String contentType = file.getContentData().getMimetype();
                                 String commitId = UUID.randomUUID().toString();
                                 String extension = FilenameUtils.getExtension(name);
