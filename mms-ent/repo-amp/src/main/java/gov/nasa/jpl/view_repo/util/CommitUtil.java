@@ -517,7 +517,7 @@ public class CommitUtil {
                     pgh.runBatchQueries(nodeInserts, NODES);
                     pgh.runBatchQueries(nodeUpdates, "updates");
                     //pgh.updateBySysmlIds(NODES, LASTCOMMIT, commitElasticId, deletedSysmlIds);
-                    pgh.updateLastCommits(commitElasticId, deletedSysmlIds);
+                    pgh.updateLastCommitsNodes(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
                     pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
                     sp = pgh.startTransaction();
@@ -978,14 +978,6 @@ public class CommitUtil {
                 }
             }
         }
-    }
-
-    public static Set<Object> findKeyValueInJsonElement(JsonElement jelem, String keyMatch, StringBuilder text) {
-        if (jelem.isJsonObject())
-            return findKeyValueInJsonObject(jelem.getAsJsonObject(), keyMatch, text);
-        else if (jelem.isJsonArray())
-            return findKeyValueInJsonArray(jelem.getAsJsonArray(), keyMatch, text);
-        return new HashSet<>();
     }
 
     public static Set<Object> findKeyValueInJsonObject(JsonObject json, String keyMatch, StringBuilder text) {

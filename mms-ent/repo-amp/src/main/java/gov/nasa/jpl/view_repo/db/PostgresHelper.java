@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.db;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.gson.JsonPrimitive;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
@@ -291,16 +293,7 @@ public class PostgresHelper implements GraphInterface {
 
             PreparedStatement statement = prepareStatement(query);
             for (int i = 0; i < columnList.size(); i++) {
-                Object value = values.getOrDefault(columnList.get(i), null);
-                if (value instanceof String) {
-                    statement.setString(i + 1, (String) value);
-                } else if (value instanceof Integer) {
-                    statement.setInt(i + 1, (Integer) value);
-                } else if (value instanceof Boolean) {
-                    statement.setBoolean(i + 1, (Boolean) value);
-                } else if (value == null) {
-                    statement.setNull(i + 1, Types.NULL);
-                }
+                statementSetter(statement, values.getOrDefault(columnList.get(i), null), i);
             }
 
             if (logger.isDebugEnabled()) {
@@ -316,41 +309,23 @@ public class PostgresHelper implements GraphInterface {
         return -1;
     }
 
-    public void updateLastCommits(String value, List<String> sysmlIds) {
+    public void updateLastCommitsNodes(String value, List<String> sysmlIds) {
         if (sysmlIds == null || sysmlIds.isEmpty()) {
             return;
         }
-        int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
-        String starter = String.format("UPDATE \"nodes%s\" SET lastcommit = ? WHERE sysmlId IN (", workspaceId);
-        StringBuilder query = new StringBuilder(starter);
-        int count = 0;
-        int total = sysmlIds.size();
-        for (int i = 0; i < total; i++) {
-            query.append("?,");
-            count++;
-            if (((i + 1) % limit) == 0 || i == (total - 1)) {
-                query.setLength(query.length() - 1);
-                query.append(")");
-                List<Object> single = new LinkedList<>();
-                single.add(0, value);
-                for (int j = 0; j < count; j++) {
-                    single.add(j + 1, sysmlIds.remove(0));
-                }
-                List<List<Object>> values = new ArrayList<>();
-                values.add(single);
-                executeBulkStatements(query.toString(), values);
-                query = new StringBuilder(starter);
-                count = 0;
-            }
-        }
+        updateLastCommits(value, sysmlIds, "nodes");
     }
 
     public void updateLastCommitsArtifacts(String value, List<String> sysmlIds) {
         if (sysmlIds == null || sysmlIds.isEmpty()) {
             return;
         }
+        updateLastCommits(value, sysmlIds, "artifacts");
+    }
+
+    public void updateLastCommits(String value, List<String> sysmlIds, String type) {
+        String starter = String.format("UPDATE \"%s%s\" SET lastcommit = ? WHERE sysmlId IN (", type, workspaceId);
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
-        String starter = String.format("UPDATE \"artifacts%s\" SET lastcommit = ? WHERE sysmlId IN (", workspaceId);
         StringBuilder query = new StringBuilder(starter);
         int count = 0;
         int total = sysmlIds.size();
@@ -769,37 +744,22 @@ public class PostgresHelper implements GraphInterface {
         return false;
     }
 
-    public List<String> getElasticIdsFromSysmlIds(List<String> sysmlids, boolean withDeleted) {
-        List<String> elasticIds = new ArrayList<>();
-        if (sysmlids == null || sysmlids.isEmpty())
-            return elasticIds;
-
-        try {
-            String query = String.format("SELECT elasticid FROM \"nodes%s\" WHERE sysmlid IN (%s)", workspaceId,
-                "'" + String.join("','", sysmlids) + "'");
-            if (!withDeleted) {
-                query += "AND deleted = false";
-            }
-            ResultSet rs = execQuery(query);
-            while (rs.next()) {
-                elasticIds.add(rs.getString(1));
-            }
-        } catch (SQLException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-
-        return elasticIds;
+    public List<String> getElasticIdsFromSysmlIdsNodes(List<String> sysmlids, boolean withDeleted) {
+        return getElasticIdsFromSysmlIds(sysmlids, withDeleted, "nodes");
     }
 
     public List<String> getElasticIdsFromSysmlIdsArtifacts(List<String> sysmlids, boolean withDeleted) {
+        return getElasticIdsFromSysmlIds(sysmlids, withDeleted, "artifacts");
+    }
+
+    public List<String> getElasticIdsFromSysmlIds(List<String> sysmlids, boolean withDeleted, String type) {
         List<String> elasticIds = new ArrayList<>();
-        if (sysmlids == null || sysmlids.isEmpty())
+        if (sysmlids == null || sysmlids.isEmpty()) {
             return elasticIds;
+        }
 
         try {
-            String query = String.format("SELECT elasticid FROM \"artifacts%s\" WHERE sysmlid IN (%s)", workspaceId,
+            String query = String.format("SELECT elasticid FROM \"%s%s\" WHERE sysmlid IN (%s)", type, workspaceId,
                 "'" + String.join("','", sysmlids) + "'");
             if (!withDeleted) {
                 query += "AND deleted = false";
@@ -816,53 +776,40 @@ public class PostgresHelper implements GraphInterface {
 
         return elasticIds;
     }
-
-    public List<String> getElasticIdsFromSysmlIdsArtifact(List<String> sysmlids, boolean withDeleted) {
-        List<String> elasticIds = new ArrayList<>();
-        if (sysmlids == null || sysmlids.isEmpty())
-            return elasticIds;
-
-        try {
-            String query = String.format("SELECT elasticid FROM \"artifacts%s\" WHERE sysmlid IN (%s)", workspaceId,
-                "'" + String.join("','", sysmlids) + "'");
-            if (!withDeleted) {
-                query += "AND deleted = false";
-            }
-            ResultSet rs = execQuery(query);
-            while (rs.next()) {
-                elasticIds.add(rs.getString(1));
-            }
-        } catch (SQLException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-
-        return elasticIds;
-    }
-
 
     public Node getNodeFromSysmlId(String sysmlId) {
         return getNodeFromSysmlId(sysmlId, false);
     }
 
     public Node getNodeFromSysmlId(String sysmlId, boolean withDeleted) {
+        return (Node) getFromSysmlId(sysmlId, withDeleted, "nodes");
+    }
+
+    public Artifact getArtifactFromSysmlId(String sysmlId, boolean withDeleted) {
+        return (Artifact) getFromSysmlId(sysmlId, withDeleted, "artifacts");
+    }
+
+    public Object getFromSysmlId(String sysmlId, boolean withDeleted, String type) {
         try {
             PreparedStatement query;
             if (withDeleted) {
-                query = getConn().prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ?");
+                query = getConn().prepareStatement("SELECT * FROM \"" + type + workspaceId + "\" WHERE sysmlId = ?");
                 query.setString(1, sysmlId);
             } else {
                 query = getConn()
-                    .prepareStatement("SELECT * FROM \"nodes" + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
+                    .prepareStatement("SELECT * FROM \"" + type + workspaceId + "\" WHERE sysmlId = ? AND deleted = ?");
                 query.setString(1, sysmlId);
                 query.setBoolean(2, false);
             }
 
             ResultSet rs = query.executeQuery();
             if (rs.next()) {
-                return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5),
-                    rs.getString(6), rs.getBoolean(7));
+                if (type.equals("nodes")) {
+                    return new Node(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getString(4), rs.getString(5), rs.getString(6), rs.getBoolean(7));
+                } else {
+                    return new Artifact(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
+                        rs.getBoolean(6));
+                }
             } else {
                 return null;
             }
@@ -933,37 +880,11 @@ public class PostgresHelper implements GraphInterface {
         return null;
     }
 
-    public Artifact getArtifactFromSysmlId(String sysmlId, boolean withDeleted) {
-        try {
-            PreparedStatement query;
-            StringBuilder queryString =
-                new StringBuilder("SELECT * FROM \"artifacts" + workspaceId + "\" WHERE sysmlId = ?");
-            if (withDeleted) {
-                query = getConn().prepareStatement(queryString.toString());
-                query.setString(1, sysmlId);
-            } else {
-                queryString.append(" AND deleted = ?");
-                query = getConn().prepareStatement(queryString.toString());
-                query.setString(1, sysmlId);
-                query.setBoolean(2, false);
-            }
-
-            ResultSet rs = query.executeQuery();
-            if (rs.next()) {
-                return new Artifact(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
-                    rs.getBoolean(6));
-            } else {
-                return null;
-            }
-        } catch (SQLException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-        return null;
+    public String insertCommit(String elasticId, DbCommitTypes type, String creator) {
+        return insertCommit(elasticId, type, creator, null);
     }
 
-    public String insertCommit(String elasticId, DbCommitTypes type, String creator) {
+    public String insertCommit(String elasticId, DbCommitTypes type, String creator, Date time) {
         try {
             Map<String, Object> map = new HashMap<>();
             // we can hard code the commit type here....but we should still store the integer value
@@ -973,14 +894,10 @@ public class PostgresHelper implements GraphInterface {
             map.put("commitType", type.getValue());
             map.put("refId", workspaceId);
             map.put("creator", creator);
-            insert("commits", map);
-            if (parentId > 0) {
-                int childId = getHeadCommit();
-                PreparedStatement statement = prepareStatement("INSERT INTO commitParent (child, parent) VALUES (?,?)");
-                statement.setInt(1, childId);
-                statement.setInt(2, parentId);
-                statement.execute();
+            if (time != null) {
+                map.put("timestamp", new Timestamp(time.getTime()));
             }
+            insert("commits", map);
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -1056,17 +973,7 @@ public class PostgresHelper implements GraphInterface {
             for (int i = 0; i < values.size(); i++) {
                 List<Object> value = values.get(i);
                 for (int j = 0; j < value.size(); j++) {
-                    Object val = value.get(j);
-                    if (val instanceof String) {
-                        statement.setString(j + 1, (String) val);
-                    } else if (val instanceof Integer) {
-                        statement.setInt(j + 1, (Integer) val);
-                    } else if (val instanceof Boolean) {
-                        statement.setBoolean(j + 1, (Boolean) val);
-                    } else if (val == null) {
-                        //Unlike the insert method, this should never happen, but I guess it doesn't hurt
-                        statement.setNull(i + 1, Types.NULL);
-                    }
+                    statementSetter(statement, value.get(j), j);
                 }
                 statement.addBatch();
                 count++;
@@ -1082,6 +989,36 @@ public class PostgresHelper implements GraphInterface {
             }
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+    }
+
+    public void statementSetter(PreparedStatement statement, Object value, int index) {
+        try {
+            if (value instanceof String) {
+                statement.setString(index + 1, (String) value);
+            } else if (value instanceof Integer) {
+                statement.setInt(index + 1, (Integer) value);
+            } else if (value instanceof Boolean) {
+                statement.setBoolean(index + 1, (Boolean) value);
+            } else if (value instanceof Timestamp) {
+                statement.setTimestamp(index + 1, (Timestamp) value);
+            } else if (value == null) {
+                statement.setNull(index + 1, Types.NULL);
+            } else if (value instanceof JsonPrimitive) {
+                JsonPrimitive primitive = ((JsonPrimitive) value).getAsJsonPrimitive();
+                if (primitive.isBoolean()) {
+                    statement.setBoolean(index + 1, primitive.getAsBoolean());
+                } else if (primitive.isString()) {
+                    statement.setString(index + 1, primitive.getAsString());
+                } else if (primitive.isNumber()) {
+                    statement.setInt(index + 1, primitive.getAsInt());
+                } else {
+                    logger.info(String.format("Unable to set value: %s", primitive));
+                    logger.info(String.format("Class is: %s", primitive.getClass()));
+                }
+            }
+        } catch (SQLException se) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(se)));
         }
     }
 
@@ -1177,15 +1114,15 @@ public class PostgresHelper implements GraphInterface {
         return 0;
     }
 
-    public Map<String, String> getCommitAndTimestamp(String lookUp, String value) {
+    public Map<String, String> getCommitAndTimestamp(String lookUp, Object value) {
         return getCommitAndTimestamp(lookUp, value, "=");
     }
 
-    public Map<String, String> getCommitAndTimestamp(String lookUp, String value, String operator) {
+    public Map<String, String> getCommitAndTimestamp(String lookUp, Object value, String operator) {
         return getCommitAndTimestamp(lookUp, value, operator, 0);
     }
 
-    public Map<String, String> getCommitAndTimestamp(String lookUp, String value, String operator, int limit) {
+    public Map<String, String> getCommitAndTimestamp(String lookUp, Object value, String operator, int limit) {
         Map<String, String> commit = new HashMap<>();
         try {
             StringBuilder query = new StringBuilder(String
@@ -1197,10 +1134,10 @@ public class PostgresHelper implements GraphInterface {
             }
 
             PreparedStatement statement = prepareStatement(query.toString());
-            statement.setString(1, value);
+            statementSetter(statement, value, 0);
 
             if (limit > 0) {
-                statement.setInt(2, limit);
+                statementSetter(statement, limit, 1);
             }
 
             ResultSet rs = statement.executeQuery();
@@ -1732,10 +1669,6 @@ public class PostgresHelper implements GraphInterface {
             execUpdate("CREATE INDEX commitElasticIdIndex on commits(elasticId);");
 
             execUpdate(
-                "CREATE TABLE commitParent(id bigserial primary key, child integer NOT NULL, parent integer not null, FOREIGN KEY(child) REFERENCES commits(id) ON DELETE CASCADE, FOREIGN KEY(parent) REFERENCES commits(id) ON DELETE CASCADE, constraint unique_parents unique(child, parent));");
-            execUpdate("CREATE INDEX commitParentIndex on commitParent(id)");
-
-            execUpdate(
                 "CREATE TABLE refs(id bigserial primary key, parent text not null, refId text not null unique, refName text not null, parentCommit integer, elasticId text, tag boolean DEFAULT false, timestamp timestamp DEFAULT current_timestamp, deleted boolean DEFAULT false);");
             execUpdate("CREATE INDEX refsIndex on refs(id)");
 
@@ -1999,7 +1932,7 @@ public class PostgresHelper implements GraphInterface {
             statement.executeUpdate();
 
             execUpdate(String
-                .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s FROM %2$s", sanitizeRefId(refId),
+                .format("REVOKE INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s, artifacts%1$s FROM %2$s", sanitizeRefId(refId),
                     EmsConfig.get("pg.user")));
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -2070,14 +2003,24 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public List<Pair<String, String>> getRefsElastic() {
+        return getRefsElastic(false);
+    }
+
+    public List<Pair<String, String>> getRefsElastic(boolean includeDeleted) {
         List<Pair<String, String>> result = new ArrayList<>();
-        try {
-            PreparedStatement statement = prepareStatement("SELECT refId, elasticId FROM refs WHERE deleted = false");
-            ResultSet rs = statement.executeQuery();
+        StringBuilder query = new StringBuilder("SELECT refId, elasticId FROM refs ");
+        if (!includeDeleted) {
+            query.append("WHERE deleted = false ");
+        }
+        query.append("ORDER BY timestamp ASC");
+
+        PreparedStatement statement =
+            prepareStatement(query.toString());
+
+        try(ResultSet rs = statement.executeQuery()) {
             while (rs.next()) {
                 result.add(new Pair<>(rs.getString(1), rs.getString(2)));
             }
-
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -2183,6 +2126,24 @@ public class PostgresHelper implements GraphInterface {
             close();
         }
         return result;
+    }
+
+    public String getProjectInitialCommit() {
+        PreparedStatement statement =
+            prepareStatement("SELECT elasticid FROM commits WHERE id = (SELECT min(id) FROM commits)");
+
+        try {
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return null;
     }
 
     public List<Pair<String, String>> getTags() {

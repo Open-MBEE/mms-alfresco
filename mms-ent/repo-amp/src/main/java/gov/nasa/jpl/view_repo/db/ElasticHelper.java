@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.searchbox.cluster.UpdateSettings;
 import io.searchbox.core.*;
 import io.searchbox.indices.DeleteIndex;
+import io.searchbox.indices.template.PutTemplate;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
@@ -105,6 +107,24 @@ public class ElasticHelper implements ElasticsearchInterface {
     public void deleteIndex(String index) throws IOException {
         DeleteIndex indexExists = new DeleteIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build();
         client.execute(indexExists);
+    }
+
+    public void applyTemplate(String mapping) throws IOException {
+        PutTemplate.Builder putMappingBuilder =
+            new PutTemplate.Builder("template", mapping);
+        client.execute(putMappingBuilder.build());
+    }
+
+    public void updateByQuery(String index, String payload, String type) throws IOException {
+        UpdateByQuery updateByQuery =
+            new UpdateByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
+                .build();
+        client.execute(updateByQuery);
+    }
+
+    public void updateClusterSettings(String payload) throws IOException {
+        UpdateSettings updateSettings = new UpdateSettings.Builder(payload).build();
+        client.execute(updateSettings);
     }
 
     /**
@@ -512,6 +532,10 @@ public class ElasticHelper implements ElasticsearchInterface {
         Search search = new Search.Builder(queryJson.toString()).build();
         SearchResult result = client.execute(search);
 
+        if (result == null) {
+            return top;
+        }
+
         if (result.getTotal() > 0) {
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
             for (int i = 0; i < hits.size(); i++) {
@@ -544,8 +568,10 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @return JSONObject Result
      */
     public JsonObject bulkDeleteByType(String type, ArrayList<String> ids, String index) {
-        if (ids.size() == 0)
+        if (ids.isEmpty()) {
             return new JsonObject();
+        }
+
         JestResult result = null;
         try {
             ArrayList<Delete> deleteList = new ArrayList<>();
@@ -567,8 +593,9 @@ public class ElasticHelper implements ElasticsearchInterface {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
         JsonObject o = new JsonObject();
-        if (result != null)
+        if (result != null) {
             o = result.getJsonObject();
+        }
         return o;
     }
 

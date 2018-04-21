@@ -63,7 +63,7 @@ public interface GraphInterface {
 
     boolean edgeExists(String parent, String child, DbEdgeTypes dbet);
 
-    List<String> getElasticIdsFromSysmlIds(List<String> sysmlids, boolean withDeleted);
+    List<String> getElasticIdsFromSysmlIdsNodes(List<String> sysmlids, boolean withDeleted);
 
     Node getNodeFromSysmlId(String sysmlId);
 
@@ -87,7 +87,7 @@ public interface GraphInterface {
 
     void insertEdge(String parentSysmlId, String childSysmlId, DbEdgeTypes edgeType);
 
-    Map<String, String> getCommitAndTimestamp(String lookUp, String value);
+    Map<String, String> getCommitAndTimestamp(String lookUp, Object value);
 
     Long getTimestamp(String lookUp, String value);
 

@@ -7,7 +7,9 @@
 
 package gov.nasa.jpl.view_repo.util;
 
+import java.io.InputStream;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.List;
@@ -16,7 +18,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 
 /**
  * Simple static class for working with com.google.gson objects
@@ -27,8 +28,9 @@ import com.google.gson.JsonNull;
 public class JsonUtil {
 
     public static JsonObject buildFromString(String str) {
-        if (str == null || str.isEmpty())
+        if (str == null || str.isEmpty()) {
             return new JsonObject();
+        }
         JsonParser parser = new JsonParser();
         return parser.parse(str).getAsJsonObject();
     }

@@ -255,4 +255,19 @@
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
+    <bean id="gov.nasa.jpl.mms.automigration" class="gov.nasa.jpl.view_repo.actions.MigrationRunner" parent="basePatch">
+        <property name="id" value="MMS MigrationRunner" />
+        <property name="description" value="MMS Auto Migration" />
+        <property name="fixesFromSchema">
+            <value>0</value>
+        </property>
+        <property name="fixesToSchema">
+            <value>${version.schema}</value>
+        </property>
+        <property name="targetSchema">
+            <value>10004</value>
+        </property>
+        <property name="services" ref="ServiceRegistry" />
+        <property name="registryService" ref="RegistryService" />
+    </bean>
 </beans>
