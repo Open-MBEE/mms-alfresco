@@ -1477,7 +1477,8 @@ public class PostgresHelper implements GraphInterface {
         List<String> nullParents = new ArrayList<>();
         try {
             ResultSet rs = execQuery(
-                "SELECT n.elasticId FROM nodes n INNER JOIN (SELECT * FROM edges WHERE edgeType = 1 and parent IS NULL) as e ON (n.id = e.child);");
+                "SELECT n.elasticId FROM \"nodes" + workspaceId + "\" n INNER JOIN (SELECT * FROM \"edges" + workspaceId
+                    + "\" WHERE edgeType = 1 and parent IS NULL) as e ON (n.id = e.child);");
             if (rs == null) {
                 return nullParents;
             }
