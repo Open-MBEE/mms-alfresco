@@ -246,8 +246,10 @@ public class Migrate_3_3_0 {
                                     version.getVersionedNodeRef().getStoreRef().getIdentifier(),
                                     version.getVersionedNodeRef().getId(), URLEncoder.encode(versionedFile.getName()));
 
-                                String creator = version.getFrozenModifier();
-                                Date created = version.getFrozenModifiedDate();
+                                String modifier = version.getFrozenModifier();
+                                Date modified = version.getFrozenModifiedDate();
+                                String creator = version.getCreator();
+                                Date created = version.getCreatedDate();
                                 String contentType = file.getContentData().getMimetype();
                                 String commitId = UUID.randomUUID().toString();
                                 String extension = FilenameUtils.getExtension(name);
@@ -274,9 +276,9 @@ public class Migrate_3_3_0 {
                                     artifactJson.addProperty(Sjm.REFID, refId);
                                     artifactJson.add(Sjm.INREFIDS, new JsonArray());
                                     artifactJson.addProperty(Sjm.CREATOR, creator);
-                                    artifactJson.addProperty(Sjm.MODIFIER, creator);
+                                    artifactJson.addProperty(Sjm.MODIFIER, modifier);
                                     artifactJson.addProperty(Sjm.CREATED, df.format(created));
-                                    artifactJson.addProperty(Sjm.MODIFIED, df.format(created));
+                                    artifactJson.addProperty(Sjm.MODIFIED, df.format(modified));
                                     artifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
                                     artifactJson
                                         .addProperty(Sjm.LOCATION, url);
@@ -301,8 +303,8 @@ public class Migrate_3_3_0 {
 
                                             JsonObject commitObject = new JsonObject();
                                             commitObject.addProperty(Sjm.ELASTICID, commitId);
-                                            commitObject.addProperty(Sjm.CREATED, df.format(created));
-                                            commitObject.addProperty(Sjm.CREATOR, creator);
+                                            commitObject.addProperty(Sjm.CREATED, df.format(modified));
+                                            commitObject.addProperty(Sjm.CREATOR, modifier);
                                             commitObject.addProperty(Sjm.PROJECTID, projectId);
                                             commitObject.addProperty(Sjm.TYPE, Sjm.ARTIFACT);
                                             commitObject
