@@ -30,6 +30,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class HtmlConverterPost extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(HtmlConverterPost.class);
@@ -82,16 +84,12 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
 
                 String filename = String.format("%s%s", docName, format);
                 postJson.addProperty("filename", filename);
-                EmsScriptNode artifact = createDoc(postJson, docName, siteName, projectId, refId, format);
+
+                createDoc(postJson, docName, siteName, projectId, refId, format);
 
                 result.addProperty(Sjm.NAME, docName);
                 result.addProperty("filename", filename);
-
-                if (artifact != null) {
-                    result.addProperty("status", "Conversion succeeded.");
-                } else {
-                    result.addProperty("status", "Conversion failed.");
-                }
+                result.addProperty("status", "Conversion submitted.");
 
             } else {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Job name not specified");
@@ -116,36 +114,38 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
         return model;
     }
 
-    private EmsScriptNode createDoc(JsonObject postJson, String filename, String siteName, String projectId,
+    private void createDoc(JsonObject postJson, String filename, String siteName, String projectId,
         String refId, String format) {
 
         PandocConverter pandocConverter = new PandocConverter(filename, format);
 
         Path filePath = Paths.get(PandocConverter.PANDOC_DATA_DIR + File.separator + pandocConverter.getOutputFile());
 
-        EmsScriptNode artifact = null;
-
+        ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
             // Convert HTML to Doc
-            pandocConverter.convert(JsonUtil.getOptString(postJson, "body"), JsonUtil.getOptString(postJson, "css"));
+            executor.submit(() -> {
+                pandocConverter.convert(JsonUtil.getOptString(postJson, "body"), JsonUtil.getOptString(postJson, "css"));
 
-            String artifactId = postJson.get(Sjm.NAME).getAsString() + System.currentTimeMillis() + format;
-            artifact = NodeUtil.updateOrCreateArtifact(artifactId, filePath, format, siteName, projectId, refId);
+                String artifactId = postJson.get(Sjm.NAME).getAsString() + System.currentTimeMillis() + format;
+                EmsScriptNode artifact = NodeUtil.updateOrCreateArtifact(artifactId, filePath, format, siteName, projectId, refId);
 
-            sendEmail(artifact, format);
-            if (artifact == null) {
-                logger.error(String.format("Failed to create HTML to %s artifact in Alfresco.", format));
-            } else {
-                File file = filePath.toFile();
-                if (!file.delete()) {
-                    logger.error(String.format("Failed to delete the temp file %s", filename));
+                sendEmail(artifact, format);
+                if (artifact == null) {
+                    logger.error(String.format("Failed to create HTML to %s artifact in Alfresco.", format));
+                } else {
+                    File file = filePath.toFile();
+                    if (!file.delete()) {
+                        logger.error(String.format("Failed to delete the temp file %s", filename));
+                    }
                 }
-            }
+            });
+
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            executor.shutdown();
         }
-
-        return artifact;
     }
 
     protected void sendEmail(EmsScriptNode node, String format) {
