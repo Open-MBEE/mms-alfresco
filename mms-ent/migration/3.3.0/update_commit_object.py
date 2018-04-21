@@ -46,28 +46,26 @@ def main(args):
     project_actions = []
     for commitId, dup in dupes.iteritems():
         new_added = find_correct_id(es, dup, commitId)
-        if new_added is None:
-            commits_missing_info.append(commitId)
-            continue
-        for d in dup:
-            try:
-                search_for_ids = es.get(
-                    index=dup[0],
-                    doc_type='commit',
-                    id=commitId)
-                added = search_for_ids['_source']['added']
-                # Add entries that are not dupes
-                for entry in added:
-                    if entry['id'] == d[1] and entry['_elasticId'] == d[2]:
-                        continue
-                    else:
-                        new_added.append(entry)
-                # add the dupe once
-                new_added.append({'id': d['id'], '_elasticId': d['_elasticId']})
-            except ElasticsearchException as e:
-                t = dup[0]
-                print(t[0])
-                print("curl -X GET \'localhost:9200/"+t+"/commit/"+commitId+"\'")
+        # if new_added is None:
+        #     commits_missing_info.append(commitId)
+        #     continue
+        # for d in dup:
+        #     try:
+        #         search_for_ids = es.get(
+        #             index=d[0],
+        #             doc_type='commit',
+        #             id=commitId)
+        #         added = search_for_ids['_source']['added']
+        #         # Add entries that are not dupes
+        #         for entry in added:
+        #             if entry['id'] == d[1] and entry['_elasticId'] == d[2]:
+        #                 continue
+        #             else:
+        #                 new_added.append(entry)
+        #         # add the dupe once
+        #         new_added.append({'id': d['id'], '_elasticId': d['_elasticId']})
+        #     except ElasticsearchException as e:
+        #         print("curl -X GET \'localhost:9200/"+d[0]+"/commit/"+commitId+"\'")
     #     project_actions.append(add_actions(new_added, commitId, 'commit', dup[0]))
     # helpers.bulk(es, project_actions)
     # # if some commits were skipped print them
@@ -89,9 +87,9 @@ def iterate_scroll(es, scroll_id, dupes):
     hits = iterate.get('hits').get('hits')
     dupes.update(find_dupes(hits))
     if hits:
-        temp = iterate_scroll(es, s_id, dupes)
-        if temp is not None:
-            dupes.update(temp)
+        iterate_scroll(es, s_id, dupes)
+        # if temp is not None:
+        #     dupes.update(temp)
 
 
 def find_dupes(hits):
@@ -122,7 +120,7 @@ def find_correct_id(es, d, commitId):
             search_for_ids = es.get(
                 index=dup[0],
                 doc_type='element',
-                id=dup[1])
+                id=dup[2])
             source = search_for_ids['_source']
             ass_obj, association_obj = get_association(es, d, source, commitId)
             app_obj = get_stereotype(es, d, source, commitId)
@@ -143,8 +141,9 @@ def find_correct_id(es, d, commitId):
             else:
                 return None
         except ElasticsearchException as e:
-            print()
-            # print('index is ' + dup[0])
+            print(e)
+            print("curl -X GET \'localhost:9200/"+dup[0]+"/element/"+dup[2]+"\'")
+            sys.exit(0)
     return update_added
 
 
