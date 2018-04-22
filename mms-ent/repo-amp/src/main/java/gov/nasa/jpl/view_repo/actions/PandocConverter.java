@@ -99,7 +99,7 @@ public class PandocConverter {
         boolean withOutputStream = false;
         StringBuilder command = new StringBuilder();
 
-        if (this.pandocOutputFormat.getFormatName().equals("PDF") && this.pdfEngine.contains("prince")
+        if (this.pandocOutputFormat.getFormatName().equals("pdf") && this.pdfEngine.contains("prince")
             && this.princeExec != null && !this.princeExec.isEmpty()) {
 
             try {
@@ -123,7 +123,7 @@ public class PandocConverter {
                     throw new RuntimeException(t);
                 }
             }
-            if (this.pandocOutputFormat.getFormatName().equals("PDF")) {
+            if (this.pandocOutputFormat.getFormatName().equals("pdf")) {
                 command.append(String.format(" --pdf-engine=%s", this.pdfEngine));
             }
             command.append(String.format(" -o %s/%s.%s", PANDOC_DATA_DIR, this.outputFile, this.pandocOutputFormat.getFormatName()));
