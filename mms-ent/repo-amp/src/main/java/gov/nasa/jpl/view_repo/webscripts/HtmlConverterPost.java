@@ -85,6 +85,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
                 String filename = String.format("%s%s", docName, format);
                 postJson.addProperty("filename", filename);
 
+
                 createDoc(postJson, docName, siteName, projectId, refId, format);
 
                 result.addProperty(Sjm.NAME, docName);
@@ -117,14 +118,14 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
     private void createDoc(JsonObject postJson, String filename, String siteName, String projectId,
         String refId, String format) {
 
-        PandocConverter pandocConverter = new PandocConverter(filename, format);
-
-        Path filePath = Paths.get(PandocConverter.PANDOC_DATA_DIR + File.separator + pandocConverter.getOutputFile());
-
         ExecutorService executor = Executors.newSingleThreadExecutor();
+
         try {
-            // Convert HTML to Doc
             executor.submit(() -> {
+                // Convert HTML to Doc
+                PandocConverter pandocConverter = new PandocConverter(filename, format);
+                Path filePath = Paths.get(PandocConverter.PANDOC_DATA_DIR + File.separator + pandocConverter.getOutputFile());
+
                 pandocConverter.convert(JsonUtil.getOptString(postJson, "body"), JsonUtil.getOptString(postJson, "css"));
 
                 String artifactId = postJson.get(Sjm.NAME).getAsString() + System.currentTimeMillis() + format;
