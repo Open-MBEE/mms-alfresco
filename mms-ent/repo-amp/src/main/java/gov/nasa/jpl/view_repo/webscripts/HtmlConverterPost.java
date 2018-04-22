@@ -117,12 +117,14 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
 
     private void createDoc(JsonObject postJson, String filename, String siteName, String projectId,
         String refId, String format) {
+        String runAsUser = AuthenticationUtil.getRunAsUser();
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         try {
             executor.submit(() -> {
                 // Convert HTML to Doc
+                AuthenticationUtil.setRunAsUser(runAsUser);
                 PandocConverter pandocConverter = new PandocConverter(filename, format);
                 Path filePath = Paths.get(PandocConverter.PANDOC_DATA_DIR + File.separator + pandocConverter.getOutputFile());
 
