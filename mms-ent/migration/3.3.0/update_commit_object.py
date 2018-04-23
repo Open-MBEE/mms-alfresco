@@ -18,12 +18,12 @@ Searches through all commit objects, checks for duplicate ids, removes and trans
 
 
 def main(args):
-    #commits_missing_info = []
+    commits_missing_info = []
     es = Elasticsearch([{'host': 'localhost', 'port': '9200'}], timeout=300)
     # Get every dupe that isn't a intial commit
     dupes = {}
     for index in es.indices.get('*'):
-        #print("We working on dis index  " + index)
+        # print("We working on dis index  " + index)
         first_page = es.search(
             index=index,
             doc_type='commit',
@@ -33,9 +33,9 @@ def main(args):
         s_id = first_page['_scroll_id']
         # print(str(type(iterate_scroll(es, s_id))) +"   "+str(len(iterate_scroll(es, s_id))))
         iterate_scroll(es, s_id, dupes)
-        #print('Starting to remove dupes for project ' + index + ' There are this many dupes: ' + str(len(dupes)))
+        # print('Starting to remove dupes for project ' + index + ' There are this many dupes: ' + str(len(dupes)))
     print(str(len(dupes)) + " There are this many dupes in this org.")
-    print(dupes)
+    #print(dupes)
     # TODO: Count the actual length
     # count = sum(len(v) for v in dupes.itervalues())
     # print(count)
@@ -60,22 +60,26 @@ def main(args):
                 for entry in added:
                     if entry['id'] == d[1] and entry['_elasticId'] == d[2]:
                         continue
+                    if ((d[0], entry['id'], entry['_elasticId'])) in dup:
+                        print('i am dupe')
+                        continue
                     else:
                         new_added.append(entry)
                 # add the dupe once
                 new_added.append({'id': d[1], '_elasticId': d[2]})
-                if commitId == '54265dc7-68cb-4f15-8335-0b015b826ada':
-                    print(json.dumps(new_added, indent=4, sort_keys=True))
-                    print('that is the new object')
-                    print('this is the old object')
-                    print(json.dumps(added, indent=4, sort_keys=True))
+                # if commitId == '54265dc7-68cb-4f15-8335-0b015b826ada':
+                #     print(json.dumps(new_added, indent=4, sort_keys=True))
+                #     print('that is the new object')
+                #     print('this is the old object')
+                #     print(json.dumps(added, indent=4, sort_keys=True))
+                #     print(dup)
             except ElasticsearchException as e:
-                print("curl -X GET \'localhost:9200/"+d[0]+"/commit/"+commitId+"\'")
+                print("curl -X GET \'localhost:9200/" + d[0] + "/commit/" + commitId + "\'")
             project_actions.append(add_actions(new_added, commitId, 'commit', d[0]))
     if len(project_actions) > 10000:
         print('The number of updates was too large to update at once')
         sys.exit(0)
-    #this updates everything at once, maybe we don't want that
+    # this updates everything at once, maybe we don't want that
     try:
         helpers.bulk(es, project_actions)
     except ElasticsearchException as e:
@@ -83,10 +87,10 @@ def main(args):
         print('Process ended before update')
         sys.exit(0)
         # if some commits were skipped print them
-    # if len(commits_missing_info) > 0:
-    #     print_errors(commits_missing_info)
-    # print('The number dupes after is :')
-    # print(check_all(es))
+    if len(commits_missing_info) > 0:
+        print_errors(commits_missing_info)
+    print('The number dupes after is :')
+    print(check_all(es))
 
 
 def print_errors(commits_missing):
@@ -208,9 +212,9 @@ def get_owned_end(es, d, association_obj, commitId):
                               association_obj.get('hits').get('hits')[0].get('_source').get('ownedEndIds')[0]))
         if ownedEndId_obj is not None and len(ownedEndId_obj.get('hits').get('hits')) > 0:
             return {'id': ownedEndId_obj.get('hits').get('hits')[0].get('_source').get('id'),
-                '_elasticId': ownedEndId_obj.get('hits').get('hits')[0].get('_source').get('_elasticId')}
+                    '_elasticId': ownedEndId_obj.get('hits').get('hits')[0].get('_source').get('_elasticId')}
         else:
-           return None
+            return None
     except ElasticsearchException as e:
         print(e)
         print('owned')
@@ -278,6 +282,7 @@ def double_check(es, s_id):
         return result + double_check(es, s_id)
     else:
         return result
+
 
 def find_list_dup(hits):
     ids = []
