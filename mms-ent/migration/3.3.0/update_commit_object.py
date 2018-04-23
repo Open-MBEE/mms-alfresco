@@ -106,8 +106,8 @@ def find_dupes(hits):
             continue
         else:
             ids = []
+            projectId = hit['_source']['_projectId'].lower()
             for entry in added:
-                projectId = hit['_source']['_projectId'].lower()
                 ids.append((projectId, entry['id'], entry['_elasticId']))
             dups = list(set([x for x in ids if ids.count(x) > 1]))
             if dups and dups is not None:
