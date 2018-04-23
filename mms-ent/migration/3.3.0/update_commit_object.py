@@ -23,7 +23,7 @@ def main(args):
     # Get every dupe that isn't a intial commit
     dupes = {}
     for index in es.indices.get('*'):
-        # print("We working on dis index  " + index)
+        print("We working on dis index  " + index)
         first_page = es.search(
             index=index,
             doc_type='commit',
@@ -31,11 +31,9 @@ def main(args):
             size=1000)
         dupes.update(find_dupes(first_page.get('hits').get('hits')))
         s_id = first_page['_scroll_id']
-        # print(str(type(iterate_scroll(es, s_id))) +"   "+str(len(iterate_scroll(es, s_id))))
         iterate_scroll(es, s_id, dupes)
-        # print('Starting to remove dupes for project ' + index + ' There are this many dupes: ' + str(len(dupes)))
+        print('Starting to remove dupes for project ' + index + ' There are this many dupes: ' + str(len(dupes)))
     print(str(len(dupes)) + " There are this many dupes in this org.")
-    #print(dupes)
     # TODO: Count the actual length
     # count = sum(len(v) for v in dupes.itervalues())
     # print(count)
@@ -49,33 +47,23 @@ def main(args):
         if new_added is None:
             commits_missing_info.append(commitId)
             continue
-        for d in dup:
-            try:
-                search_for_ids = es.get(
-                    index=d[0],
-                    doc_type='commit',
-                    id=commitId)
-                added = search_for_ids['_source']['added']
-                # Add entries that are not dupes
-                for entry in added:
-                    if entry['id'] == d[1] and entry['_elasticId'] == d[2]:
-                        continue
-                    if ((d[0], entry['id'], entry['_elasticId'])) in dup:
-                        print('i am dupe')
-                        continue
-                    else:
-                        new_added.append(entry)
-                # add the dupe once
+        try:
+            search_for_ids = es.get(
+                index=dup[0][0],
+                doc_type='commit',
+                id=commitId)
+            added = search_for_ids['_source']['added']
+            for entry in added:
+                if (dup[0][0], entry['id'], entry['_elasticId']) in dup:
+                    continue
+                else:
+                    new_added.append(entry)
+            # add the dupe once
+            for d in dup:
                 new_added.append({'id': d[1], '_elasticId': d[2]})
-                # if commitId == '54265dc7-68cb-4f15-8335-0b015b826ada':
-                #     print(json.dumps(new_added, indent=4, sort_keys=True))
-                #     print('that is the new object')
-                #     print('this is the old object')
-                #     print(json.dumps(added, indent=4, sort_keys=True))
-                #     print(dup)
-            except ElasticsearchException as e:
-                print("curl -X GET \'localhost:9200/" + d[0] + "/commit/" + commitId + "\'")
-            project_actions.append(add_actions(new_added, commitId, 'commit', d[0]))
+        except ElasticsearchException as e:
+            print("curl -X GET \'localhost:9200/" + d[0] + "/commit/" + commitId + "\'")
+        project_actions.append(add_actions(new_added, commitId, 'commit', dup[0][0]))
     if len(project_actions) > 10000:
         print('The number of updates was too large to update at once')
         sys.exit(0)
@@ -86,7 +74,7 @@ def main(args):
         print(e)
         print('Process ended before update')
         sys.exit(0)
-        # if some commits were skipped print them
+    # if some commits were skipped print them
     if len(commits_missing_info) > 0:
         print_errors(commits_missing_info)
     print('The number dupes after is :')
