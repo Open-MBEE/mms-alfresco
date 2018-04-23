@@ -18,7 +18,7 @@ Searches through all commit objects, checks for duplicate ids, removes and trans
 
 
 def main(args):
-    commits_missing_info = []
+    #commits_missing_info = []
     es = Elasticsearch([{'host': 'localhost', 'port': '9200'}], timeout=300)
     # Get every dupe that isn't a intial commit
     dupes = {}
@@ -35,7 +35,7 @@ def main(args):
         iterate_scroll(es, s_id, dupes)
         #print('Starting to remove dupes for project ' + index + ' There are this many dupes: ' + str(len(dupes)))
     print(str(len(dupes)) + " There are this many dupes in this org.")
-    # print(dupes)
+    print(dupes)
     # TODO: Count the actual length
     # count = sum(len(v) for v in dupes.itervalues())
     # print(count)
@@ -64,23 +64,29 @@ def main(args):
                         new_added.append(entry)
                 # add the dupe once
                 new_added.append({'id': d[1], '_elasticId': d[2]})
-                if commitId == 'cbeb265b-9b73-4144-931b-de29c99155b4':
+                if commitId == '54265dc7-68cb-4f15-8335-0b015b826ada':
                     print(json.dumps(new_added, indent=4, sort_keys=True))
                     print('that is the new object')
                     print('this is the old object')
                     print(json.dumps(added, indent=4, sort_keys=True))
             except ElasticsearchException as e:
                 print("curl -X GET \'localhost:9200/"+d[0]+"/commit/"+commitId+"\'")
-            project_actions.append(add_actions(new_added, commitId, 'commit', dup[0]))
-        if len(project_actions) > 10000:
-            print('The number of updates was too large to update at once')
-            sys.exit(0)
-        #helpers.bulk(es, project_actions)
+            project_actions.append(add_actions(new_added, commitId, 'commit', d[0]))
+    if len(project_actions) > 10000:
+        print('The number of updates was too large to update at once')
+        sys.exit(0)
+    #this updates everything at once, maybe we don't want that
+    try:
+        helpers.bulk(es, project_actions)
+    except ElasticsearchException as e:
+        print(e)
+        print('Process ended before update')
+        sys.exit(0)
         # if some commits were skipped print them
-        if len(commits_missing_info) > 0:
-            print_errors(commits_missing_info)
-        # print('The number dupes after is :')
-        # print(len(check_all(es)))
+    # if len(commits_missing_info) > 0:
+    #     print_errors(commits_missing_info)
+    # print('The number dupes after is :')
+    # print(check_all(es))
 
 
 def print_errors(commits_missing):
@@ -257,9 +263,9 @@ def check_all(es):
             doc_type='commit',
             scroll='2m',
             size=1000)
+        dupes = dupes + find_list_dup(first_page.get('hits').get('hits'))
         s_id = first_page['_scroll_id']
-        iterate = es.scroll(scroll_id=s_id, scroll="2m")
-        dupes = double_check(es, s_id)
+        dupes = dupes + double_check(es, s_id)
     return dupes
 
 
@@ -278,9 +284,8 @@ def find_list_dup(hits):
     for hit in hits:
         id = hit['_id']
         added = hit['_source']['added']
-        if 'source' in hit['_source']:
-            if hit['_source']['source'].lower() == 'magicdraw':
-                continue
+        if 'source' in hit['_source'] and hit['_source']['source'].lower() == 'magicdraw':
+            continue
         elif len(added) > 5000:
             continue
         else:
@@ -311,8 +316,8 @@ if __name__ == '__main__':
     # }'
 
     # curl -X POST 'localhost:9200/project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63/commit/669964e1-9f47-4d90-8512-798b44cd1bd3/_update' -H 'Content-Type: application/json' -d '{"doc" : {"added" : []}}'
-
-    # curl -X GET 'localhost:9200/project-411c7459-4e09-4dda-b534-4b1fa7aaa140/commit/361169dc-25ec-416a-9cb8-d1fae420266f'
+    # (u'54265dc7-68cb-4f15-8335-0b015b826ada', u'project-8fdc4c06-ec9c-4129-8994-0714cd3e566d', u'MMS_1519262155701_6fc36b03-d65a-4978-9513-5832d19d19d1', u'442551a6-4369-4763-a200-3beb86220b41')
+    # curl -X GET 'localhost:9200/project-8fdc4c06-ec9c-4129-8994-0714cd3e566d/commit/54265dc7-68cb-4f15-8335-0b015b826ada'
     # print(json.dumps(ownedEndId_obj, indent=4, sort_keys=True))
     # print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     # first_page = es.search(
