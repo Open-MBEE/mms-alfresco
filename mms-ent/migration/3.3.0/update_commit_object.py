@@ -94,9 +94,6 @@ def iterate_scroll(es, scroll_id, dupes):
     dupes.update(find_dupes(hits))
     if hits:
         iterate_scroll(es, s_id, dupes)
-        # if temp is not None:
-        #     dupes.update(temp)
-
 
 def find_dupes(hits):
     dup_by_commit = {}
@@ -290,36 +287,3 @@ def find_list_dup(hits):
 
 if __name__ == '__main__':
     main(sys.argv)
-    # if len(sys.argv) < 4:
-    #     print "You need to pass the elastic host, mms host, and mms admin username"
-    # else:
-    #     main(sys.argv)
-
-
-    # curl -XGET 'localhost:9200/_search?pretty' -H 'Content-Type: application/json' -d'
-    # {
-    #     "query": {
-    #         "bool": {
-    #             "must": [
-    #                 {"term": {"id": "blah"}},
-    #                 {"term": {"_commitId": "blah"}}
-    #             ]
-    #         }
-    #     }
-    # }'
-
-    # curl -X POST 'localhost:9200/project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63/commit/669964e1-9f47-4d90-8512-798b44cd1bd3/_update' -H 'Content-Type: application/json' -d '{"doc" : {"added" : []}}'
-    # (u'54265dc7-68cb-4f15-8335-0b015b826ada', u'project-8fdc4c06-ec9c-4129-8994-0714cd3e566d', u'MMS_1519262155701_6fc36b03-d65a-4978-9513-5832d19d19d1', u'442551a6-4369-4763-a200-3beb86220b41')
-    # curl -X GET 'localhost:9200/project-8fdc4c06-ec9c-4129-8994-0714cd3e566d/commit/54265dc7-68cb-4f15-8335-0b015b826ada'
-    # print(json.dumps(ownedEndId_obj, indent=4, sort_keys=True))
-    # print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    # first_page = es.search(
-    #     index='project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63',
-    #     doc_type='commit',
-    #     scroll='2m',
-    #     size=10000)
-    # dupes = find_dupes(first_page.get('hits').get('hits'))
-    # s_id = first_page['_scroll_id']
-    # dupes = dupes + iterate_scroll(es, s_id)
-    # print(dupes)
-    # dupes = [('669964e1-9f47-4d90-8512-798b44cd1bd3', 'project-id_9_25_13_4_05_00_pm_52a679e5_1415678a941_56c_sscae_cmr_128_149_130_63', 'MMS_1519155626332_5bb79ad0-f61c-4210-9072-d94485061592', '118e64f3-c4af-4933-8f7e-c27efdb4d194')]
