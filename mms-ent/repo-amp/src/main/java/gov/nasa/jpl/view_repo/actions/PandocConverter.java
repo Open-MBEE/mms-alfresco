@@ -1,11 +1,10 @@
 package gov.nasa.jpl.view_repo.actions;
 
 import gov.nasa.jpl.view_repo.util.EmsConfig;
-import gov.nasa.jpl.view_repo.webscripts.ArtifactPost;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
@@ -96,13 +95,13 @@ public class PandocConverter {
         Path cssTempFile = null;
 
         StringBuilder command = new StringBuilder();
-        command.append(String.format("%s --from=html", this.pandocExec));
+        command.append(String.format("%s --mathml --variable=title: --from=html+raw_html+simple_tables", this.pandocExec));
         if (!cssString.isEmpty()) {
             try {
                 String cssName = String
                     .format("%s%s.css", Thread.currentThread().getName(), Long.toString(System.currentTimeMillis()));
                 cssTempFile =
-                    ArtifactPost.saveToFilesystem(cssName, new ByteArrayInputStream(cssString.getBytes()));
+                    EmsNodeUtil.saveToFilesystem(cssName, new ByteArrayInputStream(cssString.getBytes()));
                 command.append(String.format(" --css=%s", cssTempFile.toString()));
             } catch (Throwable t) {
                 throw new RuntimeException(t);
@@ -118,8 +117,6 @@ public class PandocConverter {
         try {
             Process process = Runtime.getRuntime().exec(command.toString());
             OutputStream out = process.getOutputStream();
-            out.write(title.getBytes());
-            out.flush();
             out.write(inputString.getBytes());
             out.flush();
             out.close();

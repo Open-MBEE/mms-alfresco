@@ -133,7 +133,7 @@ public class ModelSearch extends ModelPost {
         boolean checkIfPropOrSlot = Boolean.parseBoolean(req.getParameter("checkType"));
         try {
             top = emsNodeUtil.search(json);
-            JsonArray elasticResult = top.get("elements").getAsJsonArray();
+            JsonArray elasticResult = top.has(Sjm.ELEMENTS) ? top.get(Sjm.ELEMENTS).getAsJsonArray() : new JsonArray();
             elasticResult = filterByPermission(elasticResult, req);
             Map<String, JsonArray> bins = new HashMap<>();
             JsonArray finalResult = new JsonArray();

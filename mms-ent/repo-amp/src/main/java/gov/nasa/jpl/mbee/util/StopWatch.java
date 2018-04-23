@@ -44,8 +44,6 @@ public interface StopWatch< T > {
    */
   T getTime();
 
-//  public abstract T getTimeSinceStart(); // getTime will return this
-
   T getTimeSinceLastStart();
 
   T getTimeSinceLastStop();

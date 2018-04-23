@@ -87,7 +87,7 @@ public class OrgPost extends AbstractJavaWebScript {
 
         JsonArray success = new JsonArray();
         JsonArray failure = new JsonArray();
-        
+
         try {
             if (validateRequest(req, status)) {
 
@@ -134,7 +134,6 @@ public class OrgPost extends AbstractJavaWebScript {
 
                         } else {
                             EmsScriptNode site = new EmsScriptNode(siteInfo.getNodeRef(), services, response);
-                            site.setProperty(Acm.ACM_NAME, orgName);
                             JsonObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
                             if (res != null && !JsonUtil.getOptString(res, Sjm.SYSMLID).isEmpty()) {
                                 log(Level.INFO, HttpServletResponse.SC_OK,

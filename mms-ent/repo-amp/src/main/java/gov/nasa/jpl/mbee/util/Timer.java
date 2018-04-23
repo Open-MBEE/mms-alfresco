@@ -1,35 +1,36 @@
 /*******************************************************************************
- * Copyright (c) <2013>, California Institute of Technology ("Caltech").  
+ * Copyright (c) <2013>, California Institute of Technology ("Caltech").
  * U.S. Government sponsorship acknowledged.
- * 
+ *
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without modification, are 
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
- * 
- *  - Redistributions of source code must retain the above copyright notice, this list of 
+ *
+ *  - Redistributions of source code must retain the above copyright notice, this list of
  *    conditions and the following disclaimer.
- *  - Redistributions in binary form must reproduce the above copyright notice, this list 
- *    of conditions and the following disclaimer in the documentation and/or other materials 
+ *  - Redistributions in binary form must reproduce the above copyright notice, this list
+ *    of conditions and the following disclaimer in the documentation and/or other materials
  *    provided with the distribution.
- *  - Neither the name of Caltech nor its operating division, the Jet Propulsion Laboratory, 
- *    nor the names of its contributors may be used to endorse or promote products derived 
+ *  - Neither the name of Caltech nor its operating division, the Jet Propulsion Laboratory,
+ *    nor the names of its contributors may be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS 
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY 
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER  
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON 
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 package gov.nasa.jpl.mbee.util;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Vector;
@@ -41,27 +42,27 @@ public class Timer implements StopWatch< Vector< Long > > {
      * The sum total of time between stops and starts since the last reset()
      */
     protected long total;
-    
+
     /**
-     * The time at the last reset. 
+     * The time at the last reset.
      */
     protected long start;
-    
+
     /**
-     * The time at the last start. 
+     * The time at the last start.
      */
     protected long lastStart;
-    
+
     /**
-     * The time at the last stop. 
+     * The time at the last stop.
      */
     protected long lastStop;
-    
+
     /**
-     * The time cached from the last call to getTime().  
+     * The time cached from the last call to getTime().
      */
     protected long timeSinceStart;
-    
+
     /**
      * The object from which getTimeMethod is invoked.
      */
@@ -76,17 +77,14 @@ public class Timer implements StopWatch< Vector< Long > > {
      * The arguments to pass to the getTimeMethod when it is invoked.
      */
     protected Object[] getTimeArgs;
-    
-    public SingleTimer( Method getTimeMethod ) {
-      this( null, getTimeMethod, null );
-    }
+
     public SingleTimer( Object getTimeObject, Method getTimeMethod, Object[] getTimeArgs ) {
       this.getTimeObject = getTimeObject;
       this.getTimeMethod = getTimeMethod;
       this.getTimeArgs = getTimeArgs;
       reset();
     }
-    
+
     /* (non-Javadoc)
      * @see gov.nasa.jpl.ae.util.StopWatch#reset()
      */
@@ -98,7 +96,7 @@ public class Timer implements StopWatch< Vector< Long > > {
       lastStart = 0;
       lastStop = 0;
     }
-    
+
     /* (non-Javadoc)
      * @see gov.nasa.jpl.ae.util.StopWatch#getTime()
      */
@@ -112,21 +110,27 @@ public class Timer implements StopWatch< Vector< Long > > {
       }
       return timeSinceStart;
     }
-    
+
     /**
      * @return the system time as a Long integer (possibly the number of
      *         milliseconds since the epoch)
      */
     public Long getSystemTime() {
-      Object t;
-      t = ClassUtils.runMethod( false, getTimeObject, getTimeMethod,
-                                getTimeArgs ).second;
-      if ( t instanceof Long ) {
+      Object t = null;
+        try {
+            t = getTimeMethod.invoke(getTimeObject, getTimeArgs);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
+        if ( t instanceof Long ) {
         return (Long)t;
       }
       return -1L;
     }
-    
+
     /* (non-Javadoc)
      * @see gov.nasa.jpl.ae.util.StopWatch#stop()
      */
@@ -199,9 +203,9 @@ public class Timer implements StopWatch< Vector< Long > > {
 
   private static final Class< ? >[] emptyClassArray = new Class< ? >[]{};
   private static final Object[] emptyObjectArray = new Object[]{};
-  
+
   protected static ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-  
+
   protected SingleTimer wallClockTimer;
   protected SingleTimer cpuTimer;
   protected SingleTimer userTimer;
@@ -282,7 +286,7 @@ public class Timer implements StopWatch< Vector< Long > > {
     }
     return null;
   }
-  
+
   @Override
   public void reset() {
     lastStartOrStopWasStart = true;
@@ -316,7 +320,7 @@ public class Timer implements StopWatch< Vector< Long > > {
       t.start();
     }
   }
-  
+
   @Override
   public Vector< Long > stop() {
     lastStartOrStopWasStart = false;
@@ -382,16 +386,6 @@ public class Timer implements StopWatch< Vector< Long > > {
     return times;
   }
 
-//  public int getWallClockTimerIndex() {
-//    return 0;
-//  }
-//  public int getCpuTimerIndex() {
-//    return 1;
-//  }
-//  public int getUserTimerIndex() {
-//    return 2;
-//  }
-
   /**
    * @return the cpuTimer
    */
@@ -406,20 +400,6 @@ public class Timer implements StopWatch< Vector< Long > > {
     return userTimer;
   }
 
-  /**
-   * @return the userTimer
-   */
-  public StopWatch< Long > getSystemTimer() {
-    return systemTimer;
-  }
-
-  /**
-   * @return the wallClockTimer
-   */
-  public SingleTimer getWallClockTimer() {
-    return wallClockTimer;
-  }
-  
   String writeNanosAsSeconds( long nanos ) {
     double nanosd = nanos;
     double seconds = nanosd / 1.0e9;
@@ -429,15 +409,11 @@ public class Timer implements StopWatch< Vector< Long > > {
   @Override
   public String toString() {
     StringBuffer sb = new StringBuffer();
-    //final String[] timerNames = new String[]{ "wall clock", "cpu", "user", "system" };
     Vector< String > s = new Vector< String >( timers.size() );
 
     // collect stats before writing the string
     Vector< Long > currentTime = getTime( true );
     Vector< Long > totalTime = getTotalTime( false );
-//    Vector< Long > lastTimeStartedOrStopped =
-//        lastStartOrStopWasStart ? getTimeSinceLastStart( false )
-//                                : getTimeSinceLastStop( false );
     Vector< Long > timeOfLastClock = getTimeOfLastClock( false );
 
     // time of last start/stop watch
@@ -469,32 +445,10 @@ public class Timer implements StopWatch< Vector< Long > > {
     }
 
     sb.append( "" );
-    
+
     return sb.toString();
   }
 
-  // some simple static methods
-  
-  /** Get CPU time in nanoseconds. */
-  public static long getCpuTime() {
-    ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-    return bean.isCurrentThreadCpuTimeSupported() ? bean.getCurrentThreadCpuTime()
-                                                  : 0L;
-  }
-
-  /** Get user time in nanoseconds. */
-  public static long getUserTime() {
-    ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-    return bean.isCurrentThreadCpuTimeSupported() ? bean.getCurrentThreadUserTime()
-                                                  : 0L;
-  }
-
-  /** Get system time in nanoseconds. */
-  public static long getSystemTime() {
-    ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-    return bean.isCurrentThreadCpuTimeSupported() ? ( bean.getCurrentThreadCpuTime() - bean.getCurrentThreadUserTime() )
-                                                  : 0L;
-  }
 
   @Override
   public Vector< Long > getTimeOfLastClock() {
@@ -513,24 +467,4 @@ public class Timer implements StopWatch< Vector< Long > > {
     }
     return times;
   }
-
-
-  public static Timer startTimer(Timer timer, boolean timeEvents)
-  {
-    if (timeEvents) {
-        if (timer == null) timer = new Timer();
-        timer.start();
-    }
-    return timer;
-  }
-  
-  public static void stopTimer(Timer timer, String msg, boolean timeEvents)
-  {
-    if (timeEvents && timer != null) {
-        timer.stop();
-        System.out.println(msg+" "+timer);
-    }
-  }
-
-  
 }

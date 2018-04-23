@@ -71,6 +71,8 @@ public class ProjectPost extends AbstractJavaWebScript {
 
     private static final String REF_PATH = "refs";
     private static final String REF_PATH_SEARCH = "/" + REF_PATH;
+    private static final String JSON_SPECIALIZATION = "specialization";
+    private static final String JSON_PROJECT_VERSION = "projectVersion";
 
     /**
      * Webscript entry point
@@ -146,7 +148,7 @@ public class ProjectPost extends AbstractJavaWebScript {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request");
                 }
             }
-        } catch (IllegalStateException e) { 
+        } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
         } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
@@ -182,23 +184,7 @@ public class ProjectPost extends AbstractJavaWebScript {
             return HttpServletResponse.SC_NOT_FOUND;
         }
 
-        String projectVersion = null;
-        if (jsonObject.has(Acm.JSON_SPECIALIZATION)) {
-            JsonObject specialization = jsonObject.get(Acm.JSON_SPECIALIZATION).getAsJsonObject();
-            if (specialization != null && specialization.has(Acm.JSON_PROJECT_VERSION)) {
-                projectVersion = specialization.get(Acm.JSON_PROJECT_VERSION).getAsString();
-            }
-        }
         if (checkPermissions(projectNode, PermissionService.WRITE)) {
-            String oldId = (String) projectNode.getProperty(Acm.ACM_ID);
-            boolean idChanged = !projectId.equals(oldId);
-            if (idChanged) {
-                projectNode.createOrUpdateProperty(Acm.ACM_ID, projectId);
-            }
-            projectNode.createOrUpdateProperty(Acm.ACM_TYPE, "Project");
-            if (projectVersion != null) {
-                projectNode.createOrUpdateProperty(Acm.ACM_PROJECT_VERSION, projectVersion);
-            }
             log(Level.INFO, HttpServletResponse.SC_OK, "Project metadata updated.");
         }
 
@@ -211,7 +197,6 @@ public class ProjectPost extends AbstractJavaWebScript {
      * @param jsonObject JSONObject that has the name of the project
      * @param projectId  Project ID
      * @return HttpStatusResponse code for success of the POST request
-     * @throws JSONException
      */
     public int updateOrCreateProject(JsonObject jsonObject, String projectId, String orgId) {
         // see if project exists for workspace

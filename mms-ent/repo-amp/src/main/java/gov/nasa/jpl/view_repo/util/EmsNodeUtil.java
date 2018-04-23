@@ -2,7 +2,11 @@ package gov.nasa.jpl.view_repo.util;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,6 +26,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 import gov.nasa.jpl.view_repo.db.*;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import com.google.gson.JsonObject;
@@ -259,7 +264,7 @@ public class EmsNodeUtil {
     }
 
     public JsonArray getNodesBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
-        List<String> elasticids = pgh.getElasticIdsFromSysmlIds(new ArrayList<>(sysmlids), withDeleted);
+        List<String> elasticids = pgh.getElasticIdsFromSysmlIdsNodes(new ArrayList<>(sysmlids), withDeleted);
         return getJsonByElasticIds(elasticids, withChildViews);
     }
 
@@ -686,13 +691,12 @@ public class EmsNodeUtil {
         return result;
     }
 
-    private static final String updateScript = "{\"script\": {\"inline\":"
-        + "\"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%2$s.removeAll([params.refId])}\","
-        + " \"params\":{\"refId\":\"%3$s\"}}}";
+    private static final String updateScript =
+        "{\"script\": {\"inline\":\"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%1$s.removeAll([params.refId])}\", \"params\":{\"refId\":\"%2$s\"}}}";
 
     public void updateElasticRemoveRefs(Set<String> elasticIds, String type) {
         try {
-            String scriptToRun = String.format(updateScript, Sjm.INREFIDS, Sjm.INREFIDS, this.workspaceName);
+            String scriptToRun = String.format(updateScript, Sjm.INREFIDS, this.workspaceName);
             logger.debug(String.format("elastic script: %s", scriptToRun));
             eh.bulkUpdateElements(elasticIds, scriptToRun, projectId, type);
         } catch (IOException ex) {
@@ -829,22 +833,22 @@ public class EmsNodeUtil {
                                     .contains("_17_0_1_407019f_1332453225141_893756_11936") || asids
                                     .contains("_11_5EAPbeta_be00301_1147420760998_43940_227") || asids
                                     .contains("_18_0beta_9150291_1392290067481_33752_4359")) {
-                                    processChildViewDeleteCommit(childView, ownedAttribute, deletedElements, oldElasticIds, commitDeleted);
+                                    processChildViewDeleteCommit(ownedAttribute, deletedElements, oldElasticIds, commitDeleted);
 
                                     JsonObject asi = emsNodeUtil.getNodeBySysmlid(
                                         JsonUtil.getOptString(ownedAttribute, Sjm.APPLIEDSTEREOTYPEINSTANCEID));
-                                    processChildViewDeleteCommit(asi, asi, deletedElements, oldElasticIds, commitDeleted);
+                                    processChildViewDeleteCommit(asi, deletedElements, oldElasticIds, commitDeleted);
 
                                     JsonObject association = emsNodeUtil
                                         .getNodeBySysmlid(JsonUtil.getOptString(ownedAttribute, Sjm.ASSOCIATIONID));
-                                    processChildViewDeleteCommit(association, association, deletedElements, oldElasticIds, commitDeleted);
+                                    processChildViewDeleteCommit(association, deletedElements, oldElasticIds, commitDeleted);
 
                                     JsonArray associationProps = JsonUtil.getOptArray(association, Sjm.OWNEDENDIDS);
                                     for (int k = 0; k < associationProps.size(); k++) {
                                         if (!JsonUtil.getOptString(associationProps, k).equals("")) {
                                             JsonObject assocProp = emsNodeUtil
                                                 .getNodeBySysmlid(JsonUtil.getOptString(associationProps, k));
-                                            processChildViewDeleteCommit(assocProp, assocProp, deletedElements, oldElasticIds, commitDeleted);
+                                            processChildViewDeleteCommit(assocProp, deletedElements, oldElasticIds, commitDeleted);
                                         }
                                     }
                                 } else {
@@ -1115,14 +1119,14 @@ public class EmsNodeUtil {
         element.remove(Sjm.CHILDVIEWS);
     }
 
-    private void processChildViewDeleteCommit(JsonObject element, JsonObject toDelete, JsonArray deletedElements,
+    private void processChildViewDeleteCommit(JsonObject element, JsonArray deletedElements,
         Set<String> oldElasticIds, JsonArray commitDeleted) {
         if (!JsonUtil.getOptString(element, Sjm.SYSMLID).equals("")) {
-            deletedElements.add(toDelete);
-            oldElasticIds.add(toDelete.get(Sjm.ELASTICID).getAsString());
+            deletedElements.add(element);
+            oldElasticIds.add(element.get(Sjm.ELASTICID).getAsString());
             JsonObject newObj = new JsonObject();
-            newObj.add(Sjm.SYSMLID, toDelete.get(Sjm.SYSMLID));
-            newObj.add(Sjm.ELASTICID, toDelete.get(Sjm.ELASTICID));
+            newObj.add(Sjm.SYSMLID, element.get(Sjm.SYSMLID));
+            newObj.add(Sjm.ELASTICID, element.get(Sjm.ELASTICID));
             commitDeleted.add(newObj);
         }
     }
@@ -1478,27 +1482,7 @@ public class EmsNodeUtil {
         for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
             String key = entry.getKey();
             JsonElement value = object.get(key);
-            Object val;
-            if (value.isJsonArray()) {
-                val = toList(value.getAsJsonArray());
-            } else if (value.isJsonObject()) {
-                val = toMap(value.getAsJsonObject());
-            } else if (value.isJsonNull()) {
-                val = null;
-            } else if (value.isJsonPrimitive()) {
-                JsonPrimitive primitive = value.getAsJsonPrimitive();
-                if (primitive.isBoolean()) {
-                    val = primitive.getAsBoolean();
-                } else if (primitive.isString()) {
-                    val = primitive.getAsString();
-                } else if (primitive.isNumber()) {
-                    val = primitive.getAsNumber();
-                } else {
-                    val = primitive;
-                }
-            } else {
-                val = value;
-            }
+            Object val = getValue(value);
             map.put(key, val);
         }
 
@@ -1510,31 +1494,38 @@ public class EmsNodeUtil {
 
         for (int i = 0; i < array.size(); i++) {
             JsonElement value = array.get(i);
-            Object val;
-            if (value.isJsonArray()) {
-                val = toList(value.getAsJsonArray());
-            } else if (value.isJsonObject()) {
-                val = toMap(value.getAsJsonObject());
-            } else if (value.isJsonNull()) {
-                val = null;
-            } else if (value.isJsonPrimitive()) {
-                JsonPrimitive primitive = value.getAsJsonPrimitive();
-                if (primitive.isBoolean()) {
-                    val = primitive.getAsBoolean();
-                } else if (primitive.isString()) {
-                    val = primitive.getAsString();
-                } else if (primitive.isNumber()) {
-                    val = primitive.getAsNumber();
-                } else {
-                    val = primitive;
-                }
-            } else {
-                val = value;
-            }
+            Object val = getValue(value);
             list.add(val);
         }
 
         return list;
+    }
+
+    public static Object getValue(JsonElement value) {
+        Object val;
+
+        if (value.isJsonArray()) {
+            val = toList(value.getAsJsonArray());
+        } else if (value.isJsonObject()) {
+            val = toMap(value.getAsJsonObject());
+        } else if (value.isJsonNull()) {
+            val = null;
+        } else if (value.isJsonPrimitive()) {
+            JsonPrimitive primitive = value.getAsJsonPrimitive();
+            if (primitive.isBoolean()) {
+                val = primitive.getAsBoolean();
+            } else if (primitive.isString()) {
+                val = primitive.getAsString();
+            } else if (primitive.isNumber()) {
+                val = primitive.getAsNumber();
+            } else {
+                val = primitive;
+            }
+        } else {
+            val = value;
+        }
+
+        return val;
     }
 
     @SuppressWarnings("unchecked")
@@ -1826,23 +1817,7 @@ public class EmsNodeUtil {
     }
 
     public static String md5Hash(String str) {
-        StringBuilder sb = new StringBuilder();
-
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(str.getBytes());
-
-            for (byte data : md.digest()) {
-                String hex = Integer.toHexString(0xff & data);
-                if (hex.length() == 1) {
-                    sb.append('0');
-                }
-                sb.append(hex);
-            }
-        } catch (NoSuchAlgorithmException e) {
-            logger.error(e);
-        }
-        return sb.toString();
+        return DigestUtils.md5Hex(str);
     }
 
     public JsonObject getProfile(String id) throws IOException {
@@ -1862,5 +1837,25 @@ public class EmsNodeUtil {
 
     public Artifact getArtifact(String sysmlid, boolean withDeleted) {
         return pgh.getArtifactFromSysmlId(sysmlid, withDeleted);
+    }
+
+    public static Path saveToFilesystem(String filename, InputStream content) throws Throwable {
+        File tempDir = TempFileProvider.getTempDir();
+        Path filePath = Paths.get(tempDir.getAbsolutePath(), filename);
+        File file = new File(filePath.toString());
+
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            file.mkdirs();
+            int i = 0;
+            byte[] b = new byte[1024];
+            while ((i = content.read(b)) != -1) {
+                out.write(b, 0, i);
+            }
+            out.flush();
+            out.close();
+            return filePath;
+        } catch (Throwable ex) {
+            throw new Throwable("Failed to save file to filesystem. " + ex.getMessage());
+        }
     }
 }

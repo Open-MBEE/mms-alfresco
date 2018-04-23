@@ -25,12 +25,8 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +38,6 @@ import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.util.TempFileProvider;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -65,8 +60,8 @@ public class ArtifactPost extends AbstractJavaWebScript {
     static Logger logger = Logger.getLogger(ArtifactPost.class);
 
     protected EmsScriptNode artifact = null;
-    protected EmsScriptNode pngArtifact = null;
     protected String filename = null;
+    protected String finalContentType = null;
     protected String artifactId = null;
     protected String extension = null;
     protected String content = null;
@@ -77,8 +72,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
     protected String encoding = null;
 
     private final String NEWELEMENTS = "newElements";
-
-    public static boolean timeEvents = false;
 
     public ArtifactPost() {
         super();
@@ -112,7 +105,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
         FormData.FormField[] fields = formData.getFields();
         try {
             for (FormData.FormField field : fields) {
-                logger.debug("field.getName(): " + field.getName());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("field.getName(): " + field.getName());
+                }
                 if (field.getName().equals("file") && field.getIsFile()) {
                     //String extension = FilenameUtils.getExtension();
                     //String filenameString = field.getFilename().substring(0, field.getFilename().lastIndexOf('.') - 1);
@@ -121,18 +116,24 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     mimeType = tempContent.getMimetype();
                     encoding = tempContent.getEncoding();
 
-                    filePath = saveToFilesystem(filename, field.getInputStream());
+                    filePath = EmsNodeUtil.saveToFilesystem(filename, field.getInputStream());
                     content = new String(Files.readAllBytes(filePath));
+                    finalContentType = Files.probeContentType(filePath);
 
-                    logger.debug("filename: " + filename);
-                    logger.debug("mimetype: " + mimeType);
-                    logger.debug("encoding: " + encoding);
-                    logger.debug("content: " + content);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("filename: " + filename);
+                        logger.debug("mimetype: " + mimeType);
+                        logger.debug("finalMimetype: " + finalContentType);
+                        logger.debug("encoding: " + encoding);
+                        logger.debug("content: " + content);
+                    }
                 } else {
                     String name = field.getName();
                     String value = field.getValue();
                     postJson.addProperty(name, value);
-                    logger.debug("property name: " + name);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("property name: " + name);
+                    }
                 }
             }
             postJson.addProperty(Sjm.TYPE, "Artifact");
@@ -207,10 +208,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         JsonObject resultJson = null;
         Map<String, Object> model = new HashMap<>();
-        String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
-        if (!contentType.isEmpty() && JsonUtil.getOptString(postJson, Sjm.CONTENTTYPE).isEmpty()) {
-            postJson.addProperty(Sjm.CONTENTTYPE, contentType); //this would be wrong anyway if it gets here
-        }
+
+        // Replace with true content type
+        postJson.addProperty(Sjm.CONTENTTYPE, finalContentType);
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -266,25 +266,6 @@ public class ArtifactPost extends AbstractJavaWebScript {
         }
 
         return true;
-    }
-
-    public static Path saveToFilesystem(String filename, InputStream content) throws Throwable {
-        File tempDir = TempFileProvider.getTempDir();
-        Path filePath = Paths.get(tempDir.getAbsolutePath(), filename);
-        File file = new File(filePath.toString());
-
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            file.mkdirs();
-            int i = 0;
-            byte[] b = new byte[1024];
-            while ((i = content.read(b)) != -1) {
-                out.write(b, 0, i);
-            }
-            out.flush();
-            return filePath;
-        } catch (Throwable ex) {
-            throw new Throwable("Failed to save SVG to filesystem. " + ex.getMessage());
-        }
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
