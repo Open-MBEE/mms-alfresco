@@ -181,29 +181,25 @@ public class Migrate_3_3_0 {
                         }
 
                         if (parentCommit != null) {
+                            pgh.setWorkspace(parentRefId);
                             JsonArray parentArtifacts = getArtifactsAtCommit(parentCommit, pgh, eh, projectId);
                             List<Map<String, Object>> artifactInserts = new ArrayList<>();
                             for (int i = 0; i < parentArtifacts.size(); i++) {
                                 JsonObject parentArt = parentArtifacts.get(i).getAsJsonObject();
 
-                                if (pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true)
-                                    == null) {
+                                Artifact parentArtNode =
+                                    pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true);
 
-                                    pgh.setWorkspace(parentRefId);
-                                    Artifact parentArtNode =
-                                        pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true);
-                                    pgh.setWorkspace(refId);
-
-                                    if (parentArtNode != null) {
-                                        Map<String, Object> artifact = new HashMap<>();
-                                        artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
-                                        artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
-                                        artifact.put("initialcommit", parentArtNode.getInitialCommit());
-                                        artifact.put("lastcommit", parentArt.get(Sjm.COMMITID).getAsString());
-                                        artifactInserts.add(artifact);
-                                    }
+                                if (parentArtNode != null) {
+                                    Map<String, Object> artifact = new HashMap<>();
+                                    artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
+                                    artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
+                                    artifact.put("initialcommit", parentArtNode.getInitialCommit());
+                                    artifact.put("lastcommit", parentArt.get(Sjm.COMMITID).getAsString());
+                                    artifactInserts.add(artifact);
                                 }
                             }
+                            pgh.setWorkspace(refId);
                             if (!artifactInserts.isEmpty()) {
                                 pgh.runBatchQueries(artifactInserts, "artifacts");
                             }
