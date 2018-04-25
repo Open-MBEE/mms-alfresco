@@ -53,7 +53,7 @@ jobs:
 
       - run:
           name: Run Maven Build
-          command: cd mms-ent && sh mvnw install -Probot-tests
+          command: cd mms-ent && sh mvnw install -Prun -Probot-tests
 
       - save_cache:
           paths:
