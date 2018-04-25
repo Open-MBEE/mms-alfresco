@@ -2,6 +2,19 @@ defaults: &defaults
   working_directory: ~/projects
   docker:
     - image: circleci/openjdk:8
+    - image: circleci/postgres:9.6.2-alpine
+      environment:
+        POSTGRES_USER: mmsuser
+        POSTGRES_DB: mms
+    - image: docker.elastic.co/elasticsearch/elasticsearch:5.6.9
+      environment:
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+        ulimits:
+          memlock:
+            soft: -1
+            hard: -1
+            mem_limit: 1g
 
 version: 2
 jobs:
@@ -14,8 +27,12 @@ jobs:
           key: mms-{{ checksum "mms-ent/pom.xml" }}
 
       - run:
+          name: Initialize database and elasticsearch
+          command: cd mms-ent && sh clean.sh
+
+      - run:
           name: Run Maven Build
-          command: cd mms-ent && sh mvnw install -Pbuild
+          command: cd mms-ent && sh mvnw install -Prun,robot-tests
 
       - save_cache:
           paths:
