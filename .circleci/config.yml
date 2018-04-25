@@ -29,8 +29,19 @@ jobs:
           command: sudo apt install postgresql-client
 
       - run:
+          name: Waiting for Postgres to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 5432 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for Postgres && exit 1
+
+      - run:
           name: Initialize database
-          command: psql -U mmsuser -f mms-ent/repo-amp/src/resources/mms.sql mms
+          command: psql -U mmsuser -h localhost:5432 -f mms-ent/repo-amp/src/resources/mms.sql mms
 
       - run:
           name: Initialize elasticsearch
