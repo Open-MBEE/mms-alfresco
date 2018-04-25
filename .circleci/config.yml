@@ -26,7 +26,7 @@ jobs:
 
       - run:
           name: Get OS Dependencies
-          command: sudo apt install python2.7 python-pip postgresql-client
+          command: sudo apt install postgresql-client && sudo easy_install -U pip
 
       - run:
           name: Waiting for Postgres to be ready
