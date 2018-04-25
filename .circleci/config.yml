@@ -41,11 +41,11 @@ jobs:
 
       - run:
           name: Initialize database
-          command: psql -U mmsuser -h localhost -f mms-ent/repo-amp/src/resources/mms.sql mms
+          command: psql -U mmsuser -h localhost -f mms-ent/repo-amp/src/main/resources/mms.sql mms
 
       - run:
           name: Initialize elasticsearch
-          command: curl -d @mms-ent/repo-amp/src/resources/mapping_template.json -XPUT http://localhost:9200/_template/template
+          command: curl -d @mms-ent/repo-amp/src/main/resources/mapping_template.json -XPUT http://localhost:9200/_template/template
 
       - run:
           name: Run Maven Build
