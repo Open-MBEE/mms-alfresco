@@ -218,9 +218,9 @@ curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --
 curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data '{"projects": [{"id": "123456","name": "vetest","type": "Project"}]}' -X POST "http://localhost:8080/alfresco/service/orgs/vetest/projects"
 ```
 
-Then you can post some elements. For convenience, there is a json file in repo-amp/test-data/javawebscripts/JsonData. Using the project from above:
+Then you can post some elements. For convenience, there is a json file in `runner/src/test/robotframework/JsonData`. Using the project from above:
 ```
-curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data @JsonData/elementsNew.json -X POST "http://localhost:8080/alfresco/service/projects/123456/refs/master/elements"
+curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data @JsonData/PostNewElements.json -X POST "http://localhost:8080/alfresco/service/projects/123456/refs/master/elements"
 ```
 
 Make sure the elements went in:
