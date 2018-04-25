@@ -25,8 +25,8 @@ jobs:
           key: mms-{{ checksum "mms-ent/pom.xml" }}
 
       - run:
-          name: Get Postgresql Client
-          command: sudo apt install postgresql-client
+          name: Get OS Dependencies
+          command: sudo apt install python2.7 python-pip postgresql-client
 
       - run:
           name: Waiting for Postgres to be ready
@@ -46,6 +46,10 @@ jobs:
       - run:
           name: Initialize elasticsearch
           command: curl -d @mms-ent/repo-amp/src/main/resources/mapping_template.json -XPUT http://localhost:9200/_template/template
+
+      - run:
+          name: Install requests for robot-tests
+          command: pip install --target=~/.m2/repository/org/robotframework/robotframework/3.0.2/Lib requests
 
       - run:
           name: Run Maven Build
