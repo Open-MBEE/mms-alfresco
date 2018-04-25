@@ -41,7 +41,7 @@ jobs:
 
       - run:
           name: Initialize database
-          command: psql -U mmsuser -h localhost:5432 -f mms-ent/repo-amp/src/resources/mms.sql mms
+          command: psql -U mmsuser -h localhost -f mms-ent/repo-amp/src/resources/mms.sql mms
 
       - run:
           name: Initialize elasticsearch
