@@ -192,10 +192,10 @@ public class Migrate_3_3_0 {
 
                                 if (parentArtNode != null) {
                                     Map<String, Object> artifact = new HashMap<>();
-                                    artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
-                                    artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
+                                    artifact.put(Sjm.ELASTICID, parentArtNode.getElasticId());
+                                    artifact.put(Sjm.SYSMLID, parentArtNode.getSysmlId());
                                     artifact.put("initialcommit", parentArtNode.getInitialCommit());
-                                    artifact.put("lastcommit", parentArt.get(Sjm.COMMITID).getAsString());
+                                    artifact.put("lastcommit", parentArtNode.getLastCommit());
                                     artifactInserts.add(artifact);
                                 }
                             }
@@ -240,10 +240,8 @@ public class Migrate_3_3_0 {
                                 Version version = (Version) it.previous();
                                 FileInfo versionedFile = fileFolderService.getFileInfo(version.getVersionedNodeRef());
                                 String name = versionedFile.getName();
-                                String url = String.format("/service/api/node/content/%s/%s/%s/%s",
-                                    version.getVersionedNodeRef().getStoreRef().getProtocol(),
-                                    version.getVersionedNodeRef().getStoreRef().getIdentifier(),
-                                    version.getVersionedNodeRef().getId(), URLEncoder.encode(versionedFile.getName()));
+                                String url = String.format("/service/api/node/content/versionStore/version2Store/%s/%s",
+                                    version.getVersionProperty("node-uuid"),URLEncoder.encode(versionedFile.getName()));
 
                                 String modifier = version.getFrozenModifier();
                                 Date modified = version.getFrozenModifiedDate();
@@ -367,9 +365,8 @@ public class Migrate_3_3_0 {
 
                                 Map<String, String> commitFromDb =
                                     pgh.getCommitAndTimestamp("timestamp", new Timestamp(created.getTime()));
-                                if (commitFromDb == null) {
-                                    pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator,
-                                        new java.sql.Date(created.getTime()));
+                                if (commitFromDb == null || !commitFromDb.get(Sjm.COMMITID).equals(commitId)) {
+                                    pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator, new Timestamp(created.getTime()));
                                 }
                             } // End of While Loop
 
