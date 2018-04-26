@@ -222,7 +222,7 @@ public class Migrate_3_3_0 {
                             refCommitElastics.add(refCommit.get(Sjm.SYSMLID).toString());
                         }
                     }
-                    String deleteFixToRun = String.format(deleteCommitFix, projectId.toLowerCase().replaceAll("\\s+", ""));
+                    String deleteFixToRun = String.format(deleteCommitFix, projectId);
                     eh.bulkUpdateElements(refCommitElastics, deleteFixToRun, projectId, "commit");
 
                     List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
@@ -268,7 +268,7 @@ public class Migrate_3_3_0 {
                                     artifactId = name;
                                 }
 
-                                String checkQuery = String.format(searchQuery, projectId.toLowerCase().replaceAll("\\s+", ""), artifactId, df.format(created));
+                                String checkQuery = String.format(searchQuery, projectId, artifactId, df.format(created));
                                 JsonObject checkQueryObj = JsonUtil.buildFromString(checkQuery);
                                 JsonObject check = eh.search(checkQueryObj);
 
