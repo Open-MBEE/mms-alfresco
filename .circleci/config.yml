@@ -52,8 +52,12 @@ jobs:
           command: pip install --target=mms-ent/runner/src/test/robotframework/libraries requests
 
       - run:
+          name: Copy properties
+          command: cd mms-ent && cp mms.properties.example mms.properties
+
+      - run:
           name: Run Maven Build
-          command: cd mms-ent && sh mvnw install -Prun -Probot-tests
+          command: cd mms-ent && sh mvnw install -P run,robot-tests
 
       - save_cache:
           paths:
