@@ -226,8 +226,7 @@ public class Migrate_3_3_0 {
                     eh.bulkUpdateElements(refCommitElastics, deleteFixToRun, projectId, "commit");
 
                     List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
-                    String realCreator = null;
-                    Date realCreated = null;
+
                     for (FileInfo file : files) {
                         if (!file.isFolder()) {
                             VersionHistory versionHistory = versionService.getVersionHistory(file.getNodeRef());
@@ -235,6 +234,8 @@ public class Migrate_3_3_0 {
                             ListIterator it = versions.listIterator(versions.size());
 
                             String artifactId = null;
+                            String realCreator = null;
+                            Date realCreated = null;
 
                             while (it.hasPrevious()) {
                                 Version version = (Version) it.previous();
@@ -364,9 +365,9 @@ public class Migrate_3_3_0 {
                                 }
 
                                 Map<String, String> commitFromDb =
-                                    pgh.getCommitAndTimestamp("timestamp", new Timestamp(created.getTime()));
+                                    pgh.getCommitAndTimestamp("timestamp", new Timestamp(modified.getTime()));
                                 if (commitFromDb == null || !commitFromDb.get(Sjm.COMMITID).equals(commitId)) {
-                                    pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator, new Timestamp(created.getTime()));
+                                    pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator, new Timestamp(modified.getTime()));
                                 }
                             } // End of While Loop
 
