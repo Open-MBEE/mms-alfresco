@@ -126,8 +126,12 @@ public class ModelPost extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         try {
-            logger.debug(String.format("Post Data: '%s'", req.getContent().getContent()));
-            JsonObject postJson = JsonUtil.buildFromString(req.getContent().getContent());
+            JsonObject postJson = JsonUtil.buildFromStream(req.getContent().getInputStream()).getAsJsonObject();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("Post Data: '%s'", postJson));
+            }
+
             this.populateSourceApplicationFromJson(postJson);
             Set<String> oldElasticIds = new HashSet<>();
 
