@@ -12,6 +12,11 @@
         <artifactId>mms-ent</artifactId>
         <version>3.3.0-SNAPSHOT</version>
     </parent>
+
+    <properties>
+        <swagger.codegen.target>${project.build.directory}/generated-sources/swagger</swagger.codegen.target>
+        <swagger.codegen.yaml>${basedir}/src/main/amp/web/mms/mms.swagger.yaml</swagger.codegen.yaml>
+    </properties>
     <repositories>
         <repository>
             <id>alfresco-public</id>
@@ -235,15 +240,36 @@
                 <version>2.2.3</version>
                 <executions>
                     <execution>
+                        <id>html-codegen</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${basedir}/src/main/amp/web/mms/mms.swagger.yaml</inputSpec>
+                            <inputSpec>${swagger.codegen.yaml}</inputSpec>
                             <language>html2</language>
-                            <configOptions>
-                                <output>${project.build.directory}/generated-sources</output>
-                            </configOptions>
+                            <output>${swagger.codegen.target}/html</output>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>java-codegen</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${swagger.codegen.yaml}</inputSpec>
+                            <language>java</language>
+                            <output>${swagger.codegen.target}/java</output>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>python-codegen</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${swagger.codegen.yaml}</inputSpec>
+                            <language>python</language>
+                            <output>${swagger.codegen.target}/python</output>
                         </configuration>
                     </execution>
                 </executions>
@@ -262,12 +288,30 @@
                             <outputDirectory>${project.build.directory}/amp/web/mms</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.build.directory}/generated-sources/swagger</directory>
+                                    <directory>${swagger.codegen.target}/html</directory>
                                 </resource>
                             </resources>
                         </configuration>
                     </execution>
-
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>mms</finalName>
+                    <descriptors>
+                        <descriptor>assembly/mms-java-client.xml</descriptor>
+                        <descriptor>assembly/mms-python-client.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- append to the packaging phase. -->
+                        <goals>
+                            <goal>single</goal> <!-- goals == mojos -->
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
