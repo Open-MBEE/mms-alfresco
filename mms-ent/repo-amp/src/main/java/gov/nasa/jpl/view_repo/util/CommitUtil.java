@@ -192,6 +192,9 @@ public class CommitUtil {
         if (!e.has(Sjm.AGGREGATION) || e.get(Sjm.AGGREGATION).getAsString().equals("none")) {
             return false;
         }
+        if (e.has(Sjm.DEFAULTVALUE) && !e.get(Sjm.DEFAULTVALUE).isJsonNull()) {
+            return false;
+        }
         return true;
     }
 
