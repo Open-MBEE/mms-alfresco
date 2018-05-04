@@ -189,17 +189,10 @@ public class CommitUtil {
         if (!e.has(Sjm.TYPE) || !e.get(Sjm.TYPE).getAsString().equals("Property")) {
             return false;
         }
-        JsonArray appliedS = JsonUtil.getOptArray(e, Sjm.APPLIEDSTEREOTYPEIDS);
-        if (appliedS.size() == 0) {
+        if (!e.has(Sjm.AGGREGATION) || e.get(Sjm.AGGREGATION).getAsString().equals("none")) {
             return false;
         }
-        for (int i = 0; i < appliedS.size(); i++) {
-            String s = appliedS.get(i).getAsString();
-            if (Sjm.PROPERTYSIDS.containsValue(s)) {
-                return true;
-            }
-        }
-        return false;
+        return true;
     }
 
     private static boolean processArtifactDeltasForDb(JsonObject delta, String projectId, String refId,
