@@ -14,9 +14,6 @@
                 "location": {
                     "type": "keyword"
                 },
-                "name": {
-                    "type": "text"
-                },
                 "checksum": {
                     "type": "keyword"
                 },
@@ -55,7 +52,13 @@
                         "id":{
                             "type": "keyword"
                         },
-                        "_elasticId":{
+                        "_elasticId": {
+                            "type": "keyword"
+                        },
+                        "type": {
+                            "type": "keyword"
+                        },
+                        "contentType": {
                             "type": "keyword"
                         }
                     }
@@ -68,7 +71,10 @@
                         "_elasticId":{
                             "type": "keyword"
                         },
-                        "previousElasticId":{
+                        "previousElasticId": {
+                            "type": "keyword"
+                        },
+                        "type": {
                             "type": "keyword"
                         }
                     }
@@ -79,6 +85,9 @@
                             "type": "keyword"
                         },
                         "previousElasticId":{
+                            "type": "keyword"
+                        },
+                        "type": {
                             "type": "keyword"
                         }
                     }
