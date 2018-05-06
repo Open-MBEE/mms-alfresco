@@ -407,14 +407,11 @@ public class Migrate_3_3_0 {
                 refsCommitsIds.add((String) ref.get(Sjm.SYSMLID));
             }
 
-            Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds, projectId);
             List<String> artifactElasticIds = new ArrayList<>();
 
             for (Map<String, Object> element : pgh.getAllArtifactsWithLastCommitTimestamp()) {
                 if (((Date) element.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
-                    if (!deletedElementIds.containsKey((String) element.get(Sjm.ELASTICID))) {
-                        artifactElasticIds.add((String) element.get(Sjm.ELASTICID));
-                    }
+                    artifactElasticIds.add((String) element.get(Sjm.ELASTICID));
                 } else {
                     String sysmlId = (String) element.get(Sjm.SYSMLID);
 
@@ -434,8 +431,7 @@ public class Migrate_3_3_0 {
                     }
                 }
 
-                if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds
-                    .containsKey(pastElement.get(Sjm.ELASTICID).getAsString())) {
+                if (pastElement != null && pastElement.has(Sjm.SYSMLID)) {
                     artifacts.add(pastElement);
                 }
             }
