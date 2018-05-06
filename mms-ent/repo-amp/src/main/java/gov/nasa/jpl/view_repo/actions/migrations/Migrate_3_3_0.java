@@ -61,7 +61,7 @@ public class Migrate_3_3_0 {
     private static final String artifactToElementScript =
         "{\"query\": {\"terms\":{\"id\":[\"%s\"]} }, \"script\": {\"inline\": \"ctx._source._artifactIds = [ctx._source.id + \\\"_svg\\\", ctx._source.id + \\\"_png\\\"]\"}}";
 
-    private static final String searchQuery = "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"location\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
+    private static final String searchQuery = "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
 
     private static final String renameScript =
         "{\"query\": {\"exists\":{\"field\":\"_isSite\"} }, \"script\": {\"inline\": \"ctx._source._isGroup = ctx._source.remove(\\\"_isSite\\\")\"}}";
@@ -267,11 +267,11 @@ public class Migrate_3_3_0 {
                                     artifactId = name;
                                 }
 
-                                String checkQuery = String.format(searchQuery, projectId, artifactId, url);
+                                String checkQuery = String.format(searchQuery, projectId, artifactId, df.format(modified));
                                 JsonObject checkQueryObj = JsonUtil.buildFromString(checkQuery);
                                 JsonObject check = eh.search(checkQueryObj);
 
-                                if (!check.has(Sjm.SYSMLID)) {
+                                if (!check.has(Sjm.ELEMENTS) && !check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().has(Sjm.SYSMLID)) {
                                     JsonObject artifactJson = new JsonObject();
                                     artifactJson.addProperty(Sjm.SYSMLID, artifactId);
                                     artifactJson.addProperty(Sjm.ELASTICID, elasticId);
@@ -341,8 +341,8 @@ public class Migrate_3_3_0 {
                                         noErrors = false;
                                     }
                                 } else {
-                                    elasticId = check.get(Sjm.ELASTICID).getAsString();
-                                    commitId = check.get(Sjm.COMMITID).getAsString();
+                                    elasticId = check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().get(Sjm.ELASTICID).getAsString();
+                                    commitId = check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().get(Sjm.COMMITID).getAsString();
                                 }
 
                                 if (pgh.getArtifactFromSysmlId(artifactId, true) == null) {
