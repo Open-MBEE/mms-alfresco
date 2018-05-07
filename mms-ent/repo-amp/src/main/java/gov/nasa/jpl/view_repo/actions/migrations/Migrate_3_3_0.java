@@ -70,7 +70,7 @@ public class Migrate_3_3_0 {
         "{\"script\": {\"inline\": \"if(!ctx._source.containsKey(\\\"_projectId\\\")){ctx._source._projectId = params.projectId}\", \"params\": {\"projectId\": \"%s\"}}}";
 
     private static final String ivanFix =
-        "{\"query\": { \"match_all\": {} }, \"script\": {\"inline\": \"for (int i = 0; i < ctx._source.added.size(); i++) {ctx._source.added[i].type = \\\"element\\\"} for (int i = 0; i < ctx._source.updated.size(); i++) {ctx._source.updated[i].type = \\\"element\\\"} for (int i = 0; i < ctx._source.deleted.size(); i++) {ctx._source.deleted[i].type = \\\"element\\\"}\"}}";
+        "{\"query\": { \"match_all\": {} }, \"script\": {\"inline\": \"for (int i = 0; i < ctx._source.added.size(); i++) {if(!ctx._source.added[i].containsKey(\\\"type\\\")){ctx._source.added[i].type = \\\"element\\\"}} for (int i = 0; i < ctx._source.updated.size(); i++) {if(!ctx._source.updated[i].containsKey(\\\"type\\\")){ctx._source.updated[i].type = \\\"element\\\"}} for (int i = 0; i < ctx._source.deleted.size(); i++) {if(!ctx._source.deleted[i].containsKey(\\\"type\\\")){ctx._source.deleted[i].type = \\\"element\\\"}}\"}}";
 
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
@@ -95,8 +95,10 @@ public class Migrate_3_3_0 {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         InputStream resourceAsStream = classLoader.getResourceAsStream("mapping_template.json");
         Scanner s = new Scanner(resourceAsStream).useDelimiter("\\A");
+        JsonObject mappingTemplate = new JsonObject();
         if (s.hasNext()) {
-            eh.applyTemplate(s.next());
+            mappingTemplate = JsonUtil.buildFromString(s.next());
+            eh.applyTemplate(mappingTemplate.toString());
         }
 
         for (Map<String, String> org : orgs) {
@@ -137,6 +139,15 @@ public class Migrate_3_3_0 {
                 eh.updateByQuery(projectId, renameScript, "element");
                 eh.updateByQuery(projectId, ivanFix, "commit");
 
+                if (mappingTemplate.isJsonObject()) {
+                    eh.updateMapping(projectId, "element",
+                        mappingTemplate.get("mappings").getAsJsonObject().get("element").getAsJsonObject().toString());
+                    eh.updateMapping(projectId, "commit",
+                        mappingTemplate.get("mappings").getAsJsonObject().get("commit").getAsJsonObject().toString());
+                    eh.updateMapping(projectId, "artifact",
+                        mappingTemplate.get("mappings").getAsJsonObject().get("artifact").getAsJsonObject().toString());
+                }
+
                 logger.info("Updating: " + projectId);
 
                 pgh.setProject(projectId);
@@ -160,7 +171,6 @@ public class Migrate_3_3_0 {
                     String refId = ref.first.replace("_", "-");
 
                     logger.info("RefId: " + refId);
-                    logger.info("RefName: " + refId);
 
                     pgh.setWorkspace(refId);
 
@@ -192,10 +202,10 @@ public class Migrate_3_3_0 {
 
                                 if (parentArtNode != null) {
                                     Map<String, Object> artifact = new HashMap<>();
-                                    artifact.put(Sjm.ELASTICID, parentArtNode.getElasticId());
-                                    artifact.put(Sjm.SYSMLID, parentArtNode.getSysmlId());
+                                    artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
+                                    artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
                                     artifact.put("initialcommit", parentArtNode.getInitialCommit());
-                                    artifact.put("lastcommit", parentArtNode.getLastCommit());
+                                    artifact.put("lastcommit", parentArt.get(Sjm.COMMITID).getAsString());
                                     artifactInserts.add(artifact);
                                 }
                             }
@@ -271,7 +281,7 @@ public class Migrate_3_3_0 {
                                 JsonObject checkQueryObj = JsonUtil.buildFromString(checkQuery);
                                 JsonObject check = eh.search(checkQueryObj);
 
-                                if (!check.has(Sjm.ELEMENTS) && !check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().has(Sjm.SYSMLID)) {
+                                if (!check.has(Sjm.ELEMENTS) || check.getAsJsonArray(Sjm.ELEMENTS).size() < 1) {
                                     JsonObject artifactJson = new JsonObject();
                                     artifactJson.addProperty(Sjm.SYSMLID, artifactId);
                                     artifactJson.addProperty(Sjm.ELASTICID, elasticId);
@@ -310,7 +320,6 @@ public class Migrate_3_3_0 {
                                             commitObject.addProperty(Sjm.CREATED, df.format(modified));
                                             commitObject.addProperty(Sjm.CREATOR, modifier);
                                             commitObject.addProperty(Sjm.PROJECTID, projectId);
-                                            commitObject.addProperty(Sjm.TYPE, Sjm.ARTIFACT);
                                             commitObject
                                                 .addProperty(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
 
@@ -319,7 +328,7 @@ public class Migrate_3_3_0 {
                                             JsonObject simpleArtifactJson = new JsonObject();
                                             simpleArtifactJson.addProperty(Sjm.SYSMLID, artifactId);
                                             simpleArtifactJson.addProperty(Sjm.ELASTICID, elasticId);
-                                            simpleArtifactJson.addProperty(Sjm.TYPE, Sjm.ARTIFACT);
+                                            simpleArtifactJson.addProperty(Sjm.TYPE, Sjm.ARTIFACT.toLowerCase());
                                             simpleArtifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
 
                                             added.add(simpleArtifactJson);

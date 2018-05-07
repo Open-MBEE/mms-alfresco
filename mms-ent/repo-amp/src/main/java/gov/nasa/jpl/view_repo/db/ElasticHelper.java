@@ -10,6 +10,7 @@ import java.util.Set;
 import io.searchbox.cluster.UpdateSettings;
 import io.searchbox.core.*;
 import io.searchbox.indices.DeleteIndex;
+import io.searchbox.indices.mapping.PutMapping;
 import io.searchbox.indices.template.PutTemplate;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -109,9 +110,14 @@ public class ElasticHelper implements ElasticsearchInterface {
         client.execute(indexExists);
     }
 
-    public void applyTemplate(String mapping) throws IOException {
-        PutTemplate.Builder putMappingBuilder =
-            new PutTemplate.Builder("template", mapping);
+    public void applyTemplate(String template) throws IOException {
+        PutTemplate.Builder putTemplateBuilder =
+            new PutTemplate.Builder("template", template);
+        client.execute(putTemplateBuilder.build());
+    }
+
+    public void updateMapping(String index, String type, String mapping) throws IOException {
+        PutMapping.Builder putMappingBuilder = new PutMapping.Builder(index.toLowerCase().replaceAll("\\s+", ""), type, mapping);
         client.execute(putMappingBuilder.build());
     }
 
