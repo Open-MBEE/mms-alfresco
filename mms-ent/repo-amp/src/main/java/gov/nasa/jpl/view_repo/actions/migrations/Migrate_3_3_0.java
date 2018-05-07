@@ -64,13 +64,13 @@ public class Migrate_3_3_0 {
     private static final String searchQuery = "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
 
     private static final String renameScript =
-        "{\"query\": {\"exists\":{\"field\":\"_isSite\"} }, \"script\": {\"inline\": \"ctx._source._isGroup = ctx._source.remove(\"_isSite\")\"}}";
+        "{\"query\": {\"exists\":{\"field\":\"_isSite\"} }, \"script\": {\"inline\": \"ctx._source._isGroup = ctx._source.remove(\\\"_isSite\\\")\"}}";
 
     private static final String deleteCommitFix =
         "{\"script\": {\"inline\": \"if(!ctx._source.containsKey(\\\"_projectId\\\")){ctx._source._projectId = params.projectId}\", \"params\": {\"projectId\": \"%s\"}}}";
 
     private static final String ivanFix =
-        "{\"query\": { \"match_all\": {} }, \"script\": {\"inline\": \"for (int i = 0; i < ctx._source.added.size(); i++) {ctx._source.added[i].type = \"element\"} for (int i = 0; i < ctx._source.updated.size(); i++) {ctx._source.updated[i].type = \"element\"} for (int i = 0; i < ctx._source.deleted.size(); i++) {ctx._source.deleted[i].type = \"element\"}\"}}";
+        "{\"query\": { \"match_all\": {} }, \"script\": {\"inline\": \"for (int i = 0; i < ctx._source.added.size(); i++) {if(!ctx._source.added[i].containsKey(\\\"type\\\")){ctx._source.added[i].type = \\\"element\\\"}} for (int i = 0; i < ctx._source.updated.size(); i++) {if(!ctx._source.updated[i].containsKey(\\\"type\\\")){ctx._source.updated[i].type = \\\"element\\\"}} for (int i = 0; i < ctx._source.deleted.size(); i++) {if(!ctx._source.deleted[i].containsKey(\\\"type\\\")){ctx._source.deleted[i].type = \\\"element\\\"}}\"}}";
 
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
@@ -95,8 +95,10 @@ public class Migrate_3_3_0 {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         InputStream resourceAsStream = classLoader.getResourceAsStream("mapping_template.json");
         Scanner s = new Scanner(resourceAsStream).useDelimiter("\\A");
+        JsonObject mappingTemplate = new JsonObject();
         if (s.hasNext()) {
-            eh.applyTemplate(s.next());
+            mappingTemplate = JsonUtil.buildFromString(s.next());
+            eh.applyTemplate(mappingTemplate.toString());
         }
 
         for (Map<String, String> org : orgs) {
@@ -137,6 +139,15 @@ public class Migrate_3_3_0 {
                 eh.updateByQuery(projectId, renameScript, "element");
                 eh.updateByQuery(projectId, ivanFix, "commit");
 
+                if (mappingTemplate.isJsonObject()) {
+                    eh.updateMapping(projectId, "element",
+                        mappingTemplate.get("mappings").getAsJsonObject().get("element").getAsJsonObject().toString());
+                    eh.updateMapping(projectId, "commit",
+                        mappingTemplate.get("mappings").getAsJsonObject().get("commit").getAsJsonObject().toString());
+                    eh.updateMapping(projectId, "artifact",
+                        mappingTemplate.get("mappings").getAsJsonObject().get("artifact").getAsJsonObject().toString());
+                }
+
                 logger.info("Updating: " + projectId);
 
                 pgh.setProject(projectId);
@@ -160,7 +171,6 @@ public class Migrate_3_3_0 {
                     String refId = ref.first.replace("_", "-");
 
                     logger.info("RefId: " + refId);
-                    logger.info("RefName: " + refId);
 
                     pgh.setWorkspace(refId);
 
@@ -226,8 +236,7 @@ public class Migrate_3_3_0 {
                     eh.bulkUpdateElements(refCommitElastics, deleteFixToRun, projectId, "commit");
 
                     List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
-                    String realCreator = null;
-                    Date realCreated = null;
+
                     for (FileInfo file : files) {
                         if (!file.isFolder()) {
                             VersionHistory versionHistory = versionService.getVersionHistory(file.getNodeRef());
@@ -235,15 +244,15 @@ public class Migrate_3_3_0 {
                             ListIterator it = versions.listIterator(versions.size());
 
                             String artifactId = null;
+                            String realCreator = null;
+                            Date realCreated = null;
 
                             while (it.hasPrevious()) {
                                 Version version = (Version) it.previous();
                                 FileInfo versionedFile = fileFolderService.getFileInfo(version.getVersionedNodeRef());
                                 String name = versionedFile.getName();
-                                String url = String.format("/service/api/node/content/%s/%s/%s/%s",
-                                    version.getVersionedNodeRef().getStoreRef().getProtocol(),
-                                    version.getVersionedNodeRef().getStoreRef().getIdentifier(),
-                                    version.getVersionedNodeRef().getId(), URLEncoder.encode(versionedFile.getName()));
+                                String url = String.format("/service/api/node/content/versionStore/version2Store/%s/%s",
+                                    version.getVersionProperty("node-uuid"),URLEncoder.encode(versionedFile.getName()));
 
                                 String modifier = version.getFrozenModifier();
                                 Date modified = version.getFrozenModifiedDate();
@@ -268,11 +277,11 @@ public class Migrate_3_3_0 {
                                     artifactId = name;
                                 }
 
-                                String checkQuery = String.format(searchQuery, projectId, artifactId, df.format(created));
+                                String checkQuery = String.format(searchQuery, projectId, artifactId, df.format(modified));
                                 JsonObject checkQueryObj = JsonUtil.buildFromString(checkQuery);
                                 JsonObject check = eh.search(checkQueryObj);
 
-                                if (!check.has(Sjm.SYSMLID)) {
+                                if (!check.has(Sjm.ELEMENTS) || check.getAsJsonArray(Sjm.ELEMENTS).size() < 1) {
                                     JsonObject artifactJson = new JsonObject();
                                     artifactJson.addProperty(Sjm.SYSMLID, artifactId);
                                     artifactJson.addProperty(Sjm.ELASTICID, elasticId);
@@ -311,7 +320,6 @@ public class Migrate_3_3_0 {
                                             commitObject.addProperty(Sjm.CREATED, df.format(modified));
                                             commitObject.addProperty(Sjm.CREATOR, modifier);
                                             commitObject.addProperty(Sjm.PROJECTID, projectId);
-                                            commitObject.addProperty(Sjm.TYPE, Sjm.ARTIFACT);
                                             commitObject
                                                 .addProperty(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
 
@@ -320,7 +328,7 @@ public class Migrate_3_3_0 {
                                             JsonObject simpleArtifactJson = new JsonObject();
                                             simpleArtifactJson.addProperty(Sjm.SYSMLID, artifactId);
                                             simpleArtifactJson.addProperty(Sjm.ELASTICID, elasticId);
-                                            simpleArtifactJson.addProperty(Sjm.TYPE, Sjm.ARTIFACT);
+                                            simpleArtifactJson.addProperty(Sjm.TYPE, Sjm.ARTIFACT.toLowerCase());
                                             simpleArtifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
 
                                             added.add(simpleArtifactJson);
@@ -332,7 +340,7 @@ public class Migrate_3_3_0 {
 
                                             eh.indexElement(commitObject, projectId, ElasticHelper.COMMIT);
 
-                                            logger.info("Indexed JSON: " + commitObject);
+                                            logger.debug("Indexed JSON: " + commitObject);
                                         } else {
                                             logger.info("Bulk insert failed for: " + projectId);
                                             noErrors = false;
@@ -342,8 +350,8 @@ public class Migrate_3_3_0 {
                                         noErrors = false;
                                     }
                                 } else {
-                                    elasticId = check.get(Sjm.ELASTICID).getAsString();
-                                    commitId = check.get(Sjm.COMMITID).getAsString();
+                                    elasticId = check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().get(Sjm.ELASTICID).getAsString();
+                                    commitId = check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().get(Sjm.COMMITID).getAsString();
                                 }
 
                                 if (pgh.getArtifactFromSysmlId(artifactId, true) == null) {
@@ -366,10 +374,9 @@ public class Migrate_3_3_0 {
                                 }
 
                                 Map<String, String> commitFromDb =
-                                    pgh.getCommitAndTimestamp("timestamp", new Timestamp(created.getTime()));
-                                if (commitFromDb == null) {
-                                    pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator,
-                                        new java.sql.Date(created.getTime()));
+                                    pgh.getCommitAndTimestamp("timestamp", new Timestamp(modified.getTime()));
+                                if (commitFromDb == null || !commitFromDb.get(Sjm.COMMITID).equals(commitId)) {
+                                    pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator, new Timestamp(modified.getTime()));
                                 }
                             } // End of While Loop
 
@@ -385,7 +392,7 @@ public class Migrate_3_3_0 {
                 }
                 if (!mdArtifacts.isEmpty()) {
                     String artifactToElementScriptToRun =
-                        String.format(artifactToElementScript, String.join("\\\",\\\"", mdArtifacts));
+                        String.format(artifactToElementScript, String.join("\",\"", mdArtifacts));
                     eh.updateByQuery(projectId, artifactToElementScriptToRun, "element");
                 }
             }
@@ -409,14 +416,11 @@ public class Migrate_3_3_0 {
                 refsCommitsIds.add((String) ref.get(Sjm.SYSMLID));
             }
 
-            Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds, projectId);
             List<String> artifactElasticIds = new ArrayList<>();
 
             for (Map<String, Object> element : pgh.getAllArtifactsWithLastCommitTimestamp()) {
                 if (((Date) element.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
-                    if (!deletedElementIds.containsKey((String) element.get(Sjm.ELASTICID))) {
-                        artifactElasticIds.add((String) element.get(Sjm.ELASTICID));
-                    }
+                    artifactElasticIds.add((String) element.get(Sjm.ELASTICID));
                 } else {
                     String sysmlId = (String) element.get(Sjm.SYSMLID);
 
@@ -436,8 +440,7 @@ public class Migrate_3_3_0 {
                     }
                 }
 
-                if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds
-                    .containsKey(pastElement.get(Sjm.ELASTICID).getAsString())) {
+                if (pastElement != null && pastElement.has(Sjm.SYSMLID)) {
                     artifacts.add(pastElement);
                 }
             }

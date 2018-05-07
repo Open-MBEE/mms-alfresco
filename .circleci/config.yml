@@ -76,6 +76,14 @@ jobs:
           path: mms-ent/share-amp/target/mms-share-amp-3.3.0-SNAPSHOT.amp
           destination: tmp/artifacts/mms-share-amp-3.3.0-SNAPSHOT.amp
 
+      - store_artifacts:
+          path: mms-ent/repo-amp/target/mms-java-client-3.3.0-SNAPSHOT.zip
+          destination: tmp/artifacts/mms-java-client-3.3.0-SNAPSHOT.zip
+
+      - store_artifacts:
+          path: mms-ent/repo-amp/target/mms-python-client-3.3.0-SNAPSHOT.zip
+          destination: tmp/artifacts/mms-python-client-3.3.0-SNAPSHOT.zip
+
       - persist_to_workspace:
           root: mms-ent
           paths:
@@ -98,10 +106,16 @@ jobs:
           command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-amp/3.3.0-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms-share-amp
-          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-share-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-share-amp/3.3.0-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms java client
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/3.3.0-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms python client
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-python-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-python-client/3.3.0-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
 
   deploy_release:
     <<: *defaults
@@ -119,10 +133,16 @@ jobs:
           command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-release-local/gov/nasa/jpl/mms/mms-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-release-local/gov/nasa/jpl/mms/mms-amp/3.3.0-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms-share-amp
-          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-release-local/gov/nasa/jpl/mms/mms-share-amp/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-release-local/gov/nasa/jpl/mms/mms-share-amp/3.3.0-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms java client
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-*.zip' libs-release-local/gov/nasa/jpl/mms/mms-java-client/3.3.0-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms python client
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-python-*.zip' libs-release-local/gov/nasa/jpl/mms/mms-python-client/3.3.0-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
 
 workflows:
   version: 2

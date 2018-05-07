@@ -363,7 +363,7 @@ public class PostgresHelper implements GraphInterface {
                     single.add(0, node.get(Sjm.ELASTICID));
                     single.add(1, node.get(Sjm.SYSMLID));
                     single.add(2, node.get("lastcommit"));
-                    single.add(3, node.get(Sjm.ELASTICID));
+                    single.add(3, node.containsKey("initialcommit") ? node.get("initialcommit") : node.get(Sjm.ELASTICID));
                     single.add(4, node.get("nodetype"));
                     values.add(single);
                 }
@@ -377,7 +377,7 @@ public class PostgresHelper implements GraphInterface {
                     single.add(0, node.get(Sjm.ELASTICID));
                     single.add(1, node.get(Sjm.SYSMLID));
                     single.add(2, node.get("lastcommit"));
-                    single.add(3, node.get(Sjm.ELASTICID));
+                    single.add(3, node.containsKey("initialcommit") ? node.get("initialcommit") : node.get(Sjm.ELASTICID));
                     values.add(single);
                 }
                 break;
@@ -884,7 +884,7 @@ public class PostgresHelper implements GraphInterface {
         return insertCommit(elasticId, type, creator, null);
     }
 
-    public String insertCommit(String elasticId, DbCommitTypes type, String creator, Date time) {
+    public String insertCommit(String elasticId, DbCommitTypes type, String creator, Timestamp time) {
         try {
             Map<String, Object> map = new HashMap<>();
             // we can hard code the commit type here....but we should still store the integer value
@@ -895,7 +895,7 @@ public class PostgresHelper implements GraphInterface {
             map.put("refId", workspaceId);
             map.put("creator", creator);
             if (time != null) {
-                map.put("timestamp", new Timestamp(time.getTime()));
+                map.put("timestamp", time);
             }
             insert("commits", map);
         } catch (Exception e) {

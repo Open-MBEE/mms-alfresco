@@ -8,8 +8,8 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +33,11 @@ public class JsonUtil {
         }
         JsonParser parser = new JsonParser();
         return parser.parse(str).getAsJsonObject();
+    }
+
+    public static JsonElement buildFromStream(InputStream is) {
+        JsonElement result = new JsonParser().parse(new InputStreamReader(is));
+        return result != null ? result : new JsonObject();
     }
 
     public static JsonObject addStringList(JsonObject obj, String key, List<String> values) {
