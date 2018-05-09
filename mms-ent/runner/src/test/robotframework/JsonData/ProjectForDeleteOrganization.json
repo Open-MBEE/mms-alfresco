@@ -1,9 +1,0 @@
-{
-    "projects": [
-        {
-            "id": "deleteorgproject",
-            "name": "Delete Organization Project",
-            "type": "Project"
-        }
-    ]
-}

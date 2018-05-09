@@ -1,9 +1,0 @@
-{
-    "projects": [
-        {
-            "id": "PB",
-            "name": "Project With Bad Org",
-            "type": "Project"
-        }
-    ]
-}
