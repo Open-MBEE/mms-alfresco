@@ -296,7 +296,7 @@ public class Migrate_3_3_0 {
                                     artifactJson.addProperty(Sjm.MODIFIED, df.format(modified));
                                     artifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
                                     artifactJson
-                                        .addProperty(Sjm.LOCATION, url);
+                                        .addProperty(Sjm.ARTIFACTLOCATION, url);
                                     InputStream is =
                                         contentService.getReader(versionedFile.getNodeRef(), ContentModel.PROP_CONTENT)
                                             .getContentInputStream();

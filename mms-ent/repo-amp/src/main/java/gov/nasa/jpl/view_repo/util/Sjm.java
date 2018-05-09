@@ -153,7 +153,7 @@ public class Sjm {
     public static final String COMMENT = "comment";
     public static final String ARTIFACTS = "artifacts";
     public static final String CONTENTTYPE = "contentType";
-    public static final String LOCATION = "location";
+    public static final String ARTIFACTLOCATION = "artifactLocation";
     public static final String ELEMENT = "Element";
     public static final String ARTIFACT = "Artifact";
     public static final String PROFILES = "profile";

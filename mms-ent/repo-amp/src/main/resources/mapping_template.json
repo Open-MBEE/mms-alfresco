@@ -11,7 +11,7 @@
                 "id": {
                     "type": "keyword"
                 },
-                "location": {
+                "artifactLocation": {
                     "type": "keyword"
                 },
                 "checksum": {
