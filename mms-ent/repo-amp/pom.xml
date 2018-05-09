@@ -41,6 +41,13 @@
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <!-- jcenter repo -->
+        <pluginRepository>
+            <id>jcenter</id>
+            <url>https://jcenter.bintray.com/</url>
+        </pluginRepository>
+    </pluginRepositories>
     <!-- Following dependencies are needed for compiling Java code in src/main/java;
         <scope>provided</scope> is inherited for each of the following; for more
         info, please refer to alfresco-platform-distribution POM -->
@@ -283,7 +290,26 @@
                             <output>${swagger.codegen.target}/python</output>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>mathematica-codegen</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${swagger.codegen.yaml}</inputSpec>
+                            <language>mathematica-client</language>
+                            <invokerPackage>MMS</invokerPackage>
+                            <output>${swagger.codegen.target}/mathematica</output>
+                        </configuration>
+                    </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.openmbee.swagger</groupId>
+                        <artifactId>swagger-codegen-mathematica-client</artifactId>
+                        <version>1.0.1</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -313,6 +339,7 @@
                     <descriptors>
                         <descriptor>assembly/mms-java-client.xml</descriptor>
                         <descriptor>assembly/mms-python-client.xml</descriptor>
+                        <descriptor>assembly/mms-mathematica-client.xml</descriptor>
                     </descriptors>
                 </configuration>
                 <executions>
