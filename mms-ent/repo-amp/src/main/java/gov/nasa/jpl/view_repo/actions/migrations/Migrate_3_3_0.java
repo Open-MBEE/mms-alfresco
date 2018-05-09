@@ -137,7 +137,6 @@ public class Migrate_3_3_0 {
 
                 //Reindex to rename fields
                 eh.updateByQuery(projectId, renameScript, "element");
-                eh.updateByQuery(projectId, ivanFix, "commit");
 
                 if (mappingTemplate.isJsonObject()) {
                     eh.updateMapping(projectId, "element",
@@ -147,6 +146,8 @@ public class Migrate_3_3_0 {
                     eh.updateMapping(projectId, "artifact",
                         mappingTemplate.get("mappings").getAsJsonObject().get("artifact").getAsJsonObject().toString());
                 }
+
+                eh.updateByQuery(projectId, ivanFix, "commit");
 
                 logger.info("Updating: " + projectId);
 
