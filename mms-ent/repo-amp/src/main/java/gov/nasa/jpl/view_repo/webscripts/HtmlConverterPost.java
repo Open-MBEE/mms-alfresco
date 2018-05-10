@@ -83,6 +83,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
                 String format = mimeType.getExtension();
 
                 String filename = String.format("%s%s", docName, format);
+
                 postJson.addProperty("filename", filename);
 
 
@@ -130,7 +131,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
 
                 pandocConverter.convert(JsonUtil.getOptString(postJson, "body"), JsonUtil.getOptString(postJson, "css"));
 
-                String artifactId = postJson.get(Sjm.NAME).getAsString() + System.currentTimeMillis() + format;
+                String artifactId = postJson.get(Sjm.NAME).getAsString().replaceAll("[^a-zA-Z0-9.-]", "_") + System.currentTimeMillis() + format;
                 EmsScriptNode artifact = NodeUtil.updateOrCreateArtifact(artifactId, filePath, format, siteName, projectId, refId);
 
                 sendEmail(artifact, format);
