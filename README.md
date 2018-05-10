@@ -243,13 +243,15 @@ Robot tests can be run with the following maven profiles in the mms-ent director
 ```
 Please note that tests should be run on a clean instance, therefore, it may be helpful to run clean.sh before running the tests
 
-The Robotframework tests require the 'requests' python module. Install it as follows:
+The Robotframework tests require the 'requests' and 'robotframework-requests' python modules. Install it as follows:
 ```
 pip install --target=runner/src/test/robotframework/libraries requests
+pip install --target=runner/src/test/robotframework/libraries robotframework-requests
 ```
 OR:
 ```
 pip install --target=$HOME/.m2/repository/org/robotframework/robotframework/{ROBOTPLUGINVERSION}/Lib requests
+pip install --target=$HOME/.m2/repository/org/robotframework/robotframework/{ROBOTPLUGINVERSION}/Lib robotframework-requests
 ```
 
 ### Changing debug levels on the fly
