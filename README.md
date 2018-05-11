@@ -7,8 +7,6 @@
 
 [![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
 
-**AMP for Alfresco (5.1.g)**
-
 Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
 ## Developer Setup
 
@@ -17,46 +15,16 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 * PostgreSQL 9.x
 
 ### Optional Dependencies
-* ActiveMQ 5.X
+* ActiveMQ 5.x
 
 ### 1a. Using Intellij
-* Open Project with root of 'mms-ent'
-* Import Maven Project
+* Open Project
+* Import Gradle Project
 
 ### 1b. Import Project from git repo to Eclipse
 *  **Eclipse** > **File** > **Import** > **General** > **Existing Projects into Workspace**
 *  Set 'Root Directory' as the path to mms e.g. **Browse** to `$HOME/workspace/mms`
 *  In the 'Projects' list, you should see all poms. Click **Finish**
-
-### 1c. Import Maven Project into Eclipse
-* **Eclipse** > **File** > **Import** > **Maven** > **Existing Maven Projects**
-* Set 'Root Directory' as the path to mms e.g. **Browse** to `$HOME/workspace/mms/mms-ent`
-* In the 'Projects' list, you should see all poms. Click **Finish**
-
-### 2. Configure Eclipse to use Maven 3.X.X
-*   **Eclipse** > **Window** > **Preferences** > **Maven** > **Installation**
- *  Toggle Maven 3.X.X
-    *   If Maven 3.X.X is not listed, download and install it.
-    *   On a Mac, install it at /usr/local/Cellar/maven.
-    *   On a Linux, anywhere in your $PATH.
-*   Return to **Eclipse** > **Window** > **Preferences** > **Maven** > **Installation**
-*   Choose **Add...**
-    *   Browse and select Maven 3.X.X installed location.
-    *  Location is the maven home that you can get by running the newly installed maven, with mvn -V
-
-### 3. Configure Run Configuration**
-*   Select **mms-ent** project
-*   From menu bar, choose **Run** > **Run Configurations**
-*   Right-click **Maven Build** > **New**
-    *   Enter `mms` for Name textbox
-    *   At **Main** tab
-        *   Enter `${project_loc}` or `${workspace_loc}` for Base Directory textbox
-        *   Enter `install` for Goals textbox
-        *   Enter `run` for Profiles textbox
-        *   Select Maven 3.X.X (whatever you chose to setup in step 2) for Maven Runtime
-    *   At **JRE** tab
-        *   Select **Java 8** for JRE.
-        *   If it's not installed, download and install Java 8. Afterward, return to here and select Java 8.
 
 ## Install Dependencies
 ### 1. Install and Configure ElasticSearch
@@ -80,22 +48,6 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 *   Download ActiveMQ 5.X
 *   Install ActiveMQ
 *   Start ActiveMQ service
-
-## Running
-### 1a. Running Alfresco
-1. Select file menu **Run** > **Run Configurations**
-2. Expand **Maven Build**
-3. Select **mms**
-    1. Click **Run** button
-    * If you get error:-Dmaven.multiModuleProjectDirectory system property is not set. Check $M2_HOME environment variable and mvn script match. Goto **Window -> Preference -> Java -> Installed JREs -> Edit -> Default VM arguments**  _set -Dmaven.multiModuleProjectDirectory=$M2_HOME_
-
-### 1b. Running Alfresco
-1. From mms-ent directory, either run `clean-run.sh`, `run.sh`, or `./mvnw install -Prun -Ddependency.surf.version=6.3`
-
-### 2. Testing Alfresco
-1. Enter http://localhost:8080/share/ at a browser's url address textbox.
-2. Enter **admin** for user name
-3. Enter **admin** for password
 
 ## Design Documentation
 ### 1. MMS using ElasticSearch and PostgreSQL
@@ -236,22 +188,6 @@ Make sure the elements went in:
 curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin -X GET "http://localhost:8080/alfresco/service/projects/123456/refs/master/elements/123456?depth=-1"
 ```
 
-### Robotframework test suite
-Robot tests can be run with the following maven profiles in the mms-ent directory:
-```
-./mvnw install -Ddependency.surf.version=6.3 -Prun,robot-tests
-```
-Please note that tests should be run on a clean instance, therefore, it may be helpful to run clean.sh before running the tests
-
-The Robotframework tests require the 'requests' python module. Install it as follows:
-```
-pip install --target=runner/src/test/robotframework/libraries requests
-```
-OR:
-```
-pip install --target=$HOME/.m2/repository/org/robotframework/robotframework/{ROBOTPLUGINVERSION}/Lib requests
-```
-
 ### Changing debug levels on the fly
 
 If you need to change debug levels on the fly, use the following endpoint.
@@ -276,15 +212,15 @@ API Documentation is located at the following endpoints:
 
 Swagger CodeGen:
 ```
-alfresco/mms
+/v2/api-docs
 ```
 
 Swagger UI:
 ```
-alfresco/mms/swagger-ui
+/swagger-ui.html
 ```
 
 Swagger YAML file:
 ```
-alfresco/mms/mms.swagger.yaml
+/mms.swagger.yaml
 ```
