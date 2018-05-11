@@ -1,0 +1,37 @@
+#Application Settings
+app.name=APPNAME
+app.title=APPTITLE
+app.url=http://localhost:8080
+app.port=8080
+app.email.from=EMAIL@EXAMPLE.COM
+app.domain.name=EXAMPLE.COM
+app.email.admin=ADMIN@EXAMPLE.COM
+
+# LDAPS information
+ldap.provider.url=ldap://host:port
+ldap.provider.userdn=CN=Your_Account,OU=xxx,OU=yyy,OU=your_service,DC=company,DC=com
+ldap.provider.password=xxx
+ldap.user.dn.patterns=CN={0},OU=aaa,OU=bbb,DC=company,DC=com
+
+#Postgres Settings
+pg.host=jdbc:postgresql://127.0.0.1/
+pg.name=POSTGRES_DB_NAME
+pg.user=POSTGRES_USERNAME
+pg.pass=POSTGRES_PASSWORD
+pg.conn.max=96
+pg.limit.insert=5000
+pg.limit.select=1000
+
+#Elasticsearch Settings
+elastic.host=http://localhost:9200
+elastic.index.element=mms
+elastic.limit.insert=80
+elastic.limit.result=10000
+elastic.limit.term=10000
+
+#Document Generation Settings
+pandoc.output.dir=/tmp
+pandoc.output.filename=tmp.output
+pandoc.exec=/usr/local/bin/pandoc
+pandoc.pdfengine=prince
+pandoc.princeexec=/usr/local/bin/prince

@@ -25,10 +25,16 @@ repositories {
 
 
 dependencies {
-    compile('org.springframework.boot:spring-boot-starter-data-ldap')
-    compile('org.springframework.boot:spring-boot-starter-security')
-    compile('org.springframework.boot:spring-boot-starter-web')
-    runtime('org.springframework.boot:spring-boot-devtools')
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-    testCompile('org.springframework.security:spring-security-test')
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-ldap'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+
+    // https://mvnrepository.com/artifact/io.springfox/springfox-swagger2
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.8.0'
+    // https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui
+    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.8.0'
+
+    runtime group: 'org.springframework.boot', name: 'spring-boot-devtools'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test'
+    testCompile group: 'org.springframework.security', name: 'spring-security-test'
 }
