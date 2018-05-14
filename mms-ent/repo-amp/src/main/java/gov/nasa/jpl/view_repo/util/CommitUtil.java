@@ -195,6 +195,13 @@ public class CommitUtil {
         if (e.has(Sjm.DEFAULTVALUE) && !e.get(Sjm.DEFAULTVALUE).isJsonNull()) {
             return false;
         }
+        JsonArray appliedS = JsonUtil.getOptArray(e, Sjm.APPLIEDSTEREOTYPEIDS);
+        for (int i = 0; i < appliedS.size(); i++) {
+            String s = appliedS.get(i).getAsString();
+            if (s.equals(Sjm.VALUEPROPERTY) || s.equals(Sjm.CONSTRAINTPROPERTY)) {
+                return false;
+            }
+        }
         return true;
     }
 
