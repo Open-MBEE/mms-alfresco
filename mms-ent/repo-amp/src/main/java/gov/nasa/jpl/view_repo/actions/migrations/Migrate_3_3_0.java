@@ -61,7 +61,8 @@ public class Migrate_3_3_0 {
     private static final String artifactToElementScript =
         "{\"query\": {\"terms\":{\"id\":[\"%s\"]} }, \"script\": {\"inline\": \"ctx._source._artifactIds = [ctx._source.id + \\\"_svg\\\", ctx._source.id + \\\"_png\\\"]\"}}";
 
-    private static final String searchQuery = "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
+    private static final String searchQuery =
+        "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
 
     private static final String renameScript =
         "{\"query\": {\"exists\":{\"field\":\"_isSite\"} }, \"script\": {\"inline\": \"ctx._source._isGroup = ctx._source.remove(\\\"_isSite\\\")\"}}";
@@ -253,7 +254,8 @@ public class Migrate_3_3_0 {
                                 FileInfo versionedFile = fileFolderService.getFileInfo(version.getVersionedNodeRef());
                                 String name = versionedFile.getName();
                                 String url = String.format("/service/api/node/content/versionStore/version2Store/%s/%s",
-                                    version.getVersionProperty("node-uuid"),URLEncoder.encode(versionedFile.getName()));
+                                    version.getVersionProperty("node-uuid"),
+                                    URLEncoder.encode(versionedFile.getName()));
 
                                 String modifier = version.getFrozenModifier();
                                 Date modified = version.getFrozenModifiedDate();
@@ -278,7 +280,8 @@ public class Migrate_3_3_0 {
                                     artifactId = name;
                                 }
 
-                                String checkQuery = String.format(searchQuery, projectId, artifactId, df.format(modified));
+                                String checkQuery =
+                                    String.format(searchQuery, projectId, artifactId, df.format(modified));
                                 JsonObject checkQueryObj = JsonUtil.buildFromString(checkQuery);
                                 JsonObject check = eh.search(checkQueryObj);
 
@@ -295,8 +298,7 @@ public class Migrate_3_3_0 {
                                     artifactJson.addProperty(Sjm.CREATED, df.format(created));
                                     artifactJson.addProperty(Sjm.MODIFIED, df.format(modified));
                                     artifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
-                                    artifactJson
-                                        .addProperty(Sjm.ARTIFACTLOCATION, url);
+                                    artifactJson.addProperty(Sjm.ARTIFACTLOCATION, url);
                                     InputStream is =
                                         contentService.getReader(versionedFile.getNodeRef(), ContentModel.PROP_CONTENT)
                                             .getContentInputStream();
@@ -351,8 +353,12 @@ public class Migrate_3_3_0 {
                                         noErrors = false;
                                     }
                                 } else {
-                                    elasticId = check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().get(Sjm.ELASTICID).getAsString();
-                                    commitId = check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().get(Sjm.COMMITID).getAsString();
+                                    elasticId =
+                                        check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().get(Sjm.ELASTICID)
+                                            .getAsString();
+                                    commitId =
+                                        check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().get(Sjm.COMMITID)
+                                            .getAsString();
                                 }
 
                                 if (pgh.getArtifactFromSysmlId(artifactId, true) == null) {
@@ -377,7 +383,8 @@ public class Migrate_3_3_0 {
                                 Map<String, String> commitFromDb =
                                     pgh.getCommitAndTimestamp("timestamp", new Timestamp(modified.getTime()));
                                 if (commitFromDb == null || !commitFromDb.get(Sjm.COMMITID).equals(commitId)) {
-                                    pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator, new Timestamp(modified.getTime()));
+                                    pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator,
+                                        new Timestamp(modified.getTime()));
                                 }
                             } // End of While Loop
 

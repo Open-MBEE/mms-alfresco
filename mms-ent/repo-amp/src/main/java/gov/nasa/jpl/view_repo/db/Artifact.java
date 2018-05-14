@@ -6,7 +6,6 @@ public class Artifact {
 
     private int id;
     private String elasticId;
-    private String contentType;
     private String sysmlId;
     private String lastCommit;
     private String initialCommit;
@@ -44,14 +43,6 @@ public class Artifact {
 
     public void setNodeRefId(String elasticId) {
         this.elasticId = elasticId;
-    }
-
-    public String getNodeType() {
-        return contentType;
-    }
-
-    public void setNodeType(int nodeType) {
-        this.contentType = contentType;
     }
 
     public String getInitialCommit() {
