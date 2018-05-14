@@ -186,7 +186,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         String workspaceName = null;
         String desc = null;
         String elasticId = null;
-        Boolean isTag = false;
+        boolean isTag = false;
         String permission = "read";  // Default is public read permission
         EmsScriptNode finalWorkspace = null;
 
