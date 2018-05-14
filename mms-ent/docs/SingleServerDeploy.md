@@ -46,18 +46,18 @@ Install MMS on CentOS 7.x
     * `postgresql93-setup initdb`
     * `systemctl start postgresql-9.3`
     * Connect to the PostgreSQL server and:
-    * Create a `mms` user (referenced by pg.user in your `mms-ent/mms.properties` file)
+    * Create a `mms` user (referenced by pg.user in your `mms-ent/mms.properties` file) with role of `CREATEDB`
        * Ensure you set a password (referenced by pg.pass)
     * Create a `mms` database ( referenced by pg.name)
 
 ## Upload Schemas for ElasticSearch and Postgres on VM
 1.  Run `mms_mappings.sh`  on each ElasticSearch instance
-    * Execute `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms_mappings.sh`
-       * e.g.: `sh mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms_mappings.sh`
+    * Execute `mms-ent/repo-amp/src/main/resources/mms_mappings.sh`
+       * e.g.: `sh mms-ent/repo-amp/src/main/resources/mms_mappings.sh`
 
 2.  Run `mms.sql` on your instance of Postgres:
-    * Execute `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql`
-       * e.g.: `psql -h localhost -p 5432 -U mms -d mms -v schema=public < mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql`
+    * Execute `mms-ent/repo-amp/src/main/resources/mms.sql`
+       * e.g.: `psql -h localhost -p 5432 -U mms -d mms -v schema=public < mms-ent/repo-amp/src/main/resources/mms.sql`
        
 ## Install ActiveMQ (Optional, depending on MDK version)
 1. Get activemq binaries:
@@ -75,7 +75,7 @@ Install MMS on CentOS 7.x
        
 ## Installing Alfresco on Tomcat
 
-See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.2/concepts/master-ch-install.html)
+See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.1/concepts/master-ch-install.html)
 
 ## Installing MMS
 1. Grab the latest mms-amp and mms-share-amp from the github release page:
