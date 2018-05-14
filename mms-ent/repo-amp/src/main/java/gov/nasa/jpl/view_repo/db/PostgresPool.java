@@ -40,7 +40,7 @@ public class PostgresPool {
             bds.get(connectString).setLogAbandoned(true);
             bds.get(connectString).setRemoveAbandoned(true);
             bds.get(connectString).setTimeBetweenEvictionRunsMillis(1000 * 60);
-            bds.get(connectString).setMinEvictableIdleTimeMillis(1000 * 60 * 5);
+            bds.get(connectString).setMinEvictableIdleTimeMillis(1000 * 60 * 60);
         }
     }
 
@@ -74,7 +74,7 @@ public class PostgresPool {
         bds.setDefaultAutoCommit(true);
         bds.setRemoveAbandonedTimeout(1);
         bds.setTimeBetweenEvictionRunsMillis(1000 * 60);
-        bds.setMinEvictableIdleTimeMillis(1000 * 60 * 5);
+        bds.setMinEvictableIdleTimeMillis(1000 * 60 * 60);
         return bds.getConnection();
     }
 
