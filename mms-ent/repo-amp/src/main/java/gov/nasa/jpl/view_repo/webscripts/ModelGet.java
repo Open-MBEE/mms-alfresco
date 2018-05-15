@@ -123,7 +123,7 @@ public class ModelGet extends AbstractJavaWebScript {
         JsonObject top = new JsonObject();
 
         if (validateRequest(req, status)) {
-            Boolean isCommit = req.getParameter(COMMITID) != null && !req.getParameter(COMMITID).isEmpty();
+            boolean isCommit = req.getParameter(COMMITID) != null && !req.getParameter(COMMITID).isEmpty();
             try {
                 if (isCommit) {
                     JsonArray commitJsonToArray = new JsonArray();

@@ -109,14 +109,14 @@ public class ArtifactGet extends AbstractJavaWebScript {
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("Accept: %s", accept));
         }
-        Boolean isCommit = req.getParameter(COMMITID) != null && !req.getParameter(COMMITID).isEmpty();
+        boolean isCommit = req.getParameter(COMMITID) != null && !req.getParameter(COMMITID).isEmpty();
         // :TODO refactor to handle the response consistently
         try {
             if (isCommit) {
                 JsonArray commitJsonToArray = new JsonArray();
                 JsonObject commitJson = handleCommitRequest(req);
                 commitJsonToArray.add(commitJson);
-                if (commitJson.size() == 0) {
+                if (commitJson == null || commitJson.size() == 0) {
                     log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
                 }
                 if (commitJson != null && commitJson.size() > 0) {

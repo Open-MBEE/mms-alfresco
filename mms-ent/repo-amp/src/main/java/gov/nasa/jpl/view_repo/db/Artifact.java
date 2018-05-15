@@ -62,7 +62,6 @@ public class Artifact {
         json.addProperty("id", this.id);
         json.addProperty("sysmlId", this.sysmlId);
         json.addProperty("elasticId", this.elasticId);
-        json.addProperty("nodeType", this.contentType);
 
         return json;
     }
