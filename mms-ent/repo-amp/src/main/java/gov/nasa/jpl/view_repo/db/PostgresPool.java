@@ -63,9 +63,10 @@ public class PostgresPool {
         this.bds.setRemoveAbandonedTimeout(1);
         this.bds.setLogAbandoned(true);
         this.bds.setRemoveAbandoned(true);
-        this.bds.setTimeBetweenEvictionRunsMillis(1000*60);
-        this.bds.setMinEvictableIdleTimeMillis(1000*60*5);
-        if(EmsConfig.get(PG_SEC).toLowerCase().equals("true")){
+        this.bds.setTimeBetweenEvictionRunsMillis(1000 * 60);
+        this.bds.setMinEvictableIdleTimeMillis(1000 * 60 * 5);
+
+        if(EmsConfig.get(PG_SEC).toLowerCase().equals("true")) {
             this.bds.setConnectionProperties("ssl=true");
         }
     }
@@ -113,7 +114,7 @@ public class PostgresPool {
 
     private void goIdle() {
         this.bds.setMaxIdle(MIN_IDLE_CONN);
-        if(this.bds.getNumActive() > 0){
+        if(this.bds.getNumActive() > 0) {
             logger.warn("Database connection pool (" +
                 getConnectString(host, name) +
                 ") with active connections was instructed to go idle.  Database may be overloaded");
@@ -162,8 +163,9 @@ public class PostgresPool {
                 .weigher((String key, PostgresPool pool) -> pool.getWeight())
                 .expireAfterAccess(5, TimeUnit.MINUTES)
                 .removalListener((RemovalNotification<String, PostgresPool> v) -> {
-                    if (v.getCause() != RemovalCause.REPLACED)
+                    if (v.getCause() != RemovalCause.REPLACED) {
                         v.getValue().goIdle();
+                    }
                 })
                 .build();
             activeDataSources.put(host, cache);
@@ -173,8 +175,9 @@ public class PostgresPool {
 
 
     public static IBasicDataSourceFactory getBasicDataSourceFactory() {
-        if(basicDataSourceFactory == null)
+        if(basicDataSourceFactory == null) {
             basicDataSourceFactory = () -> new BasicDataSource();
+        }
         return basicDataSourceFactory;
     }
 
@@ -182,13 +185,14 @@ public class PostgresPool {
         PostgresPool.basicDataSourceFactory = basicDataSourceFactory;
     }
 
-    static void purgeDatabasePools(){
+    static void purgeDatabasePools() {
         activeDataSources.clear();
         dataSources.clear();
     }
-    static void idleDatabasePools(){
-        for(Cache<String, PostgresPool> cache : activeDataSources.values())
+    static void idleDatabasePools() {
+        for(Cache<String, PostgresPool> cache : activeDataSources.values()) {
             cache.invalidateAll();
+        }
     }
 
 }

@@ -27,6 +27,7 @@ pg.pass=
 pg.conn.max=96
 pg.limit.insert=5000
 pg.limit.select=1000
+pg.secured=false
 
 #Elasticsearch Settings
 elastic.host=http://localhost:9200
