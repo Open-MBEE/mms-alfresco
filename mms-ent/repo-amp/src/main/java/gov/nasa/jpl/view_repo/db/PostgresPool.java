@@ -154,7 +154,7 @@ public class PostgresPool {
         getActiveDatasetCache(host).invalidate(connectString);
     }
 
-    private static Cache<String, PostgresPool> getActiveDatasetCache(String host){
+    private static Cache<String, PostgresPool> getActiveDatasetCache(String host) {
         Cache<String, PostgresPool> cache = activeDataSources.get((host));
 
         if(cache == null) {
