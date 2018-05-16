@@ -63,46 +63,53 @@ public class JsonUtil {
 
     public static JsonObject fromMap(Map<String, String> propertyMap) {
         JsonObject obj = new JsonObject();
-        for (Map.Entry<String, String> entry : propertyMap.entrySet())
+        for (Map.Entry<String, String> entry : propertyMap.entrySet()) {
             obj.addProperty(entry.getKey(), entry.getValue());
+        }
         return obj;
     }
 
     public static JsonArray getOptArray(JsonObject obj, String name) {
-        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull())) {
             return new JsonArray();
+        }
         return obj.get(name).getAsJsonArray();
     }
 
     public static JsonObject getOptObject(JsonObject obj, String name) {
-        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull())) {
             return new JsonObject();
+        }
         return obj.get(name).getAsJsonObject();
     }
 
     public static String getOptString(JsonObject obj, String name) {
-        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull())) {
             return "";
+        }
         return obj.get(name).getAsString();
     }
 
     public static String getOptString(JsonObject obj, String name, String option) {
-        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull())) {
             return option;
+        }
         return obj.get(name).getAsString();
     }
 
     public static JsonObject getOptObject(JsonArray arry, int index) {
         JsonElement elem = arry.get(index);
-        if (elem.isJsonObject())
+        if (elem.isJsonObject()) {
             return elem.getAsJsonObject();
+        }
         return new JsonObject();
     }
 
     public static String getOptString(JsonArray arry, int index) {
         JsonElement elem = arry.get(index);
-        if (elem.isJsonPrimitive())
+        if (elem.isJsonPrimitive()) {
             return elem.getAsString();
+        }
         return "";
     }
 }
