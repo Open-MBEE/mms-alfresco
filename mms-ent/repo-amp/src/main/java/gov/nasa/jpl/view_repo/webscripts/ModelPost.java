@@ -100,11 +100,7 @@ public class ModelPost extends AbstractJavaWebScript {
     protected Map<String, Object> executeImplImpl(final WebScriptRequest req, final Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
 
-        if (logger.isDebugEnabled()) {
-            printHeader(user, logger, req);
-        } else {
-            printHeader(user, logger, req, true);
-        }
+        printHeader(user, logger, req, true);
 
         Timer timer = new Timer();
 
