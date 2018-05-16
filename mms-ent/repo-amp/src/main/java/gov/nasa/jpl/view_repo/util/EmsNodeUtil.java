@@ -1730,6 +1730,28 @@ public class EmsNodeUtil {
         return pastElement == null ? new JsonObject() : pastElement;
     }
 
+    public JsonObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
+        JsonObject result = new JsonObject();
+
+        try {
+            // Get commit object and retrieve the refs commits
+            Map<String, Object> commit = pgh.getCommit(commitId);
+
+            Date date = (Date) commit.get(Sjm.TIMESTAMP);
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(date.getTime());
+            cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+            String timestamp = df.format(cal.getTime());
+
+            // Search for element at commit
+            result = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds, projectId);
+
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return result;
+    }
+
     public JsonArray getNearestCommitFromTimestamp(String refId, String timestamp, int limit) {
         Date requestedTime;
         List<Map<String, Object>> commits;
@@ -1779,28 +1801,6 @@ public class EmsNodeUtil {
             result.add(commit);
         }
 
-        return result;
-    }
-
-    public JsonObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
-        JsonObject result = new JsonObject();
-
-        try {
-            // Get commit object and retrieve the refs commits
-            Map<String, Object> commit = pgh.getCommit(commitId);
-
-            Date date = (Date) commit.get(Sjm.TIMESTAMP);
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(date.getTime());
-            cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-            String timestamp = df.format(cal.getTime());
-
-            // Search for element at commit
-            result = eh.getElementsLessThanOrEqualTimestamp(sysmlId, timestamp, refIds, projectId);
-
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
         return result;
     }
 

@@ -98,7 +98,13 @@ public class ModelGet extends AbstractJavaWebScript {
 
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        printHeader(user, logger, req);
+
+        if (logger.isDebugEnabled()) {
+            printHeader(user, logger, req);
+        } else {
+            printHeader(user, logger, req, true);
+        }
+
         Timer timer = new Timer();
 
         Map<String, Object> model;
