@@ -1,9 +1,14 @@
-package org.openmbee.mms.configurations;
+package org.openmbee.mms.security.config;
 
+import org.openmbee.mms.security.JwtAuthenticationEntryPoint;
+import org.openmbee.mms.security.JwtAuthenticationTokenFilter;
+import org.openmbee.mms.security.UserDetailsServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpMethod;
 import org.springframework.ldap.core.ContextSource;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.support.BaseLdapPathContextSource;
@@ -13,12 +18,16 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 import org.springframework.security.ldap.SpringSecurityLdapTemplate;
 import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -26,26 +35,37 @@ import org.springframework.web.filter.CorsFilter;
 
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.http.HttpMethod.*;
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
-@Configuration @PropertySource("classpath:application.properties") @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true) @EnableTransactionManagement class SecurityConfig
-    extends WebSecurityConfigurerAdapter {
+@Configuration
+@PropertySource("classpath:application.properties")
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableTransactionManagement
+class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${ldap.provider.url}") private String providerUrl;
+    @Value("${ldap.provider.url}")
+    private String providerUrl;
 
-    @Value("${ldap.provider.userdn}") private String providerUserDn;
+    @Value("${ldap.provider.userdn}")
+    private String providerUserDn;
 
-    @Value("${ldap.provider.password}") private String providerPassword;
+    @Value("${ldap.provider.password}")
+    private String providerPassword;
 
-    @Value("${ldap.user.dn.patterns}") private String userDnPatterns;
+    @Value("${ldap.user.dn.patterns}")
+    private String userDnPatterns;
+
+    @Autowired
+    private JwtAuthenticationEntryPoint unauthorizedHandler;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsServiceImpl;
 
     private static final String[] AUTH_WHITELIST = {
         // -- swagger ui
@@ -58,38 +78,22 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
         super(true);
     }
 
-    @Override protected void configure(HttpSecurity http) throws Exception {
-         /* the secret key used to signe the JWT token is known exclusively by the server.
-         With Nimbus JOSE implementation, it must be at least 256 characters longs.
-         */
-        String secret =
-            IOUtils.toString(getClass().getClassLoader().getResourceAsStream("secret.key"), Charset.defaultCharset());
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable().exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
+            .antMatchers(HttpMethod.OPTIONS, "/**").permitAll().antMatchers("/authentication/**").permitAll()
+            .antMatchers("/webjars/**").permitAll().antMatchers("/images/**").permitAll()
+            .antMatchers("/swagger-resources/**").permitAll().antMatchers("/v2/api-docs/**").permitAll()
+            .antMatchers("/swagger-ui.html").permitAll().anyRequest().authenticated();
 
-        http
-            /*
-            Filters are added just after the ExceptionTranslationFilter so that Exceptions are catch by the exceptionHandling()
-             Further information about the order of filters, see FilterComparator
-             */.addFilterAfter(jwtTokenAuthenticationFilter("/**", secret), ExceptionTranslationFilter.class)
-            .addFilterAfter(corsFilter(), ExceptionTranslationFilter.class)
-            /*
-             Exception management is handled by the authenticationEntryPoint (for exceptions related to authentications)
-             and by the AccessDeniedHandler (for exceptions related to access rights)
-            */.exceptionHandling().authenticationEntryPoint(new SecurityAuthenticationEntryPoint())
-            .accessDeniedHandler(new RestAccessDeniedHandler()).and()
-            /*
-              anonymous() consider no authentication as being anonymous instead of null in the security context.
-             */.anonymous().and()
-            /* No Http session is used to get the security context */.sessionManagement()
-            .sessionCreationPolicy(STATELESS).and().authorizeRequests()
-            /* All access to the authentication service are permitted without authentication (actually as anonymous) */
-            .antMatchers("/auth/**").permitAll().antMatchers(AUTH_WHITELIST).permitAll()
-
-            /* All the other requests need an authentication.
-             Role access is done on Methods using annotations like @PreAuthorize
-             */.anyRequest().authenticated();
+        http.addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(corsFilter(), ExceptionTranslationFilter.class);
+        http.headers().cacheControl();
     }
 
-    @Bean LdapAuthoritiesPopulator ldapAuthoritiesPopulator() throws Exception {
+    @Bean
+    LdapAuthoritiesPopulator ldapAuthoritiesPopulator() throws Exception {
 
         /*
           Specificity here : we don't get the Role by reading the members of available groups (which is implemented by
@@ -105,7 +109,8 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
                 ldapTemplate = new SpringSecurityLdapTemplate(contextSource);
             }
 
-            @Override public Collection<? extends GrantedAuthority> getGrantedAuthorities(DirContextOperations userData,
+            @Override
+            public Collection<? extends GrantedAuthority> getGrantedAuthorities(DirContextOperations userData,
                 String username) {
 
                 String[] groupDns = userData.getStringAttributes(GROUP_MEMBER_OF);
@@ -130,7 +135,8 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
      * @param auth the {@link AuthenticationManagerBuilder} à utiliser
      * @throws Exception
      */
-    @Override protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         /*
             see this article : https://spring.io/guides/gs/authenticating-ldap/
             We  redefine our own LdapAuthoritiesPopulator which need ContextSource().
@@ -141,14 +147,22 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 
     }
 
-    @Bean public BaseLdapPathContextSource contextSource() throws Exception {
+    @Bean
+    public BaseLdapPathContextSource contextSource() throws Exception {
         DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(providerUrl);
         contextSource.setUserDn(providerUserDn);
         contextSource.setPassword(providerPassword);
         return contextSource;
     }
 
-    @Bean @Override public AuthenticationManager authenticationManagerBean() throws Exception {
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
         /*
           Overloaded to expose Authenticationmanager's bean created by configure(AuthenticationManagerBuilder).
            This bean is used by the AuthenticationController.
@@ -156,9 +170,10 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
         return super.authenticationManagerBean();
     }
 
-
-    private JwtTokenAuthenticationFilter jwtTokenAuthenticationFilter(String path, String secret) {
-        return new JwtTokenAuthenticationFilter(path, secret);
+    private JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter() throws Exception {
+        JwtAuthenticationTokenFilter authenticationTokenFilter = new JwtAuthenticationTokenFilter();
+        authenticationTokenFilter.setAuthenticationManager(authenticationManagerBean());
+        return authenticationTokenFilter;
     }
 
     private CorsFilter corsFilter() {
@@ -187,4 +202,5 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
+
 }
