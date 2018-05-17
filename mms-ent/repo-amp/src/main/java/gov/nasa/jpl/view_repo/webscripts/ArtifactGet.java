@@ -57,7 +57,7 @@ import gov.nasa.jpl.mbee.util.Timer;
  *
  * @author lauram
  */
-public class ArtifactGet extends AbstractJavaWebScript {
+public class ArtifactGet extends ModelGet {
 
     static Logger logger = Logger.getLogger(ArtifactGet.class);
 
@@ -73,20 +73,6 @@ public class ArtifactGet extends AbstractJavaWebScript {
         super(repositoryHelper, registry);
     }
 
-    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        String refId = getRefId(req);
-        String projectId = getProjectId(req);
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-
-        if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
-            return true;
-        } else if (refId != null && !emsNodeUtil.refExists(refId)) {
-            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found", refId);
-            return false;
-        }
-        return true;
-    }
-
     /**
      * Entry point
      */
@@ -100,7 +86,7 @@ public class ArtifactGet extends AbstractJavaWebScript {
         printHeader(user, logger, req);
         Timer timer = new Timer();
 
-        Map<String, Object> model = new HashMap();
+        Map<String, Object> model = new HashMap<>();
         JsonObject top = new JsonObject();
 
         String[] accepts = req.getHeaderValues("Accept");
