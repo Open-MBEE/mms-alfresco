@@ -628,7 +628,7 @@ public class EmsNodeUtil {
                 .equalsIgnoreCase("null")) && !type.equals("Artifact")) {
                 o.addProperty(Sjm.OWNERID, holdingBinSysmlid);
             }
-            if (!o.get(Sjm.TYPE).getAsString().equals(Sjm.ARTIFACT)) {
+            if (o.has(Sjm.CHILDVIEWS)) {
                 reorderChildViews(o, newElements, addedElements, updatedElements, deletedElements, commitAdded,
                     commitUpdated, commitDeleted, commitId, user, date, oldElasticIds);
             }

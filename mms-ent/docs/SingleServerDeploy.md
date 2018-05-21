@@ -38,13 +38,16 @@ Install MMS on CentOS 7.x
 5. Check the state of the elasticsearch service
     * `curl -XGET 'http://localhost:9200/_cluster/state?pretty'`
 
-## Install and configure Postgresql 9.3.x (Optional if using the Alfresco installer which includes Postgresql)
+## Install Postgresql 9.3.x (Optional if using the Alfresco installer which includes Postgresql)
 1. Run the following commands as root:
     * `yum -y https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm`
     * `yum -y install postgresql93 postgresql93-server postgresql93-contrib postgresql93-libs`
     * `systemctl enable postgresql-9.3`
     * `postgresql93-setup initdb`
     * `systemctl start postgresql-9.3`
+
+## Configure Postgresql
+1. If postgres was installed from Alfresco installer, use the full path for psql
     * Connect to the PostgreSQL server and:
     * Create a `mms` user (referenced by pg.user in your `mms-ent/mms.properties` file) with role of `CREATEDB`
        * Ensure you set a password (referenced by pg.pass)
@@ -53,7 +56,7 @@ Install MMS on CentOS 7.x
 ## Upload Schemas for ElasticSearch and Postgres on VM
 1.  Run `mms_mappings.sh`  on each ElasticSearch instance
     * Execute `mms-ent/repo-amp/src/main/resources/mms_mappings.sh`
-       * e.g.: `sh mms-ent/repo-amp/src/main/resources/mms_mappings.sh`
+       * e.g.: `bash mms-ent/repo-amp/src/main/resources/mms_mappings.sh`
 
 2.  Run `mms.sql` on your instance of Postgres:
     * Execute `mms-ent/repo-amp/src/main/resources/mms.sql`
@@ -76,6 +79,7 @@ Install MMS on CentOS 7.x
 ## Installing Alfresco on Tomcat
 
 See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.1/concepts/master-ch-install.html)
+* if using the simple installer, get the installer from [here](https://sourceforge.net/projects/alfresco/files/Alfresco%20201604%20Community/)
 
 ## Installing MMS
 1. Grab the latest mms-amp and mms-share-amp from the github release page:
@@ -86,6 +90,7 @@ See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.1/conc
         * `java -jar ../bin/alfresco-mmt.jar install $YOUR_PATH/mms-share-amp.amp share.war -force`
         
     * Create and edit the mms.properties file in the $TOMCAT_HOME/shared/classes directory (You can copy mms-ent/mms.properties.example)
+        * app.user and app.pass should be set to the alfresco admin user that you set up
     
 3. Start tomcat
     * Run either one of these
