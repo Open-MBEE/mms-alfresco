@@ -112,7 +112,9 @@ public class Migrate_3_3_0 {
 
             SiteInfo siteInfo = siteService.getSite(orgId);
 
-            pgh.getConn("config").prepareStatement("DROP TABLE IF EXISTS projectMounts").execute();
+            try (PreparedStatement statement = pgh.getConn("config").prepareStatement("DROP TABLE IF EXISTS projectMounts")) {
+                statement.execute();
+            }
 
             List<Map<String, Object>> projects = pgh.getProjects(orgId);
             if (projects.isEmpty()) {
@@ -184,36 +186,37 @@ public class Migrate_3_3_0 {
                         PreparedStatement parentStatement = pgh.prepareStatement(
                             "SELECT commits.elasticid, refs.parent FROM refs JOIN commits ON refs.parentCommit = commits.id WHERE refs.refId = ? LIMIT 1");
                         parentStatement.setString(1, ref.first);
-                        ResultSet rs = parentStatement.executeQuery();
-                        String parentCommit = null;
-                        String parentRefId = null;
-                        if (rs.next()) {
-                            parentCommit = rs.getString(1);
-                            parentRefId = rs.getString(2).equals("") ? "master" : rs.getString(2);
-                        }
-
-                        if (parentCommit != null) {
-                            pgh.setWorkspace(parentRefId);
-                            JsonArray parentArtifacts = getArtifactsAtCommit(parentCommit, pgh, eh, projectId);
-                            List<Map<String, Object>> artifactInserts = new ArrayList<>();
-                            for (int i = 0; i < parentArtifacts.size(); i++) {
-                                JsonObject parentArt = parentArtifacts.get(i).getAsJsonObject();
-
-                                Artifact parentArtNode =
-                                    pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true);
-
-                                if (parentArtNode != null) {
-                                    Map<String, Object> artifact = new HashMap<>();
-                                    artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
-                                    artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
-                                    artifact.put("initialcommit", parentArtNode.getInitialCommit());
-                                    artifact.put("lastcommit", parentArt.get(Sjm.COMMITID).getAsString());
-                                    artifactInserts.add(artifact);
-                                }
+                        try (ResultSet rs = parentStatement.executeQuery()) {
+                            String parentCommit = null;
+                            String parentRefId = null;
+                            if (rs.next()) {
+                                parentCommit = rs.getString(1);
+                                parentRefId = rs.getString(2).equals("") ? "master" : rs.getString(2);
                             }
-                            pgh.setWorkspace(refId);
-                            if (!artifactInserts.isEmpty()) {
-                                pgh.runBatchQueries(artifactInserts, "artifacts");
+
+                            if (parentCommit != null) {
+                                pgh.setWorkspace(parentRefId);
+                                JsonArray parentArtifacts = getArtifactsAtCommit(parentCommit, pgh, eh, projectId);
+                                List<Map<String, Object>> artifactInserts = new ArrayList<>();
+                                for (int i = 0; i < parentArtifacts.size(); i++) {
+                                    JsonObject parentArt = parentArtifacts.get(i).getAsJsonObject();
+
+                                    Artifact parentArtNode =
+                                        pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true);
+
+                                    if (parentArtNode != null) {
+                                        Map<String, Object> artifact = new HashMap<>();
+                                        artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
+                                        artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
+                                        artifact.put("initialcommit", parentArtNode.getInitialCommit());
+                                        artifact.put("lastcommit", parentArt.get(Sjm.COMMITID).getAsString());
+                                        artifactInserts.add(artifact);
+                                    }
+                                }
+                                pgh.setWorkspace(refId);
+                                if (!artifactInserts.isEmpty()) {
+                                    pgh.runBatchQueries(artifactInserts, "artifacts");
+                                }
                             }
                         }
                     }
@@ -372,12 +375,13 @@ public class Migrate_3_3_0 {
                                     String query = String.format(
                                         "UPDATE \"artifacts%s\" SET elasticId = ?, lastcommit = ?, deleted = ? WHERE sysmlId = ?",
                                         ref.first.equals("master") ? "" : ref.first);
-                                    PreparedStatement statement = pgh.prepareStatement(query);
-                                    statement.setString(1, elasticId);
-                                    statement.setString(2, commitId);
-                                    statement.setBoolean(3, false);
-                                    statement.setString(4, artifactId);
-                                    statement.execute();
+                                    try (PreparedStatement statement = pgh.prepareStatement(query)) {
+                                        statement.setString(1, elasticId);
+                                        statement.setString(2, commitId);
+                                        statement.setBoolean(3, false);
+                                        statement.setString(4, artifactId);
+                                        statement.execute();
+                                    }
                                 }
 
                                 Map<String, String> commitFromDb =

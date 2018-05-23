@@ -226,6 +226,8 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         String subject =
             String.format("Branch %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(), this.timer);
 
+        logger.info(subject);
+
         if (author != null) {
             try {
 
