@@ -278,9 +278,9 @@ public class Migrate_3_3_0 {
 
                                 if (!baseId.startsWith("img_")) {
                                     mdArtifacts.add(baseId);
-                                    artifactId = baseId;
+                                    artifactId = baseId + "_" + extension;
                                 } else {
-                                    artifactId = name;
+                                    artifactId = baseId;
                                 }
 
                                 String checkQuery =
