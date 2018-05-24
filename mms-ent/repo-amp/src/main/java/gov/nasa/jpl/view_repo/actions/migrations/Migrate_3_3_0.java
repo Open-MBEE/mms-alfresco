@@ -278,7 +278,7 @@ public class Migrate_3_3_0 {
 
                                 if (!baseId.startsWith("img_")) {
                                     mdArtifacts.add(baseId);
-                                    artifactId = baseId + "_" + extension;
+                                    artifactId = baseId;
                                 } else {
                                     artifactId = name;
                                 }
