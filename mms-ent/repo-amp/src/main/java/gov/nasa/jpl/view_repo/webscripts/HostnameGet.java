@@ -96,8 +96,8 @@ public class HostnameGet extends AbstractJavaWebScript {
 
 	private String alfrescoUrl;
 	public String getAlfrescoUrl(){
-		if(alfrescoUrl==null || alfrescoUrl.isEmpty()){
-			if(this.alfrescoHost.compareToIgnoreCase(LOCAL_HOST)==0 || this.alfrescoHost.compareToIgnoreCase(LOCAL_HOST_IP)==0){
+		if(alfrescoUrl==null || alfrescoUrl.isEmpty() || alfrescoPort > 0) {
+            if(this.alfrescoHost.compareToIgnoreCase(LOCAL_HOST)==0 || this.alfrescoHost.compareToIgnoreCase(LOCAL_HOST_IP)==0){
 				alfrescoUrl = this.alfrescoProtocol + "://" + this.alfrescoHost + ":" + alfrescoPort;
 			}
 			else{
