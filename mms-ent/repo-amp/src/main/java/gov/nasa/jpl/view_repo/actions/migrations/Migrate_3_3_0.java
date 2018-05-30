@@ -6,7 +6,9 @@ import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.db.Artifact;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.GraphInterface;
+import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
@@ -217,6 +219,30 @@ public class Migrate_3_3_0 {
                                 if (!artifactInserts.isEmpty()) {
                                     pgh.runBatchQueries(artifactInserts, "artifacts");
                                 }
+                            }
+                        }
+                    }
+
+                    // Insert part property type childview edges
+                    List<Node> latestPropertyNodes = pgh.getNodesByType(GraphInterface.DbNodeTypes.PROPERTY);
+
+                    if (latestPropertyNodes.size() > 0) {
+                        List<String> propertyElasticIds = new ArrayList<>();
+                        for (int i = 0; i < latestPropertyNodes.size(); i++) {
+                            Node latestPropertyNode = latestPropertyNodes.get(i);
+                            if (!latestPropertyNode.getElasticId().isEmpty()) {
+                                propertyElasticIds.add(latestPropertyNode.getElasticId());
+                            }
+                        }
+
+                        JsonArray propertyElasticElements = eh.getElementsFromElasticIds(propertyElasticIds, projectId);
+                        for (int i = 0; i < propertyElasticElements.size(); i++) {
+                            JsonObject propertyNodeElastic = propertyElasticElements.get(i).getAsJsonObject();
+                            if (CommitUtil.isPartProperty(propertyNodeElastic) && propertyNodeElastic.has(Sjm.TYPEID)
+                                && propertyNodeElastic.get(Sjm.TYPEID) != null && !propertyNodeElastic.get(Sjm.TYPEID)
+                                .getAsString().isEmpty()) {
+                                pgh.insertEdge(propertyNodeElastic.get(Sjm.SYSMLID).getAsString(),
+                                    propertyNodeElastic.get(Sjm.TYPEID).getAsString(), GraphInterface.DbEdgeTypes.CHILDVIEW);
                             }
                         }
                     }
