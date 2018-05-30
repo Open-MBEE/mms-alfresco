@@ -239,7 +239,7 @@ public class Migrate_3_3_0 {
                         for (int i = 0; i < propertyElasticElements.size(); i++) {
                             JsonObject propertyNodeElastic = propertyElasticElements.get(i).getAsJsonObject();
                             if (CommitUtil.isPartProperty(propertyNodeElastic) && propertyNodeElastic.has(Sjm.TYPEID)
-                                && propertyNodeElastic.get(Sjm.TYPEID) != null && !propertyNodeElastic.get(Sjm.TYPEID)
+                                && !propertyNodeElastic.get(Sjm.TYPEID).isJsonNull() && !propertyNodeElastic.get(Sjm.TYPEID)
                                 .getAsString().isEmpty()) {
                                 pgh.insertEdge(propertyNodeElastic.get(Sjm.SYSMLID).getAsString(),
                                     propertyNodeElastic.get(Sjm.TYPEID).getAsString(), GraphInterface.DbEdgeTypes.CHILDVIEW);
