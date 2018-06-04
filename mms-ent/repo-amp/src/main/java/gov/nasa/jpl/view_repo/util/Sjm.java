@@ -167,4 +167,7 @@ public class Sjm {
         PROPERTYSIDS.put("none", "_15_0_be00301_1199378032543_992832_3096");
         PROPERTYSIDS.put("shared", "_15_0_be00301_1199378020836_340320_3071");
     }
+
+    public static final String VALUEPROPERTY = "_12_0_be00301_1164123483951_695645_2041";
+    public static final String CONSTRAINTPROPERTY = "_11_5EAPbeta_be00301_1147767840464_372327_467";
 }

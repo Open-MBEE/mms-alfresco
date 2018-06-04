@@ -171,17 +171,22 @@ public class CommitUtil {
         if (!e.has(Sjm.TYPE) || !e.getString(Sjm.TYPE).equals("Property")) {
             return false;
         }
-        JSONArray appliedS = e.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
-        if (appliedS == null || appliedS.length() == 0) {
+        if (!e.has(Sjm.AGGREGATION) || e.getString(Sjm.AGGREGATION).equals("none")) {
             return false;
         }
-        for (int i = 0; i < appliedS.length(); i++) {
-            String s = appliedS.getString(i);
-            if (Sjm.PROPERTYSIDS.containsValue(s)) {
-                return true;
+        if (e.has(Sjm.DEFAULTVALUE) && !e.getString(Sjm.DEFAULTVALUE).equals(JSONObject.NULL)) {
+            return false;
+        }
+        JSONArray appliedS = e.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
+        if (appliedS != null) {
+            for (int i = 0; i < appliedS.length(); i++) {
+                String s = appliedS.getString(i);
+                if (s.equals(Sjm.VALUEPROPERTY) || s.equals(Sjm.CONSTRAINTPROPERTY)) {
+                    return false;
+                }
             }
         }
-        return false;
+        return true;
     }
 
     private static boolean processDeltasForDb(JSONObject delta, String projectId, String refId, JSONObject jmsPayload,
