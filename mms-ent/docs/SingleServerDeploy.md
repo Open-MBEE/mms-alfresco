@@ -40,7 +40,7 @@ Install MMS on CentOS 7.x
 
 ## Install Postgresql 9.3.x (Optional if using the Alfresco installer which includes Postgresql)
 1. Run the following commands as root:
-    * `yum -y https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm`
+    * `yum -y install https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm`
     * `yum -y install postgresql93 postgresql93-server postgresql93-contrib postgresql93-libs`
     * `systemctl enable postgresql-9.3`
     * `postgresql93-setup initdb`
