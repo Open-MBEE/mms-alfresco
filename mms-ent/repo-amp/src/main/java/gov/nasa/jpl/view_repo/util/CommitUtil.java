@@ -13,12 +13,10 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.StampedLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -174,7 +172,7 @@ public class CommitUtil {
         if (!e.has(Sjm.AGGREGATION) || e.getString(Sjm.AGGREGATION).equals("none")) {
             return false;
         }
-        if (e.has(Sjm.DEFAULTVALUE) && !e.getString(Sjm.DEFAULTVALUE).equals(JSONObject.NULL)) {
+        if (e.has(Sjm.DEFAULTVALUE) && e.optJSONObject(Sjm.DEFAULTVALUE) != null) {
             return false;
         }
         JSONArray appliedS = e.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
