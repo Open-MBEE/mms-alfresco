@@ -96,6 +96,7 @@ public class Sjm {
     public static final String PACKAGEIMPORTIDS = "packageImportIds";
     public static final String PACKAGEMERGEIDS = "packageMergeIds";
     public static final String POWERTYPEEXTENTIDS = "powertypeExtentIds";
+    public static final String PROPERTYID = "propertyId";
     public static final String PROPERTYTYPE = "propertyType";
     public static final String PROFILEAPPLICATIONIDS = "profileApplicationIds";
     public static final String QUALIFIERIDS = "qualifierIds";
