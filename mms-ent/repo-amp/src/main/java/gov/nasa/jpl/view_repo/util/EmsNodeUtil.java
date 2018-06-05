@@ -749,6 +749,7 @@ public class EmsNodeUtil {
                                 JsonObject childView = new JsonObject();
                                 childView.add(Sjm.SYSMLID, ownedAttribute.get(Sjm.TYPEID));
                                 childView.add(Sjm.AGGREGATION, ownedAttribute.get(Sjm.AGGREGATION));
+                                childView.add(Sjm.PROPERTYID, ownedAttribute.get(Sjm.SYSMLID));
                                 childViews.add(childView);
                             }
                         }
