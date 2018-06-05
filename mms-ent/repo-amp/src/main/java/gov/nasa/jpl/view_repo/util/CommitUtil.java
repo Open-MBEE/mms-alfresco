@@ -13,12 +13,10 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.StampedLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -171,17 +169,22 @@ public class CommitUtil {
         if (!e.has(Sjm.TYPE) || !e.getString(Sjm.TYPE).equals("Property")) {
             return false;
         }
-        JSONArray appliedS = e.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
-        if (appliedS == null || appliedS.length() == 0) {
+        if (!e.has(Sjm.AGGREGATION) || e.getString(Sjm.AGGREGATION).equals("none")) {
             return false;
         }
-        for (int i = 0; i < appliedS.length(); i++) {
-            String s = appliedS.getString(i);
-            if (Sjm.PROPERTYSIDS.containsValue(s)) {
-                return true;
+        if (e.has(Sjm.DEFAULTVALUE) && e.optJSONObject(Sjm.DEFAULTVALUE) != null) {
+            return false;
+        }
+        JSONArray appliedS = e.optJSONArray(Sjm.APPLIEDSTEREOTYPEIDS);
+        if (appliedS != null) {
+            for (int i = 0; i < appliedS.length(); i++) {
+                String s = appliedS.getString(i);
+                if (s.equals(Sjm.VALUEPROPERTY) || s.equals(Sjm.CONSTRAINTPROPERTY)) {
+                    return false;
+                }
             }
         }
-        return false;
+        return true;
     }
 
     private static boolean processDeltasForDb(JSONObject delta, String projectId, String refId, JSONObject jmsPayload,
