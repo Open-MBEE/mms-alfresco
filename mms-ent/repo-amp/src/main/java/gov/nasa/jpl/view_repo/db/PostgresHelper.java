@@ -2297,7 +2297,7 @@ public class PostgresHelper implements GraphInterface {
         closeConfig();
     }
 
-    private String sanitizeRefId(String refId) {
+    public static String sanitizeRefId(String refId) {
         return StringEscapeUtils.escapeSql(refId.replace("-", "_").replaceAll("\\s+", ""));
     }
 
