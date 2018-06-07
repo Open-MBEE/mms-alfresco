@@ -597,8 +597,7 @@ public class EmsNodeUtil {
             boolean updated = false;
             if (!added) {
                 if (!overwriteJson) {
-                    diffUpdateJson(o, existingMap.get(sysmlid));
-                    updated = isUpdated(o, existingMap.get(sysmlid));
+                    updated = diffUpdateJson(o, existingMap.get(sysmlid)) && isUpdated(o, existingMap.get(sysmlid));
                 } else {
                     updated = true;
                 }
