@@ -183,12 +183,6 @@ public class Migrate_3_3_0 {
 
                     pgh.setWorkspace(refId);
 
-                    if (isTag) {
-                        pgh.execQuery(String
-                            .format("GRANT INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s, artifacts%1$s FROM %2$s",
-                                PostgresHelper.sanitizeRefId(refId), EmsConfig.get("pg.user")));
-                    }
-
                     if (!ref.first.equals("master")) {
                         pgh.execUpdate(String.format(
                             "CREATE TABLE IF NOT EXISTS artifacts%s (LIKE artifacts INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES)",
@@ -230,6 +224,12 @@ public class Migrate_3_3_0 {
                                 }
                             }
                         }
+                    }
+
+                    if (isTag) {
+                        pgh.execQuery(String
+                            .format("GRANT INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s, artifacts%1$s FROM %2$s",
+                                PostgresHelper.sanitizeRefId(refId), EmsConfig.get("pg.user")));
                     }
 
                     // Insert part property type childview edges
