@@ -9,6 +9,7 @@ import gov.nasa.jpl.view_repo.db.GraphInterface;
 import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
+import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
@@ -175,8 +176,10 @@ public class Migrate_3_3_0 {
                     Set<String> artifactsToUpdate = new HashSet<>();
 
                     String refId = ref.first.replace("_", "-");
+                    boolean isTag = pgh.isTag(refId);
 
                     logger.info("RefId: " + refId);
+                    logger.info("isTag" + isTag);
 
                     pgh.setWorkspace(refId);
 
@@ -221,6 +224,12 @@ public class Migrate_3_3_0 {
                                 }
                             }
                         }
+                    }
+
+                    if (isTag) {
+                        pgh.execQuery(String
+                            .format("GRANT INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s, artifacts%1$s FROM %2$s",
+                                PostgresHelper.sanitizeRefId(refId), EmsConfig.get("pg.user")));
                     }
 
                     // Insert part property type childview edges
@@ -423,6 +432,10 @@ public class Migrate_3_3_0 {
                                 artifactsToUpdate.add(latestArtifact.getElasticId());
                             }
                         }
+                    }
+
+                    if (isTag) {
+                        pgh.setAsTag(refId);
                     }
 
                     String refScriptToRun = String.format(refScript, Sjm.INREFIDS, refId);

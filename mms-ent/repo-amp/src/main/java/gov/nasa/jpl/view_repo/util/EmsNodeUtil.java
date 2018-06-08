@@ -597,8 +597,7 @@ public class EmsNodeUtil {
             boolean updated = false;
             if (!added) {
                 if (!overwriteJson) {
-                    diffUpdateJson(o, existingMap.get(sysmlid));
-                    updated = isUpdated(o, existingMap.get(sysmlid));
+                    updated = diffUpdateJson(o, existingMap.get(sysmlid)) && isUpdated(o, existingMap.get(sysmlid));
                 } else {
                     updated = true;
                 }
@@ -1546,8 +1545,9 @@ public class EmsNodeUtil {
                         logger.debug("Is Equivalent: " + isEquivalent((Map<String, Object>) value1,
                             (Map<String, Object>) value2));
                     }
-                    if (!isEquivalent((Map<String, Object>) value1, (Map<String, Object>) value2))
+                    if (!isEquivalent((Map<String, Object>) value1, (Map<String, Object>) value2)) {
                         return false;
+                    }
                 }
             } else if (value1 instanceof List) {
                 if (!(value2 instanceof List)) {
@@ -1556,8 +1556,9 @@ public class EmsNodeUtil {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Is Equivalent: " + isEquivalent((List<Object>) value1, (List<Object>) value2));
                     }
-                    if (!isEquivalent((List<Object>) value1, (List<Object>) value2))
+                    if (!isEquivalent((List<Object>) value1, (List<Object>) value2)) {
                         return false;
+                    }
                 }
             } else if (value1 instanceof String) {
                 if (!(value2 instanceof String)) {
@@ -1566,8 +1567,20 @@ public class EmsNodeUtil {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Is Equivalent: " + value1.equals(value2));
                     }
-                    if (!value1.equals(value2))
+                    if (!value1.equals(value2)) {
                         return false;
+                    }
+                }
+            } else if (value1 instanceof Number) {
+                if (!(value2 instanceof Number)) {
+                    return false;
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Is Equivalent: " + value1.equals(value2));
+                    }
+                    if (!value1.equals(value2)) {
+                        return false;
+                    }
                 }
             } else if (value1 instanceof Boolean) {
                 if (!(value2 instanceof Boolean)) {
@@ -1576,8 +1589,9 @@ public class EmsNodeUtil {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Is Equivalent: " + value1 != value2);
                     }
-                    if (value1 != value2)
+                    if (value1 != value2) {
                         return false;
+                    }
                 }
             } else {
                 if (logger.isDebugEnabled()) {
@@ -1593,29 +1607,21 @@ public class EmsNodeUtil {
 
     private static boolean isEquivalent(List<Object> list1, List<Object> list2) {
         if (list1.size() != list2.size()) {
-            List<Object> tester;
-            List<Object> testing;
-            if (list1.size() > list2.size()) {
-                testing = list1;
-                tester = list2;
-            } else {
-                testing = list2;
-                tester = list1;
-            }
-
-            for (Object element : testing) {
-                if (!tester.contains(element)) {
-                    return false;
-                }
-            }
-            return true;
+            return false;
         }
 
-        for (Object element : list1) {
-            if (!list2.contains(element)) {
+        for (int i = 0; i < list1.size(); i++) {
+            Map<String, Object> toTestMap = new HashMap<>();
+            Map<String, Object> testAgainstMap = new HashMap<>();
+
+            toTestMap.put("fromList", list1.get(i));
+            testAgainstMap.put("fromList", list2.get(i));
+
+            if (!isEquivalent(toTestMap, testAgainstMap)) {
                 return false;
             }
         }
+
         return true;
     }
 
