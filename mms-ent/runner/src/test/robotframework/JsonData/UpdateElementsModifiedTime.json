@@ -1,10 +1,10 @@
 {
-    "comment": "This is a commit message",
+    "comment": "This is a commit message for a commit with conflict ",
     "elements": [
         {
             "documentation": "something",
             "id": "300",
-            "name": "this name is updated",
+            "name": "this name is updated for _modified test",
             "ownerId": "holding_bin_PA",
             "type": "Property",
             "isDerived": false,
@@ -13,12 +13,13 @@
                     "type": "LiteralString",
                     "string": "dlam_string"
                 }
-            ]
+            ],
+            "_modified": "2017-01-01T00:00:00.000-0700"
         },
         {
             "documentation": "else",
             "id": "301",
-            "name": "this name is also updated",
+            "name": "this name is also updated for _modified test",
             "ownerId": "300",
             "type": "Property",
             "isDerived": false,
@@ -27,21 +28,8 @@
                     "type": "LiteralString",
                     "string": "dlam_string"
                 }
-            ]
-        },
-        {
-            "documentation": "talk",
-            "id": "303",
-            "isDerived": false,
-            "name": "three hundred and three is also updated",
-            "ownerId": "302",
-            "type": "Property",
-            "value": [
-                {
-                    "real": 3.3,
-                    "type": "Real"
-                }
-            ]
+            ],
+            "_modified": "2017-01-01T00:00:00.000-0700"
         }
     ]
 }

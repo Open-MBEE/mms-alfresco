@@ -66,7 +66,7 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 
 ### 2. Install and Configure PostgreSQL
 *   Download PostgreSQL 9.x
-    * If using PostgreSQL as the database for Alfresco, PostgreSQL 9.3 is the latest supported version
+    * If using PostgreSQL as the database for Alfresco, PostgreSQL 9.4 is the latest supported version
 *   Install PostgreSQL
 *   Start PostgreSQL server
 *   Connect to the PostgreSQL server and:
@@ -239,7 +239,7 @@ curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin -X
 ### Robotframework test suite
 Robot tests can be run with the following maven profiles in the mms-ent directory:
 ```
-./mvnw install -Ddependency.surf.version=6.3 -Prun,robot-tests
+./mvnw install -Prun,robot-tests
 ```
 Please note that tests should be run on a clean instance, therefore, it may be helpful to run clean.sh before running the tests
 

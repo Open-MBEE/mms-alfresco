@@ -135,10 +135,39 @@ UpdateElements
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
+UpdateElementsNumbers
+	[Documentation]	 "Update an existing element.  Creates versions of a element."
+	[Tags]			  crud		critical		0122
+	${post_json} =		Get File		${CURDIR}/../../JsonData/UpdateElementsNumbers.json
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
+    Sleep               ${POST_DELAY_INDEXING}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
 InvalidUpdateElement
 	[Documentation]	 "Update an existing element with no changes. Should ignore commit."
 	[Tags]			  crud		critical		0111
 	${post_json} =		Get File		${CURDIR}/../../JsonData/UpdateElements.json
+	${elementa} =		Get	url=${ROOT}/projects/PA/refs/master/elements/300		headers=&{REQ_HEADER}
+    ${commitIda} =		Get Commit From Json		${elementa.json()}
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+	Should Be Equal		${result.status_code}		${200}
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+	Sleep				${POST_DELAY_INDEXING}
+	${elementb} =		Get	url=${ROOT}/projects/PA/refs/master/elements/300		headers=&{REQ_HEADER}
+    ${commitIdb} =		Get Commit From Json		${elementb.json()}
+	Should Be Equal		${commitIda}		${commitIdb}
+
+ModifiedTimeElement
+	[Documentation]	 "Update an existing element with no changes. Should ignore commit."
+	[Tags]			  crud		critical		0121
+	${post_json} =		Get File		${CURDIR}/../../JsonData/UpdateElementsModifiedTime.json
 	${elementa} =		Get	url=${ROOT}/projects/PA/refs/master/elements/300		headers=&{REQ_HEADER}
     ${commitIda} =		Get Commit From Json		${elementa.json()}
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
