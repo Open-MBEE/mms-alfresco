@@ -9,7 +9,7 @@
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
         <artifactId>mms-ent</artifactId>
-        <version>3.2.5</version>
+        <version>3.3.0-RC1</version>
     </parent>
 
     <!--
@@ -21,11 +21,25 @@
         <!-- Defines the target WAR artifactId to run this amp, only used with the -Pamp-to-war switch
              Allowed values: alfresco | share. In this case it's configured to use OOTB share -->
         <app.amp.client.war.artifactId>share</app.amp.client.war.artifactId>
-
+        <dependency.surf.version>6.3</dependency.surf.version>
         <!-- Defines the log level used in log4j.properties -->
         <app.log.root.level>WARN</app.log.root.level>
     </properties>
-
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.alfresco.surf</groupId>
+                <artifactId>spring-surf</artifactId>
+                <version>${dependency.surf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco.surf</groupId>
+                <artifactId>spring-surf-api</artifactId>
+                <version>${dependency.surf.version}</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <!-- Following dependencies are needed for compiling Java code in src/main/java;
          <scope>provided</scope> is inherited for each of the following;
          for more info, please refer to alfresco-platform-distribution POM -->

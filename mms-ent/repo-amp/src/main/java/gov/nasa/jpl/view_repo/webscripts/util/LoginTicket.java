@@ -28,11 +28,12 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.TicketComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonObject;
 
 import static gov.nasa.jpl.view_repo.util.NodeUtil.services;
 import gov.nasa.jpl.view_repo.util.Sjm;
@@ -73,10 +74,10 @@ public class LoginTicket extends DeclarativeWebScript
         Map<String, Object> model = new HashMap<>(1, 1.0f);
         //model.put("ticket",  ticket);
 
-        JSONObject result = new JSONObject();
+        JsonObject result = new JsonObject();
         try {
             username = ticketComponent.validateTicket(ticket);
-            result.put("username", username);
+            result.addProperty("username", username);
 
             // Needed to access the personService
             AuthenticationUtil.setRunAsUser( "admin" );
@@ -84,13 +85,13 @@ public class LoginTicket extends DeclarativeWebScript
             NodeRef user = serv.getPerson(username);
 
             PersonService.PersonInfo personInfo = services.getPersonService().getPerson(user);
-            result.put("first",personInfo.getFirstName());
-            result.put("last",personInfo.getLastName());
+            result.addProperty("first",personInfo.getFirstName());
+            result.addProperty("last",personInfo.getLastName());
         } catch (AuthenticationException e) {
             //status.setRedirect(true);
             status.setCode(HttpServletResponse.SC_NOT_FOUND);
             status.setMessage("Ticket not found");
-            result.put("message", "Ticket not found");
+            result.addProperty("message", "Ticket not found");
         }
 
         model.put(Sjm.RES, result.toString() );

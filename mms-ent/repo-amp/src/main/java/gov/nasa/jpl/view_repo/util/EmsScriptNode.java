@@ -27,21 +27,13 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.NavigableMap;
 import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptVersion;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -58,10 +50,6 @@ import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
 import org.springframework.extensions.webscripts.Status;
 
-import gov.nasa.jpl.mbee.util.ClassUtils;
-import gov.nasa.jpl.mbee.util.HasId;
-import gov.nasa.jpl.mbee.util.HasName;
-import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript;
 
 /**
@@ -69,8 +57,7 @@ import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript;
  *
  * @author cinyoung
  */
-public class EmsScriptNode extends ScriptNode
-    implements HasName<String>, HasId<String> {
+public class EmsScriptNode extends ScriptNode {
     private static final long serialVersionUID = 9132455162871185541L;
 
     public static final String ADMIN_USER_NAME = "admin";
@@ -113,58 +100,6 @@ public class EmsScriptNode extends ScriptNode
         this(nodeRef, services);
         setResponse(response);
     }
-
-    /**
-     * Gets the version history
-     *
-     * This is needed b/c the ScriptNode getVersionHistory() generates a NPE
-     *
-     * @return version history
-     */
-    public Object[] getEmsVersionHistory() {
-
-        if (this.myVersions == null && getIsVersioned()) {
-            VersionHistory history = this.services.getVersionService().getVersionHistory(this.nodeRef);
-            if (history != null) {
-                Collection<Version> allVersions = history.getAllVersions();
-                Object[] versions = new Object[allVersions.size()];
-                int i = 0;
-                for (Version version : allVersions) {
-                    versions[i++] = new ScriptVersion(version, this.services, this.scope);
-                }
-                this.myVersions = versions;
-            }
-        }
-        return this.myVersions;
-
-    }
-
-    /**
-     * Gets the version history
-     *
-     * This is needed b/c the ScriptNode getVersionHistory() generates a NPE
-     *
-     * @return version history
-     */
-    public NavigableMap<Long, Version> getVersionPropertyHistory() {
-
-        if (getIsVersioned()) {
-            VersionHistory history = this.services.getVersionService().getVersionHistory(this.nodeRef);
-            if (history != null) {
-                // This is ordered by the label or version number
-                Collection<Version> allVersions = history.getAllVersions();
-                NavigableMap<Long, Version> versions = new TreeMap<>();
-                for (Version version : allVersions) {
-                    versions.put(version.getFrozenModifiedDate().getTime(), version);
-                }
-
-                return versions;
-            }
-        }
-        return null;
-    }
-
-
 
     /**
      * Create a version of this document. Note: this will add the cm:versionable aspect.
@@ -231,20 +166,6 @@ public class EmsScriptNode extends ScriptNode
         return folder;
     }
 
-    protected void updateBogusProperty(String type) {
-        // Make sure the aspect change makes it into the version history by
-        // updating a bogus property.
-        String bogusPropName = null;
-        if (Acm.ASPECTS_WITH_BOGUS_PROPERTY.containsKey(type)) {
-            bogusPropName = Acm.ASPECTS_WITH_BOGUS_PROPERTY.get(type);
-        }
-        if (bogusPropName == null)
-            return;
-        Random rand = new Random();
-        int randNum = rand.nextInt(10000000);
-        setProperty(Acm.ASPECTS_WITH_BOGUS_PROPERTY.get(type), randNum);
-    }
-
     /**
      * Check whether or not a node has a property, update or create as necessary
      *
@@ -275,7 +196,7 @@ public class EmsScriptNode extends ScriptNode
             // property, but we want
             // the modification time to be altered in this case too:
             if (oldValue == null && value == null) {
-                setProperty(Acm.ACM_LAST_MODIFIED, new Date(), false, 0);
+                setProperty("cm:modified", new Date(), false, 0);
             }
             if (!changed) {
                 logger.warn(
@@ -285,32 +206,6 @@ public class EmsScriptNode extends ScriptNode
         }
 
         return false;
-    }
-
-    public static String getMimeType(String type) {
-        Field[] fields = ClassUtils.getAllFields(MimetypeMap.class);
-        for (Field f : fields) {
-            if (f.getName().startsWith("MIMETYPE")) {
-                if (ClassUtils.isStatic(f) && f.getName().substring(8).toLowerCase().contains(type.toLowerCase())) {
-                    try {
-                        return (String) f.get(null);
-                    } catch (IllegalArgumentException e) {
-                    } catch (IllegalAccessException e) {
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-
-
-    public static long getChecksum(byte[] data) {
-        long cs = 0;
-        Checksum checksum = new CRC32();
-        checksum.update(data, 0, data.length);
-        cs = checksum.getValue();
-        return cs;
     }
 
     /**
@@ -360,43 +255,12 @@ public class EmsScriptNode extends ScriptNode
         return (String) getProperty(Acm.CM_NAME);
     }
 
-    public String getSysmlId() {
-        String id = (String) getProperty(Acm.ACM_ID);
-        if (id == null) {
-            id = getName();
-        }
-        return id;
-    }
-
     @Override public EmsScriptNode getParent() {
         ScriptNode myParent = super.getParent();
         if (myParent == null)
             return null;
         return new EmsScriptNode(myParent.getNodeRef(), services, response);
     }
-
-    public Version getCurrentVersion() {
-        VersionService versionService = services.getVersionService();
-
-        Version currentVersion = null;
-        if (versionService != null) {
-            try {
-                currentVersion = versionService.getCurrentVersion(nodeRef);
-            } catch (Throwable t1) {
-                try {
-                    currentVersion = versionService.getCurrentVersion(nodeRef);
-                } catch (Throwable t2) {
-                    logger.error("1. Got exception in getCurrentVersion(): " + t1.getLocalizedMessage());
-                    t1.printStackTrace();
-                    logger.error(
-                        "2. Tried again and got another exception in getCurrentVersion(): " + t2.getLocalizedMessage());
-                    t2.printStackTrace();
-                }
-            }
-        }
-        return currentVersion;
-    }
-
 
     /**
      * Getting a noderef property needs to be contextualized by the workspace and time This works
@@ -446,7 +310,12 @@ public class EmsScriptNode extends ScriptNode
     @Override public Map<String, Object> getProperties() {
 
         if (useFoundationalApi) {
-            return Utils.toMap(services.getNodeService().getProperties(nodeRef), String.class, Object.class);
+            Map<String, Object> result = new HashMap<>();
+            Map<QName, Serializable> map = services.getNodeService().getProperties(nodeRef);
+            for (Map.Entry<QName, Serializable> entry: map.entrySet()) {
+                result.put(entry.getKey().toString(), entry.getValue());
+            }
+            return result;
         } else {
             return super.getProperties();
         }
@@ -488,9 +357,6 @@ public class EmsScriptNode extends ScriptNode
         if (useFoundationalApi) {
             try {
                 services.getNodeService().setProperty(nodeRef, createQName(acmType), value);
-                if (acmType.equals(Acm.ACM_NAME)) {
-                    renamed = true;
-                }
             } catch (Exception e) {
                 // This should never happen!
                 success = false;
@@ -498,10 +364,6 @@ public class EmsScriptNode extends ScriptNode
         } else {
             getProperties().put(acmType, value);
             save();
-            if (acmType.equals(Acm.ACM_NAME)) {
-                renamed = true;
-                // removeChildrenFromJsonCache();
-            }
         }
         return success;
     }
@@ -547,10 +409,7 @@ public class EmsScriptNode extends ScriptNode
                 }
 
                 // Get sysmlid
-                Object property = getProperty(Acm.ACM_ID);
-                if (property == null) {
-                    property = getProperty(Acm.CM_NAME);
-                }
+                Object property = getProperty(Acm.CM_NAME);
 
                 // Return to original running user.
                 if (changeUser) {
@@ -601,6 +460,10 @@ public class EmsScriptNode extends ScriptNode
      */
     @Override public boolean equals(Object obj) {
         return equals(obj, true);
+    }
+
+    @Override public int hashCode() {
+        return parent.hashCode();
     }
 
     /**
@@ -671,13 +534,6 @@ public class EmsScriptNode extends ScriptNode
         return super.exists();
     }
 
-    public boolean isDeleted() {
-        if (super.exists()) {
-            return hasAspect("ems:Deleted");
-        }
-        return false;
-    }
-
     public ServiceRegistry getServices() {
         return services;
     }
@@ -703,9 +559,6 @@ public class EmsScriptNode extends ScriptNode
 
     @Override public boolean removeAspect(String type) {
         if (hasAspect(type)) {
-
-            updateBogusProperty(type);
-
             return super.removeAspect(type);
         }
         return true;
@@ -740,9 +593,6 @@ public class EmsScriptNode extends ScriptNode
             log("no write permissions to delete workpsace " + getName());
             return;
         }
-
-        // Add the delete aspect to mark as "deleted"
-        addAspect("ems:Deleted");
     }
 
 }

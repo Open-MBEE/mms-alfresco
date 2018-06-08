@@ -52,6 +52,8 @@ public class Sjm {
     public static final String ORGS = "orgs";
     public static final String DOCUMENTS = "documents";
     public static final String COMMITS = "commits";
+    public static final String REJECTED = "rejected";
+    public static final String FAILED = "failed";
 
     public static final String AGGREGATION = "aggregation";
     public static final String APPLIEDSTEREOTYPEINSTANCEID = "appliedStereotypeInstanceId";
@@ -131,7 +133,7 @@ public class Sjm {
     public static final String CREATOR = "_creator";
     public static final String EDITABLE = "_editable";
     public static final String ELASTICID = "_elasticId";
-    public static final String ISSITE = "_isSite";
+    public static final String ISGROUP = "_isGroup";
     public static final String MODIFIED = "_modified";
     public static final String MODIFIER = "_modifier";
     public static final String MOUNTS = "_mounts";
@@ -147,6 +149,16 @@ public class Sjm {
     public static final String SLOTS = "_slots";
     public static final String TIMESTAMP = "_timestamp";
     public static final String INREFIDS = "_inRefIds";
+
+    public static final String CHECKSUM = "checksum";
+    public static final String COMMENT = "comment";
+    public static final String ARTIFACTS = "artifacts";
+    public static final String CONTENTTYPE = "contentType";
+    public static final String ARTIFACTLOCATION = "artifactLocation";
+    public static final String ELEMENT = "Element";
+    public static final String ARTIFACT = "Artifact";
+    public static final String PROFILES = "profile";
+
 
     public static final Map<String, String> STEREOTYPEIDS;
     static {

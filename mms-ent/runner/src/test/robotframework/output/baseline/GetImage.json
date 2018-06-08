@@ -1,0 +1,14 @@
+{
+    "artifacts": [
+        {
+            "_creator": "admin",
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "checksum": "bbca8cc79a64733ad4896cbdc5c74e68",
+            "contentType": "image/png",
+            "id": "mounts",
+            "type": "Artifact"
+        }
+    ]
+}

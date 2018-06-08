@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -17,13 +18,17 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
@@ -51,6 +56,8 @@ public class ProjectDelete extends AbstractJavaWebScript {
 
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
+        JsonArray projects = new JsonArray();
         printHeader(user, logger, req);
         Timer timer = new Timer();
 
@@ -60,6 +67,10 @@ public class ProjectDelete extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
 
                 String projectId = getProjectId(req);
+                JsonObject project = emsNodeUtil.getProject(projectId);
+                if (project != null) {
+                    projects.add(project);
+                }
 
                 // Delete the site from share
                 deleteProjectSiteFolder(projectId);
@@ -75,13 +86,24 @@ public class ProjectDelete extends AbstractJavaWebScript {
                 dropDatabase(projectId);
                 deleteProjectFromProjectsTable(projectId);
             }
-        } catch (JSONException e) {
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response");
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
-        model.put(Sjm.RES, createResponseJson());
+        if(projects.size() == 0){
+            model.put(Sjm.RES, createResponseJson());
+        } else {
+            JsonObject json = new JsonObject();
+            json.add(Sjm.PROJECTS, projects);
+            if (prettyPrint) {
+            	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                model.put(Sjm.RES, gson.toJson(json));
+            } else {
+                model.put(Sjm.RES, json);
+            }
+        }
         status.setCode(responseStatus.getCode());
 
         printFooter(user, logger, timer);
@@ -104,7 +126,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
      */
     protected ArrayList<String> getCommitElasticIDs(String projectId) {
         ArrayList<String> commitIds = new ArrayList<>();
-        logger.debug("Getting Commit Elastic IDs for \n" + projectId);
+        logger.debug("Getting Commit Elastic IDs for " + projectId);
 
         // Instantiate and configure pgh.
         pgh = new PostgresHelper();
@@ -148,10 +170,8 @@ public class ProjectDelete extends AbstractJavaWebScript {
 
         try {
             ElasticHelper elasticHelper = new ElasticHelper();
-            elasticHelper.deleteElasticElements("_projectId", projectId);
+            elasticHelper.deleteIndex(projectId);
         } catch (IOException e) {
-            logger.error(e.getMessage());
-        } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }

@@ -1,0 +1,35 @@
+{
+    "comment": "This is a commit message for a commit with conflict ",
+    "elements": [
+        {
+            "documentation": "something",
+            "id": "300",
+            "name": "this name is updated for _modified test",
+            "ownerId": "holding_bin_PA",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ],
+            "_modified": "2017-01-01T00:00:00.000-0700"
+        },
+        {
+            "documentation": "else",
+            "id": "301",
+            "name": "this name is also updated for _modified test",
+            "ownerId": "300",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ],
+            "_modified": "2017-01-01T00:00:00.000-0700"
+        }
+    ]
+}

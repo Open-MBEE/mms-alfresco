@@ -29,7 +29,7 @@
         {
             "_creator": "admin",
             "_editable": true,
-            "_isSite": true,
+            "_isGroup": true,
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
@@ -94,7 +94,7 @@
         {
             "_creator": "admin",
             "_editable": true,
-            "_isSite": true,
+            "_isGroup": true,
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
@@ -142,5 +142,6 @@
             "ownerId": "PackageE",
             "type": "Class"
         }
-    ]
+    ],
+    "rejected": []
 }

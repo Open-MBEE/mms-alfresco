@@ -27,22 +27,29 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
+import gov.nasa.jpl.view_repo.util.Acm;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.webscripts.util.ShareUtils;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -78,50 +85,90 @@ public class OrgPost extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
+        JsonArray success = new JsonArray();
+        JsonArray failure = new JsonArray();
+
         try {
             if (validateRequest(req, status)) {
 
-                JSONObject json = (JSONObject) req.parseContent();
-                JSONArray elementsArray = json != null ? json.optJSONArray("orgs") : null;
-                JSONObject projJson = (elementsArray != null && elementsArray.length() > 0) ?
-                                elementsArray.getJSONObject(0) :
-                                new JSONObject();
+                JsonObject json = JsonUtil.buildFromString(req.getContent().getContent());
+                JsonArray elementsArray = JsonUtil.getOptArray(json, "orgs");
+                if (elementsArray.size() > 0) {
+                    for (int i = 0; i < elementsArray.size(); i++) {
+                        JsonObject projJson = elementsArray.get(i).getAsJsonObject();
 
-                String orgId = projJson.getString(Sjm.SYSMLID);
-                String orgName = projJson.getString(Sjm.NAME);
+                        String orgId = projJson.get(Sjm.SYSMLID).getAsString();
+                        String orgName = projJson.get(Sjm.NAME).getAsString();
 
-                SiteInfo siteInfo = services.getSiteService().getSite(orgId);
-                if (siteInfo == null) {
-                    String sitePreset = "site-dashboard";
-                    String siteTitle = (json != null && json.has(Sjm.NAME)) ? json.getString(Sjm.NAME) : orgName;
-                    String siteDescription = (json != null) ? json.optString(Sjm.DESCRIPTION) : "";
-                    if (!ShareUtils.constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
-                        log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create site.\n");
-                        logger.error(String.format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
-                    } else {
-                        log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site created.\n");
-                    }
-                    if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
-                        CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                        SiteInfo siteInfo = services.getSiteService().getSite(orgId);
+                        if (siteInfo == null) {
+                            SearchService searcher = services.getSearchService();
+                            ResultSet result =
+                                searcher.query(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, "fts-alfresco", "name:" + orgId);
+
+                            if (result != null && result.length() > 0) {
+                                log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site restored.");
+                                services.getNodeService().restoreNode(result.getRow(0).getNodeRef(), null, null, null);
+                            } else {
+                                String sitePreset = "site-dashboard";
+                                String siteTitle =
+                                    (json != null && json.has(Sjm.NAME)) ? json.get(Sjm.NAME).getAsString() : orgName;
+                                String siteDescription = JsonUtil.getOptString(json, Sjm.DESCRIPTION);
+                                if (!ShareUtils
+                                    .constructSiteDashboard(sitePreset, orgId, siteTitle, siteDescription, false)) {
+                                    log(Level.INFO, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                                        "Failed to create site.");
+                                    logger.error(String
+                                        .format("Failed site info: %s, %s, %s", siteTitle, siteDescription, orgId));
+                                    failure.add(projJson);
+                                } else {
+                                    log(Level.INFO, HttpServletResponse.SC_OK,
+                                        "Organization " + orgName + " Site created.");
+                                }
+                            }
+
+                            if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
+                                JsonObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                                success.add(res);
+                            }
+
+                        } else {
+                            EmsScriptNode site = new EmsScriptNode(siteInfo.getNodeRef(), services, response);
+                            JsonObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
+                            if (res != null && !JsonUtil.getOptString(res, Sjm.SYSMLID).isEmpty()) {
+                                log(Level.INFO, HttpServletResponse.SC_OK,
+                                    "Organization " + orgName + " Site updated.\n");
+                                success.add(res);
+                            } else {
+                                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
+                                    "Organization " + orgName + " Site update failed.\n");
+                                failure.add(res);
+                            }
+                        }
                     }
                 } else {
-                    JSONObject result = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
-                    if (result != null && result.optString(Sjm.SYSMLID) != null) {
-                        log(Level.INFO, HttpServletResponse.SC_OK, "Organization Site updated.\n");
-                    } else {
-                        log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Organization Site update failed.\n");
-                    }
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request");
                 }
             }
-        } catch (JSONException e) {
+        } catch (IllegalStateException e) {
+            // get this when trying to turn JsonElement to a JsonObject, but no object was found
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "incorrect JSON from request");
+        } catch (JsonParseException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not parse JSON request", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
-        status.setCode(responseStatus.getCode());
+        JsonObject response = new JsonObject();
+        response.add(Sjm.ORGS, success);
 
-        model.put(Sjm.RES, createResponseJson());
+        if (failure.size() > 0) {
+            response.add("failed", failure);
+        }
+
+        status.setCode(responseStatus.getCode());
+        model.put(Sjm.RES, response);
+
 
         printFooter(user, logger, timer);
 

@@ -1,5 +1,16 @@
 {
-    "filename": "mounts.png",
-    "path": "PA/refs/master/",
-    "site": "initorg"
+    "_creator": "admin",
+    "artifacts": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "checksum": "70ec5b9e095dedfecf49ae1b5a11287f",
+            "contentType": "image/png",
+            "id": "mounts",
+            "type": "Artifact"
+        }
+    ]
 }

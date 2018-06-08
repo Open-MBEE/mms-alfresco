@@ -531,8 +531,11 @@ def binary_data(filename):
     data = open(filename, 'rb')
     return data
 
-def get_image_url(jsonObject):
-    return jsonObject["artifacts"][0]["url"]
+def get_image_location(jsonObject):
+    return jsonObject["artifacts"][0]["artifactLocation"]
+
+def get_image_id(jsonObject):
+    return jsonObject["artifacts"][0]["_elasticId"]
 
 def get_commit_id(results):
     """

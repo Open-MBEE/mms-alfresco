@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
     version="2.4">
-   
+
    <display-name>Alfresco</display-name>
 
    <description>Alfresco</description>
@@ -14,7 +14,7 @@
       <param-name>contextConfigLocation</param-name>
       <param-value>/WEB-INF/web-application-context.xml</param-value>
    </context-param>
-   
+
    <context-param>
       <description>Do not try to resolve web app root as file</description>
       <param-name>log4jExposeWebAppRoot</param-name>
@@ -22,7 +22,7 @@
    </context-param>
 
 	<!--  These were previously init params for the WebDAV servlet,
-	      but since they are also needed to MT-enable the 
+	      but since they are also needed to MT-enable the
 	      ExternalAccess servlet, I have made them context wide. -->
    <context-param>
          <param-name>store</param-name>
@@ -70,7 +70,7 @@
          <param-value>WebscriptCookieAuthenticationFilter</param-value>
       </init-param>
    </filter>
-      
+
    <filter>
       <filter-name>WebDAV Authentication Filter</filter-name>
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
@@ -97,7 +97,7 @@
       </init-param>
       -->
    </filter>
-   
+
    <!-- CORS Filter Begin -->
    <!--<filter>
       <filter-name>CORS</filter-name>
@@ -140,7 +140,7 @@
       <url-pattern>/*</url-pattern>
       <dispatcher>REQUEST</dispatcher>
    </filter-mapping>
-   
+
    <!-- CORS Filter Mappings Begin -->
    <!--<filter-mapping>
       <filter-name>CORS</filter-name>
@@ -150,7 +150,7 @@
       <url-pattern>/cmisbrowser/*</url-pattern>
    </filter-mapping>-->
    <!-- CORS Filter Mappings End -->
- 
+
    <filter-mapping>
       <filter-name>CMIS security context cleaning filter</filter-name>
       <url-pattern>/cmisws/*</url-pattern>
@@ -163,38 +163,38 @@
 
    <!-- Activiti Global Authentication Filter mapping placeholder -->
 
-   <!-- The Cookie WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->  
+   <!-- The Cookie WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->
    <filter-mapping>
       <filter-name>WebScript Cookie Authentication Filter</filter-name>
       <url-pattern>/wcservice/*</url-pattern>
    </filter-mapping>
-   
+
    <filter-mapping>
       <filter-name>WebScript Cookie Authentication Filter</filter-name>
       <url-pattern>/wcs/*</url-pattern>
    </filter-mapping>
-   
+
    <!-- The WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->
    <filter-mapping>
       <filter-name>WebScript Authentication Filter</filter-name>
       <url-pattern>/wcservice/*</url-pattern>
    </filter-mapping>
-   
+
    <filter-mapping>
       <filter-name>WebScript Authentication Filter</filter-name>
       <url-pattern>/wcs/*</url-pattern>
    </filter-mapping>
-   
+
    <filter-mapping>
       <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/wcservice/*</url-pattern>
    </filter-mapping>
-   
+
    <filter-mapping>
       <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/wcs/*</url-pattern>
    </filter-mapping>
-   
+
    <filter-mapping>
       <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/api/*</url-pattern>
@@ -236,7 +236,7 @@
    <listener>
       <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
    </listener>
-   
+
    <!-- Spring Context Loader listener - can disable loading of context if runtime config changes are needed -->
    <listener>
       <listener-class>org.alfresco.web.app.ContextLoaderListener</listener-class>
@@ -255,7 +255,7 @@
    <!-- Web Services context listener for OpenCMIS -->
    <listener>
         <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
-   </listener> 
+   </listener>
 
    <!-- Enterprise listener placeholder -->
 
@@ -293,7 +293,7 @@
          <param-value>webscripts.authenticator.remoteuser</param-value>
       </init-param>
    </servlet>
-   
+
    <servlet>
       <servlet-name>wcapiServlet</servlet-name>
       <servlet-class>org.springframework.extensions.webscripts.servlet.WebScriptServlet</servlet-class>
@@ -367,7 +367,7 @@
         </init-param>
         <load-on-startup>7</load-on-startup>
     </servlet>
-    
+
     <servlet>
         <servlet-name>cmisws11</servlet-name>
         <servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
@@ -483,7 +483,7 @@
       <url-pattern>/cmisbrowser</url-pattern>
    </servlet-mapping>
    -->
-   
+
    <servlet-mapping>
       <servlet-name>cmisws10</servlet-name>
       <url-pattern>/cmisws/*</url-pattern>
@@ -503,7 +503,7 @@
       <servlet-name>publicapiServlet</servlet-name>
       <url-pattern>/api/*</url-pattern>
    </servlet-mapping>
-    
+
    <!-- The CMIS TCK is deactivated by default. -->
    <!-- CMISTCK
    <servlet-mapping>
@@ -519,14 +519,15 @@
    </session-config>
 
    <welcome-file-list>
-      <welcome-file>index.jsp</welcome-file>
+       <welcome-file>index.jsp</welcome-file>
+       <welcome-file>index.html</welcome-file>
    </welcome-file-list>
-   
+
    <!--
-   
+
 
    -->
-   
+
    <env-entry>
       <description>A flag that globally enables or disables startup of the major Alfresco subsystems.</description>
       <env-entry-name>properties/startup.enable</env-entry-name>

@@ -5,11 +5,12 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.view_repo.connections.ConnectionInterface;
 import gov.nasa.jpl.view_repo.connections.JmsConnection;
@@ -27,16 +28,16 @@ public class ConnectionGet extends DeclarativeWebScript {
             connection = new JmsConnection();
         }
 
-        JSONObject json = new JSONObject();
+        JsonObject json = new JsonObject();
         if (connection == null) {
-            json.put( "msg", "connection not found" );
+            json.addProperty( "msg", "connection not found" );
             status.setCode( HttpServletResponse.SC_NOT_FOUND );
         } else {
             json = connection.toJson();
             status.setCode( HttpServletResponse.SC_OK );
         }
 
-        model.put(Sjm.RES, json.toString(2));
+        model.put(Sjm.RES, json.toString());
         return model;
     }
 

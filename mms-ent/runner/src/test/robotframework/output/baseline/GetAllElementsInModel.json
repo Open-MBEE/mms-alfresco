@@ -1,0 +1,146 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "documentation": "to",
+            "id": "D",
+            "isDerived": false,
+            "name": "Has no owner",
+            "ownerId": "holding_bin_CompleteModelGet",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "blah",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "A",
+            "isDerived": false,
+            "name": "three hundred",
+            "ownerId": "CompleteModelGet",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "documentation": "else",
+            "id": "B",
+            "isDerived": false,
+            "name": "three hundred and one",
+            "ownerId": "A",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "documentation": "to",
+            "id": "C",
+            "isDerived": false,
+            "name": "three hundred and two",
+            "ownerId": "B",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "URI": null,
+            "_appliedStereotypeIds": [],
+            "_creator": "admin",
+            "_editable": true,
+            "_isGroup": false,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "appliedStereotypeInstanceId": null,
+            "clientDependencyIds": [],
+            "documentation": "",
+            "elementImportIds": [],
+            "id": "holding_bin_CompleteModelGet",
+            "mdExtensionsIds": [],
+            "name": "Holding Bin",
+            "nameExpression": null,
+            "ownerId": "CompleteModelGet",
+            "packageImportIds": [],
+            "packageMergeIds": [],
+            "profileApplicationIds": [],
+            "supplierDependencyIds": [],
+            "syncElementId": null,
+            "templateBindingIds": [],
+            "templateParameterId": null,
+            "type": "Package",
+            "visibility": "public"
+        },
+        {
+            "URI": null,
+            "_appliedStereotypeIds": [],
+            "_creator": "admin",
+            "_editable": true,
+            "_isGroup": false,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "appliedStereotypeInstanceId": null,
+            "clientDependencyIds": [],
+            "documentation": "",
+            "elementImportIds": [],
+            "id": "view_instances_bin_CompleteModelGet",
+            "mdExtensionsIds": [],
+            "name": "View Instances Bin",
+            "nameExpression": null,
+            "ownerId": "CompleteModelGet",
+            "packageImportIds": [],
+            "packageMergeIds": [],
+            "profileApplicationIds": [],
+            "supplierDependencyIds": [],
+            "syncElementId": null,
+            "templateBindingIds": [],
+            "templateParameterId": null,
+            "type": "Package",
+            "visibility": "public"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_refId": "master",
+            "id": "CompleteModelGet",
+            "name": "Project",
+            "type": "Project"
+        }
+    ]
+}

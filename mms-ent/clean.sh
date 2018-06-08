@@ -62,10 +62,12 @@ if [[ "$OSTYPE" == "darwin" ]]; then
     dropdb -U $dbuser _PB
     dropdb -U $dbuser _PC
     dropdb -U $dbuser _PD
+    dropdb -U $dbuser _MountCommit
     dropdb -U $dbuser _CollaboratorProject
+    dropdb -U $dbuser _CompleteModelGet
     dropdb -U $dbuser $usedb
     createdb -U $dbuser $usedb
-    psql -U $dbuser -f ./repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql $usedb
+    psql -U $dbuser -f ./repo-amp/src/main/resources/mms.sql $usedb
 else
     if [ ! -z $password ];then
         EXPECT=$(which expect)
@@ -104,7 +106,23 @@ EOD
 
         $EXPECT <<EOD
 log_user 0
+spawn dropdb -U $dbuser _MountCommit
+expect "*Password*"
+send "$password\r"
+expect eof
+EOD
+
+        $EXPECT <<EOD
+log_user 0
 spawn dropdb -U $dbuser _CollaboratorProject
+expect "*Password*"
+send "$password\r"
+expect eof
+EOD
+
+        $EXPECT <<EOD
+log_user 0
+spawn dropdb -U $dbuser _CompleteModelGet
 expect "*Password*"
 send "$password\r"
 expect eof
@@ -128,7 +146,7 @@ EOD
 
         $EXPECT <<EOD
 log_user 0
-spawn psql -U $dbuser -f ./repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql $usedb
+spawn psql -U $dbuser -f ./repo-amp/src/main/resources/mms.sql $usedb
 expect "*Password*"
 send "$password\r"
 expect eof
@@ -139,10 +157,12 @@ EOD
         dropdb -U $dbuser _PB
         dropdb -U $dbuser _PC
         dropdb -U $dbuser _PD
+        dropdb -U $dbuser _MountCommit
         dropdb -U $dbuser _CollaboratorProject
+        dropdb -U $dbuser _CompleteModelGet
         dropdb -U $dbuser $usedb
         createdb -U $dbuser $usedb
-        psql -U $dbuser -f ./repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql $usedb
+        psql -U $dbuser -f ./repo-amp/src/main/resources/mms.sql $usedb
 
         echo "Dropping previous databases"
     fi
@@ -150,6 +170,6 @@ fi
 
 echo -n "deleting elastic db: "
 curl -XDELETE 'http://localhost:9200/_all/'
-sh ./repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms_mappings.sh
+sh ./repo-amp/src/main/resources/mms_mappings.sh
 rm -rf ./alf_data_dev
 ./mvnw clean -Ddependency.surf.version=6.3 -Ppurge

@@ -1,8 +1,23 @@
 # Model Management System
-**Alfresco version 5.1.g**
+
+<!--- Comment the download links until we can display them better or something --->
+<!--- [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-amp/_latestVersion) mms-amp --->
+
+<!--- [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-share-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-share-amp/_latestVersion) mms-share-amp --->
+
+[![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
+
+**AMP for Alfresco (5.1.g)**
 
 Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
 ## Developer Setup
+
+### Dependencies
+* ElasticSearch 5.x
+* PostgreSQL 9.x
+
+### Optional Dependencies
+* ActiveMQ 5.X
 
 ### 1a. Using Intellij
 * Open Project with root of 'mms-ent'
@@ -44,25 +59,25 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
         *   If it's not installed, download and install Java 8. Afterward, return to here and select Java 8.
 
 ## Install Dependencies
-### 1. Install and Configure Elastic Search
-*   Download Elasticsearch 5.X
-*   Install Elasticsearch
-*   Start Elasticsearch then run `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms-mappings.sh`
+### 1. Install and Configure ElasticSearch
+*   Download ElasticSearch 5.X
+*   Install ElasticSearch
+*   Start ElasticSearch then run `mms-ent/repo-amp/src/main/resources/mms-mappings.sh`
 
-### 2. Install and Configure Postgresql
-*   Download Postgresql 9.x
-    * If using Postgresql as the database for Alfresco, Postgresl 9.3 is the latest supported version
-*   Install Postgresql
-*   Start Postgresql server
-*   Connect to the Postgresql server and:
+### 2. Install and Configure PostgreSQL
+*   Download PostgreSQL 9.x
+    * If using PostgreSQL as the database for Alfresco, PostgreSQL 9.4 is the latest supported version
+*   Install PostgreSQL
+*   Start PostgreSQL server
+*   Connect to the PostgreSQL server and:
     *  Create a `mms` user (referenced by pg.user in your `mms-ent/mms.properties` file)
        *  Ensure you set a password (referenced by pg.pass)
     *  Create a `mms` database ( referenced by pg.name)
-*   Execute `mms-ent/repo-amp/src/main/java/gov/nasa/jpl/view_repo/db/mms.sql`
+*   Execute `mms-ent/repo-amp/src/main/resources/mms.sql`
     * windows CMD e.g.: `psql -h localhost -p 5432 -U mms -d mms -v schema=public < C:\path\to\mms\repo\mms.sql`
 
 ### 3. Install and Configure ActiveMQ
-*   Download ActiveMQ
+*   Download ActiveMQ 5.X
 *   Install ActiveMQ
 *   Start ActiveMQ service
 
@@ -83,7 +98,7 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 3. Enter **admin** for password
 
 ## Design Documentation
-### 1. MMS using ElaticSearch and PostgreSQL
+### 1. MMS using ElasticSearch and PostgreSQL
 
 -----
 
@@ -211,9 +226,9 @@ curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --
 curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data '{"projects": [{"id": "123456","name": "vetest","type": "Project"}]}' -X POST "http://localhost:8080/alfresco/service/orgs/vetest/projects"
 ```
 
-Then you can post some elements. For convenience, there is a json file in repo-amp/test-data/javawebscripts/JsonData. Using the project from above:
+Then you can post some elements. For convenience, there is a json file in `runner/src/test/robotframework/JsonData`. Using the project from above:
 ```
-curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data @JsonData/elementsNew.json -X POST "http://localhost:8080/alfresco/service/projects/123456/refs/master/elements"
+curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data @JsonData/PostNewElements.json -X POST "http://localhost:8080/alfresco/service/projects/123456/refs/master/elements"
 ```
 
 Make sure the elements went in:
@@ -224,17 +239,19 @@ curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin -X
 ### Robotframework test suite
 Robot tests can be run with the following maven profiles in the mms-ent directory:
 ```
-./mvnw install -Ddependency.surf.version=6.3 -Prun,robot-tests
+./mvnw install -Prun,robot-tests
 ```
 Please note that tests should be run on a clean instance, therefore, it may be helpful to run clean.sh before running the tests
 
-The Robotframework tests require the 'requests' python module. Install it as follows:
+The Robotframework tests require the 'requests' and 'robotframework-requests' python modules. Install it as follows:
 ```
 pip install --target=runner/src/test/robotframework/libraries requests
+pip install --target=runner/src/test/robotframework/libraries robotframework-requests
 ```
 OR:
 ```
 pip install --target=$HOME/.m2/repository/org/robotframework/robotframework/{ROBOTPLUGINVERSION}/Lib requests
+pip install --target=$HOME/.m2/repository/org/robotframework/robotframework/{ROBOTPLUGINVERSION}/Lib robotframework-requests
 ```
 
 ### Changing debug levels on the fly
@@ -257,7 +274,19 @@ It takes as input JSON that specifies the classes and the log levels. For exampl
 ```
 
 ## API Documentation
-API Documentation is located at the following endpoint:
+API Documentation is located at the following endpoints:
+
+Swagger CodeGen:
 ```
-alfresco/mms/raml/index.html
+alfresco/mms
+```
+
+Swagger UI:
+```
+alfresco/mms/swagger-ui
+```
+
+Swagger YAML file:
+```
+alfresco/mms/mms.swagger.yaml
 ```

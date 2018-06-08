@@ -1,26 +1,24 @@
 package gov.nasa.jpl.view_repo.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.transaction.UserTransaction;
-import javax.xml.bind.DatatypeConverter;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -29,18 +27,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang.NullArgumentException;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.extensions.webscripts.Status;
 
-import gov.nasa.jpl.mbee.util.Debug;
-import gov.nasa.jpl.mbee.util.Utils;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 
 public class NodeUtil {
 
@@ -48,40 +40,14 @@ public class NodeUtil {
 
     /* static flags and constants */
 
-
-    protected static boolean insideTransactionNow = false;
-    protected static Map<Long, Boolean> insideTransactionNowMap = new LinkedHashMap<>();
     protected static Map<Long, UserTransaction> transactionMap =
-                    Collections.synchronizedMap(new LinkedHashMap<Long, UserTransaction>());
-
-    public static synchronized boolean isInsideTransactionNow() {
-        Boolean b = insideTransactionNowMap.get(Thread.currentThread().getId());
-        if (b != null)
-            return b;
-        return insideTransactionNow;
-    }
+        Collections.synchronizedMap(new LinkedHashMap<Long, UserTransaction>());
 
     public static UserTransaction getTransaction() {
         return transactionMap.get(Thread.currentThread().getId());
     }
 
-    public static UserTransaction createTransaction() {
-        UserTransaction trx = services.getTransactionService().getNonPropagatingUserTransaction();
-        transactionMap.put(Thread.currentThread().getId(), trx);
-        return trx;
-    }
-
-    public static synchronized void setInsideTransactionNow(boolean b) {
-        insideTransactionNow = b;
-        insideTransactionNowMap.put(Thread.currentThread().getId(), b);
-    }
-
     public static boolean skipSvgToPng = false;
-
-    // Set the flag to time events that occur during a model post using the
-    // timers
-    // below
-    public static boolean timeEvents = false;
 
     public static ServiceRegistry services = null;
     public static Repository repository = null;
@@ -123,21 +89,13 @@ public class NodeUtil {
      * Helper to create a QName from either a fully qualified or short-name QName string
      * <P>
      *
-     * @param s Fully qualified or short-name QName string
-     *
+     * @param s        Fully qualified or short-name QName string
      * @param services ServiceRegistry for getting the service to resolve the name space
      * @return QName
      */
     public static QName createQName(String s, ServiceRegistry services) {
         if (s == null)
             return null;
-        if (Acm.getJSON2ACM().keySet().contains(s)) {
-            String possibleString = Acm.getACM2JSON().get(s);
-            // Bad mapping, ie type, just use the original string:
-            if (possibleString != null) {
-                s = possibleString;
-            }
-        }
         QName qname;
         if (s.indexOf("{") != -1) {
             qname = QName.createQName(s);
@@ -153,11 +111,10 @@ public class NodeUtil {
         if (services == null)
             services = getServiceRegistry();
         if (services == null || services.getNodeLocatorService() == null) {
-            if (Debug.isOn()) {
-                logger.debug("getCompanyHome() failed, no services or no nodeLocatorService: " + services);
-            }
+            logger.error("getCompanyHome() failed, no services or no nodeLocatorService: " + services);
         }
-        NodeRef companyHomeNodeRef = services != null ? services.getNodeLocatorService().getNode("companyhome", null, null): null;
+        NodeRef companyHomeNodeRef =
+            services != null ? services.getNodeLocatorService().getNode("companyhome", null, null) : null;
         if (companyHomeNodeRef != null) {
             companyHome = new EmsScriptNode(companyHomeNodeRef, services);
         }
@@ -165,7 +122,7 @@ public class NodeUtil {
     }
 
     public static Object getNodeProperty(ScriptNode node, Object o, ServiceRegistry services,
-                    boolean useFoundationalApi, boolean cacheOkay) {
+        boolean useFoundationalApi, boolean cacheOkay) {
         return getNodeProperty(node.getNodeRef(), o, services, useFoundationalApi, cacheOkay);
     }
 
@@ -176,14 +133,14 @@ public class NodeUtil {
      * it is the caller's responsibility to make sure the cache is not used for these.
      *
      * @param node
-     * @param key the name of the property, e.g., "cm:name"
+     * @param key       the name of the property, e.g., "cm:name"
      * @param services
      * @param cacheOkay whether to look in the cache and cache a new value, assuming the cache is
-     *        turned on.
+     *                  turned on.
      * @return
      */
     public static Object getNodeProperty(NodeRef node, Object key, ServiceRegistry services, boolean useFoundationalApi,
-                    boolean cacheOkay) {
+        boolean cacheOkay) {
         if (node == null || key == null)
             return null;
 
@@ -191,8 +148,8 @@ public class NodeUtil {
         String keyStr = oIsString ? (String) key : NodeUtil.getShortQName((QName) key);
         if (keyStr.isEmpty()) {
             if (logger.isTraceEnabled())
-                logger.trace("getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay
-                                + ") = null.  No Key!");
+                logger
+                    .trace("getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay + ") = null.  No Key!");
             return null;
         }
         QName qName = oIsString ? NodeUtil.createQName(keyStr, services) : (QName) key;
@@ -203,7 +160,7 @@ public class NodeUtil {
             result = services.getNodeService().getProperty(node, qName);
             if (logger.isTraceEnabled())
                 logger.trace("^ cache miss!  getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay + ") = "
-                                + result);
+                    + result);
         } else {
             ScriptNode sNode = new ScriptNode(node, services);
             result = sNode.getProperties().get(keyStr);
@@ -211,20 +168,6 @@ public class NodeUtil {
         if (logger.isTraceEnabled())
             logger.trace("getNodeProperty(" + node + ", " + key + ", cacheOkay=" + cacheOkay + ") = " + result);
         return result;
-    }
-
-    public static NodeRef getNodeRefFromNodeId(String store, String id) {
-        List<NodeRef> nodeRefs = NodeRef.getNodeRefs(store + id);
-        if (!nodeRefs.isEmpty()) {
-            NodeRef ref = nodeRefs.get(0);
-            if (ref != null) {
-                EmsScriptNode node = new EmsScriptNode(ref, services);
-                if (node.scriptNodeExists()) {
-                    return ref;
-                }
-            }
-        }
-        return null;
     }
 
     public static boolean exists(EmsScriptNode node) {
@@ -257,8 +200,7 @@ public class NodeUtil {
         EmsScriptNode homeFolderScriptNode = null;
         PersonService personService = getServices().getPersonService();
         NodeRef personNode = personService.getPerson(userName);
-        homeFolderNode = (NodeRef) getNodeProperty(personNode, ContentModel.PROP_HOMEFOLDER, getServices(), true,
-                            true);
+        homeFolderNode = (NodeRef) getNodeProperty(personNode, ContentModel.PROP_HOMEFOLDER, getServices(), true, true);
         if (homeFolderNode == null || !exists(homeFolderNode)) {
             EmsScriptNode homes = getCompanyHome(getServices());
             if (homes != null) {
@@ -267,7 +209,7 @@ public class NodeUtil {
             if (createIfNotFound && homes != null && homes.exists()) {
                 homeFolderScriptNode = homes.createFolder(userName, null, null);
             } else {
-                Debug.error("Error! No user homes folder!");
+                logger.error("Error! No user homes folder!");
             }
         }
         if (!exists(homeFolderScriptNode) && exists(homeFolderNode)) {
@@ -302,79 +244,53 @@ public class NodeUtil {
         return authorityNames;
     }
 
-    /**
-     * Updates or creates a artifact with the passed name/type in the specified site name/workspace
-     * with the specified content.
-     *
-     * Only updates the artifact if found if updateIfFound is true.
-     *
-     * @param name
-     * @param type
-     * @param base64content
-     * @param dateTime
-     * @param response
-     * @param status
-     * @return
-     */
-    public static EmsScriptNode updateOrCreateArtifact(String name, String type, String base64content,
-                    String strContent, String orgId, String projectId, String refId,
-                    Date dateTime, StringBuffer response, Status status, boolean ignoreName) {
+    public static EmsScriptNode updateOrCreateArtifact(String artifactId, Path filePath, String fileType, String orgId, String projectId, String refId) {
 
         EmsScriptNode artifactNode;
-        String myType = Utils.isNullOrEmpty(type) ? "svg" : type;
-        String finalType = myType.startsWith(".") ? myType.substring(1) : myType;
-        String artifactId = name + "." + finalType;
+        String finalType = null;
+        File content = filePath.toFile();
 
-        byte[] content = (base64content == null) ? null : DatatypeConverter.parseBase64Binary(base64content);
-
-        if (content == null && strContent != null) {
-            content = strContent.getBytes(Charset.forName("UTF-8"));
+        try {
+            finalType = Files.probeContentType(filePath);
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("updateOrCreateArtifact: ", e);
+            }
         }
 
-        long cs = EmsScriptNode.getChecksum(content);
-
-        // see if image already exists by looking up by checksum
-        //ArrayList<NodeRef> refs = findNodeRefsByType("" + cs, SearchType.CHECKSUM.prefix, false, workspace, dateTime,
-         //               false, false, services, false);
-
-        //List<EmsScriptNode> nodeList = EmsScriptNode.toEmsScriptNodeList(refs, services, response, status);
-
-        EmsScriptNode matchingNode = null;
-
-        //if (nodeList != null && nodeList.size() > 0) {
-        //    matchingNode = nodeList.iterator().next();
-        //}
-
-        // No need to update if the checksum and name match (even if it is in a
-        // parent branch):
-        if (matchingNode != null && (ignoreName || matchingNode.getSysmlId().equals(artifactId))) {
-            return matchingNode;
+        if (finalType == null) {
+            // Fallback if getting content type fails
+            if (fileType != null) {
+                finalType = fileType;
+            } else {
+                logger.error("Could not determine type of artifact: " + filePath.getFileName().toString());
+                return null;
+            }
         }
 
         EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
 
         // find site; it must exist!
         if (targetSiteNode == null || !targetSiteNode.exists()) {
-            Debug.err("Can't find node for site: " + orgId + "!\n");
+            logger.error("Can't find node for site: " + orgId + "!");
             return null;
         }
 
         // find or create subfolder
-        EmsScriptNode subfolder = targetSiteNode.childByNamePath("/" + projectId +  "/refs/" + refId);
+        EmsScriptNode subfolder = targetSiteNode.childByNamePath("/" + projectId + "/refs/" + refId);
         if (subfolder == null || !subfolder.exists()) {
             return null;
         }
 
         // find or create node:
         artifactNode = subfolder.childByNamePath("/" + artifactId);
-
         // Node wasnt found, so create one:
         if (artifactNode == null) {
             artifactNode = subfolder.createNode(artifactId, "cm:content");
         }
 
         if (artifactNode == null || !artifactNode.exists()) {
-            Debug.err("Failed to create new artifact " + artifactId + "!\n");
+            logger.error("Failed to create new PNG artifact " + artifactId + "!");
             return null;
         }
 
@@ -384,175 +300,29 @@ public class NodeUtil {
         if (!artifactNode.hasAspect("cm:indexControl")) {
             artifactNode.addAspect("cm:indexControl");
         }
-        if (!artifactNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
-            artifactNode.addAspect(Acm.ACM_IDENTIFIABLE);
-        }
 
         artifactNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
         artifactNode.createOrUpdateProperty("cm:isIndexed", true);
         artifactNode.createOrUpdateProperty("cm:isContentIndexed", false);
-        artifactNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Creating artifact with indexing: " + artifactNode.getProperty("cm:isIndexed"));
         }
 
-        ContentWriter writer = services.getContentService().getWriter(artifactNode.getNodeRef(),
-                        ContentModel.PROP_CONTENT, true);
-        InputStream contentStream = new ByteArrayInputStream(content);
-        writer.putContent(contentStream);
+        ContentWriter writer =
+            services.getContentService().getWriter(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
+        writer.putContent(content);
 
         ContentData contentData = writer.getContentData();
-        contentData = ContentData.setMimetype(contentData, EmsScriptNode.getMimeType(finalType));
-        if (base64content == null) {
-            contentData = ContentData.setEncoding(contentData, "UTF-8");
-        }
+        contentData = ContentData.setMimetype(contentData, finalType);
+        contentData = ContentData.setEncoding(contentData, "UTF-8");
         services.getNodeService().setProperty(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
 
-        // if only version, save dummy version so snapshots can reference
-        // versioned images - need to check against 1 since if someone
-        // deleted previously a "dead" version is left in its place
-        Object[] versionHistory = artifactNode.getEmsVersionHistory();
-
-        if (versionHistory == null || versionHistory.length <= 1) {
-            artifactNode.createVersion("creating the version history", false);
-        }
         return artifactNode;
     }
 
-	public static EmsScriptNode updateOrCreateArtifactPng(EmsScriptNode svgNode, Path pngPath,
-			String orgId, String projectId, String refId, Date dateTime, StringBuffer response,
-			Status status, boolean ignoreName) throws Throwable {
-		if(svgNode == null){
-			throw new NullArgumentException("SVG script node");
-		}
-		if(!Files.exists(pngPath)){
-			throw new NullArgumentException("PNG path");
-		}
-
-		EmsScriptNode pngNode;
-		String finalType = "png";
-		String artifactId = pngPath.getFileName().toString();
-
-		byte[] content = Files.readAllBytes(pngPath);
-		long cs = EmsScriptNode.getChecksum(content);
-
-		// see if image already exists by looking up by checksum
-		//ArrayList<NodeRef> refs = findNodeRefsByType("" + cs,
-		//		SearchType.CHECKSUM.prefix, false, workspace, dateTime, false,
-		//		false, services, false);
-		// ResultSet existingArtifacts =
-		// NodeUtil.findNodeRefsByType( "" + cs, SearchType.CHECKSUM,
-		// services );
-		// Set< EmsScriptNode > nodeSet = toEmsScriptNodeSet( existingArtifacts
-		// );
-		//List<EmsScriptNode> nodeList = EmsScriptNode.toEmsScriptNodeList(refs,
-		//		services, response, status);
-		// existingArtifacts.close();
-
-		EmsScriptNode matchingNode = null;
-
-		//if (nodeList != null && nodeList.size() > 0) {
-		//	matchingNode = nodeList.iterator().next();
-		//}
-
-		// No need to update if the checksum and name match (even if it is in a
-		// parent branch):
-		if (matchingNode != null
-				&& (ignoreName || matchingNode.getSysmlId().equals(artifactId))) {
-			return matchingNode;
-		}
-
-        EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
-
-        // find site; it must exist!
-        if (targetSiteNode == null || !targetSiteNode.exists()) {
-            Debug.err("Can't find node for site: " + orgId + "!\n");
-            return null;
-        }
-
-        // find or create subfolder
-        EmsScriptNode subfolder = targetSiteNode.childByNamePath("/" + projectId +  "/refs/" + refId);
-        if (subfolder == null || !subfolder.exists()) {
-            return null;
-        }
-
-        // find or create node:
-        pngNode = subfolder.childByNamePath("/" + artifactId);
-		// Node wasnt found, so create one:
-		if (pngNode == null) {
-			pngNode = subfolder.createNode(artifactId, "cm:content");
-		}
-
-		if (pngNode == null || !pngNode.exists()) {
-			Debug.err("Failed to create new PNG artifact " + artifactId + "!\n");
-			return null;
-		}
-
-		if (!pngNode.hasAspect("cm:versionable")) {
-			pngNode.addAspect("cm:versionable");
-		}
-		if (!pngNode.hasAspect("cm:indexControl")) {
-			pngNode.addAspect("cm:indexControl");
-		}
-		if (!pngNode.hasAspect(Acm.ACM_IDENTIFIABLE)) {
-			pngNode.addAspect(Acm.ACM_IDENTIFIABLE);
-		}
-
-		pngNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
-		pngNode.createOrUpdateProperty("cm:isIndexed", true);
-		pngNode.createOrUpdateProperty("cm:isContentIndexed", false);
-		pngNode.createOrUpdateProperty(Acm.ACM_ID, artifactId);
-
-		if (logger.isDebugEnabled()) {
-			logger.debug("Creating PNG artifact with indexing: "
-					+ pngNode.getProperty("cm:isIndexed"));
-		}
-
-		ContentWriter writer = services.getContentService().getWriter(
-				pngNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
-		InputStream contentStream = new ByteArrayInputStream(content);
-		writer.putContent(contentStream);
-
-		ContentData contentData = writer.getContentData();
-		contentData = ContentData.setMimetype(contentData,
-				EmsScriptNode.getMimeType(finalType));
-		contentData = ContentData.setEncoding(contentData, "UTF-8");
-		services.getNodeService().setProperty(pngNode.getNodeRef(),
-				ContentModel.PROP_CONTENT, contentData);
-
-		/*
-		Object[] versionHistory = pngNode.getEmsVersionHistory();
-
-        if ( versionHistory == null || versionHistory.length <= 1 ) {
-            pngNode.makeSureNodeRefIsNotFrozen();
-            pngNode.createVersion( "creating the version history", false );
-        }
-        */
-
-		return pngNode;
-	}
-
     public static String getHostname() {
         return services.getSysAdminParams().getAlfrescoHost();
-    }
-
-    public static EmsScriptNode getOrCreateContentNode(EmsScriptNode parent, String cmName, ServiceRegistry services) {
-        // See if node already exists.
-        EmsScriptNode node = parent.childByNamePath(cmName);
-
-        if (!exists(node)) {
-            if (node != null) {
-                Debug.error(true, false,
-                                "Error! tried to create " + cmName + " in parent, " + parent
-                                                + ", but a deleted or corrupt node of the same name exists.  Renaming to a_"
-                                                + cmName + ".");
-                cmName = "a_" + cmName;
-                return getOrCreateContentNode(parent, cmName, services);
-            }
-            node = parent.createNode(cmName, "cm:content");
-        }
-        return node;
     }
 
     /**
@@ -570,8 +340,8 @@ public class NodeUtil {
         // Takes the ServiceRegistry and calls the ModuleService super method
         // getService(Creates an Alfresco QName using the namespace
         // service and passes in the default URI
-        ModuleService moduleService = (ModuleService) services
-                        .getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
+        ModuleService moduleService =
+            (ModuleService) services.getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
         return moduleService;
     }
 
@@ -583,13 +353,13 @@ public class NodeUtil {
      * @param service the service containing modules to be returned
      * @return JSONArray of ModuleDetails within the ModuleService object
      */
-    public static JSONArray getServiceModulesJson(ModuleService service) {
+    public static JsonArray getServiceModulesJson(ModuleService service) {
 
-        JSONArray jsonArray = new JSONArray();
+        JsonArray jsonArray = new JsonArray();
         List<ModuleDetails> modules = service.getAllModules();
         for (ModuleDetails detail : modules) {
-            JSONObject jsonModule = moduleDetailsToJson(detail);
-            jsonArray.put(jsonModule);
+            JsonObject jsonModule = moduleDetailsToJson(detail);
+            jsonArray.add(jsonModule);
         }
         return jsonArray;
     }
@@ -606,21 +376,26 @@ public class NodeUtil {
      * @param module A single module of type ModuleDetails
      * @return JSONObject which contains all the details of that module
      */
-    public static JSONObject moduleDetailsToJson(ModuleDetails module) {
-        JSONObject jsonModule = new JSONObject();
-        try {
-            jsonModule.put("mmsTitle", module.getTitle());
-            jsonModule.put("mmsVersion", module.getModuleVersionNumber());
-            jsonModule.put("mmsAliases", module.getAliases());
-            jsonModule.put("mmsClass", module.getClass());
-            jsonModule.put("mmsDependencies", module.getDependencies());
-            jsonModule.put("mmsEditions", module.getEditions());
-            jsonModule.put("mmsId", module.getId());
-            jsonModule.put("mmsProperties", module.getProperties());
-        } catch (Exception e) {
-            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-        return jsonModule;
+    public static JsonObject moduleDetailsToJson(ModuleDetails module) {
+    	JsonObject jsonModule = new JsonObject();
+    	jsonModule.addProperty("mmsTitle", module.getTitle());
+    	jsonModule.addProperty("mmsVersion", module.getModuleVersionNumber().toString());
+    	JsonUtil.addStringList(jsonModule, "mmsAliases", module.getAliases());
+    	jsonModule.addProperty("mmsClass", module.getClass().toString());
+    	JsonArray depArray = new JsonArray();
+    	for (ModuleDependency depend: module.getDependencies())
+            depArray.add(depend.toString());
+    	jsonModule.add("mmsDependencies", depArray);
+    	JsonUtil.addStringList(jsonModule, "mmsEditions", module.getEditions());
+    	jsonModule.addProperty("mmsId", module.getId());
+    	JsonObject propObj = new JsonObject();
+    	Enumeration<?> enumerator = module.getProperties().propertyNames();
+    	while (enumerator.hasMoreElements()) {
+            String key = (String)enumerator.nextElement();
+            propObj.addProperty(key, module.getProperties().getProperty(key));
+    	}
+    	jsonModule.add("mmsProperties", propObj);
+    	return jsonModule;
     }
 
     /**
@@ -634,14 +409,12 @@ public class NodeUtil {
      */
     public static String getMMSversion() {
         ModuleService service = getModuleService(services);
-        JSONArray moduleDetails = getServiceModulesJson(service);
+        JsonArray moduleDetails = getServiceModulesJson(service);
         String mmsVersion = "NA";
-        int moduleArrayLength = moduleDetails.length();
-        if (moduleArrayLength > 0) {
-            for (int i = 0; i < moduleArrayLength; i++) {
-                if (moduleDetails.getJSONObject(i).getString("mmsId").equalsIgnoreCase("mms-amp")) {
-                    mmsVersion = moduleDetails.getJSONObject(i).getString("mmsVersion");
-                }
+        for (int i = 0; i < moduleDetails.size(); i++) {
+            JsonObject o = moduleDetails.get(i).getAsJsonObject();
+            if (o.get("mmsId").getAsString().equalsIgnoreCase("mms-amp")) {
+                mmsVersion = o.get("mmsVersion").getAsString();
             }
         }
 

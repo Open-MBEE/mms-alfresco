@@ -57,7 +57,6 @@ import org.springframework.extensions.webscripts.Status;
  *
  */
 public class ActionUtil {
-    private static String hostname = null;
 
     // defeat instantiation
     private ActionUtil() {
@@ -70,7 +69,6 @@ public class ActionUtil {
      * @param msg       Message to send modifier
      * @param subject   Subjecto of message
      * @param services
-     * @param response
      */
     public static void sendEmailToModifier(EmsScriptNode node, String msg, String subject, ServiceRegistry services) {
         String username = (String)node.getProperty("cm:modifier", false);
@@ -104,156 +102,5 @@ public class ActionUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Saves log file for the specified node (creates the log file if necessary)
-     * @param node      Node to save file to
-     * @param mimeType  Mimetype of file
-     * @param services
-     * @param data      Stringbuffer to save
-     * @return  Log file
-     */
-    public static EmsScriptNode saveLogToFile(EmsScriptNode node, String mimeType, ServiceRegistry services, String data) {
-        String logName = node.getProperty("cm:name") + ".log";
-
-        // create logNode if necessary
-        EmsScriptNode parent = node.getParent();
-        EmsScriptNode logNode = parent.childByNamePath(logName);
-        if (logNode == null) {
-            logNode = parent.createNode(logName, "cm:content");
-            if (!logNode.hasAspect("cm:versionable")) {
-                logNode.addAspect("cm:versionable");
-            }
-            // TODO: check if node for log is of type Job
-            node.createOrUpdateProperty("ems:job_log", logNode);
-        }
-
-        saveStringToFile(logNode, mimeType, services, data);
-        return logNode;
-    }
-
-    public static void saveStringToFile(EmsScriptNode node, String mimeType, ServiceRegistry services, String data) {
-        ContentWriter writer = services.getContentService().getWriter(node.getNodeRef(), ContentModel.PROP_CONTENT, true);
-        writer.putContent(data.toString());
-        setContentDataMimeType(writer, node, mimeType, services);
-    }
-
-    /**
-     * Set the content mimetype so Alfresco knows how to deliver the HTTP response header correctly
-     * @param writer
-     * @param node
-     * @param mimetype
-     * @param sr
-     */
-    public static void setContentDataMimeType(ContentWriter writer, EmsScriptNode node, String mimetype, ServiceRegistry sr) {
-        ContentData contentData = writer.getContentData();
-        contentData = ContentData.setMimetype(contentData, mimetype);
-        sr.getNodeService().setProperty(node.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
-    }
-
-
-    public static boolean jobExists( EmsScriptNode contextFolder, String jobName ) {
-        EmsScriptNode jobPkgNode = contextFolder.childByNamePath("Jobs");
-        if (jobPkgNode == null) return false;
-        EmsScriptNode jobNode = jobPkgNode.childByNamePath(jobName);
-        if (jobNode == null) return false;
-        return jobNode.exists();
-    }
-
-    private static EmsScriptNode getOrCreateJobImpl(EmsScriptNode jobPkgNode,
-                                                  String jobName, String jobType,
-                                                  Status status,
-                                                  boolean generateName) {
-
-        EmsScriptNode jobNode = jobPkgNode.childByNamePath(jobName);
-        if (jobNode == null) {
-            String filename = jobName;
-            if (generateName) {
-                Date now = new Date();
-                filename = jobName + now.toString();
-                filename = Integer.toString( filename.hashCode() );
-            }
-            jobNode = jobPkgNode.createNode(filename, jobType);
-            if ( jobNode == null ) {
-                status.setCode( HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                                "Could not create job, " + jobName + "." );
-                return null;
-            }
-            jobNode.createOrUpdateProperty( Acm.CM_TITLE, jobName );
-            if (generateName) {
-                jobNode.createOrUpdateProperty( Acm.CM_NAME, "cm_" + jobNode.getId() );
-            }
-            jobNode.createOrUpdateProperty("cm:isContentIndexed", false);
-            // Element cache does not support jobs
-            //NodeUtil.addElementToCache( snapshotNode );
-        } else if ( jobNode.isDeleted() ) {
-            // resurrect
-            jobNode.removeAspect( "ems:Deleted" );
-        } else if ( !jobNode.exists() ) {
-            // TODO -- REVIEW -- Don't know if this works or if it's possible to get here.
-            jobNode = jobPkgNode.createNode(jobName, jobType);
-            jobNode.createOrUpdateProperty("cm:isContentIndexed", false);
-        } else {
-            // don't use getProperty since cache isn't outdated for jobs at the moment.
-            String jobStatus = (String)jobNode.getProperties().get("{http://jpl.nasa.gov/model/ems/1.0}job_status");
-            if (jobStatus != null && jobStatus.equals("Active")) {
-                Date modified = (Date)jobNode.getProperty("cm:modified");
-                status.setCode(HttpServletResponse.SC_CONFLICT,
-                               String.format( "Background job for project started at %s " +
-                                              "is still active. If job is hung, use share " +
-                                              "to modify state at https://%s" +
-                                              "/share/page/document-details?nodeRef=%s",
-                                              modified, NodeUtil.getHostname(),
-                                              jobNode.getNodeRef()));
-                return null;
-            }
-        }
-
-        jobNode.createOrUpdateProperty("ems:job_status", "Active");
-
-        // set the owner to original user say they can modify
-        jobNode.setOwner( AuthenticationUtil.getFullyAuthenticatedUser() );
-
-        return jobNode;
-    }
-
-    /**
-     * Create a job inside a particular site
-     * @param contextFolder Folder to create the job node
-     * @param jobName       String of the filename
-     * @param jobType       The type of job being created
-     * @param status        Initial status to put the job node in
-     * @param response      Response buffer to return to client
-     * @param generateName  If true, jobName will be used as cm:title and the uuid will be
-     *                      returned as the cm:name. If false, jobName is cm:name. This is
-     *                      necessary when the jobName can handle special characters.
-     * @return The created job node
-     */
-    public static EmsScriptNode getOrCreateJob(EmsScriptNode contextFolder,
-                                               String jobName, String jobType,
-                                               Status status, StringBuffer response,
-                                               boolean generateName) {
-
-        EmsScriptNode jobNode = null;
-
-        // to make sure no permission issues, run as admin
-        String origUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        AuthenticationUtil.setRunAsUser( "admin" );
-
-        EmsScriptNode jobPkgNode = contextFolder.childByNamePath("Jobs");
-        if (jobPkgNode == null) {
-            jobPkgNode = contextFolder.createFolder("Jobs", "cm:folder", null);
-            jobPkgNode.setPermission( "SiteCollaborator", "GROUP_EVERYONE" );
-        }
-
-        if (jobPkgNode != null) {
-            jobNode = getOrCreateJobImpl(jobPkgNode, jobName, jobType, status, generateName);
-        }
-
-        // make sure we're running back as the originalUser
-        AuthenticationUtil.setRunAsUser( origUser );
-
-        return jobNode;
     }
 }

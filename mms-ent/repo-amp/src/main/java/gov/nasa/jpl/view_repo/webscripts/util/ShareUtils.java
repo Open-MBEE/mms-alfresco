@@ -17,8 +17,8 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+import com.google.gson.JsonObject;
 
 public class ShareUtils {
     static Logger logger = Logger.getLogger(ShareUtils.class);
@@ -49,16 +49,18 @@ public class ShareUtils {
         ShareUtils.setPassword(EmsConfig.get("app.pass"));
 
         if (SHARE_URL == null) {
+            // TODO: remove dependency on deprecated method
             SysAdminParams adminParams = services.getSysAdminParams();
-            // int repoPort = adminParams.getAlfrescoPort();
-            int repoPort = 8080;
-            int sharePort = repoPort;
-            // String protocol = adminParams.getAlfrescoProtocol();
-            String protocol = "http";
-            String host = adminParams.getAlfrescoHost();
+            String repoProtocol = adminParams.getAlfrescoProtocol();
+            String repoHost = adminParams.getAlfrescoHost();
+            int repoPort = adminParams.getAlfrescoPort();
+            REPO_URL = String.format("%s://%s:%s/alfresco", repoProtocol, repoHost, repoPort);
 
-            REPO_URL = String.format("%s://%s:%s/alfresco", protocol, host, repoPort);
-            SHARE_URL = String.format("%s://%s:%s/share", protocol, host, sharePort);
+            String shareProtocol = adminParams.getShareProtocol();
+            String shareHost = adminParams.getShareHost();
+            int sharePort = adminParams.getSharePort();
+            SHARE_URL = String.format("%s://%s:%s/share", shareProtocol, shareHost, sharePort);
+
             LOGIN_URL = SHARE_URL + "/page/dologin";
             CREATE_SITE_URL = SHARE_URL + "/page/modules/create-site";
             UPDATE_GROUP_URL = REPO_URL + "/service/api/groups";
@@ -76,6 +78,7 @@ public class ShareUtils {
     /**
      * Create the site dashboard by using the Share createSite service, then make the current
      * user a manager for the specified site
+     *
      * @param sitePreset
      * @param siteId
      * @param siteTitle
@@ -83,11 +86,13 @@ public class ShareUtils {
      * @param isPublic
      * @return
      */
-    public static boolean constructSiteDashboard(String sitePreset, String siteId, String siteTitle, String siteDescription, boolean isPublic) {
+    public static boolean constructSiteDashboard(String sitePreset, String siteId, String siteTitle,
+        String siteDescription, boolean isPublic) {
         // only description is allowed to be null
-        if (sitePreset == null || siteId == null || siteTitle == null ) {
-            logger.error(String.format("Fields cannot be null: sitePreset:%s  siteId:%s  siteTitle:%s",
-                            sitePreset, siteId, siteTitle));
+        if (sitePreset == null || siteId == null || siteTitle == null) {
+            logger.error(String
+                .format("Fields cannot be null: sitePreset:%s  siteId:%s  siteTitle:%s", sitePreset, siteId,
+                    siteTitle));
             return false;
         }
 
@@ -103,33 +108,27 @@ public class ShareUtils {
         String loginData = "username=" + username + "&password=" + password;
 
         if (!makeSharePostCall(httpClient, LOGIN_URL, loginData, CONTENT_TYPE_FORM, "Login to Alfresco Share",
-                        HttpStatus.SC_MOVED_TEMPORARILY)) {
+            HttpStatus.SC_MOVED_TEMPORARILY)) {
             logger.error("Could not login to share site");
             return false;
         }
 
-        JSONObject json = new JSONObject();
-        try {
-            json.put("shortName", siteId);
-            json.put("sitePreset", sitePreset);
-            json.put("title", siteTitle);
-            json.put("description", siteDescription);
-            json.put("visibility", isPublic ? "PUBLIC" : "PRIVATE");
-        } catch ( JSONException e ) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-            logger.error( "Could not create JSON for site creation" );
-            return false;
-        }
+        JsonObject json = new JsonObject();
+        json.addProperty("shortName", siteId);
+        json.addProperty("sitePreset", sitePreset);
+        json.addProperty("title", siteTitle);
+        json.addProperty("description", siteDescription);
+        json.addProperty("visibility", isPublic ? "PUBLIC" : "PRIVATE");
 
         if (!makeSharePostCall(httpClient, CREATE_SITE_URL, json.toString(), CONTENT_TYPE_JSON,
-                        "Create site with name: " + siteId, HttpStatus.SC_OK)) {
+            "Create site with name: " + siteId, HttpStatus.SC_OK)) {
             logger.error("Could not create site - 1st pass");
             return false;
         }
 
         // for some reason need to do this twice unsure why this is the case
         if (!makeSharePostCall(httpClient, CREATE_SITE_URL, json.toString(), CONTENT_TYPE_JSON,
-                        "Create site with name: " + siteId, HttpStatus.SC_OK)) {
+            "Create site with name: " + siteId, HttpStatus.SC_OK)) {
             logger.error("Could not create site -2nd pass");
             // return false;
         }
@@ -151,7 +150,7 @@ public class ShareUtils {
     }
 
     private static boolean makeSharePostCall(HttpClient httpClient, String url, String data, String dataType,
-                    String callName, int expectedStatus) {
+        String callName, int expectedStatus) {
         boolean success = false;
         PostMethod postMethod = null;
         try {
@@ -167,7 +166,7 @@ public class ShareUtils {
                 logger.error(String.format("Could not %s, HTTP Status code : %s", callName, status));
             }
         } catch (Exception e) {
-            logger.error(String.format("Failed to %s\n\n%s", callName, LogUtil.getStackTrace(e)));
+            logger.error(String.format("Failed to %s%n%n%s", callName, LogUtil.getStackTrace(e)));
         } finally {
             if (postMethod != null) {
                 postMethod.releaseConnection();
@@ -178,7 +177,7 @@ public class ShareUtils {
     }
 
     private static PostMethod createPostMethod(String url, String body, String contentType)
-                    throws UnsupportedEncodingException {
+        throws UnsupportedEncodingException {
         PostMethod postMethod = new PostMethod(url);
         postMethod.setRequestHeader(HEADER_CONTENT_TYPE, contentType);
         postMethod.setRequestEntity(new StringRequestEntity(body, CONTENT_TYPE_TEXT_PLAIN, UTF_8));
@@ -206,26 +205,26 @@ public class ShareUtils {
     /**
      * Method for posting to repository (requires basic authentication that doesn't seem to
      * work with the other call type)
+     *
      * @param targetURL
      * @param dataType
      * @param callName
      * @param expectedStatus
      * @return
      */
-    private static boolean makeRepoPostCall(String targetURL, String dataType,
-                    String callName, int expectedStatus) {
-        logger.debug( String.format("posting to %s", targetURL) );
+    private static boolean makeRepoPostCall(String targetURL, String dataType, String callName, int expectedStatus) {
+        logger.debug(String.format("posting to %s", targetURL));
         boolean success = false;
 
         HttpURLConnection connection = null;
         try {
             //Create connection
             URL url = new URL(targetURL);
-            connection = (HttpURLConnection)url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty(HEADER_CONTENT_TYPE, dataType);
 
-            connection.setUseCaches (false);
+            connection.setUseCaches(false);
             connection.setDoInput(true);
             connection.setDoOutput(true);
             String userpass = username + ":" + password;
@@ -236,12 +235,13 @@ public class ShareUtils {
             if (connection.getResponseCode() == expectedStatus) {
                 success = true;
             } else {
-                logger.error(String.format("Failed request: %s with status: %s", targetURL, connection.getResponseMessage()));
+                logger.error(
+                    String.format("Failed request: %s with status: %s", targetURL, connection.getResponseMessage()));
             }
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
-            if(connection != null) {
+            if (connection != null) {
                 connection.disconnect();
             }
         }

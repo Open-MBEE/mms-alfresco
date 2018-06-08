@@ -2,8 +2,13 @@
     "orgs": [
         {
             "id": "initorg",
-            "name": "Initial Organization",
+            "name": "Initial Organization Test",
             "anyprop": "Any Value"
+        },
+        {
+            "id": "multiorg",
+            "name": "A New Organization within update",
+            "anotherprop": "Another Value"
         }
     ]
 }

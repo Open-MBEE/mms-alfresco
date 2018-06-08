@@ -15,6 +15,7 @@ import org.postgresql.util.PSQLException;
 public interface GraphInterface {
     String LASTCOMMIT = "lastCommit";
     String INITIALCOMMIT = "initialCommit";
+    String DELETED = "deleted";
 
     void connect();
 
@@ -62,15 +63,15 @@ public interface GraphInterface {
 
     boolean edgeExists(String parent, String child, DbEdgeTypes dbet);
 
-    List<String> getElasticIdsFromSysmlIds(List<String> sysmlids, boolean withDeleted);
+    List<String> getElasticIdsFromSysmlIdsNodes(List<String> sysmlids, boolean withDeleted);
 
     Node getNodeFromSysmlId(String sysmlId);
 
     Node getNodeFromSysmlId(String sysmlId, boolean withDeleted);
 
-    Set<String> getElasticIds();
+    Set<String> getElasticIdsNodes();
 
-    Set<String> getElasticIds(boolean withDeleted);
+    Set<String> getElasticIdsNodes(boolean withDeleted);
 
     String getElasticIdFromSysmlId(String sysmlId);
 
@@ -86,7 +87,7 @@ public interface GraphInterface {
 
     void insertEdge(String parentSysmlId, String childSysmlId, DbEdgeTypes edgeType);
 
-    Map<String, String> getCommitAndTimestamp(String lookUp, String value);
+    Map<String, String> getCommitAndTimestamp(String lookUp, Object value);
 
     Long getTimestamp(String lookUp, String value);
 
@@ -122,7 +123,7 @@ public interface GraphInterface {
 
     void deleteRef(String id);
 
-    Pair<String, String> getRefElastic(String refId);
+    Map<String, String> getRefElastic(String refId);
 
     Pair<String, Long> getParentRef(String refId);
 

@@ -1,9 +1,8 @@
 {
     "_creator": "Collaborator",
-    "elements": [
+    "elements": [],
+    "rejected": [
         {
-            "_creator": "admin",
-            "_editable": true,
             "_modifier": "Collaborator",
             "_projectId": "PA",
             "_refId": "master",
@@ -21,8 +20,6 @@
             ]
         },
         {
-            "_creator": "admin",
-            "_editable": true,
             "_modifier": "Collaborator",
             "_projectId": "PA",
             "_refId": "master",
@@ -36,6 +33,23 @@
                 {
                     "string": "dlam_string",
                     "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_modifier": "Collaborator",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "talk",
+            "id": "303",
+            "isDerived": false,
+            "name": "three hundred and three is also updated",
+            "ownerId": "302",
+            "type": "Property",
+            "value": [
+                {
+                    "real": 3.3,
+                    "type": "Real"
                 }
             ]
         }

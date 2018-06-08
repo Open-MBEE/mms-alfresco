@@ -3,7 +3,12 @@
         {
             "anyprop": "Any Value",
             "id": "initorg",
-            "name": "Initial Organization"
+            "name": "Initial Organization Test"
+        },
+        {
+            "anotherprop": "Another Value",
+            "id": "multiorg",
+            "name": "A New Organization within update"
         }
     ]
 }

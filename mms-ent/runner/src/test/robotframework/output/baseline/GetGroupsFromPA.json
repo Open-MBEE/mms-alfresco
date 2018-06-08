@@ -1,15 +1,29 @@
 {
     "groups": [
         {
-            "_id": "SitePackageB",
-            "_link": "/share/page/repository#filter=path|/Sites/initorg/documentLibrary/PA/SitePackageB",
-            "_name": "SitePackageB"
+            "_creator": "admin",
+            "_isGroup": true,
+            "_link": "/share/page/repository#filter=path|/Sites/initorg/documentLibrary/PA/SitePackageD",
+            "_modifier": "admin",
+            "_parentId": "SitePackageB",
+            "_projectId": "PA",
+            "_refId": "master",
+            "id": "SitePackageD",
+            "name": "SitePackageD",
+            "ownerId": "PackageC",
+            "type": "Package"
         },
         {
-            "_id": "SitePackageD",
-            "_link": "/share/page/repository#filter=path|/Sites/initorg/documentLibrary/PA/SitePackageD",
-            "_name": "SitePackageD",
-            "_parentId": "SitePackageB"
+            "_creator": "admin",
+            "_isGroup": true,
+            "_link": "/share/page/repository#filter=path|/Sites/initorg/documentLibrary/PA/SitePackageB",
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "id": "SitePackageB",
+            "name": "SitePackageB",
+            "ownerId": "PackageA",
+            "type": "Package"
         }
     ]
 }

@@ -7,14 +7,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.searchbox.cluster.UpdateSettings;
+import io.searchbox.core.*;
+import io.searchbox.indices.DeleteIndex;
+import io.searchbox.indices.mapping.PutMapping;
+import io.searchbox.indices.template.PutTemplate;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
+import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
 import gov.nasa.jpl.view_repo.util.EmsConfig;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import io.searchbox.action.BulkableAction;
@@ -22,19 +28,10 @@ import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
 import io.searchbox.client.config.HttpClientConfig;
-import io.searchbox.core.Bulk;
-import io.searchbox.core.BulkResult;
-import io.searchbox.core.Get;
-import io.searchbox.core.Index;
-import io.searchbox.core.Update;
-import io.searchbox.core.Search;
-import io.searchbox.core.SearchResult;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
 import io.searchbox.indices.Refresh;
 import io.searchbox.params.Parameters;
-import io.searchbox.core.DeleteByQuery;
-import io.searchbox.core.Delete;
 
 
 /**
@@ -50,18 +47,30 @@ public class ElasticHelper implements ElasticsearchInterface {
     private static int termLimit = Integer.parseInt(EmsConfig.get("elastic.limit.term"));
     private static int readTimeout = 1000000000;
 
-    private static final String ELEMENT = "element";
-    private static final String COMMIT = "commit";
+    public static final String ELEMENT = "element";
+    public static final String COMMIT = "commit";
+    private static final String PROFILE = "profile";
+    private static final String ARTIFACT = "artifact";
+
+    private static final String COMMIT_QUERY = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
 
     public void init(String elasticHost) {
 
-        JestClientFactory factory = new JestClientFactory();
+        JestClientFactory factory = new JestClientFactory(){
+            @Override
+            protected HttpClientBuilder configureHttpClient(HttpClientBuilder builder) {
+                builder = super.configureHttpClient(builder);
+                builder.setRetryHandler(new DefaultHttpRequestRetryHandler(3, true));
+                return builder;
+            }
+        };
         if (elasticHost.contains("https")) {
             factory.setHttpClientConfig(
                 new HttpClientConfig.Builder(elasticHost).defaultSchemeForDiscoveredNodes("https").multiThreaded(true)
                     .readTimeout(readTimeout).build());
         } else {
-            factory.setHttpClientConfig(new HttpClientConfig.Builder(elasticHost).readTimeout(readTimeout).multiThreaded(true).build());
+            factory.setHttpClientConfig(
+                new HttpClientConfig.Builder(elasticHost).readTimeout(readTimeout).multiThreaded(true).build());
         }
         client = factory.getObject();
         logger.warn(String
@@ -89,10 +98,39 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param index name of the index to create           (2)
      */
     public void createIndex(String index) throws IOException {
-        boolean indexExists = client.execute(new IndicesExists.Builder(index.toLowerCase().replaceAll("\\s+", "")).build()).isSucceeded();
+        boolean indexExists =
+            client.execute(new IndicesExists.Builder(index.toLowerCase().replaceAll("\\s+", "")).build()).isSucceeded();
         if (!indexExists) {
-            client.execute(new CreateIndex.Builder(index.toLowerCase().replaceAll("\\s+","")).build());
+            client.execute(new CreateIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build());
         }
+    }
+
+    public void deleteIndex(String index) throws IOException {
+        DeleteIndex indexExists = new DeleteIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build();
+        client.execute(indexExists);
+    }
+
+    public void applyTemplate(String template) throws IOException {
+        PutTemplate.Builder putTemplateBuilder =
+            new PutTemplate.Builder("template", template);
+        client.execute(putTemplateBuilder.build());
+    }
+
+    public void updateMapping(String index, String type, String mapping) throws IOException {
+        PutMapping.Builder putMappingBuilder = new PutMapping.Builder(index.toLowerCase().replaceAll("\\s+", ""), type, mapping);
+        client.execute(putMappingBuilder.build());
+    }
+
+    public void updateByQuery(String index, String payload, String type) throws IOException {
+        UpdateByQuery updateByQuery =
+            new UpdateByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
+                .build();
+        client.execute(updateByQuery);
+    }
+
+    public void updateClusterSettings(String payload) throws IOException {
+        UpdateSettings updateSettings = new UpdateSettings.Builder(payload).build();
+        client.execute(updateSettings);
     }
 
     /**
@@ -101,19 +139,68 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param id _id elasticsearch property          (2)
      * @return JSONObject o or null
      */
-    public JSONObject getElementByElasticId(String id, String index) throws IOException {
+    public JsonObject getElementByElasticId(String id, String index) throws IOException {
         // Cannot use method for commit type
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+",""), id).type(ELEMENT).build();
+        return getByElasticId(id, index, ELEMENT);
+    }
+
+    public JsonObject getProfileByElasticId(String id, String index) throws IOException {
+        // Cannot use method for commit type
+        return getByElasticId(id, index, PROFILE);
+    }
+
+    public JsonObject getElementByElasticIdArtifact(String id, String index) throws IOException {
+        // Cannot use method for commit type
+        return getByElasticId(id, index, ARTIFACT);
+    }
+
+    public JsonObject getByElasticId(String id, String index, String type) throws IOException {
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(type).build();
 
         JestResult result = client.execute(get);
 
         if (result.isSucceeded()) {
-            JSONObject o = new JSONObject(result.getJsonObject().get("_source").toString());
-            o.put(Sjm.ELASTICID, result.getJsonObject().get("_id").getAsString());
+            JsonObject o = result.getJsonObject().get("_source").getAsJsonObject();
+            o.add(Sjm.ELASTICID, result.getJsonObject().get("_id"));
             return o;
         }
 
         return null;
+    }
+
+    /**
+     * Gets the JSON document of a bool : should commit query
+     * result printed as Json looks like:
+     * {
+     *   "bool":{"should":[{"term":{"added.id":sysmlid}},
+     *                     {"term":{"updated.id":sysmlid}},
+     *                     {"term":{"deleted.id":sysmlid}}]}
+     * }
+     * @param sysmlid the sysmlid to add to the term search
+     * @return JsonObject o
+     */
+    public JsonObject getCommitBoolShouldQuery(String sysmlid) {
+        JsonObject query = new JsonObject();
+        JsonObject bool = new JsonObject();
+        query.add("bool", bool);
+        JsonArray should = new JsonArray();
+        bool.add("should", should);
+        JsonObject term1 = new JsonObject();
+        term1.addProperty("added.id", sysmlid);
+        JsonObject term2 = new JsonObject();
+        term2.addProperty("updated.id", sysmlid);
+        JsonObject term3 = new JsonObject();
+        term3.addProperty("deleted.id", sysmlid);
+        JsonObject term = new JsonObject();
+        term.add("term", term1);
+        should.add(term);
+        term = new JsonObject();
+        term.add("term", term2);
+        should.add(term);
+        term = new JsonObject();
+        term.add("term", term3);
+        should.add(term);
+        return query;
     }
 
     /**
@@ -129,57 +216,46 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param sysmlid sysmlId     (3)
      * @return JSONArray array or empty json array
      */
-    public JSONArray getCommitHistory(String sysmlid, String index) throws IOException {
+    public JsonArray getCommitHistory(String sysmlid, String index) throws IOException {
 
-        JSONArray should = new JSONArray();
-        should.put(new JSONObject().put("term", new JSONObject().put("added.id", sysmlid)));
-        should.put(new JSONObject().put("term", new JSONObject().put("updated.id", sysmlid)));
-        should.put(new JSONObject().put("term", new JSONObject().put("deleted.id", sysmlid)));
-        JSONObject query = new JSONObject().put("size", resultLimit)
-            .put("query", new JSONObject().put("bool", new JSONObject().put("should", should)))
-            .put("sort", new JSONArray().put(new JSONObject().put(Sjm.CREATED, new JSONObject().put("order", "desc"))));
+        JsonObject query = new JsonObject();
+        query.addProperty("size", resultLimit);
+        JsonObject query1 = getCommitBoolShouldQuery(sysmlid);
+        query.add("query", query1);
+        JsonArray sort = new JsonArray();
+        query.add("sort", sort);
+        JsonObject sort1 = new JsonObject();
+        sort.add(sort1);
+        JsonObject sort2 = new JsonObject();
+        sort1.add(Sjm.CREATED, sort2);
+        sort2.addProperty("order", "desc");
 
-        Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType(COMMIT).build();
+        Search search = new Search.Builder(query.toString())
+            .addIndex(index.toLowerCase().replaceAll("\\s+",""))
+            .addType(COMMIT)
+            .build();
         SearchResult result = client.execute(search);
 
-        JSONArray array = new JSONArray();
+        JsonArray array = new JsonArray();
 
-        if (result.getTotal() > 0) {
+        if (result.isSucceeded() && result.getTotal() > 0) {
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
             for (int i = 0; i < hits.size(); i++) {
-                JSONObject o = new JSONObject();
-                JSONObject record = new JSONObject(hits.get(i).getAsJsonObject().getAsJsonObject("_source").toString());
-                o.put(Sjm.SYSMLID, hits.get(i).getAsJsonObject().get("_id").getAsString());
-                o.put(Sjm.CREATED, record.get(Sjm.CREATED));
-                o.put(Sjm.CREATOR, record.get(Sjm.CREATOR));
-                array.put(o);
+            	JsonObject o = new JsonObject();
+                JsonObject record = hits.get(i).getAsJsonObject().getAsJsonObject("_source");
+                o.add(Sjm.SYSMLID, hits.get(i).getAsJsonObject().get("_id"));
+                o.add(Sjm.CREATED, record.get(Sjm.CREATED));
+                o.add(Sjm.CREATOR, record.get(Sjm.CREATOR));
+                if (record.has(Sjm.COMMENT)) {
+                    o.add(Sjm.COMMENT, record.get(Sjm.COMMENT));
+                }
+                array.add(o);
             }
-            return array;
+        } else if (!result.isSucceeded()) {
+            throw new IOException(String.format("Elasticsearch error[%1$s]:%2$s",
+            		result.getResponseCode(), result.getErrorMessage()));
         }
-        return new JSONArray();
-    }
-
-
-    public Boolean checkForElasticIdInCommit(String sysmlid, String commitId, String index) throws IOException {
-        JSONArray should = new JSONArray();
-        should.put(new JSONObject().put("term", new JSONObject().put("added.id", sysmlid)));
-        should.put(new JSONObject().put("term", new JSONObject().put("updated.id", sysmlid)));
-        should.put(new JSONObject().put("term", new JSONObject().put("deleted.id", sysmlid)));
-        JSONArray must = new JSONArray();
-        must.put(new JSONObject().put("term", new JSONObject().put("_id", commitId)));
-        JSONObject boolQueryMust = new JSONObject();
-        JSONObject boolQueryShould = new JSONObject();
-        boolQueryShould.put("bool", new JSONObject().put("should", should));
-        boolQueryMust.put("must", must);
-        must.put(boolQueryShould);
-        JSONObject query =
-            new JSONObject().put("size", resultLimit).put("query", new JSONObject().put("bool", boolQueryMust));
-        Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType(COMMIT).build();
-        SearchResult result = client.execute(search);
-
-        return result.getTotal() > 0;
-
-
+        return array;
     }
 
     /**
@@ -188,48 +264,56 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param id _id elasticsearch property          (2)
      * @return JSONObject o or null
      */
-    public JSONObject getCommitByElasticId(String id, String index) throws IOException {
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+",""), id).type(COMMIT).build();
+    public JsonObject getCommitByElasticId(String id, String index) throws IOException {
+        if (id == null) {
+            return null;
+        }
+        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(COMMIT).build();
 
         JestResult result = client.execute(get);
 
-        if (result.isSucceeded()) {
-            JSONObject o = new JSONObject(result.getJsonObject().get("_source").toString());
-            o.put(Sjm.SYSMLID, result.getJsonObject().get("_id").getAsString());
+        if (!result.isSucceeded() && result.getResponseCode() != 404) {
+            throw new IOException(
+                    String.format("Elasticsearch error[%1$s]:%2$s",
+                            result.getResponseCode(), result.getErrorMessage()));
+        } else if (result.isSucceeded()) {
+            JsonObject o = result.getJsonObject().getAsJsonObject("_source");
+            o.add(Sjm.SYSMLID, result.getJsonObject().get("_id"));
             return o;
         }
 
         return null;
     }
 
-    public JSONObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException {
-        JSONArray filter = new JSONArray();
-        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.COMMITID, elasticId)));
-        filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.SYSMLID, sysmlid)));
+    public JsonObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException {
+        return getByCommitId(elasticId, sysmlid, index, ELEMENT);
+    }
 
-        JSONObject boolQuery = new JSONObject();
-        boolQuery.put("filter", filter);
+    public JsonObject getArtifactByCommitId(String elasticId, String sysmlid, String index) throws IOException {
+        return getByCommitId(elasticId, sysmlid, index, ARTIFACT);
+    }
 
-        JSONObject queryJson = new JSONObject().put("query", new JSONObject().put("bool", boolQuery));
-        // should passes a json array that is the terms array from above
+    private JsonObject getByCommitId(String elasticId, String sysmlid, String index, String type) throws IOException {
+        String query = String.format(COMMIT_QUERY, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
 
         if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Search Query %s", queryJson.toString()));
+            logger.debug(String.format("Search Query %s", query));
         }
 
-        Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).addType(ELEMENT).build();
+        Search search = new Search.Builder(query).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
+            .addType(type).build();
         SearchResult result = client.execute(search);
 
         if (result.isSucceeded()) {
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-            if(hits.size() > 0){
-                JSONObject o = new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
-                o.put(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id").getAsString());
+            if (hits.size() > 0) {
+                JsonObject o = hits.get(0).getAsJsonObject().getAsJsonObject("_source").getAsJsonObject();
+                o.add(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id"));
                 return o;
             }
         }
-        return null;
 
+        return null;
     }
 
     /**
@@ -238,10 +322,10 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param ids list of elasticsearch _id(s) to find          (2)
      * @return JSONArray elements or empty array
      */
-    public JSONArray getElementsFromElasticIds(List<String> ids, String index) throws IOException {
+    public JsonArray getElementsFromElasticIds(List<String> ids, String index) throws IOException {
         // :TODO can be cleaned up with the getAPI
         int count = 0;
-        JSONArray elements = new JSONArray();
+        JsonArray elements = new JsonArray();
 
         if (ids.isEmpty()) {
             return elements;
@@ -251,26 +335,39 @@ public class ElasticHelper implements ElasticsearchInterface {
             // sublist is fromIndex inclusive, toIndex exclusive
             List<String> sub = ids.subList(count, Math.min(ids.size(), count + termLimit));
 
-            JSONObject queryJson = new JSONObject().put("size", resultLimit)
-                .put("query", new JSONObject().put("terms", new JSONObject().put("_id", sub))).put("sort",
-                    new JSONArray().put(new JSONObject().put(Sjm.MODIFIED, new JSONObject().put("order", "desc"))));
+            JsonObject queryJson = new JsonObject();
+            queryJson.addProperty("size", resultLimit);
+            JsonObject query = new JsonObject();
+            queryJson.add("query", query);
+            JsonObject terms = new JsonObject();
+            query.add("terms", terms);
+            JsonUtil.addStringList(terms, "_id", sub);
+            JsonArray sorta = new JsonArray();
+            queryJson.add("sort", sorta);
+            JsonObject mod = new JsonObject();
+            JsonObject order = new JsonObject();
+            sorta.add(mod);
+            mod.add(Sjm.MODIFIED, order);
+            order.addProperty("order", "desc");
 
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("Search Query %s", queryJson.toString()));
             }
 
-            Search search = new Search.Builder(queryJson.toString()).addIndex(index.toLowerCase().replaceAll("\\s+","")).build();
+            Search search = new Search.Builder(queryJson.toString())
+            		.addIndex(index.toLowerCase().replaceAll("\\s+",""))
+            		.build();
             SearchResult result = client.execute(search);
 
             if (result != null && result.isSucceeded() && result.getTotal() > 0) {
                 JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
                 for (int i = 0; i < hits.size(); i++) {
-                    JSONObject o = new JSONObject(hits.get(i).getAsJsonObject().getAsJsonObject("_source").toString());
-                    o.put(Sjm.ELASTICID, hits.get(i).getAsJsonObject().get("_id").getAsString());
-                    elements.put(o);
+                    JsonObject o = hits.get(i).getAsJsonObject().getAsJsonObject("_source");
+                    o.addProperty(Sjm.ELASTICID, hits.get(i).getAsJsonObject().get("_id").getAsString());
+                    elements.add(o);
                 }
             } else if (result != null && !result.isSucceeded()) {
-            	throw new IOException(String.format("Search failed:%s", result.getErrorMessage()));
+                throw new IOException(String.format("Search failed:%s", result.getErrorMessage()));
             }
             count += termLimit;
         }
@@ -285,35 +382,31 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param j JSON document to index          (2)
      * @return ElasticResult result
      */
-    public ElasticResult indexElement(JSONObject j, String index) throws IOException {
+    public ElasticResult indexElement(JsonObject j, String index, String eType) throws IOException {
         // :TODO error handling
         ElasticResult result = new ElasticResult();
-        String eType = j.has(COMMIT) ? COMMIT : ELEMENT;
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("indexElement: %s", j));
         }
 
-        JSONObject k;
-        if (j.has(eType)) {
-            k = removeWrapper(j);
+        if (j.has(Sjm.SYSMLID)) {
+            result.sysmlid = j.get(Sjm.SYSMLID).getAsString();
+        }
+        if (j.has(Sjm.ELASTICID)) {
+            result.elasticId = client.execute(new Index.Builder(j.toString()).id(j.get(Sjm.ELASTICID).getAsString())
+                .index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build()).getId();
         } else {
-            k = j;
+            result.elasticId = client.execute(
+                new Index.Builder(j.toString()).index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build())
+                .getId();
+        }
+        if (result.elasticId == null) {
+            throw new IOException("Unable to index node in elasticsearch");
         }
 
-        if (k.has(Sjm.SYSMLID)) {
-            result.sysmlid = k.getString(Sjm.SYSMLID);
-        }
-        if (k.has(Sjm.ELASTICID)) {
-            result.elasticId = client.execute(
-                new Index.Builder(k.toString()).id(k.getString(Sjm.ELASTICID)).index(index.toLowerCase().replaceAll("\\s+","")).type(eType).build())
-                .getId();
-        } else {
-            result.elasticId =
-                client.execute(new Index.Builder(k.toString()).index(index.toLowerCase().replaceAll("\\s+","")).type(eType).build()).getId();
-        }
-        k.put(Sjm.ELASTICID, result.elasticId);
-        result.current = k;
+        j.addProperty(Sjm.ELASTICID, result.elasticId);
+        result.current = j;
 
         return result;
     }
@@ -331,11 +424,27 @@ public class ElasticHelper implements ElasticsearchInterface {
         return result.isSucceeded();
     }
 
-    public boolean updateElement(String id, JSONObject payload, String index) throws JSONException, IOException {
+    public boolean updateElement(String id, JsonObject payload, String index) throws IOException {
+        JsonObject update = new JsonObject();
+        update.add("doc", payload);
+        update.addProperty("_source", true);
+        JestResult updated = client.execute(
+            new Update.Builder(update.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(ELEMENT)
+                .build());
+        return updated.isSucceeded();
+    }
 
-        client.execute(new Update.Builder(payload.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+","")).type(ELEMENT).build());
-
-        return true;
+    public JsonObject updateProfile(String id, JsonObject payload, String index) throws IOException {
+        JsonObject upsert = new JsonObject();
+        upsert.add("doc", payload);
+        upsert.addProperty("doc_as_upsert", true);
+        upsert.addProperty("_source", true);
+        JestResult res = client.execute(
+            new Update.Builder(upsert.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(PROFILE)
+                .build());
+        if (res.isSucceeded())
+            return res.getJsonObject().get("get").getAsJsonObject().get("_source").getAsJsonObject();
+        return new JsonObject();
     }
 
     /**
@@ -345,21 +454,24 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param operation    checks for CRUD operation, does not delete documents
      * @return ElasticResult e
      */
-    public boolean bulkIndexElements(JSONArray bulkElements, String operation, boolean refresh, String index) throws JSONException, IOException {
+    public boolean bulkIndexElements(JsonArray bulkElements, String operation, boolean refresh, String index, String type)
+        throws IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         // BulkableAction is generic
         ArrayList<BulkableAction> actions = new ArrayList<>();
-        JSONArray currentList = new JSONArray();
-        for (int i = 0; i < bulkElements.length(); i++) {
-            JSONObject curr = bulkElements.getJSONObject(i);
+        JsonArray currentList = new JsonArray();
+        for (int i = 0; i < bulkElements.size(); i++) {
+            JsonObject curr = bulkElements.get(i).getAsJsonObject();
             if (operation.equals("delete")) {
                 continue;
             } else {
-                actions.add(new Index.Builder(curr.toString()).id(curr.getString(Sjm.ELASTICID)).build());
-                currentList.put(curr);
+                actions.add(new Index.Builder(curr.toString())
+                		.id(curr.get(Sjm.ELASTICID).getAsString())
+                		.build());
+                currentList.add(curr);
             }
-            if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.length() - 1)) {
-                BulkResult result = insertBulk(actions, refresh, index.toLowerCase().replaceAll("\\s+",""));
+            if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.size() - 1)) {
+                BulkResult result = insertBulk(actions, refresh, index.toLowerCase().replaceAll("\\s+", ""), type);
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
@@ -374,18 +486,19 @@ public class ElasticHelper implements ElasticsearchInterface {
         return true;
     }
 
-    public boolean bulkUpdateElements(Set<String> elements, String payload, String index) throws JSONException, IOException {
+    public boolean bulkUpdateElements(Set<String> elements, String payload, String index, String type)
+        throws IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
         ArrayList<BulkableAction> actions = new ArrayList<>();
-        JSONArray currentList = new JSONArray();
+        JsonArray currentList = new JsonArray();
 
         int i = 0;
-        for (String id: elements) {
+        for (String id : elements) {
             actions.add(new Update.Builder(payload).id(id).build());
-            currentList.put(id);
+            currentList.add(id);
 
             if ((((i + 1) % limit) == 0 && i != 0) || i == (elements.size() - 1)) {
-                BulkResult result = insertBulk(actions, false, index.toLowerCase().replaceAll("\\s+",""));
+                BulkResult result = insertBulk(actions, false, index.toLowerCase().replaceAll("\\s+", ""), type);
                 if (!result.isSucceeded()) {
                     logger.error(String.format("Elastic Bulk Update Error: %s", result.getErrorMessage()));
                     logger.error(String.format("Failed items JSON: %s", currentList));
@@ -406,50 +519,50 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param actions (2)
      * @return returns result of bulk index
      */
-    private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh, String index) throws JSONException, IOException {
-        Bulk bulk = new Bulk.Builder().defaultIndex(index).defaultType(ELEMENT).addAction(actions).setParameter(Parameters.REFRESH, refresh).build();
+    private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh, String index, String type)
+        throws IOException {
+        Bulk bulk = new Bulk.Builder().defaultIndex(index).defaultType(type).addAction(actions)
+            .setParameter(Parameters.REFRESH, refresh).build();
         return client.execute(bulk);
     }
+
     // :TODO has to be set to accept multiple indexes as well.  Will need VE changes
-    public JSONArray search(JSONObject queryJson) throws IOException {
+    public JsonObject search(JsonObject queryJson) throws IOException {
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("Search Query %s", queryJson.toString()));
         }
 
-        JSONArray elements = new JSONArray();
+        JsonObject top = new JsonObject();
+        JsonArray elements = new JsonArray();
 
         Search search = new Search.Builder(queryJson.toString()).build();
         SearchResult result = client.execute(search);
+
+        if (result == null) {
+            return top;
+        }
 
         if (result.getTotal() > 0) {
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
             for (int i = 0; i < hits.size(); i++) {
 
-                JSONObject o = new JSONObject(hits.get(i).getAsJsonObject().getAsJsonObject("_source").toString());
+                JsonObject o = hits.get(i).getAsJsonObject().getAsJsonObject("_source");
 
-                elements.put(o);
+                elements.add(o);
             }
         }
-
-        return elements;
+        top.add("elements", elements);
+        if (result.getJsonObject().has("aggregations")) {
+            JsonObject aggs = result.getJsonObject().getAsJsonObject("aggregations");
+            top.add("aggregations", aggs);
+        }
+        return top;
     }
 
-    public JSONObject searchLiteral(JSONObject queryJson) throws IOException {
+    public JsonObject searchLiteral(JsonObject queryJson) throws IOException {
         Search search = new Search.Builder(queryJson.toString()).build();
         SearchResult result = client.execute(search);
-        return new JSONObject(result.getJsonObject().toString());
-    }
-
-    private static JSONObject removeWrapper(JSONObject jsonObject) {
-        String eType = null;
-        JSONObject result = new JSONObject();
-        if (jsonObject.has(ELEMENT) || jsonObject.has(COMMIT)) {
-            eType = jsonObject.has(COMMIT) ? COMMIT : ELEMENT;
-        }
-        if (eType != null) {
-            result = jsonObject.getJSONObject(eType);
-        }
-        return result;
+        return result.getJsonObject();
     }
 
     /**
@@ -460,15 +573,21 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param ids
      * @return JSONObject Result
      */
-    public JSONObject bulkDeleteByType(String type, ArrayList<String> ids, String index){
+    public JsonObject bulkDeleteByType(String type, ArrayList<String> ids, String index) {
+        if (ids.isEmpty()) {
+            return new JsonObject();
+        }
+
         JestResult result = null;
         try {
             ArrayList<Delete> deleteList = new ArrayList<>();
 
-            for(String commitId : ids){
-                deleteList.add(new Delete.Builder(commitId).type(type).index(index.toLowerCase().replaceAll("\\s+","")).build());
+            for (String commitId : ids) {
+                deleteList.add(
+                    new Delete.Builder(commitId).type(type).index(index.toLowerCase().replaceAll("\\s+", "")).build());
             }
-            Bulk bulk = new Bulk.Builder().defaultIndex(index.toLowerCase().replaceAll("\\s+","")).defaultIndex(type).addAction(deleteList).build();
+            Bulk bulk = new Bulk.Builder().defaultIndex(index.toLowerCase().replaceAll("\\s+", "")).defaultIndex(type)
+                .addAction(deleteList).build();
 
             result = client.execute(bulk);
 
@@ -479,70 +598,68 @@ public class ElasticHelper implements ElasticsearchInterface {
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-
-        return new JSONObject(result != null ? result.getJsonString() : "");
-    }
-
-    /**
-     * Performs a delete by query on ElasticSearch using the given field and id.
-     * @param field
-     * @param projectId
-     * @return JSON Response
-     */
-    // :TODO do we need to search for the project now?
-    public JSONObject deleteElasticElements(String field, String projectId){
-        JestResult result = null;
-        JSONObject query = new JSONObject();
-        query.put("query", new JSONObject().put("term", new JSONObject().put(field, projectId.toLowerCase().replaceAll("\\s+",""))));
-
-        // Verbose statement to make sure it uses the correct delete by query class from searchbox.
-        DeleteByQuery deleteByQuery = new DeleteByQuery.Builder(query.toString()).addIndex(projectId.toLowerCase().replaceAll("\\s+","")).build();
-
-        try {
-            result = client.execute(deleteByQuery);
-            if (!result.isSucceeded()) {
-                logger.error("Deleting Elastic Elements Failed!");
-                logger.error(result.getErrorMessage());
-            }
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-
+        JsonObject o = new JsonObject();
+        if (result != null) {
+            o = result.getJsonObject();
         }
-        return new JSONObject(result.getJsonString());
+        return o;
     }
 
     /**
      * Search elasticsearch for an element based on the sysmlids provided and timestamp. Elasticsearch will find all elements matching
      * the sysmlid then filter and sort by timestamp. If the element doesn't exist at the timestamp it will return null.
+     *
      * @param sysmlId
      * @param timestamp
      * @return
      */
-    public JSONObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds, String index) {
+    public JsonObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds,
+        String index) {
         // Create filter array
         int count = 0;
         while (count < refsCommitIds.size()) {
             List<String> sub = refsCommitIds.subList(count, Math.min(refsCommitIds.size(), count + termLimit));
 
-            JSONArray filter = new JSONArray();
-            filter.put(new JSONObject().put("range", new JSONObject().put("_modified", new JSONObject().put("lte", timestamp))));
-            filter.put(new JSONObject().put("terms", new JSONObject().put(Sjm.COMMITID, sub)));
-            filter.put(new JSONObject().put("term", new JSONObject().put(Sjm.SYSMLID, sysmlId)));
+            JsonArray filter = new JsonArray();
+            JsonObject filt1 = new JsonObject();
+            JsonObject filtv = new JsonObject();
+            JsonObject filtv1 = new JsonObject();
+            filter.add(filt1);
+            filt1.add("range", filtv);
+            filtv.add("_modified", filtv1);
+            filtv1.addProperty("lte", timestamp);
+            JsonObject filt2 = new JsonObject();
+            JsonObject filt2v = new JsonObject();
+            filter.add(filt2);
+            filt2.add("terms", filt2v);
+            JsonUtil.addStringList(filt2v, Sjm.COMMITID, sub);
+            JsonObject filt3 = new JsonObject();
+            JsonObject filt3v = new JsonObject();
+            filter.add(filt3);
+            filt3.add("term", filt3v);
+            filt3v.addProperty(Sjm.SYSMLID, sysmlId);
 
             // Create sort
-            JSONArray sort = new JSONArray();
-            JSONObject modifiedSortOpt = new JSONObject();
-            modifiedSortOpt.put("order", "desc");
-            sort.put(new JSONObject().put("_modified", modifiedSortOpt));
+            JsonArray sort = new JsonArray();
+            JsonObject modified = new JsonObject();
+            JsonObject modifiedSortOpt = new JsonObject();
+            sort.add(modified);
+            modified.add("_modified", modifiedSortOpt);
+            modifiedSortOpt.addProperty("order", "desc");
 
             // Add filter to bool, then bool to query
-            JSONObject bool = new JSONObject().put("bool", new JSONObject().put("filter", filter));
-            JSONObject query = new JSONObject().put("query", bool);
-            query.put("sort", sort);
+            JsonObject query = new JsonObject();
+            JsonObject queryv = new JsonObject();
+            JsonObject bool = new JsonObject();
+            query.add("sort", sort);
+            query.add("query", queryv);
+            queryv.add("bool", bool);
+            bool.add("filter", filter);
             // Add size limit
-            query.put("size", "1");
+            query.addProperty("size", "1");
 
-            Search search = new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", "")).build();
+            Search search =
+                new Search.Builder(query.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", "")).build();
             SearchResult result;
             try {
                 result = client.execute(search);
@@ -550,7 +667,7 @@ public class ElasticHelper implements ElasticsearchInterface {
                 if (result.getTotal() > 0) {
                     JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
                     if (hits.size() > 0) {
-                        return new JSONObject(hits.get(0).getAsJsonObject().getAsJsonObject("_source").toString());
+                        return hits.get(0).getAsJsonObject().getAsJsonObject("_source");
                     }
                 }
             } catch (IOException e) {
@@ -558,7 +675,7 @@ public class ElasticHelper implements ElasticsearchInterface {
             }
             count += termLimit;
         }
-        return new JSONObject();
+        return new JsonObject();
     }
 
     public Map<String, String> getDeletedElementsFromCommits(List<String> commitIds, String index) {
@@ -567,15 +684,27 @@ public class ElasticHelper implements ElasticsearchInterface {
         while (count < commitIds.size()) {
             List<String> sub = commitIds.subList(count, Math.min(commitIds.size(), count + termLimit));
 
-            JSONObject queryWrapper = new JSONObject();
+            JsonObject queryWrapper = new JsonObject();
 
-            JSONObject query = new JSONObject();
-            query.put("must", new JSONObject().put("exists", new JSONObject().put("field", "deleted.id")));
-            query.put("filter", new JSONObject().put("terms", new JSONObject().put(Sjm.ELASTICID, sub)));
+            JsonObject query = new JsonObject();
+            JsonObject queryv = new JsonObject();
+            query.add("bool", queryv);
+            JsonObject must = new JsonObject();
+            JsonObject exists = new JsonObject();
+            queryv.add("must", must);
+            must.add("exists", exists);
+            exists.addProperty("field", "deleted.id");
+            JsonObject filter = new JsonObject();
+            JsonObject terms = new JsonObject();
+            queryv.add("filter", filter);
+            filter.add("terms", terms);
+            JsonUtil.addStringList(terms, Sjm.ELASTICID, sub);
 
-            queryWrapper.put("query", new JSONObject().put("bool", query));
+            queryWrapper.add("query", query);
 
-            Search search = new Search.Builder(queryWrapper.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", "")).build();
+            Search search =
+                new Search.Builder(queryWrapper.toString()).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
+                    .build();
 
             try {
                 SearchResult result = client.execute(search);
@@ -587,15 +716,15 @@ public class ElasticHelper implements ElasticsearchInterface {
 
                     for (int i = 0; i < hitSize; ++i) {
 
-                        JSONObject hitResult = new JSONObject(hits.get(i).getAsJsonObject().toString());
-                        JSONArray deletedArray = hitResult.getJSONObject("_source").getJSONArray("deleted");
+                        JsonObject hitResult = hits.get(i).getAsJsonObject();
+                        JsonArray deletedArray = hitResult.getAsJsonObject("_source").get("deleted").getAsJsonArray();
 
-                        int numDeleted = deletedArray.length();
+                        int numDeleted = deletedArray.size();
 
                         for (int y = 0; y < numDeleted; ++y) {
-                            JSONObject deletedObject = deletedArray.getJSONObject(y);
-                            deletedElements.put(deletedObject.getString(Sjm.ELASTICID),
-                                hitResult.getJSONObject("_source").getString(Sjm.CREATED));
+                            JsonObject deletedObject = deletedArray.get(y).getAsJsonObject();
+                            deletedElements.put(deletedObject.get(Sjm.ELASTICID).getAsString(),
+                                hitResult.getAsJsonObject("_source").get(Sjm.CREATED).getAsString());
                         }
                     }
                 }

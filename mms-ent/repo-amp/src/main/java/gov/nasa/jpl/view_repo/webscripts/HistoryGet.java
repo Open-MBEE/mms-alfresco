@@ -8,18 +8,20 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
@@ -65,32 +67,41 @@ public class HistoryGet extends ModelGet {
 
         Map<String, Object> model = new HashMap<>();
 
+        String[] accepts = req.getHeaderValues("Accept");
+        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Accept: %s", accept));
+        }
+
         if (logger.isDebugEnabled()) {
             logger.debug(user + " " + req.getURL());
         }
 
-        JSONObject top = new JSONObject();
-        JSONArray elementsJson = handleRequest(req);
+        JsonObject top = new JsonObject();
+        JsonArray elementsJson = handleRequest(req);
 
         try {
-            if (elementsJson.length() > 0) {
-                top.put(Sjm.COMMITS, elementsJson);
+            if (elementsJson.size() > 0) {
+                top.add(Sjm.COMMITS, elementsJson);
             } else {
                 responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
             }
 
             if (!Utils.isNullOrEmpty(response.toString()))
-                top.put("message", response.toString());
+                top.addProperty("message", response.toString());
 
-        } catch (JSONException e) {
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not create JSON response", e);
         } catch (Exception e) {
             log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
         }
 
         status.setCode(responseStatus.getCode());
-        model.put(Sjm.RES, top.toString(4));
-
+        if (prettyPrint || accept.contains("webp")) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            model.put(Sjm.RES, gson.toJson(top));
+        } else {
+            model.put(Sjm.RES, top);
+        }
         printFooter(user, logger, timer);
         return model;
     }
@@ -108,14 +119,10 @@ public class HistoryGet extends ModelGet {
      * @param req
      * @return
      */
-    private JSONArray handleRequest(WebScriptRequest req) {
-        // REVIEW -- Why check for errors here if validate has already been
-        // called? Is the error checking code different? Why?
-
-        // Creates an empty JSONArray
-        JSONArray jsonHist = null;
+    private JsonArray handleRequest(WebScriptRequest req) {
+        JsonArray jsonHist = new JsonArray();
         try {
-            String[] idKeys = { "modelid", "elementid", "elementId" };
+            String[] idKeys = { "elementId", "artifactId" };
             String modelId = null;
             for (String idKey : idKeys) {
                 modelId = req.getServiceMatch().getTemplateVars().get(idKey);
@@ -127,7 +134,7 @@ public class HistoryGet extends ModelGet {
             if (modelId == null) {
                 logger.error("Model ID Null...");
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element");
-                return new JSONArray();
+                return jsonHist;
             }
 
             EmsNodeUtil emsNodeUtil = new EmsNodeUtil(getProjectId(req), getRefId(req));

@@ -1,0 +1,160 @@
+{
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_qualifiedId": "/CompleteModelGet/A/B",
+            "_qualifiedName": "/Project/three hundred/three hundred and one",
+            "_refId": "master",
+            "documentation": "else",
+            "id": "B",
+            "isDerived": false,
+            "name": "three hundred and one",
+            "ownerId": "A",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_qualifiedId": "/CompleteModelGet/holding_bin_CompleteModelGet/D",
+            "_qualifiedName": "/Project/Holding Bin/Has no owner",
+            "_refId": "master",
+            "documentation": "to",
+            "id": "D",
+            "isDerived": false,
+            "name": "Has no owner",
+            "ownerId": "holding_bin_CompleteModelGet",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "blah",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_qualifiedId": "/CompleteModelGet/A",
+            "_qualifiedName": "/Project/three hundred",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "A",
+            "isDerived": false,
+            "name": "three hundred",
+            "ownerId": "CompleteModelGet",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_qualifiedId": "/CompleteModelGet/A/B/C",
+            "_qualifiedName": "/Project/three hundred/three hundred and one/three hundred and two",
+            "_refId": "master",
+            "documentation": "to",
+            "id": "C",
+            "isDerived": false,
+            "name": "three hundred and two",
+            "ownerId": "B",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_qualifiedId": "/CompleteModelGet",
+            "_qualifiedName": "/Project",
+            "_refId": "master",
+            "id": "CompleteModelGet",
+            "name": "Project",
+            "type": "Project"
+        },
+        {
+            "URI": null,
+            "_appliedStereotypeIds": [],
+            "_creator": "admin",
+            "_editable": true,
+            "_isGroup": false,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_qualifiedId": "/CompleteModelGet/view_instances_bin_CompleteModelGet",
+            "_qualifiedName": "/Project/View Instances Bin",
+            "_refId": "master",
+            "appliedStereotypeInstanceId": null,
+            "clientDependencyIds": [],
+            "documentation": "",
+            "elementImportIds": [],
+            "id": "view_instances_bin_CompleteModelGet",
+            "mdExtensionsIds": [],
+            "name": "View Instances Bin",
+            "nameExpression": null,
+            "ownerId": "CompleteModelGet",
+            "packageImportIds": [],
+            "packageMergeIds": [],
+            "profileApplicationIds": [],
+            "supplierDependencyIds": [],
+            "syncElementId": null,
+            "templateBindingIds": [],
+            "templateParameterId": null,
+            "type": "Package",
+            "visibility": "public"
+        },
+        {
+            "URI": null,
+            "_appliedStereotypeIds": [],
+            "_creator": "admin",
+            "_editable": true,
+            "_isGroup": false,
+            "_modifier": "admin",
+            "_projectId": "CompleteModelGet",
+            "_qualifiedId": "/CompleteModelGet/holding_bin_CompleteModelGet",
+            "_qualifiedName": "/Project/Holding Bin",
+            "_refId": "master",
+            "appliedStereotypeInstanceId": null,
+            "clientDependencyIds": [],
+            "documentation": "",
+            "elementImportIds": [],
+            "id": "holding_bin_CompleteModelGet",
+            "mdExtensionsIds": [],
+            "name": "Holding Bin",
+            "nameExpression": null,
+            "ownerId": "CompleteModelGet",
+            "packageImportIds": [],
+            "packageMergeIds": [],
+            "profileApplicationIds": [],
+            "supplierDependencyIds": [],
+            "syncElementId": null,
+            "templateBindingIds": [],
+            "templateParameterId": null,
+            "type": "Package",
+            "visibility": "public"
+        }
+    ]
+}

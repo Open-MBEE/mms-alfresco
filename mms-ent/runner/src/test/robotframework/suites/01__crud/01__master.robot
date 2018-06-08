@@ -4,6 +4,13 @@ Resource		../resources.robot
 Suite Setup	 Purge Results Directory
 
 *** Test Cases ***
+StartDebug
+	[Documentation]		"Start Debug Levels"
+	[Tags]				crud		critical		0100
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/Debug.json
+	${result} =			Post		url=${ROOT}/loglevel			data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+
 InitializeOrganization
 	[Documentation]		"Initialize MMS with an organization. ID: initorg, name: initorg"
 	[Tags]				crud		critical		0101
@@ -60,7 +67,7 @@ ProjectCreation
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreation.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 commitId
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -128,10 +135,39 @@ UpdateElements
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
+UpdateElementsNumbers
+	[Documentation]	 "Update an existing element.  Creates versions of a element."
+	[Tags]			  crud		critical		0122
+	${post_json} =		Get File		${CURDIR}/../../JsonData/UpdateElementsNumbers.json
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
+    Sleep               ${POST_DELAY_INDEXING}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
 InvalidUpdateElement
 	[Documentation]	 "Update an existing element with no changes. Should ignore commit."
 	[Tags]			  crud		critical		0111
 	${post_json} =		Get File		${CURDIR}/../../JsonData/UpdateElements.json
+	${elementa} =		Get	url=${ROOT}/projects/PA/refs/master/elements/300		headers=&{REQ_HEADER}
+    ${commitIda} =		Get Commit From Json		${elementa.json()}
+	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+	Should Be Equal		${result.status_code}		${200}
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+	Sleep				${POST_DELAY_INDEXING}
+	${elementb} =		Get	url=${ROOT}/projects/PA/refs/master/elements/300		headers=&{REQ_HEADER}
+    ${commitIdb} =		Get Commit From Json		${elementb.json()}
+	Should Be Equal		${commitIda}		${commitIdb}
+
+ModifiedTimeElement
+	[Documentation]	 "Update an existing element with no changes. Should ignore commit."
+	[Tags]			  crud		critical		0121
+	${post_json} =		Get File		${CURDIR}/../../JsonData/UpdateElementsModifiedTime.json
 	${elementa} =		Get	url=${ROOT}/projects/PA/refs/master/elements/300		headers=&{REQ_HEADER}
     ${commitIda} =		Get Commit From Json		${elementa.json()}
 	${result} =			Post		url=${ROOT}/projects/PA/refs/master/elements		data=${post_json}		headers=&{REQ_HEADER}
@@ -165,8 +201,8 @@ DeleteProject
 	Sleep				${POST_DELAY_INDEXING}
 	${result} =		 Delete	  url=${ROOT}/projects/${TEST_NAME}
 	Should Be Equal	 ${result.status_code}	   ${200}
-	${result} =			Get		url=${ROOT}/orgs/initorg/projects/${TEST_NAME}		headers=&{REQ_HEADER}
-	Should Be Equal		${result.status_code}		${404}
+	${check} =			Get		url=${ROOT}/orgs/initorg/projects/${TEST_NAME}		headers=&{REQ_HEADER}
+	Should Be Equal		${check.status_code}		${404}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -239,3 +275,54 @@ ResurrectElement
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
+
+DeleteOrgWithProject
+	[Documentation]		"Create an organization, add project, try to delete the org."
+	[Tags]				crud		critical		0118
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/DeleteOrganization.json
+	${result} =			Post		url=${ROOT}/orgs			data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	# Add a project to the organization
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectForDeleteOrganization.json
+	${result} =			Post		url=${ROOT}/orgs/deleteorg/projects			data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${result} =         Delete          url=${ROOT}/orgs/deleteorg          headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${400}
+	${filter} =			Create List	 _commitId
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+DeleteOrgWithNoProject
+	[Documentation]		"Delete project then organization"
+	[Tags]				crud		critical		0119
+	# Delete project
+	${result} =		    Delete	  url=${ROOT}/projects/deleteorgproject
+	Should Be Equal	    ${result.status_code}	   ${200}
+	Sleep				${POST_DELAY_INDEXING}
+	${result} =			Get		url=${ROOT}/orgs/initorg/projects/deleteorgproject		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${404}
+	${result} =         Delete          url=${ROOT}/orgs/deleteorg          headers=&{REQ_HEADER}
+	Sleep				${DELETE_DELAY_INDEXING}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${BRANCH_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+ResurrectDeleteOrg
+	[Documentation]		"Resurrect the deleted organization."
+	[Tags]				crud		critical		0120
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/DeleteOrganization.json
+	${result} =			Post		url=${ROOT}/orgs			data=${post_json}		headers=&{REQ_HEADER}
+	Sleep				${POST_DELAY_INDEXING}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}
+
+
