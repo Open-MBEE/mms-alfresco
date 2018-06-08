@@ -3,7 +3,6 @@
     "elements": [],
     "rejected": [
         {
-            "_creator": "admin",
             "_modifier": "Collaborator",
             "_projectId": "PA",
             "_refId": "master",
@@ -21,7 +20,6 @@
             ]
         },
         {
-            "_creator": "admin",
             "_modifier": "Collaborator",
             "_projectId": "PA",
             "_refId": "master",
@@ -39,7 +37,6 @@
             ]
         },
         {
-            "_creator": "admin",
             "_modifier": "Collaborator",
             "_projectId": "PA",
             "_refId": "master",

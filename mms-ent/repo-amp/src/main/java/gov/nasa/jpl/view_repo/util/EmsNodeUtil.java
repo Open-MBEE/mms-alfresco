@@ -597,7 +597,9 @@ public class EmsNodeUtil {
             boolean updated = false;
             if (!added) {
                 if (!overwriteJson) {
-                    updated = diffUpdateJson(o, existingMap.get(sysmlid)) && isUpdated(o, existingMap.get(sysmlid));
+                    if (isUpdated(o, existingMap.get(sysmlid))) {
+                        updated = diffUpdateJson(o, existingMap.get(sysmlid));
+                    }
                 } else {
                     updated = true;
                 }
@@ -1595,8 +1597,12 @@ public class EmsNodeUtil {
                 }
             } else {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Value 1 Type: " + value1.getClass());
-                    logger.debug("Value 2 Type: " + value2.getClass());
+                    if (value1 != null) {
+                        logger.debug("Value 1 Type: " + value1.getClass());
+                    }
+                    if (value2 != null) {
+                        logger.debug("Value 2 Type: " + value2.getClass());
+                    }
                 }
                 return false;
             }

@@ -23,7 +23,6 @@
     ],
     "rejected": [
         {
-            "_creator": "admin",
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
@@ -41,7 +40,6 @@
             ]
         },
         {
-            "_creator": "admin",
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
