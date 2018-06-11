@@ -73,24 +73,24 @@ jobs:
           command: export MMSVERSION=`find mms-ent/repo-amp/target/ -name *.amp -exec basename {} .amp \; | sed s/mms-amp-//g`
 
       - store_artifacts:
-          path: mms-ent/repo-amp/target/mms-amp-{MMSVERSION}.amp
-          destination: tmp/artifacts/mms-amp-{MMSVERSION}.amp
+          path: mms-ent/repo-amp/target/mms-amp-*.amp
+          destination: tmp/artifacts/mms-amp.amp
 
       - store_artifacts:
-          path: mms-ent/share-amp/target/mms-share-amp-{MMSVERSION}.amp
-          destination: tmp/artifacts/mms-share-amp-{MMSVERSION}.amp
+          path: mms-ent/share-amp/target/mms-share-amp-*.amp
+          destination: tmp/artifacts/mms-share-amp.amp
 
       - store_artifacts:
-          path: mms-ent/repo-amp/target/mms-java-client-{MMSVERSION}.zip
-          destination: tmp/artifacts/mms-java-client-{MMSVERSION}.zip
+          path: mms-ent/repo-amp/target/mms-java-client-*.zip
+          destination: tmp/artifacts/mms-java-client.zip
 
       - store_artifacts:
-          path: mms-ent/repo-amp/target/mms-python-client-{MMSVERSION}.zip
-          destination: tmp/artifacts/mms-python-client-{MMSVERSION}.zip
+          path: mms-ent/repo-amp/target/mms-python-client-*.zip
+          destination: tmp/artifacts/mms-python-client.zip
 
       - store_artifacts:
-          path: mms-ent/repo-amp/target/mms-mathematica-client-{MMSVERSION}.zip
-          destination: tmp/artifacts/mms-mathematica-client-{MMSVERSION}.zip
+          path: mms-ent/repo-amp/target/mms-mathematica-client-*.zip
+          destination: tmp/artifacts/mms-mathematica-client.zip
 
       - persist_to_workspace:
           root: mms-ent
@@ -117,19 +117,19 @@ jobs:
           command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-amp/{MMSVERSION}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-amp/$MMSVERSION/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms-share-amp
-          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-share-amp/{MMSVERSION}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-share-amp/$MMSVERSION/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms java client
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/{MMSVERSION}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/$MMSVERSION/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms python client
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-python-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-python-client/{MMSVERSION}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-python-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-python-client/$MMSVERSION/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms mathematica client
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-mathematica-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-mathematica-client/{MMSVERSION}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-mathematica-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-mathematica-client/$MMSVERSION/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
 
   deploy_release:
     <<: *defaults
