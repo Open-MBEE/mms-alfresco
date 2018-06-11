@@ -73,24 +73,12 @@ jobs:
           command: export MMSVERSION=`find mms-ent/repo-amp/target/ -name *.amp -exec basename {} .amp \; | sed s/mms-amp-//g`
 
       - store_artifacts:
-          path: mms-ent/repo-amp/target/mms-amp-*.amp
-          destination: tmp/artifacts/mms-amp.amp
+          path: mms-ent/repo-amp/target
+          destination: tmp/artifacts
 
       - store_artifacts:
-          path: mms-ent/share-amp/target/mms-share-amp-*.amp
-          destination: tmp/artifacts/mms-share-amp.amp
-
-      - store_artifacts:
-          path: mms-ent/repo-amp/target/mms-java-client-*.zip
-          destination: tmp/artifacts/mms-java-client.zip
-
-      - store_artifacts:
-          path: mms-ent/repo-amp/target/mms-python-client-*.zip
-          destination: tmp/artifacts/mms-python-client.zip
-
-      - store_artifacts:
-          path: mms-ent/repo-amp/target/mms-mathematica-client-*.zip
-          destination: tmp/artifacts/mms-mathematica-client.zip
+          path: mms-ent/share-amp/target
+          destination: tmp/artifacts
 
       - persist_to_workspace:
           root: mms-ent
