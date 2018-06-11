@@ -90,7 +90,7 @@ public class OrgGet extends AbstractJavaWebScript {
         try {
             if (validateRequest(req, status)) {
                 String orgId = getOrgId(req);
-                Boolean projects = req.getPathInfo().contains(Sjm.PROJECTS);
+                boolean projects = req.getPathInfo().contains(Sjm.PROJECTS);
                 JsonArray jsonArray;
 
                 if (projects) {

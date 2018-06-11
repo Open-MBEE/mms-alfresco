@@ -1,11 +1,9 @@
-import urllib2
 from datetime import datetime
-import json
 import sys
-import util
-from elasticsearch import Elasticsearch
-from elasticsearch import helpers
-from elasticsearch import ElasticsearchException
+#change to elasticsearch if package installed already works with elasticsearch 5
+from elasticsearch5 import Elasticsearch
+from elasticsearch5 import helpers
+from elasticsearch5 import ElasticsearchException
 import logging
 
 '''
@@ -23,17 +21,17 @@ def main(args):
     # Get every dupe that isn't a intial commit
     dupes = {}
     for index in es.indices.get('*'):
-        print("We working on dis index  " + index)
+        print("Index  " + index)
         first_page = es.search(
             index=index,
             doc_type='commit',
             scroll='2m',
             size=1000)
-        dupes.update(find_dupes(first_page.get('hits').get('hits')))
+        dupes.update(find_dupes(first_page.get('hits').get('hits'), index))
         s_id = first_page['_scroll_id']
-        iterate_scroll(es, s_id, dupes)
-        print('Starting to remove dupes for project ' + index + ' There are this many dupes: ' + str(len(dupes)))
-    print(str(len(dupes)) + " There are this many dupes in this org.")
+        iterate_scroll(es, s_id, dupes, index)
+        print('Commits with duplicate ids so far: ' + str(len(dupes)))
+    print(str(len(dupes)) + " total commits with dupes.")
     # TODO: Count the actual length
     # count = sum(len(v) for v in dupes.itervalues())
     # print(count)
@@ -68,17 +66,18 @@ def main(args):
         print('The number of updates was too large to update at once')
         sys.exit(0)
     # this updates everything at once, maybe we don't want that
+    #print(project_actions)
     try:
         helpers.bulk(es, project_actions)
     except ElasticsearchException as e:
         print(e)
-        print('Process ended before update')
+        print('Process ended during update')
         sys.exit(0)
     # if some commits were skipped print them
     if len(commits_missing_info) > 0:
         print_errors(commits_missing_info)
-    print('The number dupes after is :')
-    print(check_all(es))
+    #print('The number dupes after is :')
+    #print(check_all(es))
 
 
 def print_errors(commits_missing):
@@ -87,15 +86,15 @@ def print_errors(commits_missing):
         logging.error('This dupe is missing info ' + commit[0] + ' in project ' + commit[1])
 
 
-def iterate_scroll(es, scroll_id, dupes):
+def iterate_scroll(es, scroll_id, dupes, index):
     iterate = es.scroll(scroll_id=scroll_id, scroll="2m")
     s_id = iterate['_scroll_id']
     hits = iterate.get('hits').get('hits')
-    dupes.update(find_dupes(hits))
+    dupes.update(find_dupes(hits, index))
     if hits:
-        iterate_scroll(es, s_id, dupes)
+        iterate_scroll(es, s_id, dupes, index)
 
-def find_dupes(hits):
+def find_dupes(hits, index):
     dup_by_commit = {}
     for hit in hits:
         id = hit['_id']
@@ -106,7 +105,7 @@ def find_dupes(hits):
             continue
         else:
             ids = []
-            projectId = hit['_source']['_projectId'].lower()
+            projectId = index#hit['_source']['_projectId'].lower()
             for entry in added:
                 ids.append((projectId, entry['id'], entry['_elasticId']))
             dups = list(set([x for x in ids if ids.count(x) > 1]))
@@ -230,18 +229,6 @@ def add_actions(edit, id, type, index):
     added['added'] = edit
     update['doc'] = added
     return update
-
-
-def get_projects(base_url, ticket):
-    url = base_url + "/alfresco/service/projects?alf_ticket=%s" % (ticket)
-    print(url)
-    headers = {"Content-Type": "application/json"}
-    projects = json.load(util.make_request(url, headers)).get('projects')
-    project_ids = []
-    for project in projects:
-        projectId = project['id']
-        project_ids.append(projectId.lower())
-    return set(project_ids)
 
 
 def check_all(es):

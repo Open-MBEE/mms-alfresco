@@ -31,7 +31,6 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -53,7 +52,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.mbee.util.Timer;
 
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
@@ -64,7 +62,7 @@ import gov.nasa.jpl.view_repo.util.Sjm;
 /**
  * @author cinyoung
  */
-public class ArtifactsGet extends ArtifactGet {
+public class ArtifactsGet extends ModelsGet {
     static Logger logger = Logger.getLogger(ArtifactsGet.class);
 
     public ArtifactsGet() {
@@ -73,25 +71,6 @@ public class ArtifactsGet extends ArtifactGet {
 
     public ArtifactsGet(Repository repositoryHelper, ServiceRegistry registry) {
         super(repositoryHelper, registry);
-    }
-
-    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        // get timestamp if specified
-        String timestamp = req.getParameter("timestamp");
-        Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
-
-        String refId = getRefId(req);
-        String projectId = getProjectId(req);
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
-            return true;
-        } else if (refId != null && !emsNodeUtil.refExists(refId)) {
-            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
-                refId + (dateTime == null ? "" : " at " + dateTime));
-            return false;
-        }
-
-        return true;
     }
 
     /**

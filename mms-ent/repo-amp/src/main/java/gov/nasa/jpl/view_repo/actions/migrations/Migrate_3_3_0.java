@@ -6,7 +6,10 @@ import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.db.Artifact;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.GraphInterface;
+import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.util.CommitUtil;
+import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
@@ -61,16 +64,17 @@ public class Migrate_3_3_0 {
     private static final String artifactToElementScript =
         "{\"query\": {\"terms\":{\"id\":[\"%s\"]} }, \"script\": {\"inline\": \"ctx._source._artifactIds = [ctx._source.id + \\\"_svg\\\", ctx._source.id + \\\"_png\\\"]\"}}";
 
-    private static final String searchQuery = "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
+    private static final String searchQuery =
+        "{\"query\":{\"bool\": {\"filter\":[{\"term\":{\"_projectId\":\"%1$s\"}},{\"term\":{\"id\":\"%2$s\"}},{\"term\":{\"_modified\":\"%3$s\"}}]}}, \"from\": 0, \"size\": 1}";
 
     private static final String renameScript =
-        "{\"query\": {\"exists\":{\"field\":\"_isSite\"} }, \"script\": {\"inline\": \"ctx._source._isGroup = ctx._source.remove(\"_isSite\")\"}}";
+        "{\"query\": {\"exists\":{\"field\":\"_isSite\"} }, \"script\": {\"inline\": \"ctx._source._isGroup = ctx._source.remove(\\\"_isSite\\\")\"}}";
 
     private static final String deleteCommitFix =
         "{\"script\": {\"inline\": \"if(!ctx._source.containsKey(\\\"_projectId\\\")){ctx._source._projectId = params.projectId}\", \"params\": {\"projectId\": \"%s\"}}}";
 
     private static final String ivanFix =
-        "{\"query\": { \"match_all\": {} }, \"script\": {\"inline\": \"for (int i = 0; i < ctx._source.added.size(); i++) {ctx._source.added[i].type = \"element\"} for (int i = 0; i < ctx._source.updated.size(); i++) {ctx._source.updated[i].type = \"element\"} for (int i = 0; i < ctx._source.deleted.size(); i++) {ctx._source.deleted[i].type = \"element\"}\"}}";
+        "{\"query\": { \"match_all\": {} }, \"script\": {\"inline\": \"for (int i = 0; i < ctx._source.added.size(); i++) {if(!ctx._source.added[i].containsKey(\\\"type\\\")){ctx._source.added[i].type = \\\"element\\\"}} for (int i = 0; i < ctx._source.updated.size(); i++) {if(!ctx._source.updated[i].containsKey(\\\"type\\\")){ctx._source.updated[i].type = \\\"element\\\"}} for (int i = 0; i < ctx._source.deleted.size(); i++) {if(!ctx._source.deleted[i].containsKey(\\\"type\\\")){ctx._source.deleted[i].type = \\\"element\\\"}}\"}}";
 
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
@@ -95,8 +99,10 @@ public class Migrate_3_3_0 {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         InputStream resourceAsStream = classLoader.getResourceAsStream("mapping_template.json");
         Scanner s = new Scanner(resourceAsStream).useDelimiter("\\A");
+        JsonObject mappingTemplate = new JsonObject();
         if (s.hasNext()) {
-            eh.applyTemplate(s.next());
+            mappingTemplate = JsonUtil.buildFromString(s.next());
+            eh.applyTemplate(mappingTemplate.toString());
         }
 
         for (Map<String, String> org : orgs) {
@@ -109,7 +115,9 @@ public class Migrate_3_3_0 {
 
             SiteInfo siteInfo = siteService.getSite(orgId);
 
-            pgh.getConn("config").prepareStatement("DROP TABLE IF EXISTS projectMounts").execute();
+            try (PreparedStatement statement = pgh.getConn("config").prepareStatement("DROP TABLE IF EXISTS projectMounts")) {
+                statement.execute();
+            }
 
             List<Map<String, Object>> projects = pgh.getProjects(orgId);
             if (projects.isEmpty()) {
@@ -135,6 +143,16 @@ public class Migrate_3_3_0 {
 
                 //Reindex to rename fields
                 eh.updateByQuery(projectId, renameScript, "element");
+
+                if (mappingTemplate.isJsonObject()) {
+                    eh.updateMapping(projectId, "element",
+                        mappingTemplate.get("mappings").getAsJsonObject().get("element").getAsJsonObject().toString());
+                    eh.updateMapping(projectId, "commit",
+                        mappingTemplate.get("mappings").getAsJsonObject().get("commit").getAsJsonObject().toString());
+                    eh.updateMapping(projectId, "artifact",
+                        mappingTemplate.get("mappings").getAsJsonObject().get("artifact").getAsJsonObject().toString());
+                }
+
                 eh.updateByQuery(projectId, ivanFix, "commit");
 
                 logger.info("Updating: " + projectId);
@@ -158,9 +176,10 @@ public class Migrate_3_3_0 {
                     Set<String> artifactsToUpdate = new HashSet<>();
 
                     String refId = ref.first.replace("_", "-");
+                    boolean isTag = pgh.isTag(refId);
 
                     logger.info("RefId: " + refId);
-                    logger.info("RefName: " + refId);
+                    logger.info("isTag" + isTag);
 
                     pgh.setWorkspace(refId);
 
@@ -172,36 +191,67 @@ public class Migrate_3_3_0 {
                         PreparedStatement parentStatement = pgh.prepareStatement(
                             "SELECT commits.elasticid, refs.parent FROM refs JOIN commits ON refs.parentCommit = commits.id WHERE refs.refId = ? LIMIT 1");
                         parentStatement.setString(1, ref.first);
-                        ResultSet rs = parentStatement.executeQuery();
-                        String parentCommit = null;
-                        String parentRefId = null;
-                        if (rs.next()) {
-                            parentCommit = rs.getString(1);
-                            parentRefId = rs.getString(2).equals("") ? "master" : rs.getString(2);
-                        }
+                        try (ResultSet rs = parentStatement.executeQuery()) {
+                            String parentCommit = null;
+                            String parentRefId = null;
+                            if (rs.next()) {
+                                parentCommit = rs.getString(1);
+                                parentRefId = rs.getString(2).equals("") ? "master" : rs.getString(2);
+                            }
 
-                        if (parentCommit != null) {
-                            pgh.setWorkspace(parentRefId);
-                            JsonArray parentArtifacts = getArtifactsAtCommit(parentCommit, pgh, eh, projectId);
-                            List<Map<String, Object>> artifactInserts = new ArrayList<>();
-                            for (int i = 0; i < parentArtifacts.size(); i++) {
-                                JsonObject parentArt = parentArtifacts.get(i).getAsJsonObject();
+                            if (parentCommit != null) {
+                                pgh.setWorkspace(parentRefId);
+                                JsonArray parentArtifacts = getArtifactsAtCommit(parentCommit, pgh, eh, projectId);
+                                List<Map<String, Object>> artifactInserts = new ArrayList<>();
+                                for (int i = 0; i < parentArtifacts.size(); i++) {
+                                    JsonObject parentArt = parentArtifacts.get(i).getAsJsonObject();
 
-                                Artifact parentArtNode =
-                                    pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true);
+                                    Artifact parentArtNode =
+                                        pgh.getArtifactFromSysmlId(parentArt.get(Sjm.SYSMLID).getAsString(), true);
 
-                                if (parentArtNode != null) {
-                                    Map<String, Object> artifact = new HashMap<>();
-                                    artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
-                                    artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
-                                    artifact.put("initialcommit", parentArtNode.getInitialCommit());
-                                    artifact.put("lastcommit", parentArt.get(Sjm.COMMITID).getAsString());
-                                    artifactInserts.add(artifact);
+                                    if (parentArtNode != null) {
+                                        Map<String, Object> artifact = new HashMap<>();
+                                        artifact.put(Sjm.ELASTICID, parentArt.get(Sjm.ELASTICID).getAsString());
+                                        artifact.put(Sjm.SYSMLID, parentArt.get(Sjm.SYSMLID).getAsString());
+                                        artifact.put("initialcommit", parentArtNode.getInitialCommit());
+                                        artifact.put("lastcommit", parentArt.get(Sjm.COMMITID).getAsString());
+                                        artifactInserts.add(artifact);
+                                    }
+                                }
+                                pgh.setWorkspace(refId);
+                                if (!artifactInserts.isEmpty()) {
+                                    pgh.runBatchQueries(artifactInserts, "artifacts");
                                 }
                             }
-                            pgh.setWorkspace(refId);
-                            if (!artifactInserts.isEmpty()) {
-                                pgh.runBatchQueries(artifactInserts, "artifacts");
+                        }
+                    }
+
+                    if (isTag) {
+                        pgh.execQuery(String
+                            .format("GRANT INSERT, UPDATE, DELETE ON nodes%1$s, edges%1$s, artifacts%1$s FROM %2$s",
+                                PostgresHelper.sanitizeRefId(refId), EmsConfig.get("pg.user")));
+                    }
+
+                    // Insert part property type childview edges
+                    List<Node> latestPropertyNodes = pgh.getNodesByType(GraphInterface.DbNodeTypes.PROPERTY);
+
+                    if (latestPropertyNodes.size() > 0) {
+                        List<String> propertyElasticIds = new ArrayList<>();
+                        for (int i = 0; i < latestPropertyNodes.size(); i++) {
+                            Node latestPropertyNode = latestPropertyNodes.get(i);
+                            if (!latestPropertyNode.getElasticId().isEmpty()) {
+                                propertyElasticIds.add(latestPropertyNode.getElasticId());
+                            }
+                        }
+
+                        JsonArray propertyElasticElements = eh.getElementsFromElasticIds(propertyElasticIds, projectId);
+                        for (int i = 0; i < propertyElasticElements.size(); i++) {
+                            JsonObject propertyNodeElastic = propertyElasticElements.get(i).getAsJsonObject();
+                            if (CommitUtil.isPartProperty(propertyNodeElastic) && propertyNodeElastic.has(Sjm.TYPEID)
+                                && !propertyNodeElastic.get(Sjm.TYPEID).isJsonNull() && !propertyNodeElastic.get(Sjm.TYPEID)
+                                .getAsString().isEmpty()) {
+                                pgh.insertEdge(propertyNodeElastic.get(Sjm.SYSMLID).getAsString(),
+                                    propertyNodeElastic.get(Sjm.TYPEID).getAsString(), GraphInterface.DbEdgeTypes.CHILDVIEW);
                             }
                         }
                     }
@@ -226,8 +276,7 @@ public class Migrate_3_3_0 {
                     eh.bulkUpdateElements(refCommitElastics, deleteFixToRun, projectId, "commit");
 
                     List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
-                    String realCreator = null;
-                    Date realCreated = null;
+
                     for (FileInfo file : files) {
                         if (!file.isFolder()) {
                             VersionHistory versionHistory = versionService.getVersionHistory(file.getNodeRef());
@@ -235,15 +284,16 @@ public class Migrate_3_3_0 {
                             ListIterator it = versions.listIterator(versions.size());
 
                             String artifactId = null;
+                            String realCreator = null;
+                            Date realCreated = null;
 
                             while (it.hasPrevious()) {
                                 Version version = (Version) it.previous();
                                 FileInfo versionedFile = fileFolderService.getFileInfo(version.getVersionedNodeRef());
                                 String name = versionedFile.getName();
-                                String url = String.format("/service/api/node/content/%s/%s/%s/%s",
-                                    version.getVersionedNodeRef().getStoreRef().getProtocol(),
-                                    version.getVersionedNodeRef().getStoreRef().getIdentifier(),
-                                    version.getVersionedNodeRef().getId(), URLEncoder.encode(versionedFile.getName()));
+                                String url = String.format("/service/api/node/content/versionStore/version2Store/%s/%s",
+                                    version.getVersionProperty("node-uuid"),
+                                    URLEncoder.encode(versionedFile.getName()));
 
                                 String modifier = version.getFrozenModifier();
                                 Date modified = version.getFrozenModifiedDate();
@@ -265,14 +315,15 @@ public class Migrate_3_3_0 {
                                     mdArtifacts.add(baseId);
                                     artifactId = baseId + "_" + extension;
                                 } else {
-                                    artifactId = name;
+                                    artifactId = baseId;
                                 }
 
-                                String checkQuery = String.format(searchQuery, projectId, artifactId, df.format(created));
+                                String checkQuery =
+                                    String.format(searchQuery, projectId, artifactId, df.format(modified));
                                 JsonObject checkQueryObj = JsonUtil.buildFromString(checkQuery);
                                 JsonObject check = eh.search(checkQueryObj);
 
-                                if (!check.has(Sjm.SYSMLID)) {
+                                if (!check.has(Sjm.ELEMENTS) || check.getAsJsonArray(Sjm.ELEMENTS).size() < 1) {
                                     JsonObject artifactJson = new JsonObject();
                                     artifactJson.addProperty(Sjm.SYSMLID, artifactId);
                                     artifactJson.addProperty(Sjm.ELASTICID, elasticId);
@@ -285,8 +336,7 @@ public class Migrate_3_3_0 {
                                     artifactJson.addProperty(Sjm.CREATED, df.format(created));
                                     artifactJson.addProperty(Sjm.MODIFIED, df.format(modified));
                                     artifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
-                                    artifactJson
-                                        .addProperty(Sjm.LOCATION, url);
+                                    artifactJson.addProperty(Sjm.ARTIFACTLOCATION, url);
                                     InputStream is =
                                         contentService.getReader(versionedFile.getNodeRef(), ContentModel.PROP_CONTENT)
                                             .getContentInputStream();
@@ -311,7 +361,6 @@ public class Migrate_3_3_0 {
                                             commitObject.addProperty(Sjm.CREATED, df.format(modified));
                                             commitObject.addProperty(Sjm.CREATOR, modifier);
                                             commitObject.addProperty(Sjm.PROJECTID, projectId);
-                                            commitObject.addProperty(Sjm.TYPE, Sjm.ARTIFACT);
                                             commitObject
                                                 .addProperty(Sjm.SOURCE, name.startsWith("img_") ? "ve" : "magicdraw");
 
@@ -320,7 +369,7 @@ public class Migrate_3_3_0 {
                                             JsonObject simpleArtifactJson = new JsonObject();
                                             simpleArtifactJson.addProperty(Sjm.SYSMLID, artifactId);
                                             simpleArtifactJson.addProperty(Sjm.ELASTICID, elasticId);
-                                            simpleArtifactJson.addProperty(Sjm.TYPE, Sjm.ARTIFACT);
+                                            simpleArtifactJson.addProperty(Sjm.TYPE, Sjm.ARTIFACT.toLowerCase());
                                             simpleArtifactJson.addProperty(Sjm.CONTENTTYPE, contentType);
 
                                             added.add(simpleArtifactJson);
@@ -332,7 +381,7 @@ public class Migrate_3_3_0 {
 
                                             eh.indexElement(commitObject, projectId, ElasticHelper.COMMIT);
 
-                                            logger.info("Indexed JSON: " + commitObject);
+                                            logger.debug("Indexed JSON: " + commitObject);
                                         } else {
                                             logger.info("Bulk insert failed for: " + projectId);
                                             noErrors = false;
@@ -342,8 +391,12 @@ public class Migrate_3_3_0 {
                                         noErrors = false;
                                     }
                                 } else {
-                                    elasticId = check.get(Sjm.ELASTICID).getAsString();
-                                    commitId = check.get(Sjm.COMMITID).getAsString();
+                                    elasticId =
+                                        check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().get(Sjm.ELASTICID)
+                                            .getAsString();
+                                    commitId =
+                                        check.getAsJsonArray(Sjm.ELEMENTS).get(0).getAsJsonObject().get(Sjm.COMMITID)
+                                            .getAsString();
                                 }
 
                                 if (pgh.getArtifactFromSysmlId(artifactId, true) == null) {
@@ -357,19 +410,20 @@ public class Migrate_3_3_0 {
                                     String query = String.format(
                                         "UPDATE \"artifacts%s\" SET elasticId = ?, lastcommit = ?, deleted = ? WHERE sysmlId = ?",
                                         ref.first.equals("master") ? "" : ref.first);
-                                    PreparedStatement statement = pgh.prepareStatement(query);
-                                    statement.setString(1, elasticId);
-                                    statement.setString(2, commitId);
-                                    statement.setBoolean(3, false);
-                                    statement.setString(4, artifactId);
-                                    statement.execute();
+                                    try (PreparedStatement statement = pgh.prepareStatement(query)) {
+                                        statement.setString(1, elasticId);
+                                        statement.setString(2, commitId);
+                                        statement.setBoolean(3, false);
+                                        statement.setString(4, artifactId);
+                                        statement.execute();
+                                    }
                                 }
 
                                 Map<String, String> commitFromDb =
-                                    pgh.getCommitAndTimestamp("timestamp", new Timestamp(created.getTime()));
-                                if (commitFromDb == null) {
+                                    pgh.getCommitAndTimestamp("timestamp", new Timestamp(modified.getTime()));
+                                if (commitFromDb == null || !commitFromDb.get(Sjm.COMMITID).equals(commitId)) {
                                     pgh.insertCommit(commitId, GraphInterface.DbCommitTypes.COMMIT, creator,
-                                        new java.sql.Date(created.getTime()));
+                                        new Timestamp(modified.getTime()));
                                 }
                             } // End of While Loop
 
@@ -380,12 +434,16 @@ public class Migrate_3_3_0 {
                         }
                     }
 
+                    if (isTag) {
+                        pgh.setAsTag(refId);
+                    }
+
                     String refScriptToRun = String.format(refScript, Sjm.INREFIDS, refId);
                     eh.bulkUpdateElements(artifactsToUpdate, refScriptToRun, projectId, "artifact");
                 }
                 if (!mdArtifacts.isEmpty()) {
                     String artifactToElementScriptToRun =
-                        String.format(artifactToElementScript, String.join("\\\",\\\"", mdArtifacts));
+                        String.format(artifactToElementScript, String.join("\",\"", mdArtifacts));
                     eh.updateByQuery(projectId, artifactToElementScriptToRun, "element");
                 }
             }
@@ -409,14 +467,11 @@ public class Migrate_3_3_0 {
                 refsCommitsIds.add((String) ref.get(Sjm.SYSMLID));
             }
 
-            Map<String, String> deletedElementIds = eh.getDeletedElementsFromCommits(refsCommitsIds, projectId);
             List<String> artifactElasticIds = new ArrayList<>();
 
             for (Map<String, Object> element : pgh.getAllArtifactsWithLastCommitTimestamp()) {
                 if (((Date) element.get(Sjm.TIMESTAMP)).getTime() <= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
-                    if (!deletedElementIds.containsKey((String) element.get(Sjm.ELASTICID))) {
-                        artifactElasticIds.add((String) element.get(Sjm.ELASTICID));
-                    }
+                    artifactElasticIds.add((String) element.get(Sjm.ELASTICID));
                 } else {
                     String sysmlId = (String) element.get(Sjm.SYSMLID);
 
@@ -436,8 +491,7 @@ public class Migrate_3_3_0 {
                     }
                 }
 
-                if (pastElement != null && pastElement.has(Sjm.SYSMLID) && !deletedElementIds
-                    .containsKey(pastElement.get(Sjm.ELASTICID).getAsString())) {
+                if (pastElement != null && pastElement.has(Sjm.SYSMLID)) {
                     artifacts.add(pastElement);
                 }
             }

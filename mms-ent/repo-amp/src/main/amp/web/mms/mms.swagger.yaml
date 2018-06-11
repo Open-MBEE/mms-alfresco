@@ -1192,7 +1192,7 @@ definitions:
     - "id"
     - "contentType"
     - "checksum"
-    - "location"
+    - "artifactLocation"
     properties:
       id:
         type: "string"
@@ -1200,7 +1200,7 @@ definitions:
         type: "string"
       checksum:
         type: "string"
-      location:
+      artifactLocation:
         type: "string"
       name:
         type: "string"

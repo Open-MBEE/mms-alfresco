@@ -101,7 +101,13 @@ public class ModelsGet extends ModelGet {
 
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        printHeader(user, logger, req);
+
+        if (logger.isDebugEnabled()) {
+            printHeader(user, logger, req);
+        } else {
+            printHeader(user, logger, req, true);
+        }
+
         Timer timer = new Timer();
 
         String[] accepts = req.getHeaderValues("Accept");

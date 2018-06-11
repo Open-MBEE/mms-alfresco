@@ -1,4 +1,12 @@
 # Model Management System
+
+<!--- Comment the download links until we can display them better or something --->
+<!--- [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-amp/_latestVersion) mms-amp --->
+
+<!--- [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-share-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-share-amp/_latestVersion) mms-share-amp --->
+
+[![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
+
 **AMP for Alfresco (5.1.g)**
 
 Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
@@ -58,7 +66,7 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 
 ### 2. Install and Configure PostgreSQL
 *   Download PostgreSQL 9.x
-    * If using PostgreSQL as the database for Alfresco, PostgreSQL 9.3 is the latest supported version
+    * If using PostgreSQL as the database for Alfresco, PostgreSQL 9.4 is the latest supported version
 *   Install PostgreSQL
 *   Start PostgreSQL server
 *   Connect to the PostgreSQL server and:
@@ -231,17 +239,19 @@ curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin -X
 ### Robotframework test suite
 Robot tests can be run with the following maven profiles in the mms-ent directory:
 ```
-./mvnw install -Ddependency.surf.version=6.3 -Prun,robot-tests
+./mvnw install -Prun,robot-tests
 ```
 Please note that tests should be run on a clean instance, therefore, it may be helpful to run clean.sh before running the tests
 
-The Robotframework tests require the 'requests' python module. Install it as follows:
+The Robotframework tests require the 'requests' and 'robotframework-requests' python modules. Install it as follows:
 ```
 pip install --target=runner/src/test/robotframework/libraries requests
+pip install --target=runner/src/test/robotframework/libraries robotframework-requests
 ```
 OR:
 ```
 pip install --target=$HOME/.m2/repository/org/robotframework/robotframework/{ROBOTPLUGINVERSION}/Lib requests
+pip install --target=$HOME/.m2/repository/org/robotframework/robotframework/{ROBOTPLUGINVERSION}/Lib robotframework-requests
 ```
 
 ### Changing debug levels on the fly

@@ -13,7 +13,7 @@ PostNewImage
     ${data} =			Create Dictionary	contentType=foo/bar	id=mounts
 	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts		data=${data}		files=${files}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 artifactLocation
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -27,7 +27,7 @@ PostNewElementForOriginalImage
 	Should Be Equal		${result.status_code}		${200}
 	${image_commit} =		Get Commit From Json		${result.json()}
 	Set Global Variable	  ${image_commit}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 location
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 artifactLocation
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -50,7 +50,7 @@ PostNewVersionOfImage
     ${data} =			Create Dictionary	contentType=foo/bar	id=mounts
 	${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts		data=${data}		files=${files}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 artifactLocation
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -61,7 +61,7 @@ GetImage
 	[Tags]				images		critical		0404
 	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/master/artifacts/mounts		headers=&{PNG_GET_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _timestamp		 _inRefIds		 upload		 location		 _elasticId
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _timestamp		 _inRefIds		 upload		 artifactLocation		 _elasticId
     Generate JSON		${TEST_NAME}		${result.json()}		${filter}
     Sleep				${POST_DELAY_INDEXING}
     ${compare_result} =		Compare JSON		${TEST_NAME}
@@ -83,7 +83,7 @@ PostNewElementForImageVersion
 	Should Be Equal		${result.status_code}		${200}
 	${image_commit_master} =		Get Commit From Json		${result.json()}
 	Set Global Variable	  ${image_commit_master}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 location
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 artifactLocation
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -117,7 +117,7 @@ PostNewBranchForImage
 	${post_json} =		Get File		${CURDIR}/../../JsonData/NewImageBranch.json
 	${result} =			requests.Post		url=${ROOT}/projects/PA/refs		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 location
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 artifactLocation
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${BRANCH_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -130,7 +130,7 @@ GetImageFromParent
 	Should Be Equal		${result.status_code}		${200}
 	${image_child_id} =		Get Image Location		${result.json()}
 	Set Global Variable	  ${image_child_id}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 location
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 artifactLocation
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Should Be Equal	  ${image_child_id}    ${image_versioned}
 
@@ -143,7 +143,7 @@ PostAnotherVersionOfParentImage
     ${data} =			Create Dictionary	id=mounts	contentType=image/png
     ${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PA/refs/master/artifacts		data=${data}		files=${files}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 artifactLocation
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -167,7 +167,7 @@ PostImageToMountedProject
     ${data} =			Create Dictionary	contentType=image/png	id=imagemount
     ${result} =			RequestsLibrary.PostRequest		mmstest		/projects/PB/refs/master/artifacts		data=${data}		files=${files}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 location
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 upload		 artifactLocation
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}
@@ -178,7 +178,7 @@ GetImageInMountedProject
 	[Tags]				images		critical		0413
 	${result} =			requests.Get		url=${ROOT}/projects/PA/refs/imagebranch/artifacts/imagemount		headers=&{PNG_GET_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 url		 location
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 url		 artifactLocation
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	Sleep				${POST_DELAY_INDEXING}
 	${compare_result} =		Compare JSON		${TEST_NAME}

@@ -462,6 +462,10 @@ public class EmsScriptNode extends ScriptNode {
         return equals(obj, true);
     }
 
+    @Override public int hashCode() {
+        return parent.hashCode();
+    }
+
     /**
      * @return the head or current version of the node ref if it exists; otherwise return the
      * existing node ref
