@@ -73,7 +73,7 @@ RUN addgroup -S tomcat \
     && chown -R tomcat:tomcat ${ALF_DATA_DIR}
 
 # Alfresco
-EXPOSE 8080:8080
+#EXPOSE 8080:8080
 # Postgres
 #EXPOSE 5432:5432
 # ElasticSearch
