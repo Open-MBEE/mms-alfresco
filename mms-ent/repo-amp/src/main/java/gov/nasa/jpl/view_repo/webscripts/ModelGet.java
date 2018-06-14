@@ -138,7 +138,7 @@ public class ModelGet extends AbstractJavaWebScript {
                     if (commitJson.size() == 0) {
                         log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
                     }
-                    if (commitJson != null && commitJson.size() > 0) {
+                    if (commitJson.size() > 0) {
                         top.add(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
                     }
                     if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
