@@ -234,17 +234,18 @@ public class PostgresHelper implements GraphInterface {
         getConn().rollback(savepoint);
     }
 
-    public void execUpdate(String query) {
+    public int execUpdate(String query) {
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("execUpdate: %s", query));
         }
         try {
-            getConn().createStatement().executeUpdate(query);
+            return getConn().createStatement().executeUpdate(query);
         } catch (SQLException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
             }
         }
+        return 0;
     }
 
     public ResultSet execQuery(String query) {
@@ -292,16 +293,17 @@ public class PostgresHelper implements GraphInterface {
             String query = String
                 .format("INSERT INTO \"%s\" (%s) VALUES (%s) RETURNING id", table, columns.toString(), vals.toString());
 
-            PreparedStatement statement = prepareStatement(query);
-            for (int i = 0; i < columnList.size(); i++) {
-                statementSetter(statement, values.getOrDefault(columnList.get(i), null), i);
-            }
+            try (PreparedStatement statement = prepareStatement(query)) {
+                for (int i = 0; i < columnList.size(); i++) {
+                    statementSetter(statement, values.getOrDefault(columnList.get(i), null), i);
+                }
 
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("Query: %s", query));
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("Query: %s", query));
+                }
+                statement.execute();
+                return 1;
             }
-            statement.execute();
-            return 1;
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -473,13 +475,13 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public String getOrganizationFromProject(String projectId) {
-        try {
-            PreparedStatement query = getConn("config").prepareStatement(
-                "SELECT organizations.orgId FROM projects JOIN organizations ON projects.orgId = organizations.id WHERE projects.projectId = ?");
+        try (PreparedStatement query = getConn("config").prepareStatement(
+            "SELECT organizations.orgId FROM projects JOIN organizations ON projects.orgId = organizations.id WHERE projects.projectId = ?")) {
             query.setString(1, projectId);
-            ResultSet rs = query.executeQuery();
-            if (rs.next()) {
-                return rs.getString(1);
+            try (ResultSet rs = query.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString(1);
+                }
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -527,32 +529,39 @@ public class PostgresHelper implements GraphInterface {
 
     public List<Map<String, Object>> getProjects(String orgId) {
         List<Map<String, Object>> result = new ArrayList<>();
+        PreparedStatement query = null;
 
-        try {
-            PreparedStatement query;
+        try (Connection connection = getConn("config")) {
             if (orgId != null) {
-                query = getConn("config").prepareStatement(
+                query = connection.prepareStatement(
                     "SELECT projects.id, projectId, name, organizations.orgId FROM projects JOIN organizations ON organizations.id = projects.orgId WHERE projects.orgId = (SELECT id FROM organizations where orgId = ?)");
                 query.setString(1, orgId);
             } else {
-                query = getConn("config").prepareStatement(
+                query = connection.prepareStatement(
                     "SELECT projects.id, projectId, name, organizations.orgId FROM projects JOIN organizations ON organizations.id = projects.orgId");
             }
 
-            ResultSet rs = query.executeQuery();
-
-            while (rs.next()) {
-                Map<String, Object> project = new HashMap<>();
-                project.put(Sjm.SYSMLID, rs.getString(2));
-                project.put(Sjm.NAME, rs.getString(3));
-                project.put("orgId", rs.getString(4));
-                result.add(project);
+            try (ResultSet rs = query.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> project = new HashMap<>();
+                    project.put(Sjm.SYSMLID, rs.getString(2));
+                    project.put(Sjm.NAME, rs.getString(3));
+                    project.put("orgId", rs.getString(4));
+                    result.add(project);
+                }
             }
 
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
             closeConfig();
+            if (query != null) {
+                try {
+                    query.close();
+                } catch (SQLException e) {
+                    logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+                }
+            }
         }
 
         return result;
@@ -697,13 +706,13 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public boolean isDeleted(String sysmlid) {
-        try {
-            PreparedStatement query = getConn()
-                .prepareStatement("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ? AND deleted = true");
+        try (PreparedStatement query = getConn()
+            .prepareStatement("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ? AND deleted = true")) {
             query.setString(1, sysmlid);
-            ResultSet rs = query.executeQuery();
-            if (rs.next()) {
-                return true;
+            try (ResultSet rs = query.executeQuery()) {
+                if (rs.next()) {
+                    return true;
+                }
             }
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -715,9 +724,8 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public boolean sysmlIdExists(String sysmlid) {
-        try {
-            PreparedStatement query =
-                getConn().prepareStatement("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ?");
+        try (PreparedStatement query = getConn()
+            .prepareStatement("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ?")) {
             query.setString(1, sysmlid);
             ResultSet rs = query.executeQuery();
             return rs.next();
@@ -730,17 +738,17 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public boolean edgeExists(String parent, String child, DbEdgeTypes dbet) {
-        try {
-            PreparedStatement query = getConn().prepareStatement(
-                "SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = (SELECT id FROM \"nodes" + workspaceId
-                    + "\" WHERE sysmlid = ?) AND child = (SELECT id FROM \"nodes" + workspaceId
-                    + "\" WHERE sysmlid = ?) AND edgetype = ?");
+        try (PreparedStatement query = getConn().prepareStatement(
+            "SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = (SELECT id FROM \"nodes" + workspaceId
+                + "\" WHERE sysmlid = ?) AND child = (SELECT id FROM \"nodes" + workspaceId
+                + "\" WHERE sysmlid = ?) AND edgetype = ?")) {
             query.setString(1, parent);
             query.setString(2, child);
             query.setInt(3, dbet.getValue());
-            ResultSet rs = query.executeQuery();
-            if (rs.next()) {
-                return true;
+            try (ResultSet rs = query.executeQuery()) {
+                if (rs.next()) {
+                    return true;
+                }
             }
         } catch (SQLException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
