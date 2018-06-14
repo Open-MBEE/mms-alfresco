@@ -1604,7 +1604,9 @@ public class EmsNodeUtil {
                         logger.debug("Value 2 Type: " + value2.getClass());
                     }
                 }
-                return false;
+                if (value1 != value2) {
+                    return false;
+                }
             }
         }
 
