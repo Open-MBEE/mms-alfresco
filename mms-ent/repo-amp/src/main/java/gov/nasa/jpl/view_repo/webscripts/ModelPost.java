@@ -146,7 +146,18 @@ public class ModelPost extends AbstractJavaWebScript {
 
             String commitId = results.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
 
-            if (CommitUtil
+            int added = JsonUtil.getOptArray(results, "addedElements").size();
+            int updated = JsonUtil.getOptArray(results, "updatedElements").size();
+            int deleted = JsonUtil.getOptArray(results, "deletedElements").size();
+
+            if (added + updated + deleted == 0) {
+                JsonObject rejected = new JsonObject();
+                rejected.addProperty(Sjm.CREATOR, user);
+                rejected.add(Sjm.ELEMENTS, new JsonArray());
+                JsonArray rejectedElements = JsonUtil.getOptArray(results, "rejectedElements");
+                rejected.add(Sjm.REJECTED, rejectedElements);
+                model.put(Sjm.RES, rejected);
+            } else if (CommitUtil
                 .sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews, false)) {
                 if (!oldElasticIds.isEmpty()) {
                     emsNodeUtil.updateElasticRemoveRefs(oldElasticIds, "element");

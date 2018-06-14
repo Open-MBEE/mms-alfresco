@@ -4,7 +4,7 @@ ENV CATALINA_HOME /usr/local/tomcat
 ENV PATH $CATALINA_HOME/bin:$PATH
 
 ENV TOMCAT_MAJOR 7
-ENV TOMCAT_VERSION 7.0.82
+ENV TOMCAT_VERSION 7.0.88
 ENV TOMCAT_TGZ_URL "http://mirrors.sonic.net/apache/tomcat/tomcat-7/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz"
 ENV POSTGRES_HOST localhost
 ENV ALF_DATA_DIR /mnt/alf_data
@@ -73,10 +73,10 @@ RUN addgroup -S tomcat \
     && chown -R tomcat:tomcat ${ALF_DATA_DIR}
 
 # Alfresco
-EXPOSE 8080:8080
+#EXPOSE 8080:8080
 # Postgres
 #EXPOSE 5432:5432
 # ElasticSearch
 #EXPOSE 9200:9200
 
-CMD ["/usr/local/tomcat/bin/run.sh"]
+ENTRYPOINT ["/usr/local/tomcat/bin/run.sh"]

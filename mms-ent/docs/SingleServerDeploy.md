@@ -38,13 +38,23 @@ Install MMS on CentOS 7.x
 5. Check the state of the elasticsearch service
     * `curl -XGET 'http://localhost:9200/_cluster/state?pretty'`
 
-## Install Postgresql 9.3.x (Optional if using the Alfresco installer which includes Postgresql)
+## Installing Alfresco on Tomcat
+
+See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.1/concepts/master-ch-install.html)
+* If using the simple installer, get the installer from [here](https://community.alfresco.com/docs/DOC-6296-community-file-list-201605-ga/)
+* Considerations between using the alfresco installer vs installing on standalone tomcat:
+    * The alfresco installer will handle all configurations that need to be set via command prompts, which simplifies installation.
+    * Depending on security requirements, it may be easier to maintain tomcat from the os' package manager.
+    * Same as above for Postgresql.
+    * The alfresco installer can install a service, however this means that postgresql and tomcat will be started and stopped together.
+
+## Install Postgresql 9.4.x (Optional if using the Alfresco installer which includes Postgresql)
 1. Run the following commands as root:
-    * `yum -y install https://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-3.noarch.rpm`
-    * `yum -y install postgresql93 postgresql93-server postgresql93-contrib postgresql93-libs`
-    * `systemctl enable postgresql-9.3`
-    * `postgresql93-setup initdb`
-    * `systemctl start postgresql-9.3`
+    * `yum -y install http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-1.noarch.rpm`
+    * `yum -y install postgresql94 postgresql94-server postgresql94-contrib postgresql94-libs`
+    * `systemctl enable postgresql-9.4`
+    * `$PATH_TO_PG_BIN/postgresql94-setup initdb`
+    * `systemctl start postgresql-9.4`
 
 ## Configure Postgresql
 1. If postgres was installed from Alfresco installer, use the full path for psql
@@ -76,11 +86,6 @@ Install MMS on CentOS 7.x
     
 3. You may want to run activemq as a service.
        
-## Installing Alfresco on Tomcat
-
-See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.1/concepts/master-ch-install.html)
-* if using the simple installer, get the installer from [here](https://sourceforge.net/projects/alfresco/files/Alfresco%20201604%20Community/)
-
 ## Installing MMS
 1. Grab the latest mms-amp and mms-share-amp from the github release page:
     * `https://github.com/Open-MBEE/mms/releases`
