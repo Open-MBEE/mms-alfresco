@@ -6,10 +6,6 @@ ROOT_DIR=/usr/local/alfresco-community-distribution-201605
 TOMCAT_DIR=/usr/local/tomcat
 unzip -q alfresco-community-distribution-201605.zip
 
-#ls -la
-#ls -la ${CUR_DIR}
-#ls -la ${TOMCAT_DIR}
-
 echo "cp -r ${ROOT_DIR}/alf_data /mnt/"
 cp -r ${ROOT_DIR}/alf_data /mnt/
 
@@ -32,7 +28,6 @@ cp ${ROOT_DIR}/web-server/lib/postgresql-9.4-1201-jdbc41.jar ${TOMCAT_DIR}/lib/p
 echo "cp -r ${ROOT_DIR}/web-server/shared tomcat/shared"
 cp -r ${ROOT_DIR}/web-server/shared ${TOMCAT_DIR}/
 mkdir ${TOMCAT_DIR}/shared/lib
-mv ${ROOT_DIR}/web-server/lib/postgresql-9.4-1201-jdbc41.jar ${TOMCAT_DIR}/shared/lib/
 
 echo "cp -r ${ROOT_DIR}/amps tomcat/"
 cp -r ${ROOT_DIR}/amps ${TOMCAT_DIR}/

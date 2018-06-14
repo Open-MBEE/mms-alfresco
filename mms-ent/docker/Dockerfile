@@ -1,5 +1,31 @@
 FROM openjdk:8-jdk-alpine
 
+ENV BUILD_DEPS \
+    alpine-sdk \
+    cabextract \
+    coreutils \
+    curl \
+    ghc \
+    gmp \
+    libffi \
+    linux-headers \
+    musl-dev \
+    wget \
+    zlib-dev
+
+ENV PERSIST_DEPS \
+    fontconfig \
+    graphviz \
+    msttcorefonts-installer \
+    python \
+    py2-pip \
+    sed \
+    ttf-droid \
+    ttf-droid-nonlatin \
+    unzip \
+
+ENV EDGE_DEPS cabal
+
 ENV CATALINA_HOME /usr/local/tomcat
 ENV PATH $CATALINA_HOME/bin:$PATH
 
@@ -12,7 +38,34 @@ ENV CONFIG_DIR /usr/local/config
 ENV FILES_DIR /usr/local/files
 ENV TOMCAT_DIR /usr/local/tomcat
 
-RUN apk add --update curl wget unzip
+ENV PLANTUML_VERSION 1.2017.18
+ENV PLANTUML_DOWNLOAD_URL https://sourceforge.net/projects/plantuml/files/plantuml.$PLANTUML_VERSION.jar/download
+
+ENV PANDOC_VERSION 1.19.2.4
+ENV PANDOC_DOWNLOAD_URL https://hackage.haskell.org/package/pandoc-$PANDOC_VERSION/pandoc-$PANDOC_VERSION.tar.gz
+ENV PANDOC_ROOT /usr/local/pandoc
+
+
+# ---- Install Dependencies ----
+RUN apk upgrade --update \
+    && apk add --no-cache --virtual .build-deps $BUILD_DEPS \
+    && apk add --no-cache --virtual .persistent-deps $PERSIST_DEPS \
+    && update-ms-fonts \
+    && fc-cache -f \
+    && curl -fsSL "$PLANTUML_DOWNLOAD_URL" -o /usr/local/plantuml.jar \
+    && apk add --no-cache --virtual .edge-deps $EDGE_DEPS -X http://dl-cdn.alpinelinux.org/alpine/edge/community \
+    && curl -fsSL "$PANDOC_DOWNLOAD_URL" | tar -xzf - \
+    && ( cd pandoc-$PANDOC_VERSION && cabal update && cabal install --only-dependencies \
+    && cabal configure --prefix=$PANDOC_ROOT \
+    && cabal build \
+    && cabal copy \
+    && cd .. ) \
+    && rm -Rf pandoc-$PANDOC_VERSION/ \
+    && rm -Rf /root/.cabal/ /root/.ghc/ \
+    && rmdir /pandoc-build \
+    && set -x; addgroup -g 82 -S www-data; adduser -u 82 -D -S -G www-data www-data \
+    && mkdir -p /var/docs
+
 
 # ---- Tomcat ----
 RUN curl -fSL "$TOMCAT_TGZ_URL" -o tomcat.tar.gz \
@@ -33,7 +86,7 @@ COPY config/set_properties.sh tomcat/bin/set_properties.sh
 
 
 # Download the community zip files
-RUN wget --no-check-certificate "https://download.alfresco.com/release/community/201605-build-00010/alfresco-community-distribution-201605.zip" \
+RUN wget --no-check-certificate -S "https://download.alfresco.com/release/community/201605-build-00010/alfresco-community-distribution-201605.zip" \
     && chmod +x config_alfresco.sh \
     && chmod +x tomcat/bin/run.sh \
     && chmod +x tomcat/bin/set_properties.sh \
@@ -46,6 +99,7 @@ RUN cp ${CONFIG_DIR}/alfresco-global.properties tomcat/shared/classes/alfresco-g
     && cp ${CONFIG_DIR}/tomcat-server.xml tomcat/conf/server.xml \
     && cp ${CONFIG_DIR}/archive-solrcore.properties tomcat/solr4/archive-SpacesStore/conf/solrcore.properties \
     && cp ${CONFIG_DIR}/workspace-solrcore.properties tomcat/solr4/workspace-SpacesStore/conf/solrcore.properties
+
 
 # ---- MMS -----
 COPY files ${FILES_DIR}
@@ -72,8 +126,11 @@ RUN addgroup -S tomcat \
     && chown -R tomcat:tomcat ${TOMCAT_DIR} \
     && chown -R tomcat:tomcat ${ALF_DATA_DIR}
 
+RUN apk del .build-deps
+
+
 # Alfresco
-#EXPOSE 8080:8080
+EXPOSE 8080:8080
 # Postgres
 #EXPOSE 5432:5432
 # ElasticSearch
