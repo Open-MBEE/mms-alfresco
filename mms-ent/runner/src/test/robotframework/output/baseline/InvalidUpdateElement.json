@@ -23,38 +23,48 @@
     ],
     "rejected": [
         {
-            "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
-            "documentation": "something",
-            "id": "300",
-            "isDerived": false,
-            "name": "this name is updated",
-            "ownerId": "holding_bin_PA",
-            "type": "Property",
-            "value": [
-                {
-                    "string": "dlam_string",
-                    "type": "LiteralString"
-                }
-            ]
+            "code": 304,
+            "element": {
+                "_modifier": "admin",
+                "_projectId": "PA",
+                "_refId": "master",
+                "documentation": "something",
+                "id": "300",
+                "isDerived": false,
+                "name": "this name is updated",
+                "ownerId": "holding_bin_PA",
+                "type": "Property",
+                "value": [
+                    {
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }
+                ]
+            },
+            "message": "Is Equivalent",
+            "severity": "warn"
         },
         {
-            "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
-            "documentation": "else",
-            "id": "301",
-            "isDerived": false,
-            "name": "this name is also updated",
-            "ownerId": "300",
-            "type": "Property",
-            "value": [
-                {
-                    "string": "dlam_string",
-                    "type": "LiteralString"
-                }
-            ]
+            "code": 304,
+            "element": {
+                "_modifier": "admin",
+                "_projectId": "PA",
+                "_refId": "master",
+                "documentation": "else",
+                "id": "301",
+                "isDerived": false,
+                "name": "this name is also updated",
+                "ownerId": "300",
+                "type": "Property",
+                "value": [
+                    {
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }
+                ]
+            },
+            "message": "Is Equivalent",
+            "severity": "warn"
         }
     ]
 }

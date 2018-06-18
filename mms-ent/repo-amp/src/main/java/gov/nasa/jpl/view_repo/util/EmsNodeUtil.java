@@ -38,6 +38,9 @@ import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 public class EmsNodeUtil {
 
     private ElasticHelper eh = null;
@@ -595,10 +598,11 @@ public class EmsNodeUtil {
 
             boolean added = !existingMap.containsKey(sysmlid);
             boolean updated = false;
+            Map<Integer, String> rejected = new HashMap<>();
             if (!added) {
                 if (!overwriteJson) {
-                    if (isUpdated(o, existingMap.get(sysmlid))) {
-                        updated = diffUpdateJson(o, existingMap.get(sysmlid));
+                    if (isUpdated(o, existingMap.get(sysmlid), rejected)) {
+                        updated = diffUpdateJson(o, existingMap.get(sysmlid), rejected);
                     }
                 } else {
                     updated = true;
@@ -663,8 +667,15 @@ public class EmsNodeUtil {
                 commitUpdated.add(parent);
                 newElements.add(o);
             } else {
-                rejectedElements.add(o);
-                logger.debug("ELEMENT CONFLICT!");
+                for (Map.Entry<Integer, String> message : rejected.entrySet()) {
+                    JsonObject errorPayload = new JsonObject();
+                    errorPayload.addProperty("code", message.getKey());
+                    errorPayload.add("element", o);
+                    errorPayload.addProperty("message", message.getValue());
+                    errorPayload.addProperty("severity", Sjm.WARN);
+                    rejectedElements.add(errorPayload);
+                }
+                logger.debug("ELEMENT REJECTED!");
             }
         }
 
@@ -1121,8 +1132,8 @@ public class EmsNodeUtil {
         element.remove(Sjm.CHILDVIEWS);
     }
 
-    private void processChildViewDeleteCommit(JsonObject element, JsonArray deletedElements,
-        Set<String> oldElasticIds, JsonArray commitDeleted) {
+    private void processChildViewDeleteCommit(JsonObject element, JsonArray deletedElements, Set<String> oldElasticIds,
+        JsonArray commitDeleted) {
         if (!JsonUtil.getOptString(element, Sjm.SYSMLID).equals("")) {
             deletedElements.add(element);
             oldElasticIds.add(element.get(Sjm.ELASTICID).getAsString());
@@ -1247,7 +1258,7 @@ public class EmsNodeUtil {
         return pgh.refExists(refId);
     }
 
-    private boolean diffUpdateJson(JsonObject json, JsonObject existing) {
+    private boolean diffUpdateJson(JsonObject json, JsonObject existing, Map<Integer, String> rejection) {
         if (json.has(Sjm.SYSMLID) && existing.has(Sjm.SYSMLID)) {
             String jsonModified = JsonUtil.getOptString(json, Sjm.MODIFIED);
             String existingModified = JsonUtil.getOptString(existing, Sjm.MODIFIED);
@@ -1259,6 +1270,7 @@ public class EmsNodeUtil {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Conflict Detected");
                         }
+                        rejection.put(HttpServletResponse.SC_CONFLICT, "Conflict Detected");
                         return false;
                     }
                 } catch (ParseException e) {
@@ -1286,7 +1298,7 @@ public class EmsNodeUtil {
         return true;
     }
 
-    private boolean isUpdated(JsonObject json, JsonObject existing) {
+    private boolean isUpdated(JsonObject json, JsonObject existing, Map<Integer, String> rejection) {
         if (existing == null) {
             return false;
         }
@@ -1299,7 +1311,13 @@ public class EmsNodeUtil {
         Map<String, Object> newElement = toMap(json);
         Map<String, Object> oldElement = toMap(existing);
 
-        return !isEquivalent(newElement, oldElement);
+        boolean equiv = isEquivalent(newElement, oldElement);
+
+        if (equiv) {
+            rejection.put(HttpServletResponse.SC_NOT_MODIFIED, "Is Equivalent");
+        }
+
+        return !equiv;
     }
 
     public JsonArray addExtendedInformation(JsonArray elements) {
