@@ -1190,12 +1190,13 @@ definitions:
     type: "object"
     required:
     - "code"
-    - "element"
     - "message"
     - "severity"
     properties:
       code:
         type: "number"
+      id:
+        type: "string"
       element:
         $ref: "#/definitions/Element"
       message:
