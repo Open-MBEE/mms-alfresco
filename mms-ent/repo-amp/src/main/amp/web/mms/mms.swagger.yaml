@@ -1186,6 +1186,22 @@ definitions:
         type: "string"
     additionalProperties:
       type: "object"
+  Rejection:
+    type: "object"
+    required:
+    - "code"
+    - "element"
+    - "message"
+    - "severity"
+    properties:
+      code:
+        type: "number"
+      element:
+        $ref: "#/definitions/Element"
+      message:
+        type: "string"
+      severity:
+        type: "string"
   Artifact:
     type: "object"
     required:
@@ -1251,6 +1267,10 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Element"
+      rejected:
+        type: "array"
+        items:
+          $ref: "#/definitions/Rejection"
       comment:
         type: "string"
       source:

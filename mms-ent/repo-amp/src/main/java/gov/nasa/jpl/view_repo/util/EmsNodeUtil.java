@@ -670,7 +670,7 @@ public class EmsNodeUtil {
                 for (Map.Entry<Integer, String> message : rejected.entrySet()) {
                     JsonObject errorPayload = new JsonObject();
                     errorPayload.addProperty("code", message.getKey());
-                    errorPayload.add(Sjm.SYSMLID, o.get(Sjm.SYSMLID));
+                    errorPayload.add("element", o);
                     errorPayload.addProperty("message", message.getValue());
                     errorPayload.addProperty("severity", Sjm.WARN);
                     rejectedElements.add(errorPayload);
