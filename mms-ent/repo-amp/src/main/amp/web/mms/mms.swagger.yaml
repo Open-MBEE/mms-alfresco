@@ -574,7 +574,7 @@ paths:
         200:
           description: "OK"
           schema:
-            $ref: "#/definitions/Elements"
+            $ref: "#/definitions/RejectableElements"
         401:
           $ref: "#/responses/Unauthorized"
         403:
@@ -630,7 +630,7 @@ paths:
         200:
           description: "OK"
           schema:
-            $ref: "#/definitions/Elements"
+            $ref: "#/definitions/RejectableElements"
         401:
           $ref: "#/responses/Unauthorized"
         403:
@@ -1260,6 +1260,19 @@ definitions:
         items:
           $ref: "#/definitions/Commit"
   Elements:
+    type: "object"
+    required:
+    - "elements"
+    properties:
+      elements:
+        type: "array"
+        items:
+          $ref: "#/definitions/Element"
+      comment:
+        type: "string"
+      source:
+        type: "string"
+  RejectableElements:
     type: "object"
     required:
     - "elements"
