@@ -51,17 +51,6 @@ cp -r ${ROOT_DIR}/bin ${TOMCAT_DIR}/
 echo "java -jar ${TOMCAT_DIR}/bin/alfresco-mmt.jar install ${TOMCAT_DIR}/amps/alfresco-share-services.amp ${TOMCAT_DIR}/webapps/repo.war -force"
 java -jar ${TOMCAT_DIR}/bin/alfresco-mmt.jar install ${TOMCAT_DIR}/amps/alfresco-share-services.amp ${TOMCAT_DIR}/webapps/alfresco.war -force
 
-# Explode wars into directories
-cd ${TOMCAT_DIR}/webapps
-rm -rf alfresco share solr4
-mkdir alfresco share solr4
-cd alfresco
-jar xf ../alfresco.war
-cd ../share
-jar xf ../share.war
-cd ../solr4
-jar xf ../solr4.war
-
 # Remove extra backup files
 cd ${TOMCAT_DIR}/webapps
 rm -rf *.bak
