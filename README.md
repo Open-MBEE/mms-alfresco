@@ -5,7 +5,8 @@
 
 <!--- [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-share-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-share-amp/_latestVersion) mms-share-amp --->
 
-[![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
+
+[![Language Grade: Java](https://img.shields.io/lgtm/grade/java/g/Open-MBEE/mms.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Open-MBEE/mms/context:java) [![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
 
 **AMP for Alfresco (5.1.g)**
 
