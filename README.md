@@ -5,11 +5,12 @@
 
 <!--- [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-share-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-share-amp/_latestVersion) mms-share-amp --->
 
-[![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
+
+[![Language Grade: Java](https://img.shields.io/lgtm/grade/java/g/Open-MBEE/mms.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Open-MBEE/mms/context:java) [![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
 
 **AMP for Alfresco (5.1.g)**
 
-Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
+Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/open-mbee.github.io/blob/master/compat%20matrix.pdf
 ## Developer Setup
 
 ### Dependencies
