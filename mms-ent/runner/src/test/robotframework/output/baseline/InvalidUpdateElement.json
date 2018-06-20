@@ -25,7 +25,6 @@
         {
             "code": 304,
             "element": {
-                "_modifier": "admin",
                 "_projectId": "PA",
                 "_refId": "master",
                 "documentation": "something",
@@ -47,7 +46,6 @@
         {
             "code": 304,
             "element": {
-                "_modifier": "admin",
                 "_projectId": "PA",
                 "_refId": "master",
                 "documentation": "else",

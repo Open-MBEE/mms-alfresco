@@ -5,7 +5,6 @@
         {
             "code": 304,
             "element": {
-                "_modifier": "Collaborator",
                 "_projectId": "PA",
                 "_refId": "master",
                 "documentation": "something",
@@ -27,7 +26,6 @@
         {
             "code": 304,
             "element": {
-                "_modifier": "Collaborator",
                 "_projectId": "PA",
                 "_refId": "master",
                 "documentation": "else",
@@ -49,7 +47,6 @@
         {
             "code": 304,
             "element": {
-                "_modifier": "Collaborator",
                 "_projectId": "PA",
                 "_refId": "master",
                 "documentation": "talk",
