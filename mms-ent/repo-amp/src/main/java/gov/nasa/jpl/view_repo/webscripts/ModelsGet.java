@@ -115,7 +115,6 @@ public class ModelsGet extends ModelGet {
 
         Map<String, Object> model = new HashMap<>();
         JsonArray elementsJson = new JsonArray();
-        JsonArray errors = new JsonArray();
         JsonObject result = new JsonObject();
 
         try {
@@ -139,40 +138,39 @@ public class ModelsGet extends ModelGet {
                 if (elements.size() == 0) {
                     log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
                 }
-
                 top.add(Sjm.ELEMENTS, elements);
-
-                JsonArray errorMessages = new JsonArray();
-                for (String level : Sjm.ERRORLEVELS) {
-                    errors = JsonUtil.getOptArray(result, level);
-                    if (errors.size() > 0) {
-                        for (int i = 0; i < errors.size(); i++) {
-                            JsonObject errorPayload = new JsonObject();
-                            errorPayload.addProperty("code", HttpServletResponse.SC_NOT_FOUND);
-                            errorPayload.add(Sjm.SYSMLID, errors.get(i));
-                            errorPayload.addProperty("message",
-                                String.format("Element %s was not found", errors.get(i).getAsString()));
-                            errorPayload.addProperty("severity", level);
-                            errorMessages.add(errorPayload);
-                        }
-                    }
-                }
-
-                if (errorMessages.size() > 0) {
-                    top.add("messages", errorMessages);
-                }
-
-                if (prettyPrint || accept.contains("webp")) {
-                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                    model.put(Sjm.RES, gson.toJson(top));
-                } else {
-                    model.put(Sjm.RES, top);
-                }
             } else {
                 log(Level.INFO, HttpServletResponse.SC_OK, "No elements found");
                 top.add(Sjm.ELEMENTS, new JsonArray());
+            }
+
+            JsonArray errorMessages = new JsonArray();
+            for (String level : Sjm.ERRORLEVELS) {
+                JsonArray errors = JsonUtil.getOptArray(result, level);
+                if (errors.size() > 0) {
+                    for (int i = 0; i < errors.size(); i++) {
+                        JsonObject errorPayload = new JsonObject();
+                        errorPayload.addProperty("code", HttpServletResponse.SC_NOT_FOUND);
+                        errorPayload.add(Sjm.SYSMLID, errors.get(i));
+                        errorPayload.addProperty("message",
+                            String.format("Element %s was not found", errors.get(i).getAsString()));
+                        errorPayload.addProperty("severity", level);
+                        errorMessages.add(errorPayload);
+                    }
+                }
+            }
+
+            if (errorMessages.size() > 0) {
+                top.add("messages", errorMessages);
+            }
+
+            if (prettyPrint || accept.contains("webp")) {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                model.put(Sjm.RES, gson.toJson(top));
+            } else {
                 model.put(Sjm.RES, top);
             }
+
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
