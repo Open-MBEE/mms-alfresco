@@ -50,7 +50,7 @@ See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.1/conc
 
 ## Install Postgresql 9.4.x (Optional if using the Alfresco installer which includes Postgresql)
 1. Run the following commands as root:
-    * `yum -y http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-1.noarch.rpm`
+    * `yum -y install http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-1.noarch.rpm`
     * `yum -y install postgresql94 postgresql94-server postgresql94-contrib postgresql94-libs`
     * `systemctl enable postgresql-9.4`
     * `$PATH_TO_PG_BIN/postgresql94-setup initdb`
