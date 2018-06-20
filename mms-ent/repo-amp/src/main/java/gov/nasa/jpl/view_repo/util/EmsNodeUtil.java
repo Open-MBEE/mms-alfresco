@@ -609,16 +609,11 @@ public class EmsNodeUtil {
                 }
             }
 
-            // pregenerate the elasticId
-            o.addProperty(Sjm.ELASTICID, UUID.randomUUID().toString());
-            o.addProperty(Sjm.COMMITID, commitId);
             o.addProperty(Sjm.PROJECTID, this.projectId);
             o.addProperty(Sjm.REFID, this.workspaceName);
             JsonArray arry = new JsonArray();
             arry.add(this.workspaceName);
             o.add(Sjm.INREFIDS, arry);
-            o.addProperty(Sjm.MODIFIER, user);
-            o.addProperty(Sjm.MODIFIED, date);
 
             if (o.has(Sjm.QUALIFIEDID)) {
                 o.remove(Sjm.QUALIFIEDID);
@@ -637,8 +632,15 @@ public class EmsNodeUtil {
             }
             if (added) {
                 logger.debug("ELEMENT ADDED!");
+
                 o.addProperty(Sjm.CREATOR, user);
                 o.addProperty(Sjm.CREATED, date);
+
+                o.addProperty(Sjm.ELASTICID, UUID.randomUUID().toString());
+                o.addProperty(Sjm.COMMITID, commitId);
+                o.addProperty(Sjm.MODIFIER, user);
+                o.addProperty(Sjm.MODIFIED, date);
+
                 addedElements.add(o);
 
                 JsonObject newObj = new JsonObject();
@@ -653,6 +655,12 @@ public class EmsNodeUtil {
                 newElements.add(o);
             } else if (updated) {
                 logger.debug("ELEMENT UPDATED!");
+
+                o.addProperty(Sjm.ELASTICID, UUID.randomUUID().toString());
+                o.addProperty(Sjm.COMMITID, commitId);
+                o.addProperty(Sjm.MODIFIER, user);
+                o.addProperty(Sjm.MODIFIED, date);
+
                 updatedElements.add(o);
 
                 JsonObject parent = new JsonObject();
