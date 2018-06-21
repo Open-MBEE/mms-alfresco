@@ -11,4 +11,4 @@ if [ ! -f ./files/mms.properties.example ];then
     cp ../mms.properties.example ./files/
 fi
 
-docker build . -t mms-container
+docker build . -t mms-image
