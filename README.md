@@ -10,7 +10,7 @@
 
 **AMP for Alfresco (5.1.g AKA 201605-GA)**
 
-Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/open-mbee.github.io/blob/master/compat%20matrix.pdf
+Use this table to check what version of the mms - mdk - ve triple you should be using: [Compatibility Matrix](https://github.com/Open-MBEE/open-mbee.github.io/blob/master/compat%20matrix.pdf)
 ## Developer Setup
 
 ### Dependencies
