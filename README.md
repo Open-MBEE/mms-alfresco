@@ -21,8 +21,9 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 * ActiveMQ 5.X
 
 ### 1a. Using Intellij
-* Open Project with root of 'mms-ent'
+* Open Project with root of 'mms'
 * Import Maven Project
+* Open Project Structure and Import Module "mms-ent" and set to find projects recursively
 
 ### 1b. Import Project from git repo to Eclipse
 *  **Eclipse** > **File** > **Import** > **General** > **Existing Projects into Workspace**
