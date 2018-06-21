@@ -8,14 +8,14 @@
 
  [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-amp/_latestVersion) [![Language Grade: Java](https://img.shields.io/lgtm/grade/java/g/Open-MBEE/mms.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Open-MBEE/mms/context:java) [![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
 
-**AMP for Alfresco (5.1.g)**
+**AMP for Alfresco (5.1.g AKA 201605-GA)**
 
 Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/open-mbee.github.io/blob/master/compat%20matrix.pdf
 ## Developer Setup
 
 ### Dependencies
-* ElasticSearch 5.x
-* PostgreSQL 9.x
+* ElasticSearch 5.x (Up to 5.5)
+* PostgreSQL 9.x (Up to 9.4 is using PostgreSQL for Alfresco)
 
 ### Optional Dependencies
 * ActiveMQ 5.X
