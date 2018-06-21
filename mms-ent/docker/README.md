@@ -6,7 +6,7 @@ docker build . -t mms-image
 ```
 
 To run the container:
-- we need to specify the mount directory 
+- For persistence, we need to specify the mount directory
 ```
 --mount source=mmsvol,target=/mnt/alf_data
 ```

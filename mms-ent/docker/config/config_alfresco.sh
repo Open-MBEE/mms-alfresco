@@ -6,8 +6,13 @@ ROOT_DIR=/usr/local/alfresco-community-distribution-201605
 TOMCAT_DIR=/usr/local/tomcat
 unzip -q alfresco-community-distribution-201605.zip
 
-echo "cp -r ${ROOT_DIR}/alf_data /mnt/"
-cp -r ${ROOT_DIR}/alf_data /mnt/
+#echo "cp -r ${ROOT_DIR}/alf_data /mnt/"
+#cp -r ${ROOT_DIR}/alf_data /mnt/
+
+mkdir /mnt/alf_data
+
+echo "cp -r ${ROOT_DIR}/alf_data/keystore ${TOMCAT_DIR}/keystore"
+cp -r ${ROOT_DIR}/alf_data/keystore ${TOMCAT_DIR}/keystore
 
 echo "cp ${ROOT_DIR}/web-server/webapps/alfresco.war ${TOMCAT_DIR}/webapps"
 mv ${ROOT_DIR}/web-server/webapps/alfresco.war ${TOMCAT_DIR}/webapps/alfresco.war
