@@ -90,8 +90,8 @@ public class LoginTicket extends DeclarativeWebScript
         } catch (AuthenticationException e) {
             //status.setRedirect(true);
             status.setCode(HttpServletResponse.SC_NOT_FOUND);
-            status.setMessage("Ticket not found");
-            result.addProperty("message", "Ticket not found");
+            status.setMessage(e.getMsgId());
+            result.addProperty("message", e.getMsgId());
         }
 
         model.put(Sjm.RES, result.toString() );
