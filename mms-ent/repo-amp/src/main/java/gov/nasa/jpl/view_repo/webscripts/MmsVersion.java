@@ -53,7 +53,7 @@ public class MmsVersion extends AbstractJavaWebScript {
         	logger.debug("Checking MMS Versions");
         }
 
-        mmsVersion = getMMSversion();
+        mmsVersion = getMMSversion(getServices());
         if (prettyPrint) {
         	Gson gson = new GsonBuilder().setPrettyPrinting().create();
         	model.put(Sjm.RES, gson.toJson(mmsVersion));

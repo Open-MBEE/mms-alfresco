@@ -1,5 +1,6 @@
 package gov.nasa.jpl.view_repo.connections;
 
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -18,10 +19,8 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 
-import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsConfig;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
@@ -195,7 +194,7 @@ public class JmsConnection implements ConnectionInterface {
                 message.setStringProperty("projectId", projectId);
             }
             message.setLongProperty("MessageID", sequenceId++);
-            message.setStringProperty("MessageSource", NodeUtil.getHostname());
+            message.setStringProperty("MessageSource", EmsNodeUtil.getHostname());
             message.setStringProperty("MessageRecipient", "TMS");
             message.setStringProperty("MessageType", eventType.toUpperCase());
 
@@ -227,7 +226,7 @@ public class JmsConnection implements ConnectionInterface {
         for (String eventType : getConnectionMap().keySet()) {
             ConnectionInfo ci = getConnectionMap().get(eventType);
             if (ci.uri.contains("localhost")) {
-                ci.uri = ci.uri.replace("localhost", NodeUtil.getHostname());
+                ci.uri = ci.uri.replace("localhost", EmsNodeUtil.getHostname());
                 getConnectionMap().put(eventType, ci);
             }
 

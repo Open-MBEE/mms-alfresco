@@ -7,7 +7,6 @@ import gov.nasa.jpl.view_repo.actions.PandocConverter;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 
@@ -132,7 +131,7 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
                 pandocConverter.convert(JsonUtil.getOptString(postJson, "body"), JsonUtil.getOptString(postJson, "css"));
 
                 String artifactId = postJson.get(Sjm.NAME).getAsString().replaceAll("[^a-zA-Z0-9.-]", "_") + System.currentTimeMillis() + format;
-                EmsScriptNode artifact = NodeUtil.updateOrCreateArtifact(artifactId, filePath, format, siteName, projectId, refId);
+                EmsScriptNode artifact = EmsScriptNode.updateOrCreateArtifact(artifactId, filePath, format, siteName, projectId, refId);
 
                 sendEmail(artifact, format);
                 if (artifact == null) {
