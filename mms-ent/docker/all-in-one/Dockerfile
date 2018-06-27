@@ -54,6 +54,7 @@ ENV ELASTICSEARCH_VERSION 5.5.2
 ENV ELASTICSEARCH_TARBALL "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz"
 ENV ELASTICSEARCH_TARBALL_ASC "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz.asc"
 ENV ELASTICSEARCH_TARBALL_SHA1 "91b3b3c823fafce54609ed5c9075d9cf50b2edff"
+ENV ELASTICSEARCH_HOME $USR_LOCAL/elasticsearch
 
 ENV PG_MAJOR 9.4
 ENV PG_VERSION 9.4.18
@@ -77,7 +78,7 @@ ENV FILES_DIR $USR_LOCAL/files
 
 ENV PGDATA /var/lib/postgresql/data
 
-ENV PATH $USR_LOCAL/bin:$TOMCAT_HOME/bin:$PANDOC_HOME/bin:$PATH
+ENV PATH $USR_LOCAL/bin:$TOMCAT_HOME/bin:$ELASTICSEARCH_HOME/bin:$PANDOC_HOME/bin:$PATH
 
 # ---- Install Dependencies ----
 RUN apk upgrade --update \

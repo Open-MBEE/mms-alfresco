@@ -52,5 +52,5 @@ else
 fi
 
 # Run these unconditionally
-sed -i'' -e "s/pandoc.exec=\/usr\/local\/bin\/pandoc/pandoc.exec=\/usr\/local\/pandoc\/bin\/pandoc" /usr/local/tomcat/shared/classes/mms.properties
+sed -i'' -e "s/pandoc.exec=\/usr\/local\/bin\/pandoc/pandoc.exec=\/usr\/local\/pandoc\/bin\/pandoc/" /usr/local/tomcat/shared/classes/mms.properties
 export CATALINA_TMPDIR=/mnt/alf_data/temp

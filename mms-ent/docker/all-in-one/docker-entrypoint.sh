@@ -25,6 +25,7 @@ file_env() {
 }
 
 if [ "${1:0:1}" = '-' ]; then
+    set PATH="/usr/local/bin:/usr/local/tomcat/bin:/usr/local/elasticsearch/bin:/usr/local/pandoc/bin:$PATH"
 	set -- postgres "$@"
 	set -- elasticsearch "$@"
 fi
@@ -46,10 +47,10 @@ if [ "$1" = 'postgres' ] && [ "$(id -u)" = '0' ]; then
 		chmod 700 "$POSTGRES_INITDB_XLOGDIR"
 	fi
 
-	exec su-exec /usr/local/bin/postgres "$BASH_SOURCE" "$@"
+	exec su-exec postgres "$BASH_SOURCE" "$@"
 fi
 
-if [ "$1" = 'elasticsearch' -a "$(id -u)" = '0' ]; then
+if [[ "$1" = *'elasticsearch'* -a "$(id -u)" = '0' ]]; then
 	# Change the ownership of user-mutable directories to elasticsearch
 	for path in \
 		/usr/share/elasticsearch/data \
@@ -58,8 +59,7 @@ if [ "$1" = 'elasticsearch' -a "$(id -u)" = '0' ]; then
 		chown -R elasticsearch:elasticsearch "$path"
 	done
 
-	set -- su-exec /usr/local/elasticsearch/bin/elasticsearch "$@"
-	#exec su-exec elasticsearch "$BASH_SOURCE" "$@"
+	exec su-exec elasticsearch "$BASH_SOURCE" "$@"
 fi
 
 if [ "$1" = 'postgres' ]; then
