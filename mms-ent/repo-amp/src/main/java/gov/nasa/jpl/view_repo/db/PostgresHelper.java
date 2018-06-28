@@ -97,19 +97,19 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public void close() {
-        try {
-            if (this.connMap.containsKey(project)) {
-                this.connMap.get(project).close();
-            }
-        } catch (SQLException e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
+        closeConnection(project);
     }
 
     public void closeConfig() {
+        closeConnection("config");
+    }
+
+    private void closeConnection(String key)
+    {
         try {
-            if (this.connMap.containsKey("config")) {
-                this.connMap.get("config").close();
+            Connection connection = this.connMap.remove(key);
+            if (connection != null) {
+                connection.close();
             }
         } catch (SQLException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
