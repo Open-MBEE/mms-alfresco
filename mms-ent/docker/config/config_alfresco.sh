@@ -6,12 +6,13 @@ ROOT_DIR=/usr/local/alfresco-community-distribution-201605
 TOMCAT_DIR=/usr/local/tomcat
 unzip -q alfresco-community-distribution-201605.zip
 
-#ls -la
-#ls -la ${CUR_DIR}
-#ls -la ${TOMCAT_DIR}
+#echo "cp -r ${ROOT_DIR}/alf_data /mnt/"
+#cp -r ${ROOT_DIR}/alf_data /mnt/
 
-echo "cp -r ${ROOT_DIR}/alf_data /mnt/"
-cp -r ${ROOT_DIR}/alf_data /mnt/
+mkdir /mnt/alf_data
+
+echo "cp -r ${ROOT_DIR}/alf_data/keystore ${TOMCAT_DIR}/keystore"
+cp -r ${ROOT_DIR}/alf_data/keystore ${TOMCAT_DIR}/keystore
 
 echo "cp ${ROOT_DIR}/web-server/webapps/alfresco.war ${TOMCAT_DIR}/webapps"
 mv ${ROOT_DIR}/web-server/webapps/alfresco.war ${TOMCAT_DIR}/webapps/alfresco.war
@@ -32,7 +33,6 @@ cp ${ROOT_DIR}/web-server/lib/postgresql-9.4-1201-jdbc41.jar ${TOMCAT_DIR}/lib/p
 echo "cp -r ${ROOT_DIR}/web-server/shared tomcat/shared"
 cp -r ${ROOT_DIR}/web-server/shared ${TOMCAT_DIR}/
 mkdir ${TOMCAT_DIR}/shared/lib
-mv ${ROOT_DIR}/web-server/lib/postgresql-9.4-1201-jdbc41.jar ${TOMCAT_DIR}/shared/lib/
 
 echo "cp -r ${ROOT_DIR}/amps tomcat/"
 cp -r ${ROOT_DIR}/amps ${TOMCAT_DIR}/
@@ -55,17 +55,6 @@ cp -r ${ROOT_DIR}/bin ${TOMCAT_DIR}/
 # Install the share service amp into the war before exploding the war.
 echo "java -jar ${TOMCAT_DIR}/bin/alfresco-mmt.jar install ${TOMCAT_DIR}/amps/alfresco-share-services.amp ${TOMCAT_DIR}/webapps/repo.war -force"
 java -jar ${TOMCAT_DIR}/bin/alfresco-mmt.jar install ${TOMCAT_DIR}/amps/alfresco-share-services.amp ${TOMCAT_DIR}/webapps/alfresco.war -force
-
-# Explode wars into directories
-cd ${TOMCAT_DIR}/webapps
-rm -rf alfresco share solr4
-mkdir alfresco share solr4
-cd alfresco
-jar xf ../alfresco.war
-cd ../share
-jar xf ../share.war
-cd ../solr4
-jar xf ../solr4.war
 
 # Remove extra backup files
 cd ${TOMCAT_DIR}/webapps

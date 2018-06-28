@@ -139,6 +139,9 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         } else {
             try {
                 if (!Utils.isNullOrEmpty(response.toString())) {
+                    if (json == null) {
+                        json = new JsonObject();
+                    }
                     json.addProperty("message", response.toString());
                 }
                 JsonObject resultRefs = new JsonObject();
@@ -186,7 +189,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         String workspaceName = null;
         String desc = null;
         String elasticId = null;
-        Boolean isTag = false;
+        boolean isTag = false;
         String permission = "read";  // Default is public read permission
         EmsScriptNode finalWorkspace = null;
 
@@ -243,7 +246,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs");
                 EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId, null, null);
 
-                if (dstWs != null) {
+                if (dstWs != null && srcWs != null) {
                     // keep history of the branch
                     String srcId = srcWs.getName();
                     dstWs.setProperty("cm:title", newWorkspaceId + "_" + srcId);

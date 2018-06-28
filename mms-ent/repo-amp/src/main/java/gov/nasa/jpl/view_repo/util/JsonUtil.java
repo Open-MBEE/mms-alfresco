@@ -8,8 +8,8 @@
 package gov.nasa.jpl.view_repo.util;
 
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +35,11 @@ public class JsonUtil {
         return parser.parse(str).getAsJsonObject();
     }
 
+    public static JsonElement buildFromStream(InputStream is) {
+        JsonElement result = new JsonParser().parse(new InputStreamReader(is));
+        return result != null ? result : new JsonObject();
+    }
+
     public static JsonObject addStringList(JsonObject obj, String key, List<String> values) {
         JsonArray array = new JsonArray();
         if (values != null) {
@@ -58,46 +63,53 @@ public class JsonUtil {
 
     public static JsonObject fromMap(Map<String, String> propertyMap) {
         JsonObject obj = new JsonObject();
-        for (Map.Entry<String, String> entry : propertyMap.entrySet())
+        for (Map.Entry<String, String> entry : propertyMap.entrySet()) {
             obj.addProperty(entry.getKey(), entry.getValue());
+        }
         return obj;
     }
 
     public static JsonArray getOptArray(JsonObject obj, String name) {
-        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull())) {
             return new JsonArray();
+        }
         return obj.get(name).getAsJsonArray();
     }
 
     public static JsonObject getOptObject(JsonObject obj, String name) {
-        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull())) {
             return new JsonObject();
+        }
         return obj.get(name).getAsJsonObject();
     }
 
     public static String getOptString(JsonObject obj, String name) {
-        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull())) {
             return "";
+        }
         return obj.get(name).getAsString();
     }
 
     public static String getOptString(JsonObject obj, String name, String option) {
-        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull()))
+        if (obj == null || !obj.has(name) || (obj.has(name) && obj.get(name).isJsonNull())) {
             return option;
+        }
         return obj.get(name).getAsString();
     }
 
     public static JsonObject getOptObject(JsonArray arry, int index) {
         JsonElement elem = arry.get(index);
-        if (elem.isJsonObject())
+        if (elem.isJsonObject()) {
             return elem.getAsJsonObject();
+        }
         return new JsonObject();
     }
 
     public static String getOptString(JsonArray arry, int index) {
         JsonElement elem = arry.get(index);
-        if (elem.isJsonPrimitive())
+        if (elem.isJsonPrimitive()) {
             return elem.getAsString();
+        }
         return "";
     }
 }

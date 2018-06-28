@@ -13,7 +13,6 @@ import com.google.common.cache.RemovalNotification;
 import org.apache.commons.dbcp.BasicDataSource;
 
 import gov.nasa.jpl.view_repo.util.EmsConfig;
-import org.apache.commons.dbcp.DelegatingConnection;
 import org.apache.log4j.Logger;
 
 public class PostgresPool {
@@ -37,9 +36,11 @@ public class PostgresPool {
     private static Map<String, PostgresPool> dataSources = new HashMap<>();
     private static Map<String, Cache<String, PostgresPool>> activeDataSources = new HashMap<>();
 
+
     interface IBasicDataSourceFactory {
         BasicDataSource getNewBasicDataSource();
     }
+
 
     private static IBasicDataSourceFactory basicDataSourceFactory = null;
 
@@ -56,8 +57,8 @@ public class PostgresPool {
         this.bds.setInitialSize(10);
         this.bds.setMaxIdle(MAX_IDLE_CONN);
         this.bds.setMinIdle(MIN_IDLE_CONN);
-        this.bds.setMaxActive((!EmsConfig.get(PG_CONN_MAX).equals("")) ? Integer.parseInt(EmsConfig.get(
-            PG_CONN_MAX)) : MAX_ACTIVE_CONN);
+        this.bds.setMaxActive(
+            (!EmsConfig.get(PG_CONN_MAX).equals("")) ? Integer.parseInt(EmsConfig.get(PG_CONN_MAX)) : MAX_ACTIVE_CONN);
         this.bds.setMaxWait(10000);
         this.bds.setDefaultAutoCommit(true);
         this.bds.setRemoveAbandonedTimeout(1);
@@ -66,7 +67,7 @@ public class PostgresPool {
         this.bds.setTimeBetweenEvictionRunsMillis(1000 * 60);
         this.bds.setMinEvictableIdleTimeMillis(1000 * 60 * 5);
 
-        if(EmsConfig.get(PG_SEC).toLowerCase().equals("true")) {
+        if (EmsConfig.get(PG_SEC).toLowerCase().equals("true")) {
             this.bds.setConnectionProperties("ssl=true");
         }
     }
@@ -79,7 +80,7 @@ public class PostgresPool {
         String connectString = getConnectString(host, name);
         Cache<String, PostgresPool> cache = getActiveDatasetCache(host);
         PostgresPool pool = cache.getIfPresent(connectString);
-        if(pool == null){
+        if (pool == null) {
             pool = dataSources.get(connectString);
             if (pool == null) {
                 pool = newInstance(host, name);
@@ -114,10 +115,9 @@ public class PostgresPool {
 
     private void goIdle() {
         this.bds.setMaxIdle(MIN_IDLE_CONN);
-        if(this.bds.getNumActive() > 0) {
-            logger.warn("Database connection pool (" +
-                getConnectString(host, name) +
-                ") with active connections was instructed to go idle.  Database may be overloaded");
+        if (this.bds.getNumActive() > 0) {
+            logger.warn("Database connection pool (" + getConnectString(host, name)
+                + ") with active connections was instructed to go idle.  Database may be overloaded");
         }
     }
 
@@ -134,11 +134,14 @@ public class PostgresPool {
         bds.setMaxWait(10000);
         bds.setDefaultAutoCommit(true);
         bds.setRemoveAbandonedTimeout(1);
+        bds.setTimeBetweenEvictionRunsMillis(1000 * 60);
+        bds.setMinEvictableIdleTimeMillis(1000 * 60 * 60);
         return bds.getConnection();
     }
 
     /**
      * Given a host and name this will remove the connection source from the PostgresPool
+     *
      * @param host
      * @param name
      */
@@ -157,17 +160,14 @@ public class PostgresPool {
     private static Cache<String, PostgresPool> getActiveDatasetCache(String host) {
         Cache<String, PostgresPool> cache = activeDataSources.get((host));
 
-        if(cache == null) {
-            cache = CacheBuilder.newBuilder()
-                .maximumWeight(MAX_CONN_LIMIT)
-                .weigher((String key, PostgresPool pool) -> pool.getWeight())
-                .expireAfterAccess(5, TimeUnit.MINUTES)
+        if (cache == null) {
+            cache = CacheBuilder.newBuilder().maximumWeight(MAX_CONN_LIMIT)
+                .weigher((String key, PostgresPool pool) -> pool.getWeight()).expireAfterAccess(5, TimeUnit.MINUTES)
                 .removalListener((RemovalNotification<String, PostgresPool> v) -> {
                     if (v.getCause() != RemovalCause.REPLACED) {
                         v.getValue().goIdle();
                     }
-                })
-                .build();
+                }).build();
             activeDataSources.put(host, cache);
         }
         return cache;
@@ -175,7 +175,7 @@ public class PostgresPool {
 
 
     public static IBasicDataSourceFactory getBasicDataSourceFactory() {
-        if(basicDataSourceFactory == null) {
+        if (basicDataSourceFactory == null) {
             basicDataSourceFactory = () -> new BasicDataSource();
         }
         return basicDataSourceFactory;
@@ -189,8 +189,9 @@ public class PostgresPool {
         activeDataSources.clear();
         dataSources.clear();
     }
+
     static void idleDatabasePools() {
-        for(Cache<String, PostgresPool> cache : activeDataSources.values()) {
+        for (Cache<String, PostgresPool> cache : activeDataSources.values()) {
             cache.invalidateAll();
         }
     }

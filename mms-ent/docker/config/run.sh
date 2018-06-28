@@ -1,6 +1,6 @@
 #!/bin/sh
 
-${TOMCAT_DIR}/bin/set_properties.sh
+${TOMCAT_HOME}/bin/set_properties.sh
 
 # Start Alfresco
-su - tomcat -c "${TOMCAT_DIR}/bin/catalina.sh run"
+su - tomcat -c "${TOMCAT_HOME}/bin/catalina.sh run"

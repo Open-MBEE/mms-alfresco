@@ -84,7 +84,7 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
                 if (validateRequest(req, status)) {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
                     JsonObject res = emsNodeUtil.getProfile(username);
-                    if (res.size() > 0 && res != null) {
+                    if (res != null && res.size() > 0) {
                         response.add(Sjm.PROFILES, res);
                     } else {
                         response.add("failed", res);

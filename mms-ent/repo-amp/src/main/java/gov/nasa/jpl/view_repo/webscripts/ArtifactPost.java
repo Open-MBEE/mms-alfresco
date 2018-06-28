@@ -248,7 +248,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 } else {
                     String url = artifact.getUrl();
                     if (url != null) {
-                        postJson.addProperty(Sjm.LOCATION, url.replace("/d/d/", "/service/api/node/content/"));
+                        postJson.addProperty(Sjm.ARTIFACTLOCATION, url.replace("/d/d/", "/service/api/node/content/"));
                     }
                 }
             } else {

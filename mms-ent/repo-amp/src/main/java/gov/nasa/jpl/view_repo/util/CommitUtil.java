@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -189,17 +191,20 @@ public class CommitUtil {
         if (!e.has(Sjm.TYPE) || !e.get(Sjm.TYPE).getAsString().equals("Property")) {
             return false;
         }
-        JsonArray appliedS = JsonUtil.getOptArray(e, Sjm.APPLIEDSTEREOTYPEIDS);
-        if (appliedS.size() == 0) {
+        if (!e.has(Sjm.AGGREGATION) || e.get(Sjm.AGGREGATION).getAsString().equals("none")) {
             return false;
         }
+        if (e.has(Sjm.DEFAULTVALUE) && !e.get(Sjm.DEFAULTVALUE).isJsonNull()) {
+            return false;
+        }
+        JsonArray appliedS = JsonUtil.getOptArray(e, Sjm.APPLIEDSTEREOTYPEIDS);
         for (int i = 0; i < appliedS.size(); i++) {
             String s = appliedS.get(i).getAsString();
-            if (Sjm.PROPERTYSIDS.containsValue(s)) {
-                return true;
+            if (s.equals(Sjm.VALUEPROPERTY) || s.equals(Sjm.CONSTRAINTPROPERTY)) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     private static boolean processArtifactDeltasForDb(JsonObject delta, String projectId, String refId,
@@ -808,22 +813,30 @@ public class CommitUtil {
         logger.info("SrcJSON in sendBranch: " + src.toString());
         String srcId = src.get(Sjm.SYSMLID).getAsString();
         String createdId = created.get(Sjm.SYSMLID).getAsString();
+        boolean hasCommit = (commitId != null && !commitId.isEmpty());
 
         NodeRef person = services.getPersonService().getPersonOrNull(JsonUtil.getOptString(created, Sjm.CREATOR));
         if (person != null) {
             user = services.getNodeService().getProperty(person, ContentModel.PROP_EMAIL).toString();
         }
 
-        initHazelcastQueue(String.format("%s-%s", projectId, createdId));
-        BlockingQueue<BranchTask> queue = hzInstance.getQueue(String.format("%s-%s", projectId, createdId));
-        BranchTask task =
-            new BranchTask(projectId, srcId, created.toString(), elasticId, isTag, source, commitId, user);
+        if (hasCommit) {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor
+                .submit(new BranchTask(projectId, srcId, created.toString(), elasticId, isTag, source, commitId, user));
+            executor.shutdown();
+        } else {
+            initHazelcastQueue(String.format("%s-%s", projectId, createdId));
+            BlockingQueue<BranchTask> queue = hzInstance.getQueue(String.format("%s-%s", projectId, createdId));
+            BranchTask task =
+                new BranchTask(projectId, srcId, created.toString(), elasticId, isTag, source, commitId, user);
 
-        try {
-            queue.put(task);
-        } catch (InterruptedException ie) {
-            logger.debug(String.format("Interrupted: %s", LogUtil.getStackTrace(ie)));
-            Thread.currentThread().interrupt();
+            try {
+                queue.put(task);
+            } catch (InterruptedException ie) {
+                logger.debug(String.format("Interrupted: %s", LogUtil.getStackTrace(ie)));
+                Thread.currentThread().interrupt();
+            }
         }
 
         return branchJson;

@@ -574,7 +574,7 @@ paths:
         200:
           description: "OK"
           schema:
-            $ref: "#/definitions/Elements"
+            $ref: "#/definitions/RejectableElements"
         401:
           $ref: "#/responses/Unauthorized"
         403:
@@ -630,7 +630,7 @@ paths:
         200:
           description: "OK"
           schema:
-            $ref: "#/definitions/Elements"
+            $ref: "#/definitions/RejectableElements"
         401:
           $ref: "#/responses/Unauthorized"
         403:
@@ -1186,13 +1186,30 @@ definitions:
         type: "string"
     additionalProperties:
       type: "object"
+  Rejection:
+    type: "object"
+    required:
+    - "code"
+    - "message"
+    - "severity"
+    properties:
+      code:
+        type: "number"
+      id:
+        type: "string"
+      element:
+        $ref: "#/definitions/Element"
+      message:
+        type: "string"
+      severity:
+        type: "string"
   Artifact:
     type: "object"
     required:
     - "id"
     - "contentType"
     - "checksum"
-    - "location"
+    - "artifactLocation"
     properties:
       id:
         type: "string"
@@ -1200,7 +1217,7 @@ definitions:
         type: "string"
       checksum:
         type: "string"
-      location:
+      artifactLocation:
         type: "string"
       name:
         type: "string"
@@ -1251,6 +1268,23 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Element"
+      comment:
+        type: "string"
+      source:
+        type: "string"
+  RejectableElements:
+    type: "object"
+    required:
+    - "elements"
+    properties:
+      elements:
+        type: "array"
+        items:
+          $ref: "#/definitions/Element"
+      rejected:
+        type: "array"
+        items:
+          $ref: "#/definitions/Rejection"
       comment:
         type: "string"
       source:

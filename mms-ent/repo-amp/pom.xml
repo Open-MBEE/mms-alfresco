@@ -10,8 +10,13 @@
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
         <artifactId>mms-ent</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
+        <version>3.3.1-SNAPSHOT</version>
     </parent>
+
+    <properties>
+        <swagger.codegen.target>${project.build.directory}/generated-sources/swagger</swagger.codegen.target>
+        <swagger.codegen.yaml>${basedir}/src/main/amp/web/mms/mms.swagger.yaml</swagger.codegen.yaml>
+    </properties>
     <repositories>
         <repository>
             <id>alfresco-public</id>
@@ -36,6 +41,13 @@
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <!-- jcenter repo -->
+        <pluginRepository>
+            <id>jcenter</id>
+            <url>https://jcenter.bintray.com/</url>
+        </pluginRepository>
+    </pluginRepositories>
     <!-- Following dependencies are needed for compiling Java code in src/main/java;
         <scope>provided</scope> is inherited for each of the following; for more
         info, please refer to alfresco-platform-distribution POM -->
@@ -91,11 +103,6 @@
             <groupId>net.logstash.log4j</groupId>
             <artifactId>jsonevent-layout</artifactId>
             <version>1.7</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-codegen-maven-plugin</artifactId>
-            <version>2.3.1</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp</groupId>
@@ -189,6 +196,18 @@
             <artifactId>hazelcast-client</artifactId>
             <version>2.4</version>
         </dependency>
+
+        <!-- Swagger Codegen Dependencies -->
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>1.5.8</version>
+        </dependency>
+        <dependency>
+            <groupId>io.gsonfire</groupId>
+            <artifactId>gson-fire</artifactId>
+            <version>1.8.3</version>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -232,21 +251,65 @@
             <plugin>
                 <groupId>io.swagger</groupId>
                 <artifactId>swagger-codegen-maven-plugin</artifactId>
-                <version>2.2.3</version>
+                <version>2.3.1</version>
                 <executions>
                     <execution>
+                        <id>html-codegen</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${basedir}/src/main/amp/web/mms/mms.swagger.yaml</inputSpec>
+                            <inputSpec>${swagger.codegen.yaml}</inputSpec>
                             <language>html2</language>
+                            <output>${swagger.codegen.target}/html</output>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>java-codegen</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${swagger.codegen.yaml}</inputSpec>
+                            <language>java</language>
                             <configOptions>
-                                <output>${project.build.directory}/generated-sources</output>
+                                <java8>true</java8>
+                                <dateLibrary>java8-localdatetime</dateLibrary>
                             </configOptions>
+                            <output>${swagger.codegen.target}/java</output>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>python-codegen</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${swagger.codegen.yaml}</inputSpec>
+                            <language>python</language>
+                            <output>${swagger.codegen.target}/python</output>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mathematica-codegen</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${swagger.codegen.yaml}</inputSpec>
+                            <language>mathematica-client</language>
+                            <invokerPackage>MMS</invokerPackage>
+                            <output>${swagger.codegen.target}/mathematica</output>
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.openmbee.swagger</groupId>
+                        <artifactId>swagger-codegen-mathematica-client</artifactId>
+                        <version>1.0.1</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -262,12 +325,31 @@
                             <outputDirectory>${project.build.directory}/amp/web/mms</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.build.directory}/generated-sources/swagger</directory>
+                                    <directory>${swagger.codegen.target}/html</directory>
                                 </resource>
                             </resources>
                         </configuration>
                     </execution>
-
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>mms</finalName>
+                    <descriptors>
+                        <descriptor>assembly/mms-java-client.xml</descriptor>
+                        <descriptor>assembly/mms-python-client.xml</descriptor>
+                        <descriptor>assembly/mms-mathematica-client.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- append to the packaging phase. -->
+                        <goals>
+                            <goal>single</goal> <!-- goals == mojos -->
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
