@@ -11,7 +11,7 @@
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
         <artifactId>mms-ent</artifactId>
-        <version>3.3.0-RC2</version>
+        <version>3.3.0</version>
     </parent>
 
     <!-- Build Solr Configuration only when we run an embedded Tomcat (i.e. profile run is enabled).
