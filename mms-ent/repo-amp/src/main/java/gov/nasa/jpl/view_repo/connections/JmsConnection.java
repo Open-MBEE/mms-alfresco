@@ -9,6 +9,7 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.JMSException;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
@@ -149,21 +150,21 @@ public class JmsConnection implements ConnectionInterface {
     public boolean publishMessage(String msg, String eventType) {
         ConnectionInfo ci = getConnectionMap().get(eventType);
 
-        if (ci.uri == null)
+        if (ci.uri == null) {
             return false;
+        }
 
-        if (init(eventType) == false)
+        if (!init(eventType)) {
             return false;
+        }
 
         boolean status = true;
-        try {
-            // Create a Connection
-            Connection connection = ci.connectionFactory.createConnection();
+
+        MessageProducer producer = null;
+        try (Connection connection = ci.connectionFactory.createConnection();
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);) {
+
             connection.start();
-
-            // Create a Session
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
             // lookup the destination
             Destination destination;
             try {
@@ -180,7 +181,7 @@ public class JmsConnection implements ConnectionInterface {
             }
 
             // Create a MessageProducer from the Session to the Topic or Queue
-            MessageProducer producer = session.createProducer(destination);
+            producer = session.createProducer(destination);
             producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
             // Create a message
@@ -200,13 +201,17 @@ public class JmsConnection implements ConnectionInterface {
 
             // Tell the producer to send the message
             producer.send(message);
-
-            // Clean up
-            session.close();
-            connection.close();
         } catch (Exception e) {
             logger.error("JMS exception caught, probably means JMS broker not up");
             status = false;
+        } finally {
+            if (producer != null) {
+                try {
+                    producer.close();
+                } catch (JMSException e) {
+                    logger.error(e);
+                }
+            }
         }
 
         return status;
