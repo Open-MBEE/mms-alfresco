@@ -68,17 +68,17 @@
          APR (HTTP/AJP) Connector: /docs/apr.html
          Define a non-SSL HTTP/1.1 Connector on port 8080
     -->
-    <Connector port="8080" protocol="HTTP/1.1"
-               connectionTimeout="20000"
-               redirectPort="8443" />
+      <Connector port="8080" protocol="HTTP/1.1"
+                 connectionTimeout="20000"
+                 redirectPort="8443" />
 
 
 
       <Connector port="8443" protocol="org.apache.coyote.http11.Http11Protocol"
                  SSLEnabled="true" maxThreads="150" scheme="https"
-                 keystoreFile="/mnt/alf_data/keystore/ssl.keystore"
+                 keystoreFile="/usr/local/tomcat/keystore/ssl.keystore"
                  keystorePass="kT9X6oe68t" keystoreType="JCEKS" secure="true" connectionTimeout="240000"
-                 truststoreFile="/mnt/alf_data/keystore/ssl.truststore"
+                 truststoreFile="/usr/local/tomcat/keystore/ssl.truststore"
                  truststorePass="kT9X6oe68t" truststoreType="JCEKS" clientAuth="want" sslProtocol="TLS"/>
 
       <!-- A "Connector" using the shared thread pool-->

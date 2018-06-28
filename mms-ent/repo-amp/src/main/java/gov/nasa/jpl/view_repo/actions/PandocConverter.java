@@ -19,6 +19,7 @@ public class PandocConverter {
     private PandocOutputFormat pandocOutputFormat;
     private String outputFile = EmsConfig.get("pandoc.output.filename");
     private String pdfEngine = EmsConfig.get("pandoc.pdfengine");
+    private String princeExec = EmsConfig.get("pandoc.princeexec");
     public static final String PANDOC_DATA_DIR = EmsConfig.get("pandoc.output.dir");
 
 
@@ -92,34 +93,51 @@ public class PandocConverter {
             title += System.lineSeparator();
         }
 
-        Path cssTempFile = null;
+        Path tempFile = null;
 
+        int status;
+        boolean withOutputStream = false;
         StringBuilder command = new StringBuilder();
-        command.append(String.format("%s --mathml --variable=title: --from=html+raw_html+simple_tables", this.pandocExec));
-        if (!cssString.isEmpty()) {
+
+        if (this.pandocOutputFormat.getFormatName().equals("pdf") && this.pdfEngine.contains("prince")
+            && this.princeExec != null && !this.princeExec.isEmpty()) {
+
             try {
-                String cssName = String
-                    .format("%s%s.css", Thread.currentThread().getName(), Long.toString(System.currentTimeMillis()));
-                cssTempFile =
-                    EmsNodeUtil.saveToFilesystem(cssName, new ByteArrayInputStream(cssString.getBytes()));
-                command.append(String.format(" --css=%s", cssTempFile.toString()));
+                String htmlName = String
+                    .format("%s%s.html", Thread.currentThread().getName(), Long.toString(System.currentTimeMillis()));
+                tempFile = EmsNodeUtil.saveToFilesystem(htmlName, new ByteArrayInputStream(inputString.getBytes()));
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }
-        }
-        if (this.pandocOutputFormat.getFormatName().equals("pdf")) {
-            command.append(String.format(" --pdf-engine=%s", this.pdfEngine));
-        }
-        command.append(String.format(" -o %s/%s.%s", PANDOC_DATA_DIR, this.outputFile, this.pandocOutputFormat.getFormatName()));
 
-        int status;
+            command.append(String.format("%s %s -o %s/%s.%s", this.princeExec, tempFile.toString(), PANDOC_DATA_DIR, this.outputFile,
+                this.pandocOutputFormat.getFormatName()));
+        } else {
+            command.append(String.format("%s --mathml --variable=title: --from=html+raw_html+simple_tables", this.pandocExec));
+            if (!cssString.isEmpty()) {
+                try {
+                    String cssName = String.format("%s%s.css", Thread.currentThread().getName(), Long.toString(System.currentTimeMillis()));
+                    tempFile = EmsNodeUtil.saveToFilesystem(cssName, new ByteArrayInputStream(cssString.getBytes()));
+                    command.append(String.format(" --css=%s", tempFile.toString()));
+                } catch (Throwable t) {
+                    throw new RuntimeException(t);
+                }
+            }
+            if (this.pandocOutputFormat.getFormatName().equals("pdf")) {
+                command.append(String.format(" --pdf-engine=%s", this.pdfEngine));
+            }
+            command.append(String.format(" -o %s/%s.%s", PANDOC_DATA_DIR, this.outputFile, this.pandocOutputFormat.getFormatName()));
+            withOutputStream = true;
+        }
 
         try {
             Process process = Runtime.getRuntime().exec(command.toString());
-            OutputStream out = process.getOutputStream();
-            out.write(inputString.getBytes());
-            out.flush();
-            out.close();
+            if (withOutputStream) {
+                OutputStream out = process.getOutputStream();
+                out.write(inputString.getBytes());
+                out.flush();
+                out.close();
+            }
             status = process.waitFor();
         } catch (InterruptedException ex) {
             throw new RuntimeException("Could not execute: " + command.toString(), ex);
@@ -128,7 +146,7 @@ public class PandocConverter {
         } catch (Throwable e) {
             throw new RuntimeException(e);
         } finally {
-            if (cssTempFile != null && !cssTempFile.toFile().delete()) {
+            if (tempFile != null && !tempFile.toFile().delete()) {
                 throw new RuntimeException("Could not delete temporary css file");
             }
         }

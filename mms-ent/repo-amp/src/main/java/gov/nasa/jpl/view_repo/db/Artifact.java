@@ -6,7 +6,6 @@ public class Artifact {
 
     private int id;
     private String elasticId;
-    private String contentType;
     private String sysmlId;
     private String lastCommit;
     private String initialCommit;
@@ -46,14 +45,6 @@ public class Artifact {
         this.elasticId = elasticId;
     }
 
-    public String getNodeType() {
-        return contentType;
-    }
-
-    public void setNodeType(int nodeType) {
-        this.contentType = contentType;
-    }
-
     public String getInitialCommit() {
         return initialCommit;
     }
@@ -71,7 +62,6 @@ public class Artifact {
         json.addProperty("id", this.id);
         json.addProperty("sysmlId", this.sysmlId);
         json.addProperty("elasticId", this.elasticId);
-        json.addProperty("nodeType", this.contentType);
 
         return json;
     }

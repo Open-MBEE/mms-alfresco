@@ -1,19 +1,29 @@
 # Model Management System
-**AMP for Alfresco (5.1.g)**
 
-Use this table to check what version of the mms - mdk - ve triple you should be using: https://github.com/Open-MBEE/mdk/blob/support/2.5/manual/MDK%20-%20MMS%20-%20VE%20Compatibility%20Matrix.pdf
+<!--- Comment the download links until we can display them better or something --->
+<!--- [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-amp/_latestVersion) mms-amp --->
+
+<!--- [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-share-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-share-amp/_latestVersion) mms-share-amp --->
+
+
+ [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-amp/_latestVersion) [![Language Grade: Java](https://img.shields.io/lgtm/grade/java/g/Open-MBEE/mms.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Open-MBEE/mms/context:java) [![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
+
+**AMP for Alfresco (5.1.g AKA 201605-GA)**
+
+Use this table to check what version of the mms - mdk - ve triple you should be using: [Compatibility Matrix](https://github.com/Open-MBEE/open-mbee.github.io/blob/master/compat%20matrix.pdf)
 ## Developer Setup
 
 ### Dependencies
-* ElasticSearch 5.x
-* PostgreSQL 9.x
+* ElasticSearch 5.x (Up to 5.5)
+* PostgreSQL 9.x (Up to 9.4 is using PostgreSQL for Alfresco)
 
 ### Optional Dependencies
 * ActiveMQ 5.X
 
 ### 1a. Using Intellij
-* Open Project with root of 'mms-ent'
+* Open Project with root of 'mms'
 * Import Maven Project
+* Open Project Structure and Import Module "mms-ent" and set to find projects recursively
 
 ### 1b. Import Project from git repo to Eclipse
 *  **Eclipse** > **File** > **Import** > **General** > **Existing Projects into Workspace**
@@ -58,7 +68,7 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 
 ### 2. Install and Configure PostgreSQL
 *   Download PostgreSQL 9.x
-    * If using PostgreSQL as the database for Alfresco, PostgreSQL 9.3 is the latest supported version
+    * If using PostgreSQL as the database for Alfresco, PostgreSQL 9.4 is the latest supported version
 *   Install PostgreSQL
 *   Start PostgreSQL server
 *   Connect to the PostgreSQL server and:
@@ -218,9 +228,9 @@ curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --
 curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data '{"projects": [{"id": "123456","name": "vetest","type": "Project"}]}' -X POST "http://localhost:8080/alfresco/service/orgs/vetest/projects"
 ```
 
-Then you can post some elements. For convenience, there is a json file in repo-amp/test-data/javawebscripts/JsonData. Using the project from above:
+Then you can post some elements. For convenience, there is a json file in `runner/src/test/robotframework/JsonData`. Using the project from above:
 ```
-curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data @JsonData/elementsNew.json -X POST "http://localhost:8080/alfresco/service/projects/123456/refs/master/elements"
+curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin --data @JsonData/PostNewElements.json -X POST "http://localhost:8080/alfresco/service/projects/123456/refs/master/elements"
 ```
 
 Make sure the elements went in:
@@ -231,17 +241,19 @@ curl -w "\n%{http_code}\n" -H "Content-Type: application/json" -u admin:admin -X
 ### Robotframework test suite
 Robot tests can be run with the following maven profiles in the mms-ent directory:
 ```
-./mvnw install -Ddependency.surf.version=6.3 -Prun,robot-tests
+./mvnw install -Prun,robot-tests
 ```
 Please note that tests should be run on a clean instance, therefore, it may be helpful to run clean.sh before running the tests
 
-The Robotframework tests require the 'requests' python module. Install it as follows:
+The Robotframework tests require the 'requests' and 'robotframework-requests' python modules. Install it as follows:
 ```
 pip install --target=runner/src/test/robotframework/libraries requests
+pip install --target=runner/src/test/robotframework/libraries robotframework-requests
 ```
 OR:
 ```
 pip install --target=$HOME/.m2/repository/org/robotframework/robotframework/{ROBOTPLUGINVERSION}/Lib requests
+pip install --target=$HOME/.m2/repository/org/robotframework/robotframework/{ROBOTPLUGINVERSION}/Lib robotframework-requests
 ```
 
 ### Changing debug levels on the fly

@@ -29,7 +29,7 @@ GetCfIdsFromView
 ConvertHtmlToDocx
     [Documentation]     "Convert an HTML string to a docx"
     [Tags]              docx    critical        0503
-	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ConverHtmlToDocx.json
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ConvertHtmlToDocx.json
 	${result} =         Post         url=${ROOT}/projects/PA/refs/master/convert        data=${post_json}       headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
 	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
@@ -38,4 +38,14 @@ ConvertHtmlToDocx
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
 
-
+ConvertHtmlToPdf
+    [Documentation]     "Convert an HTML string to a pdf"
+    [Tags]              pdf    critical        0503
+	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ConvertHtmlToPdf.json
+	${result} =         Post         url=${ROOT}/projects/PA/refs/master/convert        data=${post_json}       headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		 _created		 _modified		 _elasticId
+	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+	Sleep				${POST_DELAY_INDEXING}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+	Should Match Baseline		${compare_result}

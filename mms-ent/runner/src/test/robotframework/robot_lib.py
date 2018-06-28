@@ -532,7 +532,7 @@ def binary_data(filename):
     return data
 
 def get_image_location(jsonObject):
-    return jsonObject["artifacts"][0]["location"]
+    return jsonObject["artifacts"][0]["artifactLocation"]
 
 def get_image_id(jsonObject):
     return jsonObject["artifacts"][0]["_elasticId"]

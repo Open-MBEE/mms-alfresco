@@ -35,7 +35,7 @@ public interface GraphInterface {
 
     void rollBackToSavepoint(Savepoint savepoint) throws SQLException;
 
-    void execUpdate(String query) throws SQLException;
+    int execUpdate(String query) throws SQLException;
 
     ResultSet execQuery(String query) throws SQLException;
 

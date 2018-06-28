@@ -98,7 +98,13 @@ public class ModelGet extends AbstractJavaWebScript {
 
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        printHeader(user, logger, req);
+
+        if (logger.isDebugEnabled()) {
+            printHeader(user, logger, req);
+        } else {
+            printHeader(user, logger, req, true);
+        }
+
         Timer timer = new Timer();
 
         Map<String, Object> model;
@@ -123,7 +129,7 @@ public class ModelGet extends AbstractJavaWebScript {
         JsonObject top = new JsonObject();
 
         if (validateRequest(req, status)) {
-            Boolean isCommit = req.getParameter(COMMITID) != null && !req.getParameter(COMMITID).isEmpty();
+            boolean isCommit = req.getParameter(COMMITID) != null && !req.getParameter(COMMITID).isEmpty();
             try {
                 if (isCommit) {
                     JsonArray commitJsonToArray = new JsonArray();
@@ -132,7 +138,7 @@ public class ModelGet extends AbstractJavaWebScript {
                     if (commitJson.size() == 0) {
                         log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
                     }
-                    if (commitJson != null && commitJson.size() > 0) {
+                    if (commitJson.size() > 0) {
                         top.add(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
                     }
                     if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {

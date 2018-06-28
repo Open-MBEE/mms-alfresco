@@ -1,0 +1,48 @@
+{
+    "_creator": "admin",
+    "elements": [],
+    "rejected": [
+        {
+            "code": 409,
+            "element": {
+                "_projectId": "PA",
+                "_refId": "master",
+                "documentation": "something",
+                "id": "300",
+                "isDerived": false,
+                "name": "this name is updated for _modified test",
+                "ownerId": "holding_bin_PA",
+                "type": "Property",
+                "value": [
+                    {
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }
+                ]
+            },
+            "message": "Conflict Detected",
+            "severity": "warn"
+        },
+        {
+            "code": 409,
+            "element": {
+                "_projectId": "PA",
+                "_refId": "master",
+                "documentation": "else",
+                "id": "301",
+                "isDerived": false,
+                "name": "this name is also updated for _modified test",
+                "ownerId": "300",
+                "type": "Property",
+                "value": [
+                    {
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }
+                ]
+            },
+            "message": "Conflict Detected",
+            "severity": "warn"
+        }
+    ]
+}

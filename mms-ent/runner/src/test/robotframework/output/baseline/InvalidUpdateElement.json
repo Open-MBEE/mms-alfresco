@@ -1,42 +1,68 @@
 {
     "_creator": "admin",
-    "elements": [],
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "talk",
+            "id": "303",
+            "isDerived": false,
+            "name": "three hundred and three is also updated",
+            "ownerId": "302",
+            "type": "Property",
+            "value": [
+                {
+                    "real": 3.3,
+                    "type": "Real"
+                }
+            ]
+        }
+    ],
     "rejected": [
         {
-            "_creator": "admin",
-            "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
-            "documentation": "something",
-            "id": "300",
-            "isDerived": false,
-            "name": "this name is updated",
-            "ownerId": "holding_bin_PA",
-            "type": "Property",
-            "value": [
-                {
-                    "string": "dlam_string",
-                    "type": "LiteralString"
-                }
-            ]
+            "code": 304,
+            "element": {
+                "_projectId": "PA",
+                "_refId": "master",
+                "documentation": "something",
+                "id": "300",
+                "isDerived": false,
+                "name": "this name is updated",
+                "ownerId": "holding_bin_PA",
+                "type": "Property",
+                "value": [
+                    {
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }
+                ]
+            },
+            "message": "Is Equivalent",
+            "severity": "warn"
         },
         {
-            "_creator": "admin",
-            "_modifier": "admin",
-            "_projectId": "PA",
-            "_refId": "master",
-            "documentation": "else",
-            "id": "301",
-            "isDerived": false,
-            "name": "this name is also updated",
-            "ownerId": "300",
-            "type": "Property",
-            "value": [
-                {
-                    "string": "dlam_string",
-                    "type": "LiteralString"
-                }
-            ]
+            "code": 304,
+            "element": {
+                "_projectId": "PA",
+                "_refId": "master",
+                "documentation": "else",
+                "id": "301",
+                "isDerived": false,
+                "name": "this name is also updated",
+                "ownerId": "300",
+                "type": "Property",
+                "value": [
+                    {
+                        "string": "dlam_string",
+                        "type": "LiteralString"
+                    }
+                ]
+            },
+            "message": "Is Equivalent",
+            "severity": "warn"
         }
     ]
 }

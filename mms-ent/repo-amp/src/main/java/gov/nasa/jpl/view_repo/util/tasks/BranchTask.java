@@ -94,8 +94,11 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
     private JsonObject createBranch() {
 
         timer = new Timer();
-
         JsonObject created = JsonUtil.buildFromString(createdString);
+
+        logger.info(String.format("Starting branch %s started by %s", created.get(Sjm.SYSMLID).getAsString(),
+            JsonUtil.getOptString(created, Sjm.CREATOR)));
+
         JsonObject bJson = new JsonObject();
         bJson.addProperty("source", source);
 
@@ -113,12 +116,16 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
             pgh.createBranchFromWorkspace(created.get(Sjm.SYSMLID).getAsString(), created.get(Sjm.NAME).getAsString(),
                 elasticId, commitId, isTag);
 
-            logger.info("Created branch");
+            logger.info(String.format("Finished copying db tables for branch %s started by %s at %s",
+                created.get(Sjm.SYSMLID).getAsString(), JsonUtil.getOptString(created, Sjm.CREATOR), timer));
 
             if (hasCommit) {
                 pgh.setWorkspace(created.get(Sjm.SYSMLID).getAsString());
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, srcId);
                 JsonObject modelFromCommit = emsNodeUtil.getModelAtCommit(commitId);
+
+                logger.info(String.format("Finished getting elements from elastic for branch %s started by %s at %s",
+                    created.get(Sjm.SYSMLID).getAsString(), JsonUtil.getOptString(created, Sjm.CREATOR), timer));
 
                 List<Map<String, Object>> nodeInserts = new ArrayList<>();
                 List<Map<String, Object>> artifactInserts = new ArrayList<>();
@@ -129,18 +136,41 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
                     modelFromCommit.get(Sjm.ARTIFACTS).getAsJsonArray(), nodeInserts, artifactInserts, edgeInserts,
                     childEdgeInserts);
 
+                logger.info(String.format("Finished processing nodes and edges for branch %s started by %s at %s",
+                    created.get(Sjm.SYSMLID).getAsString(), JsonUtil.getOptString(created, Sjm.CREATOR), timer));
+
                 if (!nodeInserts.isEmpty()) {
                     insertForBranchInPast(pgh, nodeInserts, "updates", projectId);
                 }
+
+                logger.info(String
+                    .format("Finished inserting nodes (%s) for branch %s started by %s at %s", nodeInserts.size(),
+                        created.get(Sjm.SYSMLID).getAsString(), JsonUtil.getOptString(created, Sjm.CREATOR), timer));
+
                 if (!artifactInserts.isEmpty()) {
                     insertForBranchInPast(pgh, artifactInserts, "artifactUpdates", projectId);
                 }
+
+                logger.info(String.format("Finished inserting artifacts (%s) for branch %s started by %s at %s",
+                    artifactInserts.size(), created.get(Sjm.SYSMLID).getAsString(),
+                    JsonUtil.getOptString(created, Sjm.CREATOR), timer));
+
                 if (!edgeInserts.isEmpty()) {
                     insertForBranchInPast(pgh, edgeInserts, EDGES, projectId);
                 }
+
+                logger.info(String.format("Finished inserting containment edges (%s) for branch %s started by %s at %s",
+                    edgeInserts.size(), created.get(Sjm.SYSMLID).getAsString(),
+                    JsonUtil.getOptString(created, Sjm.CREATOR), timer));
+
                 if (!childEdgeInserts.isEmpty()) {
                     insertForBranchInPast(pgh, childEdgeInserts, EDGES, projectId);
                 }
+
+                logger.info(String.format("Finished inserting other edges (%s) for branch  %s started by %s at %s",
+                    childEdgeInserts.size(), created.get(Sjm.SYSMLID).getAsString(),
+                    created.get(Sjm.CREATOR).getAsString(), timer));
+
             } else {
                 pgh.setWorkspace(created.get(Sjm.SYSMLID).getAsString());
             }
@@ -195,6 +225,8 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
                 JsonUtil.getOptString(created, Sjm.CREATOR), this.timer);
         String subject =
             String.format("Branch %s has finished at %s", created.get(Sjm.SYSMLID).getAsString(), this.timer);
+
+        logger.info(subject);
 
         if (author != null) {
             try {
