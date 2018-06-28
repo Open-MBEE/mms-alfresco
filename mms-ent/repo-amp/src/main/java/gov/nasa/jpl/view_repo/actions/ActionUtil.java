@@ -29,27 +29,12 @@
 
 package gov.nasa.jpl.view_repo.actions;
 
-import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.util.Acm;
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Date;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.springframework.extensions.webscripts.Status;
 
 /**
  * Static class of Action utilities for saving log, sending email, etc.
@@ -75,7 +60,7 @@ public class ActionUtil {
         EmsScriptNode user = new EmsScriptNode(services.getPersonService().getPerson(username), services, new StringBuffer());
         String recipient = (String) user.getProperty("cm:email");
 
-        String sender = NodeUtil.getHostname() + "@jpl.nasa.gov";
+        String sender = EmsNodeUtil.getHostname() + "@jpl.nasa.gov";
         sendEmailTo(sender, recipient, msg, subject, services);
     }
 

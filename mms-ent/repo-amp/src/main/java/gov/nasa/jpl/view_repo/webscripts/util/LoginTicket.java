@@ -35,7 +35,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import com.google.gson.JsonObject;
 
-import static gov.nasa.jpl.view_repo.util.NodeUtil.services;
+import static gov.nasa.jpl.view_repo.util.EmsScriptNode.services;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**

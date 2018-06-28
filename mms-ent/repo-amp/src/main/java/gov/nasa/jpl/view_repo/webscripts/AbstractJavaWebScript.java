@@ -52,7 +52,6 @@ import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 
 /**
@@ -298,10 +297,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     }
 
     public ServiceRegistry getServices() {
-        if (services == null) {
-            services = NodeUtil.getServices();
-        }
-        return services;
+        return this.services;
     }
 
     protected boolean checkRequestContent(WebScriptRequest req) {
@@ -516,8 +512,7 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         }
 
         if (paramVal != null && !paramVal.equals("none") && paramVal.length() > 0) {
-            // Calls NodeUtil's getMMSversion
-            jsonVersion = getMMSversion();
+            jsonVersion = getMMSversion(getServices());
             mmsVersion = jsonVersion.get("mmsVersion").toString();
 
             log(Level.INFO, HttpServletResponse.SC_OK, "Comparing Versions....");
@@ -577,9 +572,9 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
      *
      * @return JSONObject mmsVersion
      */
-    public static JsonObject getMMSversion() {
+    public static JsonObject getMMSversion(ServiceRegistry services) {
         JsonObject version = new JsonObject();
-        version.addProperty("mmsVersion", NodeUtil.getMMSversion());
+        version.addProperty("mmsVersion", EmsNodeUtil.getMMSversion(services));
         return version;
     }
 

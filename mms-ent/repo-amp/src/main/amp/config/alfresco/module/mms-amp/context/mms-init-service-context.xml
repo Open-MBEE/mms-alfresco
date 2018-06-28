@@ -43,7 +43,7 @@
     </bean>
 
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.NodeUtil.setServices"/>
+        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.EmsScriptNode.setServices"/>
         <property name="arguments" ref="ServiceRegistry"/>
     </bean>
 

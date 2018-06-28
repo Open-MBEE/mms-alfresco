@@ -26,20 +26,31 @@
 
 package gov.nasa.jpl.view_repo.util;
 
+import java.io.File;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptVersion;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.version.Version;
@@ -64,19 +75,16 @@ public class EmsScriptNode extends ScriptNode {
 
     static Logger logger = Logger.getLogger(ScriptNode.class);
 
-    public boolean renamed = false;
+    public static boolean skipSvgToPng = false;
+
+    public static Repository repository = null;
+    public static ServiceRegistry services = null;
 
     // provide logging capability of what is done
     private StringBuffer response = null;
 
     // provide status as necessary
     private Status status = null;
-
-    /**
-     * whether to use the foundational Alfresco Java API or ScriptNode class that uses the
-     * JavaScript API
-     */
-    public boolean useFoundationalApi = true; // TODO this will be removed
 
     protected EmsScriptNode workspace = null;
 
@@ -93,12 +101,26 @@ public class EmsScriptNode extends ScriptNode {
 
     public EmsScriptNode(NodeRef nodeRef, ServiceRegistry services, StringBuffer response, Status status) {
         this(nodeRef, services);
+        EmsScriptNode.services = services;
         setStatus(status);
     }
 
     public EmsScriptNode(NodeRef nodeRef, ServiceRegistry services, StringBuffer response) {
         this(nodeRef, services);
+        EmsScriptNode.services = services;
         setResponse(response);
+    }
+
+    public static Repository getRepository() {
+        return repository;
+    }
+
+    public static void setRepository(Repository repositoryHelper) {
+        EmsScriptNode.repository = repositoryHelper;
+    }
+
+    public static void setServices(ServiceRegistry services) {
+        EmsScriptNode.services = services;
     }
 
     /**
@@ -220,31 +242,25 @@ public class EmsScriptNode extends ScriptNode {
 
         EmsScriptNode result = null;
 
-        if (!useFoundationalApi) {
-            ScriptNode scriptNode = super.createNode(name, type);
-            result = new EmsScriptNode(scriptNode.getNodeRef(), services, response);
-        } else {
-            Map<QName, Serializable> props = new HashMap<>(1, 1.0f);
-            props.put(ContentModel.PROP_NAME, name);
+        Map<QName, Serializable> props = new HashMap<>(1, 1.0f);
+        props.put(ContentModel.PROP_NAME, name);
 
-            QName typeQName = createQName(type);
-            if (typeQName != null) {
-                try {
-                    ChildAssociationRef assoc = services.getNodeService()
-                        .createNode(nodeRef, ContentModel.ASSOC_CONTAINS,
-                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(name)),
-                            createQName(type), props);
-                    result = new EmsScriptNode(assoc.getChildRef(), services, response);
-                } catch (Exception e) {
-                    logger.error(
-                        "Got exception in " + "createNode(name=" + name + ", type=" + type + ") for EmsScriptNode("
-                            + this + ") calling createNode(nodeRef=" + nodeRef + ", . . .)");
-                    e.printStackTrace();
-                }
-
-            } else {
-                log("Could not find type " + type);
+        QName typeQName = createQName(type);
+        if (typeQName != null) {
+            try {
+                ChildAssociationRef assoc = services.getNodeService().createNode(nodeRef, ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(name)),
+                    createQName(type), props);
+                result = new EmsScriptNode(assoc.getChildRef(), services, response);
+            } catch (Exception e) {
+                logger.error(
+                    "Got exception in " + "createNode(name=" + name + ", type=" + type + ") for EmsScriptNode(" + this
+                        + ") calling createNode(nodeRef=" + nodeRef + ", . . .)");
+                e.printStackTrace();
             }
+
+        } else {
+            log("Could not find type " + type);
         }
 
         return result;
@@ -299,7 +315,34 @@ public class EmsScriptNode extends ScriptNode {
     }
 
     private Object getPropertyImpl(String acmType, boolean cacheOkay) {
-        return NodeUtil.getNodeProperty(this, acmType, getServices(), useFoundationalApi, cacheOkay);
+        NodeRef nodeRef = this.getNodeRef();
+        if (nodeRef == null || acmType == null) {
+            return null;
+        }
+
+        if (acmType.isEmpty()) {
+            if (logger.isTraceEnabled()) {
+                logger.trace(
+                    "getNodeProperty(" + nodeRef + ", " + acmType + ", cacheOkay=" + cacheOkay + ") = null.  No Key!");
+            }
+            return null;
+        }
+        QName qName = createQName(acmType, services);
+        Object result;
+        if (services == null) {
+            services = getServices();
+        }
+        result = services.getNodeService().getProperty(nodeRef, qName);
+        if (logger.isTraceEnabled()) {
+            logger.trace(
+                "^ cache miss!  getNodeProperty(" + nodeRef + ", " + acmType + ", cacheOkay=" + cacheOkay + ") = "
+                    + result);
+        }
+        if (logger.isTraceEnabled()) {
+            logger.trace("getNodeProperty(" + nodeRef + ", " + acmType + ", cacheOkay=" + cacheOkay + ") = " + result);
+        }
+        return result;
+
     }
 
     /**
@@ -308,17 +351,12 @@ public class EmsScriptNode extends ScriptNode {
      * @return
      */
     @Override public Map<String, Object> getProperties() {
-
-        if (useFoundationalApi) {
-            Map<String, Object> result = new HashMap<>();
-            Map<QName, Serializable> map = services.getNodeService().getProperties(nodeRef);
-            for (Map.Entry<QName, Serializable> entry: map.entrySet()) {
-                result.put(entry.getKey().toString(), entry.getValue());
-            }
-            return result;
-        } else {
-            return super.getProperties();
+        Map<String, Object> result = new HashMap<>();
+        Map<QName, Serializable> map = services.getNodeService().getProperties(nodeRef);
+        for (Map.Entry<QName, Serializable> entry : map.entrySet()) {
+            result.put(entry.getKey().toString(), entry.getValue());
         }
+        return result;
     }
 
     public StringBuffer getResponse() {
@@ -354,16 +392,11 @@ public class EmsScriptNode extends ScriptNode {
         if (logger.isDebugEnabled())
             logger.debug("setProperty(acmType=" + acmType + ", value=" + value + ")");
         boolean success = true;
-        if (useFoundationalApi) {
-            try {
-                services.getNodeService().setProperty(nodeRef, createQName(acmType), value);
-            } catch (Exception e) {
-                // This should never happen!
-                success = false;
-            }
-        } else {
-            getProperties().put(acmType, value);
-            save();
+        try {
+            services.getNodeService().setProperty(nodeRef, createQName(acmType), value);
+        } catch (Exception e) {
+            // This should never happen!
+            success = false;
         }
         return success;
     }
@@ -534,7 +567,7 @@ public class EmsScriptNode extends ScriptNode {
         return super.exists();
     }
 
-    public ServiceRegistry getServices() {
+    public static ServiceRegistry getServices() {
         return services;
     }
 
@@ -573,7 +606,6 @@ public class EmsScriptNode extends ScriptNode {
         if (changeUser) {
             AuthenticationUtil.setRunAsUser(ADMIN_USER_NAME);
         }
-        ServiceRegistry services = NodeUtil.getServiceRegistry();
         SiteInfo si = services.getSiteService().getSite(sysmlid);
         if (si != null) {
             EmsScriptNode site = new EmsScriptNode(si.getNodeRef(), services, null);
@@ -593,6 +625,129 @@ public class EmsScriptNode extends ScriptNode {
             log("no write permissions to delete workpsace " + getName());
             return;
         }
+    }
+
+    /**
+     * Returns a list of all the groups the passed user belongs to. Note, there is no java interface
+     * for this, so this code is based on what the javascript interface does.
+     *
+     * See: https://svn.alfresco.com/repos/alfresco-open-mirror/alfresco/HEAD/root
+     * /projects/repository/source/java/org/alfresco/repo/jscript/People.java
+     *
+     * @param user
+     * @return
+     */
+    public static List<String> getUserGroups(String user) {
+
+        List<String> authorityNames = new ArrayList<>();
+
+        AuthorityService aService = getServices().getAuthorityService();
+        Set<String> authorities = aService.getContainingAuthoritiesInZone(AuthorityType.GROUP, user, null, null, 1000);
+        for (String authority : authorities) {
+            NodeRef group = aService.getAuthorityNodeRef(authority);
+            if (group != null) {
+                authorityNames.add(authority);
+            }
+        }
+
+        return authorityNames;
+    }
+
+    /**
+     * Helper to create a QName from either a fully qualified or short-name QName string
+     * <P>
+     *
+     * @param s        Fully qualified or short-name QName string
+     * @param services ServiceRegistry for getting the service to resolve the name space
+     * @return QName
+     */
+    public static QName createQName(String s, ServiceRegistry services) {
+        if (s == null)
+            return null;
+        QName qname;
+        if (s.contains("{")) {
+            qname = QName.createQName(s);
+        } else {
+            qname = QName.createQName(s, services.getNamespaceService());
+        }
+        return qname;
+    }
+
+    public static EmsScriptNode updateOrCreateArtifact(String artifactId, Path filePath, String fileType, String orgId, String projectId, String refId) {
+
+        EmsScriptNode artifactNode;
+        String finalType = null;
+        File content = filePath.toFile();
+
+        try {
+            finalType = Files.probeContentType(filePath);
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("updateOrCreateArtifact: ", e);
+            }
+        }
+
+        if (finalType == null) {
+            // Fallback if getting content type fails
+            if (fileType != null) {
+                finalType = fileType;
+            } else {
+                logger.error("Could not determine type of artifact: " + filePath.getFileName().toString());
+                return null;
+            }
+        }
+
+        EmsScriptNode targetSiteNode = EmsScriptNode.getSiteNode(orgId);
+
+        // find site; it must exist!
+        if (targetSiteNode == null || !targetSiteNode.exists()) {
+            logger.error("Can't find node for site: " + orgId + "!");
+            return null;
+        }
+
+        // find or create subfolder
+        EmsScriptNode subfolder = targetSiteNode.childByNamePath("/" + projectId + "/refs/" + refId);
+        if (subfolder == null || !subfolder.exists()) {
+            return null;
+        }
+
+        // find or create node:
+        artifactNode = subfolder.childByNamePath("/" + artifactId);
+        // Node wasnt found, so create one:
+        if (artifactNode == null) {
+            artifactNode = subfolder.createNode(artifactId, "cm:content");
+        }
+
+        if (artifactNode == null || !artifactNode.exists()) {
+            logger.error("Failed to create new PNG artifact " + artifactId + "!");
+            return null;
+        }
+
+        if (!artifactNode.hasAspect("cm:versionable")) {
+            artifactNode.addAspect("cm:versionable");
+        }
+        if (!artifactNode.hasAspect("cm:indexControl")) {
+            artifactNode.addAspect("cm:indexControl");
+        }
+
+        artifactNode.createOrUpdateProperty(Acm.CM_TITLE, artifactId);
+        artifactNode.createOrUpdateProperty("cm:isIndexed", true);
+        artifactNode.createOrUpdateProperty("cm:isContentIndexed", false);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Creating artifact with indexing: " + artifactNode.getProperty("cm:isIndexed"));
+        }
+
+        ContentWriter writer =
+            services.getContentService().getWriter(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, true);
+        writer.putContent(content);
+
+        ContentData contentData = writer.getContentData();
+        contentData = ContentData.setMimetype(contentData, finalType);
+        contentData = ContentData.setEncoding(contentData, "UTF-8");
+        services.getNodeService().setProperty(artifactNode.getNodeRef(), ContentModel.PROP_CONTENT, contentData);
+
+        return artifactNode;
     }
 
 }

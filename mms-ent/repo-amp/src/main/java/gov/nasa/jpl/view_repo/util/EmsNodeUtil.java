@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,6 +25,13 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 import gov.nasa.jpl.view_repo.db.*;
+import org.alfresco.repo.service.ServiceDescriptorRegistry;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.module.ModuleDependency;
+import org.alfresco.service.cmr.module.ModuleDetails;
+import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
@@ -1898,5 +1906,104 @@ public class EmsNodeUtil {
         } catch (Throwable ex) {
             throw new Throwable("Failed to save file to filesystem. " + ex.getMessage());
         }
+    }
+
+    public static String getHostname() {
+        ServiceDescriptorRegistry sdr = new ServiceDescriptorRegistry();
+        return sdr.getSysAdminParams().getAlfrescoHost();
+    }
+
+    /**
+     * getModuleService Retrieves the ModuleService of the ServiceRegistry passed in
+     *
+     * @param services ServiceRegistry object that contains the desired ModuleService
+     * @return ModuleService
+     */
+    public static ModuleService getModuleService(ServiceRegistry services) {
+        if (services == null) {
+            return null;
+        }
+        // Takes the ServiceRegistry and calls the ModuleService super method
+        // getService(Creates an Alfresco QName using the namespace
+        // service and passes in the default URI
+        return (ModuleService) services.getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
+    }
+
+    /**
+     * getServiceModules
+     *
+     * Returns a JSONArray of Module Details from the Service Modules
+     *
+     * @param service the service containing modules to be returned
+     * @return JSONArray of ModuleDetails within the ModuleService object
+     */
+    public static JsonArray getServiceModulesJson(ModuleService service) {
+
+        JsonArray jsonArray = new JsonArray();
+        List<ModuleDetails> modules = service.getAllModules();
+        for (ModuleDetails detail : modules) {
+            JsonObject jsonModule = moduleDetailsToJson(detail);
+            jsonArray.add(jsonModule);
+        }
+        return jsonArray;
+    }
+
+    /**
+     * moduleDetailsToJson
+     *
+     * Takes a module of type ModuleDetails and retrieves all off the module's members and puts them
+     * into a newly instantiated JSONObject.
+     *
+     * JSONObject will have the details : title, version, aliases, class, dependencies, editions id
+     * and properties
+     *
+     * @param module A single module of type ModuleDetails
+     * @return JSONObject which contains all the details of that module
+     */
+    public static JsonObject moduleDetailsToJson(ModuleDetails module) {
+        JsonObject jsonModule = new JsonObject();
+        jsonModule.addProperty("mmsTitle", module.getTitle());
+        jsonModule.addProperty("mmsVersion", module.getModuleVersionNumber().toString());
+        JsonUtil.addStringList(jsonModule, "mmsAliases", module.getAliases());
+        jsonModule.addProperty("mmsClass", module.getClass().toString());
+        JsonArray depArray = new JsonArray();
+        for (ModuleDependency depend: module.getDependencies())
+            depArray.add(depend.toString());
+        jsonModule.add("mmsDependencies", depArray);
+        JsonUtil.addStringList(jsonModule, "mmsEditions", module.getEditions());
+        jsonModule.addProperty("mmsId", module.getId());
+        JsonObject propObj = new JsonObject();
+        Enumeration<?> enumerator = module.getProperties().propertyNames();
+        while (enumerator.hasMoreElements()) {
+            String key = (String)enumerator.nextElement();
+            propObj.addProperty(key, module.getProperties().getProperty(key));
+        }
+        jsonModule.add("mmsProperties", propObj);
+        return jsonModule;
+    }
+
+    /**
+     * getMMSversion
+     *
+     * Gets the version number of a module, returns a JSONObject which calls on getString with
+     * 'version' as an argument. This will return a String representing the version of the
+     * mms.
+     *
+     * @return Version number of the MMS as type String
+     */
+    public static String getMMSversion(ServiceRegistry services) {
+        ModuleService service = getModuleService(services);
+        JsonArray moduleDetails = getServiceModulesJson(service);
+        String mmsVersion = "NA";
+        for (int i = 0; i < moduleDetails.size(); i++) {
+            JsonObject o = moduleDetails.get(i).getAsJsonObject();
+            if (o.get("mmsId").getAsString().equalsIgnoreCase("mms-amp")) {
+                mmsVersion = o.get("mmsVersion").getAsString();
+            }
+        }
+
+        // Remove appended tags from version
+        int endIndex = mmsVersion.indexOf('-');
+        return endIndex > -1 ? mmsVersion.substring(0, endIndex) : mmsVersion;
     }
 }

@@ -237,7 +237,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 // :TODO check against checksum first, md5hash(content), if matching return the previous version
 
                 if (filePath != null) {
-                    artifact = NodeUtil
+                    artifact = EmsScriptNode
                         .updateOrCreateArtifact(alfrescoId, filePath, JsonUtil.getOptString(postJson, Sjm.CONTENTTYPE),
                             siteName, projectId, refId);
                 }
