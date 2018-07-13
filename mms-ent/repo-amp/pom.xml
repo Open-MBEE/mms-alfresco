@@ -18,6 +18,17 @@
         <swagger.codegen.yaml>${basedir}/src/main/amp/web/mms/mms.swagger.yaml</swagger.codegen.yaml>
     </properties>
     <repositories>
+        <!-- jest elasticsearch client repository -->
+        <repository>
+            <id>sonatype</id>
+            <name>Sonatype Groups</name>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>spring</id>
+            <name>Spring Maven Repository</name>
+            <url>http://repo.spring.io/plugins-release/</url>
+        </repository>
         <repository>
             <id>alfresco-public</id>
             <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
@@ -28,17 +39,6 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-        </repository>
-        <!-- Activiti Enterprise Edition Artifacts, put username/pwd for server in settings.xml -->
-        <repository>
-            <id>activiti-private-repository</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/activiti-enterprise-releases</url>
-        </repository>
-        <!-- jest elasticsearch client repository -->
-        <repository>
-            <id>sonatype</id>
-            <name>Sonatype Groups</name>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
     </repositories>
     <pluginRepositories>
@@ -77,7 +77,7 @@
             <artifactId>c3p0</artifactId>
             <version>0.9.1.2</version>
         </dependency>
-    	<dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>18.0</version>
@@ -224,6 +224,13 @@
                     <scope>provided</scope>
                 </dependency>
             </dependencies>
+            <repositories>
+                <!-- Activiti Enterprise Edition Artifacts, put username/pwd for server in settings.xml -->
+                <repository>
+                    <id>activiti-private-repository</id>
+                    <url>https://artifacts.alfresco.com/nexus/content/repositories/activiti-enterprise-releases</url>
+                </repository>
+            </repositories>
         </profile>
 
         <!-- If we are running in embedded Tomcat skip unit tests -->
@@ -275,6 +282,10 @@
                             <configOptions>
                                 <java8>true</java8>
                                 <dateLibrary>java8-localdatetime</dateLibrary>
+                                <groupId>gov.nasa.jpl.mms</groupId>
+                                <artifactId>mms-java-client</artifactId>
+                                <artifactVersion>${parent.version}</artifactVersion>
+                                <fullJavaUtil>true</fullJavaUtil>
                             </configOptions>
                             <output>${swagger.codegen.target}/java</output>
                         </configuration>
@@ -336,6 +347,9 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <finalName>mms</finalName>
+                    <descriptorRefs>
+                        <descriptorRef>bin</descriptorRef>
+                    </descriptorRefs>
                     <descriptors>
                         <descriptor>assembly/mms-java-client.xml</descriptor>
                         <descriptor>assembly/mms-python-client.xml</descriptor>
