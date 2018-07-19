@@ -1,0 +1,119 @@
+{        // ownerId of a1 becomes pack2 and propertyType of ap1 becomes b2
+    "elements": [
+        {
+            "id": "pack1",
+            "type": "Package",
+            "ownerId": "PA"
+        },
+        {
+            "id": "pack2",
+            "type": "Package",
+            "ownerId": "PA"
+        },
+        {
+            "documentation": "something",
+            "id": "b1",
+            "ownedAttributeIds": [
+                "p"
+            ],
+            "name": "org parent of p",
+            "ownerId": "pack1",
+            "type": "Class",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "else",
+            "id": "b2",
+            "ownedAttributeIds": [
+                "blah"
+            ],
+            "name": "new parent of p",
+            "ownerId": "PA",
+            "type": "Class",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "else",
+            "id": "p1",
+            "assoicationId":"a1",
+            "name": "three hundred and one",
+            "ownerId": "b1",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "type": "Association",
+            "id": "a1",
+            "ownedEndIds": ["ap1"],
+            "ownerId": "pack1"
+        },
+        {
+            "type": "Property",
+            "id": "ap1",
+            "propertyType": "b1",
+            "ownerId": "a1"
+        },
+        {
+            "documentation": "else",
+            "id": "p2",
+            "name": "three hundred and one",
+            "ownerId": "b1",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "else",
+            "id": "p3",
+            "name": "three hundred and one",
+            "ownerId": "b1",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "else",
+            "id": "p4",
+            "name": "three hundred and one",
+            "ownerId": "b1",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        }
+
+
+    ]
+}
