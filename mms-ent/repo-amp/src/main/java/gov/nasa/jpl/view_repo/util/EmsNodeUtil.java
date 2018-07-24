@@ -45,6 +45,7 @@ import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -1262,6 +1263,49 @@ public class EmsNodeUtil {
         return result;
     }
 
+    public List<Map<String, JsonObject>> processMove(JsonArray moveData) throws IOException {
+        List<Map<String, JsonObject>> elements = new ArrayList<Map<String, JsonObject>>();
+        Map<String, ArrayList> froms = new HashMap<>();
+        for (int i = 0; i < moveData.size(); i++) {
+            String fromId = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "from");
+            String id = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), Sjm.SYSMLID);
+            if (froms.containsKey(fromId)) {
+                froms.get(fromId).add(id);
+            }else{
+                ArrayList ids = new ArrayList();
+                ids.add(id);
+                froms.put(fromId, ids);
+            }
+        }
+        for (Map.Entry<String, ArrayList> entry : froms.entrySet()) {
+            String key = entry.getKey();
+            ArrayList<String> value = entry.getValue();
+            JsonObject from = eh.getElementByElasticId(pgh.getElasticIdFromSysmlId(key), projectId);
+            JsonArray ownedAttributeIdsToRemove = JsonUtil.getOptArray(from, Sjm.OWNEDATTRIBUTEIDS);
+            for(String remove: value){
+                if(ownedAttributeIdsToRemove.contains(remove)){
+
+                }
+
+
+            }
+        }
+
+        //        for (int i = 0; i < moveData.size(); i++) {
+        //            try {
+        //                String id = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), Sjm.SYSMLID);
+        //                //JsonObject to = eh.getElementByElasticId(pgh.getElasticIdFromSysmlId(JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), Sjm.SYSMLID)), projectId);
+        //                JsonObject from = eh.getElementByElasticId(
+        //                    pgh.getElasticIdFromSysmlId(JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "from")),
+        //                    projectId);
+        //            } catch (IOException e) {
+        //                e.printStackTrace();
+        //            }
+        //        }
+        return elements;
+
+    }
+
     public boolean isDeleted(String sysmlid) {
         return pgh.isDeleted(sysmlid);
     }
@@ -1967,7 +2011,7 @@ public class EmsNodeUtil {
         JsonUtil.addStringList(jsonModule, "mmsAliases", module.getAliases());
         jsonModule.addProperty("mmsClass", module.getClass().toString());
         JsonArray depArray = new JsonArray();
-        for (ModuleDependency depend: module.getDependencies())
+        for (ModuleDependency depend : module.getDependencies())
             depArray.add(depend.toString());
         jsonModule.add("mmsDependencies", depArray);
         JsonUtil.addStringList(jsonModule, "mmsEditions", module.getEditions());
@@ -1975,7 +2019,7 @@ public class EmsNodeUtil {
         JsonObject propObj = new JsonObject();
         Enumeration<?> enumerator = module.getProperties().propertyNames();
         while (enumerator.hasMoreElements()) {
-            String key = (String)enumerator.nextElement();
+            String key = (String) enumerator.nextElement();
             propObj.addProperty(key, module.getProperties().getProperty(key));
         }
         jsonModule.add("mmsProperties", propObj);

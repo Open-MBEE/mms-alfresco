@@ -3,12 +3,12 @@
         {
             "id": "pack1",
             "type": "Package",
-            "ownerId": "PA"
+            "ownerId": "MoveModel"
         },
         {
             "id": "pack2",
             "type": "Package",
-            "ownerId": "PA"
+            "ownerId": "MoveModel"
         },
         {
             "documentation": "something",
@@ -30,11 +30,9 @@
         {
             "documentation": "else",
             "id": "b2",
-            "ownedAttributeIds": [
-                "blah"
-            ],
+            "ownedAttributeIds": [],
             "name": "new parent of p",
-            "ownerId": "PA",
+            "ownerId": "MoveModel",
             "type": "Class",
             "isDerived": false,
             "value": [
