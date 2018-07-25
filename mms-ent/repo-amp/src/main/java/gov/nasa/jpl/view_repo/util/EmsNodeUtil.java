@@ -10,19 +10,7 @@ import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.Calendar;
-import java.util.TimeZone;
+import java.util.*;
 
 import gov.nasa.jpl.view_repo.db.*;
 import org.alfresco.repo.service.ServiceDescriptorRegistry;
@@ -1265,31 +1253,33 @@ public class EmsNodeUtil {
 
     public List<Map<String, JsonObject>> processMove(JsonArray moveData) throws IOException {
         List<Map<String, JsonObject>> elements = new ArrayList<Map<String, JsonObject>>();
-        Map<String, ArrayList> froms = new HashMap<>();
+        Map<String, Map> froms = new HashMap<>();
         for (int i = 0; i < moveData.size(); i++) {
             String fromId = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "from");
             String id = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), Sjm.SYSMLID);
             if (froms.containsKey(fromId)) {
-                froms.get(fromId).add(id);
+                froms.get(fromId).put(Integer.parseInt(JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "index")), id);
             }else{
-                ArrayList ids = new ArrayList();
-                ids.add(id);
-                froms.put(fromId, ids);
+                Map<Integer, String> indexed = new TreeMap<>();
+                indexed.put(Integer.parseInt(JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "index")), id);
+                froms.put(fromId, indexed);
             }
         }
-        for (Map.Entry<String, ArrayList> entry : froms.entrySet()) {
-            String key = entry.getKey();
-            ArrayList<String> value = entry.getValue();
-            JsonObject from = eh.getElementByElasticId(pgh.getElasticIdFromSysmlId(key), projectId);
-            JsonArray ownedAttributeIdsToRemove = JsonUtil.getOptArray(from, Sjm.OWNEDATTRIBUTEIDS);
-            for(String remove: value){
-                if(ownedAttributeIdsToRemove.contains(remove)){
-
-                }
-
-
-            }
-        }
+//        for (Map.Entry<String, Map> entry : froms.entrySet()) {
+//            String key = entry.getKey();
+//            Map<String, Map> childMap = entry.getValue();
+//
+//            for (Map.Entry<String, Map> entry2 : childMap.entrySet()) {}
+//            JsonObject from = eh.getElementByElasticId(pgh.getElasticIdFromSysmlId(key), projectId);
+//            JsonArray ownedAttributeIdsToRemove = JsonUtil.getOptArray(from, Sjm.OWNEDATTRIBUTEIDS);
+//            for(String remove: value){
+//                if(ownedAttributeIdsToRemove.contains(remove)){
+//
+//                }
+//
+//
+//            }
+//        }
 
         //        for (int i = 0; i < moveData.size(); i++) {
         //            try {

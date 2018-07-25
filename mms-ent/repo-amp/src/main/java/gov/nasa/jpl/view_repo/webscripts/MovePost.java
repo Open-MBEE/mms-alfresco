@@ -25,10 +25,8 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
+import java.io.IOException;
+import java.util.*;
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.view_repo.util.CommitUtil;
@@ -127,7 +125,8 @@ public class MovePost extends ModelPost {
         return result;
     }
 
-    protected JsonObject createDeltaForMove(final WebScriptRequest req, final Status status, String user) {
+    protected JsonObject createDeltaForMove(final WebScriptRequest req, final Status status, String user)
+        throws IOException {
         JsonObject newElementsObject = new JsonObject();
         JsonObject results;
 
@@ -144,7 +143,7 @@ public class MovePost extends ModelPost {
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("Post Data: '%s'", postJson));
             }
-            emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
+            List<Map<String, JsonObject>> blah = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             //model.put(Sjm.RES, createResponseJson
