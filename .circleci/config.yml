@@ -24,7 +24,7 @@ jobs:
 
       - run:
           name: Clean target directory
-          command: mkdir -p mms-ent/repo-amp/target/mms-java-client && mv mms-ent/repo-amp/target/generated-sources/swagger/java/target/*.jar mms-ent/repo-amp/target/mms-java-client && rm -rf mms-ent/repo-amp/target/{amp,archive-tmp,classes,generated-sources,generated-test-sources,maven-archiver,maven-status,surefire-reports,test-classes} && rm -rf mms-ent/share-amp/target/{amp,archive-tmp,classes,generated-sources,generated-test-sources,maven-archiver,maven-status,surefire-reports,test-classes}
+          command: mkdir -p mms-ent/repo-amp/target/mms-java-client && mv mms-ent/repo-amp/target/generated-sources/swagger/java/target/*.jar mms-ent/repo-amp/target/generated-sources/swagger/java/target/pom.xml mms-ent/repo-amp/target/mms-java-client && rm -rf mms-ent/repo-amp/target/{amp,archive-tmp,classes,generated-sources,generated-test-sources,maven-archiver,maven-status,surefire-reports,test-classes} && rm -rf mms-ent/share-amp/target/{amp,archive-tmp,classes,generated-sources,generated-test-sources,maven-archiver,maven-status,surefire-reports,test-classes}
 
       - run:
           name: Prepare Store Artifacts
@@ -67,7 +67,7 @@ jobs:
           command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-*.jar' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/3.3.1-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms java client
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/generated-sources/swagger/java/pom.xml' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/3.3.1-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-client/pom.xml' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/3.3.1-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms python client
           command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-python-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-python-client/3.3.1-SNAPSHOT/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
