@@ -18,6 +18,17 @@
         <swagger.codegen.yaml>${basedir}/src/main/amp/web/mms/mms.swagger.yaml</swagger.codegen.yaml>
     </properties>
     <repositories>
+        <!-- jest elasticsearch client repository -->
+        <repository>
+            <id>sonatype</id>
+            <name>Sonatype Groups</name>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>spring</id>
+            <name>Spring Maven Repository</name>
+            <url>http://repo.spring.io/plugins-release/</url>
+        </repository>
         <repository>
             <id>alfresco-public</id>
             <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
@@ -28,17 +39,6 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-        </repository>
-        <!-- Activiti Enterprise Edition Artifacts, put username/pwd for server in settings.xml -->
-        <repository>
-            <id>activiti-private-repository</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/activiti-enterprise-releases</url>
-        </repository>
-        <!-- jest elasticsearch client repository -->
-        <repository>
-            <id>sonatype</id>
-            <name>Sonatype Groups</name>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
     </repositories>
     <pluginRepositories>
