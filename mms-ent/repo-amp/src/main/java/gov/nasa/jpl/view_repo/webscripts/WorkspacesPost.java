@@ -235,7 +235,6 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.addProperty(Sjm.CREATOR, user);
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
-            wsJson.addProperty("status", "creating");
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
 
             if (!NO_WORKSPACE_ID.equals(sourceWorkspaceId) && srcWs == null) {
@@ -254,6 +253,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
                         JsonUtil.getOptString(jsonObject, "source", null), commitId, services);
+
+                    if (wsJson.get("status").getAsString().equalsIgnoreCase("rejected")) {
+                        status.setCode(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+                    }
 
                     finalWorkspace = dstWs;
                 }

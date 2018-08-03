@@ -99,7 +99,7 @@ BranchFromBranchAndCheckCommits
 	${post_json} =		Get File		${CURDIR}/../../JsonData/PostBranch2FromBranch1.json
 	${branch_2_json} =	Post		url=${ROOT}/projects/PA/refs		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${branch_2_json.status_code}		${200}
-	Sleep				${POST_DELAY_INDEXING}
+	Sleep				${BRANCH_DELAY_INDEXING}
 	${branch_1_json} =	Get		 url=${ROOT}/projects/PA/refs/pa_branch_1/history
 	${branch_2_json} =	Get		 url=${ROOT}/projects/PA/refs/pa_branch_2/history
 	${result} =			Compare Json To Json		${branch_2_json.json()}		${branch_1_json.json()}

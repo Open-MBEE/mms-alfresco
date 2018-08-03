@@ -10,9 +10,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,6 +83,8 @@ public class CommitUtil {
     private static String user = null;
 
     private static HazelcastInstance hzInstance = null;
+    private static BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(1);
+    private static ExecutorService executor = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, blockingQueue, new QueueRejector());
 
     public static void setJmsConnection(JmsConnection jmsConnection) {
         if (logger.isInfoEnabled()) {
@@ -820,21 +825,32 @@ public class CommitUtil {
             user = services.getNodeService().getProperty(person, ContentModel.PROP_EMAIL).toString();
         }
 
+        BranchTask task =
+            new BranchTask(projectId, srcId, created.toString(), elasticId, isTag, source, commitId, user);
+
+        created.addProperty("status", "creating");
+
         if (hasCommit) {
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor
-                .submit(new BranchTask(projectId, srcId, created.toString(), elasticId, isTag, source, commitId, user));
-            executor.shutdown();
+            try {
+                executor.submit(task);
+                executor.shutdown();
+            } catch (RejectedExecutionException e) {
+                created.addProperty("status", "rejected");
+                if (logger.isDebugEnabled()) {
+                    logger.debug(e);
+                }
+            }
         } else {
             initHazelcastQueue(String.format("%s-%s", projectId, createdId));
             BlockingQueue<BranchTask> queue = hzInstance.getQueue(String.format("%s-%s", projectId, createdId));
-            BranchTask task =
-                new BranchTask(projectId, srcId, created.toString(), elasticId, isTag, source, commitId, user);
 
             try {
                 queue.put(task);
             } catch (InterruptedException ie) {
-                logger.debug(String.format("Interrupted: %s", LogUtil.getStackTrace(ie)));
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("Interrupted: %s", LogUtil.getStackTrace(ie)));
+                }
+                created.addProperty("status", "rejected");
                 Thread.currentThread().interrupt();
             }
         }
