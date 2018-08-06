@@ -282,9 +282,12 @@
                             <configOptions>
                                 <java8>true</java8>
                                 <dateLibrary>java8-localdatetime</dateLibrary>
-                                <groupId>gov.nasa.jpl.mms</groupId>
+                                <groupId>org.openmbee.mms</groupId>
                                 <artifactId>mms-java-client</artifactId>
                                 <artifactVersion>${project.parent.version}</artifactVersion>
+                                <invokerPackage>org.openmbee.mms.client</invokerPackage>
+                                <modelPackage>org.openmbee.mms.client.model</modelPackage>
+                                <apiPackage>org.openmbee.mms.client.api</apiPackage>
                                 <fullJavaUtil>true</fullJavaUtil>
                             </configOptions>
                             <output>${swagger.codegen.target}/java</output>
