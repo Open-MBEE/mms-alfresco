@@ -84,7 +84,7 @@ public class CommitUtil {
 
     private static HazelcastInstance hzInstance = null;
     private static BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(1);
-    private static ExecutorService executor = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, blockingQueue, new QueueRejector());
+    private static ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, blockingQueue, new QueueRejector());
 
     public static void setJmsConnection(JmsConnection jmsConnection) {
         if (logger.isInfoEnabled()) {
@@ -837,7 +837,7 @@ public class CommitUtil {
             } catch (RejectedExecutionException e) {
                 created.addProperty("status", "rejected");
                 if (logger.isDebugEnabled()) {
-                    logger.debug(e);
+                    logger.debug(String.format("Rejected: %s", LogUtil.getStackTrace(e)));
                 }
             }
         } else {
