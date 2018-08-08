@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Logger;
+import org.apache.tika.Tika;
 import org.springframework.extensions.webscripts.Status;
 
 import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript;
@@ -677,10 +678,11 @@ public class EmsScriptNode extends ScriptNode {
 
         EmsScriptNode artifactNode;
         String finalType = null;
+        Tika tika = new Tika();
         File content = filePath.toFile();
 
         try {
-            finalType = Files.probeContentType(filePath);
+            finalType = tika.detect(filePath);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("updateOrCreateArtifact: ", e);
