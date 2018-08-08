@@ -284,7 +284,7 @@
                                 <dateLibrary>java8-localdatetime</dateLibrary>
                                 <groupId>org.openmbee.mms</groupId>
                                 <artifactId>mms-java-client</artifactId>
-                                <artifactVersion>${parent.version}</artifactVersion>
+                                <artifactVersion>${project.parent.version}</artifactVersion>
                                 <invokerPackage>org.openmbee.mms.client</invokerPackage>
                                 <modelPackage>org.openmbee.mms.client.model</modelPackage>
                                 <apiPackage>org.openmbee.mms.client.api</apiPackage>
@@ -301,6 +301,10 @@
                         <configuration>
                             <inputSpec>${swagger.codegen.yaml}</inputSpec>
                             <language>python</language>
+                            <configOptions>
+                                <packageName>mms-python-client</packageName>
+                                <packageVersion>${project.parent.version}</packageVersion>
+                            </configOptions>
                             <output>${swagger.codegen.target}/python</output>
                         </configuration>
                     </execution>
@@ -348,21 +352,48 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <finalName>mms</finalName>
-                    <descriptors>
-                        <descriptor>assembly/mms-java-client.xml</descriptor>
-                        <descriptor>assembly/mms-python-client.xml</descriptor>
-                        <descriptor>assembly/mms-mathematica-client.xml</descriptor>
-                    </descriptors>
-                </configuration>
                 <executions>
                     <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                        <id>make-assembly-java-client</id> <!-- this is used for inheritance merges -->
                         <phase>package</phase> <!-- append to the packaging phase. -->
                         <goals>
                             <goal>single</goal> <!-- goals == mojos -->
                         </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>assembly/mms-java-client.xml</descriptor>
+                            </descriptors>
+                            <finalName>mms-java-client</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>make-assembly-python-client</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- append to the packaging phase. -->
+                        <goals>
+                            <goal>single</goal> <!-- goals == mojos -->
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>assembly/mms-python-client.xml</descriptor>
+                            </descriptors>
+                            <finalName>mms-python-client</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>make-assembly-mathematica-client</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- append to the packaging phase. -->
+                        <goals>
+                            <goal>single</goal> <!-- goals == mojos -->
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>assembly/mms-mathematica-client.xml</descriptor>
+                            </descriptors>
+                            <finalName>mms-mathematica-client</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
