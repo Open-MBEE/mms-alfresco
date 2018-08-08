@@ -114,6 +114,12 @@
             <artifactId>logging-interceptor</artifactId>
             <version>2.7.5</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-core -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>1.18</version>
+        </dependency>
         <!-- apache chemistry opencmis CLIENT -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
