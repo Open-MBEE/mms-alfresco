@@ -84,6 +84,7 @@ public class Sjm {
     public static final String ISREADONLY = "isReadOnly";
     public static final String ISSTATIC = "isStatic";
     public static final String ISUNIQUE = "isUnique";
+    public static final String KEYWORDS = "keywords";
     public static final String LOWERVALUE = "lowerValue";
     public static final String MDEXTENSIONSIDS = "mdExtensionsIds";
     public static final String MEMBERENDIDS = "memberEndIds";
