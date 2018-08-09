@@ -1279,8 +1279,8 @@ public class EmsNodeUtil {
             keys.add(srcId);
             keys.add(destId);
         }
-        JsonArray modified = getArtifactsBySysmlids(keys, false, false );
-        for(int i = 0; i<modified.size(); i++){
+        JsonArray modified = getNodesBySysmlids(keys, false, false);
+        for (int i = 0; i < modified.size(); i++) {
             String sysmlid = JsonUtil.getOptString(modified.get(i).getAsJsonObject(), Sjm.SYSMLID);
             elements.put(sysmlid, modified.get(i).getAsJsonObject());
         }
@@ -1289,25 +1289,30 @@ public class EmsNodeUtil {
         for (Map.Entry<String, List> entry : toRemove.entrySet()) {
             List value = entry.getValue();
             String key = entry.getKey();
-            JsonArray ownedAttributeIdsToRemove = JsonUtil.getOptArray(elements.get(key).getAsJsonObject(), Sjm.OWNEDATTRIBUTEIDS);
+            JsonArray ownedAttributeIdsToRemove =
+                JsonUtil.getOptArray(elements.get(key).getAsJsonObject(), Sjm.OWNEDATTRIBUTEIDS);
             JsonArray removed = new JsonArray();
 
             for (int i = 0; i < ownedAttributeIdsToRemove.size(); i++) {
-                if (!value.contains(ownedAttributeIdsToRemove.get(i).getAsString())){
+                if (!value.contains(ownedAttributeIdsToRemove.get(i).getAsString())) {
                     removed.add(ownedAttributeIdsToRemove.get(i));
                 }
             }
             elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, removed);
         }
-        JsonObject o = new JsonParser().parse("{\"a\": \"A\"}").getAsJsonObject();
-
         for (Map.Entry<String, Map> entry : toAdd.entrySet()) {
-            Map value = entry.getValue();
+            Map<Integer, String> value = entry.getValue();
             String key = entry.getKey();
-            //for(Map.Entry<Integer, String> add : value.entrySet()) {}}
-
+            JsonArray ownedAttributeIdsToAdd =
+                JsonUtil.getOptArray(elements.get(key).getAsJsonObject(), Sjm.OWNEDATTRIBUTEIDS);
+            for (Map.Entry<Integer, String> add : value.entrySet()) {
+                Integer index = add.getKey();
+                String id = add.getValue();
+                ownedAttributeIdsToAdd.set(index, new JsonParser().parse(id).getAsJsonObject());
+            }
+            elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, ownedAttributeIdsToAdd);
+        }
         return elements;
-
     }
 
     public boolean isDeleted(String sysmlid) {
