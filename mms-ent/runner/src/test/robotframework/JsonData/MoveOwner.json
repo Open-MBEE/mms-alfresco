@@ -3,9 +3,9 @@
         {
             "_creator": "admin",
             "_modifier": "admin",
-            "id": "p",
-            "from": "b1",
-            "to": "b2",
+            "id": "propMove",
+            "from": "oldParent",
+            "to": "newParent",
             "index":"0"
         }
     ]

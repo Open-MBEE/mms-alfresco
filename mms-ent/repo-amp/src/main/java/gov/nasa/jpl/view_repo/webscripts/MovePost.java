@@ -117,6 +117,11 @@ public class MovePost extends ModelPost {
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
 
         // call move logic
+        try {
+            JsonObject move = createDeltaForMove(req);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         result = handleElementPost(req, status, user, contentType);
 
@@ -125,7 +130,7 @@ public class MovePost extends ModelPost {
         return result;
     }
 
-    protected JsonObject createDeltaForMove(final WebScriptRequest req, final Status status, String user)
+    protected JsonObject createDeltaForMove(final WebScriptRequest req)
         throws IOException {
         JsonObject newElementsObject = new JsonObject();
         JsonObject results;
@@ -143,7 +148,7 @@ public class MovePost extends ModelPost {
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("Post Data: '%s'", postJson));
             }
-            List<Map<String, JsonObject>> blah = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
+            Map<String, JsonObject> blah = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             //model.put(Sjm.RES, createResponseJson

@@ -1,23 +1,23 @@
 {        // ownerId of a1 becomes pack2 and propertyType of ap1 becomes b2
     "elements": [
         {
-            "id": "pack1",
+            "id": "package1",
             "type": "Package",
             "ownerId": "MoveModel"
         },
         {
-            "id": "pack2",
+            "id": "package2",
             "type": "Package",
             "ownerId": "MoveModel"
         },
         {
             "documentation": "something",
-            "id": "b1",
+            "id": "oldParent",
             "ownedAttributeIds": [
-                "p"
+                "propMove"
             ],
             "name": "org parent of p",
-            "ownerId": "pack1",
+            "ownerId": "package1",
             "type": "Class",
             "isDerived": false,
             "value": [
@@ -29,7 +29,7 @@
         },
         {
             "documentation": "else",
-            "id": "b2",
+            "id": "newParent",
             "ownedAttributeIds": [],
             "name": "new parent of p",
             "ownerId": "MoveModel",
@@ -44,10 +44,10 @@
         },
         {
             "documentation": "else",
-            "id": "p1",
-            "assoicationId":"a1",
+            "id": "propMove",
+            "associationId":"a1",
             "name": "three hundred and one",
-            "ownerId": "b1",
+            "ownerId": "oldParent",
             "type": "Property",
             "isDerived": false,
             "value": [
@@ -61,19 +61,19 @@
             "type": "Association",
             "id": "a1",
             "ownedEndIds": ["ap1"],
-            "ownerId": "pack1"
+            "ownerId": "package1"
         },
         {
             "type": "Property",
             "id": "ap1",
-            "propertyType": "b1",
+            "propertyType": "oldParent",
             "ownerId": "a1"
         },
         {
             "documentation": "else",
-            "id": "p2",
+            "id": "propMove2",
             "name": "three hundred and one",
-            "ownerId": "b1",
+            "ownerId": "oldParent",
             "type": "Property",
             "isDerived": false,
             "value": [
@@ -85,9 +85,9 @@
         },
         {
             "documentation": "else",
-            "id": "p3",
+            "id": "propMove3",
             "name": "three hundred and one",
-            "ownerId": "b1",
+            "ownerId": "oldParent",
             "type": "Property",
             "isDerived": false,
             "value": [
@@ -99,9 +99,9 @@
         },
         {
             "documentation": "else",
-            "id": "p4",
+            "id": "propMove4",
             "name": "three hundred and one",
-            "ownerId": "b1",
+            "ownerId": "oldParent",
             "type": "Property",
             "isDerived": false,
             "value": [
@@ -111,7 +111,5 @@
                 }
             ]
         }
-
-
     ]
 }

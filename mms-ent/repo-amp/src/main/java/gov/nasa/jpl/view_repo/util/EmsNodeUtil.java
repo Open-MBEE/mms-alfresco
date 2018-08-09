@@ -34,6 +34,7 @@ import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 import org.json.JSONObject;
+import com.google.gson.JsonParser;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -1251,47 +1252,60 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public List<Map<String, JsonObject>> processMove(JsonArray moveData) throws IOException {
-        List<Map<String, JsonObject>> elements = new ArrayList<Map<String, JsonObject>>();
-        Map<String, Map> froms = new HashMap<>();
+    public Map<String, JsonObject> processMove(JsonArray moveData) throws IOException {
+        Map<String, JsonObject> elements = new HashMap<>();
+        Set<String> keys = new HashSet<>();
+        Map<String, List> toRemove = new HashMap<>();
+        Map<String, Map> toAdd = new HashMap<>();
         for (int i = 0; i < moveData.size(); i++) {
-            String fromId = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "from");
+            String srcId = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "from");
+            String destId = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "to");
             String id = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), Sjm.SYSMLID);
-            if (froms.containsKey(fromId)) {
-                froms.get(fromId).put(Integer.parseInt(JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "index")), id);
-            }else{
+            if (toAdd.containsKey(destId)) {
+                toAdd.get(destId)
+                    .put(Integer.parseInt(JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "index")), id);
+            } else {
                 Map<Integer, String> indexed = new TreeMap<>();
                 indexed.put(Integer.parseInt(JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "index")), id);
-                froms.put(fromId, indexed);
+                toAdd.put(destId, indexed);
             }
+            if (toRemove.containsKey(srcId)) {
+                toRemove.get(srcId).add(id);
+            } else {
+                List<String> indexed = new ArrayList<>();
+                indexed.add(id);
+                toRemove.put(srcId, indexed);
+            }
+            keys.add(srcId);
+            keys.add(destId);
         }
-//        for (Map.Entry<String, Map> entry : froms.entrySet()) {
-//            String key = entry.getKey();
-//            Map<String, Map> childMap = entry.getValue();
-//
-//            for (Map.Entry<String, Map> entry2 : childMap.entrySet()) {}
-//            JsonObject from = eh.getElementByElasticId(pgh.getElasticIdFromSysmlId(key), projectId);
-//            JsonArray ownedAttributeIdsToRemove = JsonUtil.getOptArray(from, Sjm.OWNEDATTRIBUTEIDS);
-//            for(String remove: value){
-//                if(ownedAttributeIdsToRemove.contains(remove)){
-//
-//                }
-//
-//
-//            }
-//        }
+        JsonArray modified = getArtifactsBySysmlids(keys, false, false );
+        for(int i = 0; i<modified.size(); i++){
+            String sysmlid = JsonUtil.getOptString(modified.get(i).getAsJsonObject(), Sjm.SYSMLID);
+            elements.put(sysmlid, modified.get(i).getAsJsonObject());
+        }
+        //Map<srcId, listOfIdsToRemove>
+        //Map<destId, Map<Index, Id>>
+        for (Map.Entry<String, List> entry : toRemove.entrySet()) {
+            List value = entry.getValue();
+            String key = entry.getKey();
+            JsonArray ownedAttributeIdsToRemove = JsonUtil.getOptArray(elements.get(key).getAsJsonObject(), Sjm.OWNEDATTRIBUTEIDS);
+            JsonArray removed = new JsonArray();
 
-        //        for (int i = 0; i < moveData.size(); i++) {
-        //            try {
-        //                String id = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), Sjm.SYSMLID);
-        //                //JsonObject to = eh.getElementByElasticId(pgh.getElasticIdFromSysmlId(JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), Sjm.SYSMLID)), projectId);
-        //                JsonObject from = eh.getElementByElasticId(
-        //                    pgh.getElasticIdFromSysmlId(JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "from")),
-        //                    projectId);
-        //            } catch (IOException e) {
-        //                e.printStackTrace();
-        //            }
-        //        }
+            for (int i = 0; i < ownedAttributeIdsToRemove.size(); i++) {
+                if (!value.contains(ownedAttributeIdsToRemove.get(i).getAsString())){
+                    removed.add(ownedAttributeIdsToRemove.get(i));
+                }
+            }
+            elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, removed);
+        }
+        JsonObject o = new JsonParser().parse("{\"a\": \"A\"}").getAsJsonObject();
+
+        for (Map.Entry<String, Map> entry : toAdd.entrySet()) {
+            Map value = entry.getValue();
+            String key = entry.getKey();
+            //for(Map.Entry<Integer, String> add : value.entrySet()) {}}
+
         return elements;
 
     }
