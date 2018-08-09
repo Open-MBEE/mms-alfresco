@@ -66,7 +66,7 @@
         {
             "type": "Property",
             "id": "ap1",
-            "propertyType": "oldParent",
+            "typeId": "oldParent",
             "ownerId": "a1"
         },
         {

@@ -1252,11 +1252,14 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public Map<String, JsonObject> processMove(JsonArray moveData) throws IOException {
+    public JsonArray processMove(JsonArray moveData) throws IOException {
         Map<String, JsonObject> elements = new HashMap<>();
         Set<String> keys = new HashSet<>();
         Map<String, List> toRemove = new HashMap<>();
+        Map<String, String> updateOwner = new HashMap<>();
         Map<String, Map> toAdd = new HashMap<>();
+        Set<DbNodeTypes> dbnt = new HashSet<>();
+        dbnt.add(DbNodeTypes.PACKAGE);
         for (int i = 0; i < moveData.size(); i++) {
             String srcId = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "from");
             String destId = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "to");
@@ -1276,6 +1279,10 @@ public class EmsNodeUtil {
                 indexed.add(id);
                 toRemove.put(srcId, indexed);
             }
+            if (!srcId.equals(destId)) {
+                keys.add(id);
+                updateOwner.put(id, destId);
+            }
             keys.add(srcId);
             keys.add(destId);
         }
@@ -1284,8 +1291,33 @@ public class EmsNodeUtil {
             String sysmlid = JsonUtil.getOptString(modified.get(i).getAsJsonObject(), Sjm.SYSMLID);
             elements.put(sysmlid, modified.get(i).getAsJsonObject());
         }
-        //Map<srcId, listOfIdsToRemove>
-        //Map<destId, Map<Index, Id>>
+        for (Map.Entry<String, String> entry : updateOwner.entrySet()) {
+            String value = entry.getValue();
+            String key = entry.getKey();
+            if(elements.get(key).getAsJsonObject().has(Sjm.ASSOCIATIONENDID)){
+                String associationId = elements.get(key).getAsJsonObject().get(Sjm.ASSOCIATIONENDID).getAsString();
+                String ownerParentPackage = pgh.getImmediateParentOfType(value, DbEdgeTypes.CONTAINMENT, dbnt);
+                JsonObject associationObj = getNodeBySysmlid(associationId);
+                associationObj.addProperty(Sjm.OWNERID, ownerParentPackage);
+                elements.put(associationObj.get(Sjm.SYSMLID).getAsString(),associationObj);
+                //referenced element's typeId to be b2
+                if(associationObj.has(Sjm.OWNEDENDIDS) && associationObj.get(Sjm.OWNEDENDIDS).getAsJsonArray().size() > 0){
+                    JsonArray ownedEndIds = associationObj.get(Sjm.OWNEDENDIDS).getAsJsonArray();
+                    for(int i = 0; i<ownedEndIds.size(); i++){
+                        if (ownedEndIds.get(i).getAsString().equals(key)) {
+                            continue;
+                        }
+                        JsonObject prop = getNodeBySysmlid(ownedEndIds.get(i).getAsString());
+                        prop.addProperty(Sjm.TYPEID, value );
+                        elements.put(prop.get(Sjm.SYSMLID).getAsString(), prop);
+                    }
+
+
+                }
+
+            }
+            elements.get(key).getAsJsonObject().addProperty(Sjm.OWNERID, key);
+        }
         for (Map.Entry<String, List> entry : toRemove.entrySet()) {
             List value = entry.getValue();
             String key = entry.getKey();
@@ -1308,11 +1340,17 @@ public class EmsNodeUtil {
             for (Map.Entry<Integer, String> add : value.entrySet()) {
                 Integer index = add.getKey();
                 String id = add.getValue();
+                // Set requires a jsonObject...
                 ownedAttributeIdsToAdd.set(index, new JsonParser().parse(id).getAsJsonObject());
             }
             elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, ownedAttributeIdsToAdd);
         }
-        return elements;
+        JsonArray toProcess = new JsonArray();
+        for (Map.Entry<String, JsonObject> entry : elements.entrySet()) {
+            toProcess.add(entry.getValue());
+
+        }
+        return toProcess;
     }
 
     public boolean isDeleted(String sysmlid) {
