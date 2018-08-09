@@ -414,6 +414,8 @@ paths:
           $ref: "#/responses/NotFound"
         500:
           $ref: "#/responses/InternalServerError"
+        503:
+          $ref: "#/response/ServiceUnavailable"
         default:
           $ref: "#/responses/Default"
   /projects/{project_id}/refs/{ref_id}:
@@ -1114,6 +1116,8 @@ responses:
     description: "Forbidden"
   InternalServerError:
     description: "Internal server error"
+  ServiceUnavailable:
+    description: "Service Unavailable"
   Default:
     description: "Unknown"
 definitions:

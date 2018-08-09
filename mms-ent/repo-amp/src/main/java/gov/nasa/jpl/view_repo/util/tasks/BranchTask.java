@@ -93,6 +93,8 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
 
     private JsonObject createBranch() {
 
+        Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+
         timer = new Timer();
         JsonObject created = JsonUtil.buildFromString(createdString);
 
