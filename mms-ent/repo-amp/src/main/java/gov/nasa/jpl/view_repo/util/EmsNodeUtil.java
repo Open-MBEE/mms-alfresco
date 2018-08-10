@@ -1338,16 +1338,14 @@ public class EmsNodeUtil {
             String key = entry.getKey();
             JsonArray ownedAttributeIdsToAdd =
                 JsonUtil.getOptArray(elements.get(key).getAsJsonObject(), Sjm.OWNEDATTRIBUTEIDS);
-
             for (Map.Entry<Integer, String> add : value.entrySet()) {
                 Integer index = add.getKey();
                 String id = add.getValue();
                 // Set requires a jsonObject...
-                if (ownedAttributeIdsToAdd.size() > 0) {
-                    ownedAttributeIdsToAdd.set(index, new JsonParser().parse(id).getAsJsonObject());
-                } else {
+                if (index >= ownedAttributeIdsToAdd.size()) {
                     ownedAttributeIdsToAdd.add(id);
-
+                } else {
+                    ownedAttributeIdsToAdd.set(index, new JsonParser().parse(id).getAsJsonObject());
                 }
             }
             elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, ownedAttributeIdsToAdd);
