@@ -682,7 +682,7 @@ public class EmsScriptNode extends ScriptNode {
         File content = filePath.toFile();
 
         try {
-            finalType = tika.detect(filePath);
+            finalType = tika.detect(content);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("updateOrCreateArtifact: ", e);
