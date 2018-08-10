@@ -155,9 +155,7 @@ public class MovePost extends ModelPost {
             Set<String> oldElasticIds = new HashSet<>();
             JsonArray moved = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
             results = emsNodeUtil
-                .processPostJson(moved,
-                    user, oldElasticIds, false,
-                    this.requestSourceApplication, "", Sjm.ELEMENT);
+                .processPostJson(moved, user, oldElasticIds, false, this.requestSourceApplication, "", Sjm.ELEMENT);
             String commitId = results.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
 
             int added = JsonUtil.getOptArray(results, "addedElements").size();
@@ -191,13 +189,15 @@ public class MovePost extends ModelPost {
 
                 status.setCode(responseStatus.getCode());
 
+            }
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             //model.put(Sjm.RES, createResponseJson
         }
         return newElementsObject;
+    }
 
-    }}
+
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
         String elementId = req.getServiceMatch().getTemplateVars().get("elementid");

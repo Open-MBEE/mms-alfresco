@@ -22,7 +22,7 @@ PostNewElementsToMove
 	${commit} =	Get Commit Id		${result.json()}
     Set Global Variable	  ${commit}
 
-GetAllElementsForMove #fix "pack 1"
+GetAllElementsForMove
 	[Documentation]		"Get All the elements in the model"
 	[Tags]				mounts		critical		010403
 	${result} =			Get		url=${ROOT}/projects/MoveModel/refs/master/elements		headers=&{REQ_HEADER}
