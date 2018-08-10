@@ -1294,21 +1294,22 @@ public class EmsNodeUtil {
         for (Map.Entry<String, String> entry : updateOwner.entrySet()) {
             String value = entry.getValue();
             String key = entry.getKey();
-            if(elements.get(key).getAsJsonObject().has(Sjm.ASSOCIATIONENDID)){
+            if (elements.get(key).getAsJsonObject().has(Sjm.ASSOCIATIONENDID)) {
                 String associationId = elements.get(key).getAsJsonObject().get(Sjm.ASSOCIATIONENDID).getAsString();
                 String ownerParentPackage = pgh.getImmediateParentOfType(value, DbEdgeTypes.CONTAINMENT, dbnt);
                 JsonObject associationObj = getNodeBySysmlid(associationId);
                 associationObj.addProperty(Sjm.OWNERID, ownerParentPackage);
-                elements.put(associationObj.get(Sjm.SYSMLID).getAsString(),associationObj);
+                elements.put(associationObj.get(Sjm.SYSMLID).getAsString(), associationObj);
                 //referenced element's typeId to be b2
-                if(associationObj.has(Sjm.OWNEDENDIDS) && associationObj.get(Sjm.OWNEDENDIDS).getAsJsonArray().size() > 0){
+                if (associationObj.has(Sjm.OWNEDENDIDS)
+                    && associationObj.get(Sjm.OWNEDENDIDS).getAsJsonArray().size() > 0) {
                     JsonArray ownedEndIds = associationObj.get(Sjm.OWNEDENDIDS).getAsJsonArray();
-                    for(int i = 0; i<ownedEndIds.size(); i++){
+                    for (int i = 0; i < ownedEndIds.size(); i++) {
                         if (ownedEndIds.get(i).getAsString().equals(key)) {
                             continue;
                         }
                         JsonObject prop = getNodeBySysmlid(ownedEndIds.get(i).getAsString());
-                        prop.addProperty(Sjm.TYPEID, value );
+                        prop.addProperty(Sjm.TYPEID, value);
                         elements.put(prop.get(Sjm.SYSMLID).getAsString(), prop);
                     }
 
@@ -1337,11 +1338,17 @@ public class EmsNodeUtil {
             String key = entry.getKey();
             JsonArray ownedAttributeIdsToAdd =
                 JsonUtil.getOptArray(elements.get(key).getAsJsonObject(), Sjm.OWNEDATTRIBUTEIDS);
+
             for (Map.Entry<Integer, String> add : value.entrySet()) {
                 Integer index = add.getKey();
                 String id = add.getValue();
                 // Set requires a jsonObject...
-                ownedAttributeIdsToAdd.set(index, new JsonParser().parse(id).getAsJsonObject());
+                if (ownedAttributeIdsToAdd.size() > 0) {
+                    ownedAttributeIdsToAdd.set(index, new JsonParser().parse(id).getAsJsonObject());
+                } else {
+                    ownedAttributeIdsToAdd.add(id);
+
+                }
             }
             elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, ownedAttributeIdsToAdd);
         }

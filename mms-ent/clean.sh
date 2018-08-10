@@ -128,7 +128,13 @@ expect "*Password*"
 send "$password\r"
 expect eof
 EOD
-
+        $EXPECT <<EOD
+log_user 0
+spawn dropdb -U $dbuser _MovelModel
+expect "*Password*"
+send "$password\r"
+expect eof
+EOD
         $EXPECT <<EOD
 log_user 0
 spawn dropdb -U $dbuser $usedb
@@ -161,6 +167,7 @@ EOD
         dropdb -U $dbuser _MountCommit
         dropdb -U $dbuser _CollaboratorProject
         dropdb -U $dbuser _CompleteModelGet
+        dropdb -U $dbuser _MoveModel
         dropdb -U $dbuser $usedb
         createdb -U $dbuser $usedb
         psql -U $dbuser -f ./repo-amp/src/main/resources/mms.sql $usedb

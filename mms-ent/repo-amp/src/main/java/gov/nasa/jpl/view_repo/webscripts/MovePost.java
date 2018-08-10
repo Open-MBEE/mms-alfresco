@@ -117,21 +117,15 @@ public class MovePost extends ModelPost {
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
 
         // call move logic
-        try {
-            JsonObject move = createDeltaForMove(req, user, status);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        result = handleElementPost(req, status, user, contentType);
+        result = createDeltaForMove(req, user, status);
 
         printFooter(user, logger, timer);
 
         return result;
     }
 
-    protected JsonObject createDeltaForMove(final WebScriptRequest req, String user, final Status status)
-        throws IOException {
+    protected Map<String,Object> createDeltaForMove(final WebScriptRequest req, String user, final Status status){
         JsonObject newElementsObject = new JsonObject();
         JsonObject results;
 
@@ -193,8 +187,13 @@ public class MovePost extends ModelPost {
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             //model.put(Sjm.RES, createResponseJson
+        }catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            model.put(Sjm.RES, createResponseJson());
         }
-        return newElementsObject;
+
+        status.setCode(responseStatus.getCode());
+        return model;
     }
 
 

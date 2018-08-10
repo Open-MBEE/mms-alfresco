@@ -1,0 +1,28 @@
+{
+    "moves": [
+        {
+            "_creator": "admin",
+            "_modifier": "admin",
+            "id": "propMove2",
+            "from": "oldParent",
+            "to": "oldParent",
+            "index":"3"
+        },
+        {
+            "_creator": "admin",
+            "_modifier": "admin",
+            "id": "propMove3",
+            "from": "oldParent",
+            "to": "oldParent",
+            "index":"1"
+        },
+        {
+            "_creator": "admin",
+            "_modifier": "admin",
+            "id": "propMove4",
+            "from": "oldParent",
+            "to": "newParent",
+            "index":"0"
+        }
+    ]
+}

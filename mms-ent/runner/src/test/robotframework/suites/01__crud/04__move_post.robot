@@ -38,20 +38,15 @@ ChangeOwner
 	${post_json} =		Get File		${CURDIR}/../../JsonData/MoveOwner.json
 	${result} =			Post		url=${ROOT}/projects/MoveModel/refs/master/propertyMove		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+    Should Match Baseline		${compare_result}
+MoveOrderInSameOwner
+	[Documentation]		"Swap positions of array"
+	[Tags]				crud		critical		010405
+	${post_json} =		Get File		${CURDIR}/../../JsonData/MovePosition.json
+	${result} =			Post		url=${ROOT}/projects/MoveModel/refs/master/propertyMove		data=${post_json}		headers=&{REQ_HEADER}
+	Should Be Equal		${result.status_code}		${200}
+	${compare_result} =		Compare JSON		${TEST_NAME}
+    Should Match Baseline		${compare_result}
 
-#GetAllElementsInModelFromCommit
-#	[Documentation]		"Get All the elements in the model excluding the element with no owner"
-#	[Tags]				mounts		critical		010306
-#	${result} =			Get		url=${ROOT}/projects/CompleteModelGet/refs/master/elements?commitId=${commit}		headers=&{REQ_HEADER}
-#	Should Be Equal		${result.status_code}		${200}
-#	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
-#	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-#	${compare_result} =		Compare JSON		${TEST_NAME}
-#	Should Match Baseline		${compare_result}
-#
-#GetAllElementsByProjectAndRef
-#    [Documentation]     "Compare returned models"
-#    [Tags]              critical    workspaces      010307
-#    ${resultA} =         Get     url=${ROOT}/projects/CompleteModelGet/refs/master/elements		headers=&{REQ_HEADER}
-#    ${resultB} =         Get     url=${ROOT}/projects/CompleteModelGet/refs/master/elements/PA?depth=-1		headers=&{REQ_HEADER}
-#	Should Not Be Equal     ${resultA.json()}        ${resultB.json()}
+

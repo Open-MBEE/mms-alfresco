@@ -14,7 +14,10 @@
             "documentation": "something",
             "id": "oldParent",
             "ownedAttributeIds": [
-                "propMove"
+                "propMove",
+                "propMove2",
+                "propMove3",
+                "propMove4"
             ],
             "name": "org parent of p",
             "ownerId": "package1",
