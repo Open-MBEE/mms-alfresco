@@ -290,7 +290,7 @@
                                 <dateLibrary>java8-localdatetime</dateLibrary>
                                 <groupId>org.openmbee.mms</groupId>
                                 <artifactId>mms-java-client</artifactId>
-                                <artifactVersion>${project.parent.version}</artifactVersion>
+                                <artifactVersion>${parent.version}</artifactVersion>
                                 <invokerPackage>org.openmbee.mms.client</invokerPackage>
                                 <modelPackage>org.openmbee.mms.client.model</modelPackage>
                                 <apiPackage>org.openmbee.mms.client.api</apiPackage>
@@ -308,8 +308,9 @@
                             <inputSpec>${swagger.codegen.yaml}</inputSpec>
                             <language>python</language>
                             <configOptions>
-                                <packageName>mms-python-client</packageName>
-                                <packageVersion>${project.parent.version}</packageVersion>
+                                <packageName>mms_python_client</packageName>
+                                <projectName>mms_python_client</projectName>
+                                <packageVersion>${parent.version}</packageVersion>
                             </configOptions>
                             <output>${swagger.codegen.target}/python</output>
                         </configuration>
@@ -383,7 +384,7 @@
                             <descriptors>
                                 <descriptor>assembly/mms-python-client.xml</descriptor>
                             </descriptors>
-                            <finalName>mms-python-client</finalName>
+                            <finalName>mms_python_client</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                     </execution>
