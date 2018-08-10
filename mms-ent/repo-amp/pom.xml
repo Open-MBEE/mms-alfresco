@@ -114,6 +114,12 @@
             <artifactId>logging-interceptor</artifactId>
             <version>2.7.5</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-core -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>1.18</version>
+        </dependency>
         <!-- apache chemistry opencmis CLIENT -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
@@ -282,9 +288,12 @@
                             <configOptions>
                                 <java8>true</java8>
                                 <dateLibrary>java8-localdatetime</dateLibrary>
-                                <groupId>gov.nasa.jpl.mms</groupId>
+                                <groupId>org.openmbee.mms</groupId>
                                 <artifactId>mms-java-client</artifactId>
                                 <artifactVersion>${parent.version}</artifactVersion>
+                                <invokerPackage>org.openmbee.mms.client</invokerPackage>
+                                <modelPackage>org.openmbee.mms.client.model</modelPackage>
+                                <apiPackage>org.openmbee.mms.client.api</apiPackage>
                                 <fullJavaUtil>true</fullJavaUtil>
                             </configOptions>
                             <output>${swagger.codegen.target}/java</output>
@@ -298,6 +307,11 @@
                         <configuration>
                             <inputSpec>${swagger.codegen.yaml}</inputSpec>
                             <language>python</language>
+                            <configOptions>
+                                <packageName>mms_python_client</packageName>
+                                <projectName>mms_python_client</projectName>
+                                <packageVersion>${parent.version}</packageVersion>
+                            </configOptions>
                             <output>${swagger.codegen.target}/python</output>
                         </configuration>
                     </execution>
@@ -345,21 +359,48 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <finalName>mms</finalName>
-                    <descriptors>
-                        <descriptor>assembly/mms-java-client.xml</descriptor>
-                        <descriptor>assembly/mms-python-client.xml</descriptor>
-                        <descriptor>assembly/mms-mathematica-client.xml</descriptor>
-                    </descriptors>
-                </configuration>
                 <executions>
                     <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                        <id>make-assembly-java-client</id> <!-- this is used for inheritance merges -->
                         <phase>package</phase> <!-- append to the packaging phase. -->
                         <goals>
                             <goal>single</goal> <!-- goals == mojos -->
                         </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>assembly/mms-java-client.xml</descriptor>
+                            </descriptors>
+                            <finalName>mms-java-client</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>make-assembly-python-client</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- append to the packaging phase. -->
+                        <goals>
+                            <goal>single</goal> <!-- goals == mojos -->
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>assembly/mms-python-client.xml</descriptor>
+                            </descriptors>
+                            <finalName>mms_python_client</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>make-assembly-mathematica-client</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- append to the packaging phase. -->
+                        <goals>
+                            <goal>single</goal> <!-- goals == mojos -->
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>assembly/mms-mathematica-client.xml</descriptor>
+                            </descriptors>
+                            <finalName>mms-mathematica-client</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

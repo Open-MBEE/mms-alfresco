@@ -414,6 +414,8 @@ paths:
           $ref: "#/responses/NotFound"
         500:
           $ref: "#/responses/InternalServerError"
+        503:
+          $ref: "#/response/ServiceUnavailable"
         default:
           $ref: "#/responses/Default"
   /projects/{project_id}/refs/{ref_id}:
@@ -769,6 +771,11 @@ paths:
       summary: "Get artifacts"
       description: ""
       operationId: "getArtifacts"
+      produces:
+        - image/png
+        - image/svg+xml
+        - application/pdf
+        - application/vnd.openxmlformats-officedocument.wordprocessingml.document
       parameters:
       - in: "query"
         name: "commitId"
@@ -795,6 +802,11 @@ paths:
       summary: "Get artifact(s) in batch"
       description: ""
       operationId: "getArtifactsInBatch"
+      produces:
+        - image/png
+        - image/svg+xml
+        - application/pdf
+        - application/vnd.openxmlformats-officedocument.wordprocessingml.document
       parameters:
       - in: "body"
         name: "body"
@@ -1114,6 +1126,8 @@ responses:
     description: "Forbidden"
   InternalServerError:
     description: "Internal server error"
+  ServiceUnavailable:
+    description: "Service Unavailable"
   Default:
     description: "Unknown"
 definitions:

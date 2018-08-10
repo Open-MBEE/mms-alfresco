@@ -188,6 +188,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         JsonObject srcJson = new JsonObject();
         String workspaceName = null;
         String desc = null;
+        boolean active = false;
+        JsonArray keywords = new JsonArray();
         String elasticId = null;
         boolean isTag = false;
         String permission = "read";  // Default is public read permission
@@ -206,6 +208,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             workspaceName = JsonUtil.getOptString(wsJson, "name"); // user or auto-generated name, ems:workspace_name
             isTag = JsonUtil.getOptString(wsJson, "type", "Branch").equals("Tag");
             desc = JsonUtil.getOptString(wsJson, "description");
+            keywords = JsonUtil.getOptArray(wsJson, "keywords");
             permission = JsonUtil.getOptString(wsJson, "permission", "read");  // "read" or "write"
         } else {
             sourceWorkspaceId = sourceWorkId;
@@ -231,11 +234,13 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             if (desc != null && !desc.isEmpty()) {
                 wsJson.addProperty(Sjm.DESCRIPTION, desc);
             }
+            if (keywords.size() > 0) {
+                wsJson.add(Sjm.KEYWORDS, keywords);
+            }
             wsJson.addProperty(Sjm.CREATED, date);
             wsJson.addProperty(Sjm.CREATOR, user);
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
-            wsJson.addProperty("status", "creating");
             elasticId = emsNodeUtil.insertSingleElastic(wsJson);
 
             if (!NO_WORKSPACE_ID.equals(sourceWorkspaceId) && srcWs == null) {
@@ -254,6 +259,10 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
                         JsonUtil.getOptString(jsonObject, "source", null), commitId, services);
+
+                    if (wsJson.get("status").getAsString().equalsIgnoreCase("rejected")) {
+                        status.setCode(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+                    }
 
                     finalWorkspace = dstWs;
                 }
