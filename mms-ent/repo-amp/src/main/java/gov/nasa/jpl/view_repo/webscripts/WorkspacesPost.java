@@ -188,8 +188,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         JsonObject srcJson = new JsonObject();
         String workspaceName = null;
         String desc = null;
-        boolean active = false;
         JsonArray keywords = new JsonArray();
+        JsonObject metadata = new JsonObject();
         String elasticId = null;
         boolean isTag = false;
         String permission = "read";  // Default is public read permission
@@ -209,6 +209,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             isTag = JsonUtil.getOptString(wsJson, "type", "Branch").equals("Tag");
             desc = JsonUtil.getOptString(wsJson, "description");
             keywords = JsonUtil.getOptArray(wsJson, "keywords");
+            metadata = JsonUtil.getOptObject(wsJson, "metadata");
             permission = JsonUtil.getOptString(wsJson, "permission", "read");  // "read" or "write"
         } else {
             sourceWorkspaceId = sourceWorkId;
@@ -236,6 +237,9 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             }
             if (keywords.size() > 0) {
                 wsJson.add(Sjm.KEYWORDS, keywords);
+            }
+            if (metadata.size() > 0) {
+                wsJson.add(Sjm.METADATA, metadata);
             }
             wsJson.addProperty(Sjm.CREATED, date);
             wsJson.addProperty(Sjm.CREATOR, user);
