@@ -1248,13 +1248,14 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public JsonArray processMove(JsonArray moveData) {
+    public JsonObject processMove(JsonArray moveData) {
         Map<String, JsonObject> elements = new HashMap<>();
         Set<String> keys = new HashSet<>();
         Map<String, List> toRemove = new HashMap<>();
         Map<String, String> updateOwner = new HashMap<>();
         Map<String, Map> toAdd = new HashMap<>();
         Set<DbNodeTypes> dbnt = new HashSet<>();
+        JsonObject wrapper = new JsonObject();
         dbnt.add(DbNodeTypes.PACKAGE);
         for (int i = 0; i < moveData.size(); i++) {
             String srcId = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "from");
@@ -1352,7 +1353,8 @@ public class EmsNodeUtil {
             toProcess.add(entry.getValue());
 
         }
-        return toProcess;
+        wrapper.add(Sjm.ELEMENT, toProcess);
+        return wrapper;
     }
 
     public boolean isDeleted(String sysmlid) {

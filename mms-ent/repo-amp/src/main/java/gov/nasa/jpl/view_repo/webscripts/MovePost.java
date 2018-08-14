@@ -84,99 +84,43 @@ public class MovePost extends ModelPost {
 
         Timer timer = new Timer();
 
-        Map<String, Object> result;
+        Map<String, Object> result = new HashMap<String, Object>();
         String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
 
         // call move logic
-
-        result = createDeltaForMove(req, user, status);
+        try {
+            JsonObject moved = createDeltaForMove(req);
+            result = handleElementPost(req, moved, status, user);
+        } catch (IllegalStateException e) {
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
+            result.put(Sjm.RES, createResponseJson());
+        }
 
         printFooter(user, logger, timer);
 
         return result;
     }
 
-    protected Map<String, Object> createDeltaForMove(final WebScriptRequest req, String user, final Status status) {
+    protected JsonObject createDeltaForMove(final WebScriptRequest req) {
         JsonObject newElementsObject = new JsonObject();
         JsonObject results;
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
-        Map<String, Object> model = new HashMap<>();
-        boolean withChildViews = true;
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
+        JsonObject moved = new JsonObject();
+
         try {
             JsonObject postJson = JsonUtil.buildFromStream(req.getContent().getInputStream()).getAsJsonObject();
+            moved = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
 
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("Post Data: '%s'", postJson));
-            }
-
-            Set<String> oldElasticIds = new HashSet<>();
-            JsonArray moved = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
-            results = emsNodeUtil
-                .processPostJson(moved, user, oldElasticIds, false, this.requestSourceApplication, "", Sjm.ELEMENT);
-            String commitId = results.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
-
-            int added = JsonUtil.getOptArray(results, "addedElements").size();
-            int updated = JsonUtil.getOptArray(results, "updatedElements").size();
-            int deleted = JsonUtil.getOptArray(results, "deletedElements").size();
-
-            if (added + updated + deleted == 0) {
-                JsonObject rejected = new JsonObject();
-                rejected.addProperty(Sjm.CREATOR, user);
-                rejected.add(Sjm.ELEMENTS, new JsonArray());
-                JsonArray rejectedElements = JsonUtil.getOptArray(results, "rejectedElements");
-                rejected.add(Sjm.REJECTED, rejectedElements);
-                model.put(Sjm.RES, rejected);
-            } else if (CommitUtil
-                .sendDeltas(results, projectId, refId, requestSourceApplication, services, withChildViews, false)) {
-                if (!oldElasticIds.isEmpty()) {
-                    emsNodeUtil.updateElasticRemoveRefs(oldElasticIds, "element");
-                }
-                Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
-
-                if (withChildViews) {
-                    JsonArray array = results.get(NEWELEMENTS).getAsJsonArray();
-                    for (int i = 0; i < array.size(); i++) {
-                        array.set(i, emsNodeUtil.addChildViews(array.get(i).getAsJsonObject()));
-                    }
-                }
-
-                newElementsObject.add(Sjm.ELEMENTS, filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req));
-                if (results.has("rejectedElements")) {
-                    newElementsObject.add(Sjm.REJECTED, results.get("rejectedElements"));
-                }
-
-                newElementsObject.addProperty(Sjm.COMMITID, commitId);
-                newElementsObject.addProperty(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
-                newElementsObject.addProperty(Sjm.CREATOR, user);
-
-                if (prettyPrint) {
-                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                    model.put(Sjm.RES, gson.toJson(newElementsObject));
-                } else {
-                    model.put(Sjm.RES, newElementsObject);
-                }
-
-                status.setCode(responseStatus.getCode());
-            } else {
-                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
-                    "Commit failed, please check server logs for failed items");
-                model.put(Sjm.RES, createResponseJson());
-            }
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             //model.put(Sjm.RES, createResponseJson
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-            model.put(Sjm.RES, createResponseJson());
         }
-
-        status.setCode(responseStatus.getCode());
-        return model;
+        return moved;
     }
 
 
