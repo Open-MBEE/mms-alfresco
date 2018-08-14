@@ -12,6 +12,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import gov.nasa.jpl.view_repo.db.*;
 import org.alfresco.repo.service.ServiceDescriptorRegistry;
 import org.alfresco.service.ServiceRegistry;
@@ -23,18 +25,12 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 import org.json.JSONObject;
-import com.google.gson.JsonParser;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -1252,7 +1248,7 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public JsonArray processMove(JsonArray moveData) throws IOException {
+    public JsonArray processMove(JsonArray moveData) {
         Map<String, JsonObject> elements = new HashMap<>();
         Set<String> keys = new HashSet<>();
         Map<String, List> toRemove = new HashMap<>();
@@ -1294,8 +1290,8 @@ public class EmsNodeUtil {
         for (Map.Entry<String, String> entry : updateOwner.entrySet()) {
             String value = entry.getValue();
             String key = entry.getKey();
-            if (elements.get(key).getAsJsonObject().has(Sjm.ASSOCIATIONENDID)) {
-                String associationId = elements.get(key).getAsJsonObject().get(Sjm.ASSOCIATIONENDID).getAsString();
+            if (elements.get(key).has(Sjm.ASSOCIATIONID)) {
+                String associationId = elements.get(key).get(Sjm.ASSOCIATIONENDID).getAsString();
                 String ownerParentPackage = pgh.getImmediateParentOfType(value, DbEdgeTypes.CONTAINMENT, dbnt);
                 JsonObject associationObj = getNodeBySysmlid(associationId);
                 associationObj.addProperty(Sjm.OWNERID, ownerParentPackage);
@@ -1323,7 +1319,7 @@ public class EmsNodeUtil {
             List value = entry.getValue();
             String key = entry.getKey();
             JsonArray ownedAttributeIdsToRemove =
-                JsonUtil.getOptArray(elements.get(key).getAsJsonObject(), Sjm.OWNEDATTRIBUTEIDS);
+                JsonUtil.getOptArray(elements.get(key), Sjm.OWNEDATTRIBUTEIDS);
             JsonArray removed = new JsonArray();
 
             for (int i = 0; i < ownedAttributeIdsToRemove.size(); i++) {
@@ -1336,8 +1332,9 @@ public class EmsNodeUtil {
         for (Map.Entry<String, Map> entry : toAdd.entrySet()) {
             Map<Integer, String> value = entry.getValue();
             String key = entry.getKey();
-            JsonArray ownedAttributeIdsToAdd =
-                JsonUtil.getOptArray(elements.get(key).getAsJsonObject(), Sjm.OWNEDATTRIBUTEIDS);
+            List ownedAttributeIdsToAdd =
+                new Gson().fromJson(JsonUtil.getOptArray(elements.get(key), Sjm.OWNEDATTRIBUTEIDS), new TypeToken<List<String>>(){}.getType());
+
             for (Map.Entry<Integer, String> add : value.entrySet()) {
                 Integer index = add.getKey();
                 String id = add.getValue();
@@ -1345,10 +1342,10 @@ public class EmsNodeUtil {
                 if (index >= ownedAttributeIdsToAdd.size()) {
                     ownedAttributeIdsToAdd.add(id);
                 } else {
-                    ownedAttributeIdsToAdd.set(index, new JsonParser().parse(id).getAsJsonObject());
+                    ownedAttributeIdsToAdd.add(index, new JsonParser().parse(id).getAsJsonObject());
                 }
             }
-            elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, ownedAttributeIdsToAdd);
+            elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, new Gson().toJsonTree(ownedAttributeIdsToAdd));
         }
         JsonArray toProcess = new JsonArray();
         for (Map.Entry<String, JsonObject> entry : elements.entrySet()) {

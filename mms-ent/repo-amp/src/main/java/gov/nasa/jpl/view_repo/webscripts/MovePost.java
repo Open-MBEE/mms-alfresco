@@ -53,38 +53,9 @@ import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
 
-//mms - make new endpoint for moving property, (for multiple properties at once, will need to consolidate end state in case multiple moves to same element)
-//
-//    changes needed for moving property p from b1 to b2 at index i (0 based?)
-//
-//    change owner of p from b1 to b2
-//    remove pId from b1's list of ownedAttributeIds
-//    insert pId to b2's list of ownedAttributeIds at i
-//    if p has associationId
-//    change association's owner to be the closest parent package of b2
-//    if association's ownedEndId is not empty, change the referenced element's typeId to be b2
-//    case if b1 == b2 and just moving index
-//    only change b's ownedAttributeIds list to have pId at the correct place
-//{
-//    "moves":[
-//    {
-//    "id": "propertyId",
-//    "from": "old block id",
-//    "to": "new block id",
-//    "index": i
-//    }
-//    ]
-//    }
-
-
 public class MovePost extends ModelPost {
-    //static Logger logger = Logger.getLogger(MovePost.class);
 
-    //protected EmsScriptNode workspace = null;
-
-    //private final String NEWELEMENTS = "newElements";
-
-    //public static boolean timeEvents = false;
+    private final String NEWELEMENTS = "newElements";
 
     public MovePost() {
         super();
@@ -125,17 +96,14 @@ public class MovePost extends ModelPost {
         return result;
     }
 
-    protected Map<String,Object> createDeltaForMove(final WebScriptRequest req, String user, final Status status){
+    protected Map<String, Object> createDeltaForMove(final WebScriptRequest req, String user, final Status status) {
         JsonObject newElementsObject = new JsonObject();
         JsonObject results;
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
-        //Map<String, Object> model = new HashMap<>();
         Map<String, Object> model = new HashMap<>();
-        boolean withChildViews = false;
-        boolean extended = false;
-
+        boolean withChildViews = true;
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
@@ -170,6 +138,18 @@ public class MovePost extends ModelPost {
                 }
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
 
+                if (withChildViews) {
+                    JsonArray array = results.get(NEWELEMENTS).getAsJsonArray();
+                    for (int i = 0; i < array.size(); i++) {
+                        array.set(i, emsNodeUtil.addChildViews(array.get(i).getAsJsonObject()));
+                    }
+                }
+
+                newElementsObject.add(Sjm.ELEMENTS, filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req));
+                if (results.has("rejectedElements")) {
+                    newElementsObject.add(Sjm.REJECTED, results.get("rejectedElements"));
+                }
+
                 newElementsObject.addProperty(Sjm.COMMITID, commitId);
                 newElementsObject.addProperty(Sjm.TIMESTAMP, commitObject.get(Sjm.TIMESTAMP));
                 newElementsObject.addProperty(Sjm.CREATOR, user);
@@ -182,12 +162,15 @@ public class MovePost extends ModelPost {
                 }
 
                 status.setCode(responseStatus.getCode());
-
+            } else {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
+                    "Commit failed, please check server logs for failed items");
+                model.put(Sjm.RES, createResponseJson());
             }
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             //model.put(Sjm.RES, createResponseJson
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             model.put(Sjm.RES, createResponseJson());
         }
