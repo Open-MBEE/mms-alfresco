@@ -327,39 +327,39 @@ paths:
           $ref: "#/responses/InternalServerError"
         default:
           $ref: "#/responses/Default"
-  /projects/{project_id}/commits/{commit_id}:
-     parameters:
-     - name: "project_id"
-       in: "path"
-       required: true
-       description: "project identifier"
-       type: "string"
-     - name: "commit_id"
-       in: "path"
-       required: true
-       description: "commit identifier"
-       type: "string"
-     get:
-       tags:
-       - "project"
-       summary: "Get project commit"
-       description: ""
-       operationId: "getProjectCommit"
-       responses:
-         200:
-           description: "OK"
-           schema:
-             $ref: "#/definitions/Commits"
-         401:
-           $ref: "#/responses/Unauthorized"
-         403:
-           $ref: "#/responses/Forbidden"
-         404:
-           $ref: "#/responses/NotFound"
-         500:
-           $ref: "#/responses/InternalServerError"
-         default:
-           $ref: "#/responses/Default"
+#  /projects/{project_id}/commits/{commit_id}:
+#     parameters:
+#     - name: "project_id"
+#       in: "path"
+#       required: true
+#       description: "project identifier"
+#       type: "string"
+#     - name: "commit_id"
+#       in: "path"
+#       required: true
+#       description: "commit identifier"
+#       type: "string"
+#     get:
+#       tags:
+#       - "project"
+#       summary: "Get project commit"
+#       description: ""
+#       operationId: "getProjectCommit"
+#       responses:
+#         200:
+#           description: "OK"
+#           schema:
+#             $ref: "#/definitions/Commits"
+#         401:
+#           $ref: "#/responses/Unauthorized"
+#         403:
+#           $ref: "#/responses/Forbidden"
+#         404:
+#           $ref: "#/responses/NotFound"
+#         500:
+#           $ref: "#/responses/InternalServerError"
+#         default:
+#           $ref: "#/responses/Default"
   /projects/{project_id}/refs:
     parameters:
     - name: "project_id"
@@ -415,7 +415,7 @@ paths:
         500:
           $ref: "#/responses/InternalServerError"
         503:
-          $ref: "#/response/ServiceUnavailable"
+          $ref: "#/responses/ServiceUnavailable"
         default:
           $ref: "#/responses/Default"
   /projects/{project_id}/refs/{ref_id}:
@@ -484,6 +484,50 @@ paths:
       required: true
       description: "ref identifier"
       type: "string"
+    - name: "maxTimestamp"
+      in: "query"
+      required: false
+      description: "max timestamp"
+      allowReserved: true
+      type: "string"
+    get:
+      tags:
+      - "ref"
+      summary: "Get ref history"
+      description: ""
+      operationId: "getRefHistory"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Commits"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/documents:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    - name: "groupId"
+      in: "query"
+      required: false
+      description: "group identifier"
+      type: "string"
     get:
       tags:
       - "ref"
@@ -516,6 +560,11 @@ paths:
       in: "path"
       required: true
       description: "ref identifier"
+      type: "string"
+    - name: "commitId"
+      in: "query"
+      required: false
+      description: "commit identifier"
       type: "string"
     get:
       tags:
@@ -1016,6 +1065,46 @@ paths:
           $ref: "#/responses/InternalServerError"
         default:
           $ref: "#/responses/Default"
+  /projects/{project_id}/refs/{ref_id}/convert:
+    parameters:
+    - name: "project_id"
+      in: "path"
+      required: true
+      description: "project identifier"
+      type: "string"
+    - name: "ref_id"
+      in: "path"
+      required: true
+      description: "ref identifier"
+      type: "string"
+    post:
+      tags:
+      - "other"
+      summary: "Converts HTML to requested format"
+      description: ""
+      operationId: "htmlConverter"
+      parameters:
+      - name: "body"
+        in: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/ConvertRequest"
+        required: true
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ConvertResponse"
+        401:
+          $ref: "#/responses/Unauthorized"
+        403:
+          $ref: "#/responses/Forbidden"
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          $ref: "#/responses/InternalServerError"
+        default:
+          $ref: "#/responses/Default"
   /projects/{project_id}/refs/{ref_id}/groups:
     parameters:
     - name: "project_id"
@@ -1082,7 +1171,7 @@ paths:
           $ref: "#/responses/InternalServerError"
         default:
           $ref: "#/responses/Default"
-  /projects/{project_id}/refs/{ref_id}/documents:
+  /projects/{project_id}/refs/{ref_id}/search:
     parameters:
     - name: "project_id"
       in: "path"
@@ -1094,17 +1183,24 @@ paths:
       required: true
       description: "ref identifier"
       type: "string"
-    get:
+    post:
       tags:
       - "other"
-      summary: "Get documents"
+      summary: "Search for elements"
       description: ""
-      operationId: "getDocuments"
+      operationId: "searchElements"
+      parameters:
+      - name: "body"
+        in: "body"
+        description: ""
+        schema:
+          $ref: "#/definitions/SearchRequest"
+        required: true
       responses:
         200:
           description: "OK"
           schema:
-            $ref: "#/definitions/Documents"
+            $ref: "#/definitions/Elements"
         401:
           $ref: "#/responses/Unauthorized"
         403:
@@ -1339,6 +1435,56 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Element"
+  ConvertRequest:
+    type: "object"
+    required:
+    - "name"
+    - "body"
+    - "Accepts"
+    properties:
+      name:
+        type: "string"
+      body:
+        type: "string"
+      Accepts:
+        type: "string"
+      css:
+        type: "string"
+  ConvertResponse:
+    type: "object"
+    required:
+    - "name"
+    - "filename"
+    - "status"
+    properties:
+      name:
+        type: "string"
+      filename:
+        type: "string"
+      status:
+        type: "string"
+  SearchRequest:
+    type: "object"
+    required:
+    - "query"
+    properties:
+      query:
+        type: "object"
+        properties:
+          bool:
+            type: "object"
+            properties:
+              filter:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    term:
+                      type: "object"
+      size:
+        type: "number"
+      sort:
+        type: "object"
   LoginRequest:
     type: "object"
     required:
