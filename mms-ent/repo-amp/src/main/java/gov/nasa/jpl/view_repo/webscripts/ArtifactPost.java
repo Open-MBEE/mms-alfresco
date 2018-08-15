@@ -216,7 +216,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
 
         // Replace with true content type
-        postJson.addProperty(Sjm.CONTENTTYPE, finalContentType);
+        if (finalContentType != null) {
+            postJson.addProperty(Sjm.CONTENTTYPE, finalContentType);
+        }
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -230,8 +232,12 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 extension = tikaConfig.getMimeRepository().forName(finalContentType).getExtension();
             } catch (MimeTypeException mte) {
                 logger.debug(mte);
+            }
+
+            if (extension == null) {
                 extension = FilenameUtils.getExtension(filename);
             }
+
             artifactId = postJson.get(Sjm.SYSMLID).getAsString();
 
             // Create return json:
