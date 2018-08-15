@@ -318,7 +318,7 @@ public class EmsNodeUtil {
         JsonArray result = new JsonArray();
         int cId = pgh.getCommitId(commitId);
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId, cId, limit);
-        if (refCommits.size() > 0) {
+        if (!refCommits.isEmpty()) {
             result = processCommits(refCommits);
         }
 
