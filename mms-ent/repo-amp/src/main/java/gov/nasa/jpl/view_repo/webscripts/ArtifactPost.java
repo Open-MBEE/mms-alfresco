@@ -41,6 +41,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.tika.Tika;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.mime.MimeTypeException;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -70,6 +73,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
     protected Path filePath = null;
     protected String mimeType = null;
     protected String encoding = null;
+
+    protected Tika tika = new Tika();
+    protected TikaConfig tikaConfig = TikaConfig.getDefaultConfig();
 
     private final String NEWELEMENTS = "newElements";
 
@@ -118,7 +124,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
                     filePath = EmsNodeUtil.saveToFilesystem(filename, field.getInputStream());
                     content = new String(Files.readAllBytes(filePath));
-                    finalContentType = Files.probeContentType(filePath);
+                    finalContentType = tika.detect(filePath);
 
                     if (logger.isDebugEnabled()) {
                         logger.debug("filename: " + filename);
@@ -220,7 +226,12 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         if (validateRequest(req, status) && !siteName.isEmpty()) {
 
-            extension = FilenameUtils.getExtension(filename);
+            try {
+                extension = tikaConfig.getMimeRepository().forName(finalContentType).getExtension();
+            } catch (MimeTypeException mte) {
+                logger.debug(mte);
+                extension = FilenameUtils.getExtension(filename);
+            }
             artifactId = postJson.get(Sjm.SYSMLID).getAsString();
 
             // Create return json:
