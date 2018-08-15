@@ -327,39 +327,39 @@ paths:
           $ref: "#/responses/InternalServerError"
         default:
           $ref: "#/responses/Default"
-#  /projects/{project_id}/commits/{commit_id}:
-#     parameters:
-#     - name: "project_id"
-#       in: "path"
-#       required: true
-#       description: "project identifier"
-#       type: "string"
-#     - name: "commit_id"
-#       in: "path"
-#       required: true
-#       description: "commit identifier"
-#       type: "string"
-#     get:
-#       tags:
-#       - "project"
-#       summary: "Get project commit"
-#       description: ""
-#       operationId: "getProjectCommit"
-#       responses:
-#         200:
-#           description: "OK"
-#           schema:
-#             $ref: "#/definitions/Commits"
-#         401:
-#           $ref: "#/responses/Unauthorized"
-#         403:
-#           $ref: "#/responses/Forbidden"
-#         404:
-#           $ref: "#/responses/NotFound"
-#         500:
-#           $ref: "#/responses/InternalServerError"
-#         default:
-#           $ref: "#/responses/Default"
+  /projects/{project_id}/commits/{commit_id}:
+     parameters:
+     - name: "project_id"
+       in: "path"
+       required: true
+       description: "project identifier"
+       type: "string"
+     - name: "commit_id"
+       in: "path"
+       required: true
+       description: "commit identifier"
+       type: "string"
+     get:
+       tags:
+       - "project"
+       summary: "Get project commit"
+       description: ""
+       operationId: "getProjectCommit"
+       responses:
+         200:
+           description: "OK"
+           schema:
+             $ref: "#/definitions/Commits"
+         401:
+           $ref: "#/responses/Unauthorized"
+         403:
+           $ref: "#/responses/Forbidden"
+         404:
+           $ref: "#/responses/NotFound"
+         500:
+           $ref: "#/responses/InternalServerError"
+         default:
+           $ref: "#/responses/Default"
   /projects/{project_id}/refs:
     parameters:
     - name: "project_id"
