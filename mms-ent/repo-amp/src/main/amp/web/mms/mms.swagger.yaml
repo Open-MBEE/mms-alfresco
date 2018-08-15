@@ -1470,17 +1470,6 @@ definitions:
     properties:
       query:
         type: "object"
-        properties:
-          bool:
-            type: "object"
-            properties:
-              filter:
-                type: "array"
-                items:
-                  type: "object"
-                  properties:
-                    term:
-                      type: "object"
       size:
         type: "number"
       sort:
