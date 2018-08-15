@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gson.JsonElement;
 import io.searchbox.cluster.UpdateSettings;
 import io.searchbox.core.*;
 import io.searchbox.indices.DeleteIndex;
@@ -535,7 +536,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         JsonObject top = new JsonObject();
         JsonArray elements = new JsonArray();
 
-        Search search = new Search.Builder(queryJson.toString()).build();
+        Search search = new Search.Builder(sanitizeSearchQuery(queryJson).toString().replaceAll("\"script\"[ ]*:[^,}\\]]*[,]?", "")).build();
         SearchResult result = client.execute(search);
 
         if (result == null) {
@@ -560,7 +561,7 @@ public class ElasticHelper implements ElasticsearchInterface {
     }
 
     public JsonObject searchLiteral(JsonObject queryJson) throws IOException {
-        Search search = new Search.Builder(queryJson.toString()).build();
+        Search search = new Search.Builder(sanitizeSearchQuery(queryJson).toString()).build();
         SearchResult result = client.execute(search);
         return result.getJsonObject();
     }
@@ -734,5 +735,21 @@ public class ElasticHelper implements ElasticsearchInterface {
             count += termLimit;
         }
         return deletedElements;
+    }
+
+    private static JsonObject sanitizeSearchQuery(JsonObject json) {
+        JsonObject sanitized = new JsonObject();
+        for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
+            if (entry.getValue() instanceof JsonObject) {
+                if (!entry.getKey().equals("script")) {
+                    sanitized.add(entry.getKey(), sanitizeSearchQuery(entry.getValue().getAsJsonObject()));
+                }
+            } else if (!entry.getKey().equals("script")) {
+                sanitized.add(entry.getKey(), entry.getValue());
+            }
+        }
+        logger.error("Sanitized: ");
+        logger.error(sanitized.toString());
+        return sanitized;
     }
 }
