@@ -229,7 +229,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
         if (validateRequest(req, status) && !siteName.isEmpty()) {
 
             try {
-                extension = tikaConfig.getMimeRepository().forName(finalContentType).getExtension();
+                extension = tikaConfig.getMimeRepository().forName(JsonUtil.getOptString(postJson, Sjm.CONTENTTYPE)).getExtension();
             } catch (MimeTypeException mte) {
                 logger.debug(mte);
             }
