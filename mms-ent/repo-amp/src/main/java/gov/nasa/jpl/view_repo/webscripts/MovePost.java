@@ -25,30 +25,21 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.io.IOException;
 import java.util.*;
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
