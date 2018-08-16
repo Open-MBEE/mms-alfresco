@@ -1343,7 +1343,7 @@ public class EmsNodeUtil {
                 if (index >= ownedAttributeIdsToAdd.size()) {
                     ownedAttributeIdsToAdd.add(id);
                 } else {
-                    ownedAttributeIdsToAdd.add(index, new JsonParser().parse(id).getAsJsonObject());
+                    ownedAttributeIdsToAdd.add(index, new JsonParser().parse(id));
                 }
             }
             elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, new Gson().toJsonTree(ownedAttributeIdsToAdd));
