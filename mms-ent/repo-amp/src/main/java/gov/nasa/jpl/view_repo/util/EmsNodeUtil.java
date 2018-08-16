@@ -1292,7 +1292,7 @@ public class EmsNodeUtil {
             String value = entry.getValue();
             String key = entry.getKey();
             if (elements.get(key).has(Sjm.ASSOCIATIONID)) {
-                String associationId = elements.get(key).get(Sjm.ASSOCIATIONENDID).getAsString();
+                String associationId = elements.get(key).get(Sjm.ASSOCIATIONID).getAsString();
                 String ownerParentPackage = pgh.getImmediateParentOfType(value, DbEdgeTypes.CONTAINMENT, dbnt);
                 JsonObject associationObj = getNodeBySysmlid(associationId);
                 associationObj.addProperty(Sjm.OWNERID, ownerParentPackage);
