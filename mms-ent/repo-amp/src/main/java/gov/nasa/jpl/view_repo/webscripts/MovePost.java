@@ -85,7 +85,6 @@ public class MovePost extends ModelPost {
         Timer timer = new Timer();
 
         Map<String, Object> result = new HashMap<String, Object>();
-        String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
 
         // call move logic
         try {
@@ -102,9 +101,6 @@ public class MovePost extends ModelPost {
     }
 
     protected JsonObject createDeltaForMove(final WebScriptRequest req) {
-        JsonObject newElementsObject = new JsonObject();
-        JsonObject results;
-
         String refId = getRefId(req);
         String projectId = getProjectId(req);
 
@@ -115,6 +111,10 @@ public class MovePost extends ModelPost {
         try {
             JsonObject postJson = JsonUtil.buildFromStream(req.getContent().getInputStream()).getAsJsonObject();
             moved = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
+            String comment = JsonUtil.getOptString(postJson, Sjm.COMMENT);
+            String src = JsonUtil.getOptString(postJson, Sjm.SOURCE);
+            moved.addProperty(Sjm.COMMENT, comment);
+            moved.addProperty(Sjm.SOURCE, src);
 
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
