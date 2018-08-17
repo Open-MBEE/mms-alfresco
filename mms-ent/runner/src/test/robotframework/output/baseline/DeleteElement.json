@@ -1,3 +1,10 @@
 {
-    "message": "[ERROR]: Element DeleteElement is deleted\n[ERROR]: No elements found.\n"
+    "messages": [
+        {
+            "code": 404.0,
+            "id": "DeleteElement",
+            "message": "Element DeleteElement was not found",
+            "severity": "warn"
+        }
+    ]
 }

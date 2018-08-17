@@ -1773,14 +1773,14 @@ public class EmsNodeUtil {
 
             if (pastElement != null && pastElement.has(Sjm.SYSMLID) && deletedElementIds
                 .containsKey(pastElement.get(Sjm.ELASTICID).getAsString())) {
-                pastElement = new JsonObject();
+                pastElement = null;
             }
         }
-        return pastElement == null ? new JsonObject() : pastElement;
+        return pastElement;
     }
 
     public JsonObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
-        JsonObject result = new JsonObject();
+        JsonObject result = null;
 
         try {
             // Get commit object and retrieve the refs commits
@@ -1805,6 +1805,7 @@ public class EmsNodeUtil {
         Date requestedTime;
         List<Map<String, Object>> commits;
         JsonArray response = new JsonArray();
+
         try {
             requestedTime = df.parse(timestamp);
             Timestamp time = new Timestamp(requestedTime.getTime());

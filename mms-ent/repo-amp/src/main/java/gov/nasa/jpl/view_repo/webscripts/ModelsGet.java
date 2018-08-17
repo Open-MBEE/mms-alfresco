@@ -30,7 +30,6 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -70,25 +69,6 @@ public class ModelsGet extends ModelGet {
 
     public ModelsGet(Repository repositoryHelper, ServiceRegistry registry) {
         super(repositoryHelper, registry);
-    }
-
-    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        // get timestamp if specified
-        String timestamp = req.getParameter("timestamp");
-        Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
-
-        String refId = getRefId(req);
-        String projectId = getProjectId(req);
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
-            return true;
-        } else if (refId != null && !emsNodeUtil.refExists(refId)) {
-            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
-                refId + (dateTime == null ? "" : " at " + dateTime));
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -180,54 +160,6 @@ public class ModelsGet extends ModelGet {
         printFooter(user, logger, timer);
 
         return model;
-    }
-
-    /**
-     * Wrapper for handling a request and getting the appropriate JSONArray of
-     * elements
-     *
-     * @param req
-     * @return
-     * @throws IOException
-     */
-    private JsonObject handleRequest(WebScriptRequest req, final Long maxDepth) throws IOException {
-        JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
-        if (requestJson.has(Sjm.ELEMENTS)) {
-            JsonArray elementsToFindJson = requestJson.get(Sjm.ELEMENTS).getAsJsonArray();
-
-            String refId = getRefId(req);
-            String projectId = getProjectId(req);
-            String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
-
-            boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
-
-            JsonObject mountsJson = new JsonObject();
-            mountsJson.addProperty(Sjm.SYSMLID, projectId);
-            mountsJson.addProperty(Sjm.REFID, refId);
-
-            JsonArray found = new JsonArray();
-            JsonObject result = new JsonObject();
-
-            Set<String> uniqueElements = new HashSet<>();
-            for (int i = 0; i < elementsToFindJson.size(); i++) {
-                uniqueElements.add(elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
-            }
-
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
-
-            String timestamp = commitObject != null && commitObject.has(Sjm.CREATED) ?
-                commitObject.get(Sjm.CREATED).getAsString() :
-                null;
-
-            EmsNodeUtil
-                .handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found, timestamp, null);
-            result.add(Sjm.ELEMENTS, found);
-            JsonUtil.addStringSet(result, Sjm.WARN, uniqueElements);
-            return result;
-        } else {
-            return new JsonObject();
-        }
     }
 
     /**

@@ -675,7 +675,7 @@ public class ElasticHelper implements ElasticsearchInterface {
             }
             count += termLimit;
         }
-        return new JsonObject();
+        return null;
     }
 
     public Map<String, String> getDeletedElementsFromCommits(List<String> commitIds, String index) {

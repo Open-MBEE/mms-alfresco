@@ -1,3 +1,9 @@
 {
-    "message": "[ERROR]: No elements found.\n"
+    "messages": [
+        {
+            "code": 404.0,
+            "message": "Element DeleteResurrectElement was not found",
+            "severity": "warn"
+        }
+    ]
 }

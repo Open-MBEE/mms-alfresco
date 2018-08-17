@@ -26,8 +26,10 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
+import com.google.gson.JsonParseException;
+import gov.nasa.jpl.mbee.util.TimeUtils;
 import java.io.IOException;
-import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -75,6 +77,10 @@ public class ModelGet extends AbstractJavaWebScript {
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
+        // get timestamp if specified
+        String timestamp = req.getParameter("timestamp");
+        Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
+
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
@@ -82,7 +88,8 @@ public class ModelGet extends AbstractJavaWebScript {
         if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
             return true;
         } else if (refId != null && !emsNodeUtil.refExists(refId)) {
-            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found", refId);
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
+                refId + (dateTime == null ? "" : " at " + dateTime));
             return false;
         }
         return true;
@@ -107,152 +114,140 @@ public class ModelGet extends AbstractJavaWebScript {
 
         Timer timer = new Timer();
 
-        Map<String, Object> model;
-
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Accept: %s", accept));
+        Map<String, Object> model = new HashMap<>();
+        JsonArray elementsJson = new JsonArray();
+        JsonObject result = new JsonObject();
+
+        try {
+
+            if (validateRequest(req, status)) {
+                try {
+                    Long depth = getDepthFromRequest(req);
+                    result = handleRequest(req, depth);
+                    elementsJson = JsonUtil.getOptArray(result, Sjm.ELEMENTS);
+                } catch (IllegalStateException e) {
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
+                } catch (JsonParseException e) {
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
+                }
+            }
+
+            JsonObject top = new JsonObject();
+            if (elementsJson.size() == 0) {
+                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
+            }
+            if (elementsJson.size() > 0) {
+                top.add(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
+            }
+            if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
+                log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
+            }
+
+            JsonArray errorMessages = new JsonArray();
+            for (String level : Sjm.ERRORLEVELS) {
+                JsonArray errors = JsonUtil.getOptArray(result, level);
+                if (errors.size() > 0) {
+                    for (int i = 0; i < errors.size(); i++) {
+                        JsonObject errorPayload = new JsonObject();
+                        errorPayload.addProperty("code", HttpServletResponse.SC_NOT_FOUND);
+                        errorPayload.add(Sjm.SYSMLID, errors.get(i));
+                        errorPayload.addProperty("message",
+                            String.format("Element %s was not found", errors.get(i).getAsString()));
+                        errorPayload.addProperty("severity", level);
+                        errorMessages.add(errorPayload);
+                    }
+                }
+            }
+
+            if (errorMessages.size() > 0) {
+                top.add("messages", errorMessages);
+            }
+
+            if (prettyPrint || accept.contains("webp")) {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                model.put(Sjm.RES, gson.toJson(top));
+            } else {
+                model.put(Sjm.RES, top);
+            }
+
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        model = handleElementGet(req, status, accept);
+        status.setCode(responseStatus.getCode());
 
         printFooter(user, logger, timer);
 
         return model;
     }
 
-    protected Map<String, Object> handleElementGet(WebScriptRequest req, Status status, String accept) {
-
-        Map<String, Object> model = new HashMap<>();
-        JsonObject top = new JsonObject();
-
-        if (validateRequest(req, status)) {
-            boolean isCommit = req.getParameter(COMMITID) != null && !req.getParameter(COMMITID).isEmpty();
-            try {
-                if (isCommit) {
-                    JsonArray commitJsonToArray = new JsonArray();
-                    JsonObject commitJson = handleCommitRequest(req);
-                    commitJsonToArray.add(commitJson);
-                    if (commitJson.size() == 0) {
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
-                    }
-                    if (commitJson.size() > 0) {
-                        top.add(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
-                    }
-                    if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
-                        log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
-                    }
-                } else {
-                    JsonArray elementsJson = handleRequest(req);
-                    if (elementsJson.size() == 0) {
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
-                    }
-                    if (elementsJson.size() > 0) {
-                        top.add(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
-                    }
-                    if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
-                        log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
-                    }
-                }
-                if (!Utils.isNullOrEmpty(response.toString()))
-                    top.addProperty("message", response.toString());
-            } catch (Exception e) {
-                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
-            }
-
-            status.setCode(responseStatus.getCode());
-        }
-        if (prettyPrint || accept.contains("webp")) {
-        	Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            model.put(Sjm.RES, gson.toJson(top));
-        } else {
-            model.put(Sjm.RES, top);
-        }
-
-        return model;
-    }
-
     /**
-     * Wrapper for handling a request and getting the appropriate JSONArray of elements
+     * Wrapper for handling a request and getting the appropriate JSONArray of
+     * elements
      *
-     * @param req WebScriptRequest object
-     * @return JSONArray of elements
+     * @param req
+     * @return
+     * @throws IOException
      */
-    private JsonArray handleRequest(WebScriptRequest req) {
-        // REVIEW -- Why check for errors here if validate has already been
-        // called? Is the error checking code different? Why?
-        try {
-            String modelId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
-            String projectId = getProjectId(req);
-            String refId = getRefId(req);
-            Long depth = getDepthFromRequest(req);
-            boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
-
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            if (null == modelId) {
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s", modelId);
-                return new JsonArray();
-            } else if (emsNodeUtil.isDeleted(modelId)) {
-                log(Level.ERROR, HttpServletResponse.SC_GONE, "Element %s is deleted", modelId);
-                return new JsonArray();
-            }
-
-            JsonObject mountsJson = new JsonObject();
-            mountsJson.addProperty(Sjm.SYSMLID, projectId);
-            mountsJson.addProperty(Sjm.REFID, refId);
-
-            JsonArray result = new JsonArray();
-            Set<String> elementsToFind = new HashSet<>();
-            elementsToFind.add(modelId);
-            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, depth, elementsToFind, result);
-            return result;
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+    protected JsonObject handleRequest(WebScriptRequest req, final Long maxDepth) throws IOException {
+        JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
+        JsonArray elementsToFindJson = new JsonArray();
+        String getElementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
+        if (requestJson.has(Sjm.ELEMENTS)) {
+            elementsToFindJson = requestJson.get(Sjm.ELEMENTS).getAsJsonArray();
+        } else if (getElementId != null) {
+            JsonObject element = new JsonObject();
+            element.addProperty(Sjm.SYSMLID, getElementId);
+            elementsToFindJson.add(element);
+        } else {
+            return new JsonObject();
         }
-        return new JsonArray();
-    }
 
-    private JsonObject handleCommitRequest(WebScriptRequest req) {
-        // getElement at commit
-        String projectId = getProjectId(req);
         String refId = getRefId(req);
-        Long depth = getDepthFromRequest(req);
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        String projectId = getProjectId(req);
+        String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
 
-        String elementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
-        String commitId = req.getParameter(COMMITID);
-
-        if (emsNodeUtil.getById(elementId) != null) {
-            JsonObject element = emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
-            if (element == null || element.size() == 0) {
-                return emsNodeUtil.getElementAtCommit(elementId, commitId);
-            } else {
-                return element;
-            }
-        }
+        boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
         JsonObject mountsJson = new JsonObject();
         mountsJson.addProperty(Sjm.SYSMLID, projectId);
         mountsJson.addProperty(Sjm.REFID, refId);
-        // convert commitId to timestamp
-        String commit = emsNodeUtil.getCommitObject(commitId).get(Sjm.CREATED).getAsString();
 
-        JsonArray result = new JsonArray();
-        Set<String> elementsToFind = new HashSet<>();
-        elementsToFind.add(elementId);
-        try {
-            EmsNodeUtil.handleMountSearch(mountsJson, false, false, depth, elementsToFind, result, commit, "elements");
-            if (result.size() > 0) {
-                return JsonUtil.getOptObject(result, 0);
-            }
-        } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s",
-                elementId, commitId);
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        JsonArray found = new JsonArray();
+        JsonObject result = new JsonObject();
+
+        Set<String> uniqueElements = new HashSet<>();
+        for (int i = 0; i < elementsToFindJson.size(); i++) {
+            uniqueElements.add(elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
         }
-        return new JsonObject();
+
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
+
+        String timestamp = commitObject != null && commitObject.has(Sjm.CREATED) ?
+            commitObject.get(Sjm.CREATED).getAsString() :
+            null;
+
+        if (getElementId == null) {
+            EmsNodeUtil
+                .handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found, timestamp, null);
+        } else if (commitId != null) {
+            if (commitObject != null) {
+                String commit = commitObject.get(Sjm.CREATED).getAsString();
+                EmsNodeUtil
+                    .handleMountSearch(mountsJson, false, false, maxDepth, uniqueElements, found, commit, "elements");
+            }
+        } else {
+            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found);
+        }
+
+        result.add(Sjm.ELEMENTS, found);
+        JsonUtil.addStringSet(result, Sjm.WARN, uniqueElements);
+
+        return result;
     }
 
     /**
