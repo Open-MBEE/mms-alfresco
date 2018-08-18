@@ -327,13 +327,13 @@ public class EmsNodeUtil {
 
     private JsonArray filterCommitsByRefs(JsonArray commits) {
         JsonArray filtered = new JsonArray();
-        JsonArray refHistory = getRefHistory(this.workspaceName);
-        List<String> commitList = new ArrayList<>();
-        for (int i = 0; i < refHistory.size(); i++) {
-            commitList.add(refHistory.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
+        List<Map<String, Object>> refCommits = pgh.getRefsCommits(this.workspaceName, 0, 0);
+        Set<String> commitSet = new HashSet<>();
+        for (Map<String, Object> commit: refCommits) {
+            commitSet.add((String)commit.get(Sjm.SYSMLID));
         }
         for (int i = 0; i < commits.size(); i++) {
-            if (commitList.contains(commits.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString())) {
+            if (commitSet.contains(commits.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString())) {
                 filtered.add(commits.get(i).getAsJsonObject());
             }
         }
