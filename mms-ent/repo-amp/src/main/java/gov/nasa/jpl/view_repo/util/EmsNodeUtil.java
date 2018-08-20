@@ -1316,7 +1316,7 @@ public class EmsNodeUtil {
             }
             elements.get(key).getAsJsonObject().addProperty(Sjm.OWNERID, key);
         }
-        for (Map.Entry<String, List> entry : toRemove.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : toRemove.entrySet()) {
             List value = entry.getValue();
             String key = entry.getKey();
             JsonArray ownedAttributeIdsToRemove =
@@ -1330,7 +1330,7 @@ public class EmsNodeUtil {
             }
             elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, removed);
         }
-        for (Map.Entry<String, Map> entry : toAdd.entrySet()) {
+        for (Map.Entry<String, Map<Integer, String>> entry : toAdd.entrySet()) {
             Map<Integer, String> value = entry.getValue();
             String key = entry.getKey();
             List ownedAttributeIdsToAdd =
