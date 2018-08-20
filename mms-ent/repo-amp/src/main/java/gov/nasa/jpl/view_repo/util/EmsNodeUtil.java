@@ -1911,7 +1911,15 @@ public class EmsNodeUtil {
 
     public static String getHostname() {
         ServiceDescriptorRegistry sdr = new ServiceDescriptorRegistry();
-        return sdr.getSysAdminParams().getAlfrescoHost();
+        String hostname = "localhost";
+        try {
+            hostname = sdr.getSysAdminParams().getAlfrescoHost();
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(e.getLocalizedMessage());
+            }
+        }
+        return hostname;
     }
 
     /**

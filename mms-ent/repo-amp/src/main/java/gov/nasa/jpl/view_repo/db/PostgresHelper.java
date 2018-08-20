@@ -2080,7 +2080,7 @@ public class PostgresHelper implements GraphInterface {
             }
 
             if (timestamp != null) {
-                query.append(" AND date_trunc('seconds', timestamp) <= ?");
+                query.append(" AND date_trunc('milliseconds', timestamp) <= ?");
                 timestampColNum = commitColNum == 3 ? 4 : 3;
             }
 
