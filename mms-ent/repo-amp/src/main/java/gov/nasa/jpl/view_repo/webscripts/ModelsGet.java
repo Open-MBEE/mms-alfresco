@@ -103,7 +103,7 @@ public class ModelsGet extends ModelGet {
                 try {
                     Long depth = getDepthFromRequest(req);
                     result =
-                        (!req.getContent().getContent().isEmpty()) ? handleRequest(req, depth) : getAllElements(req);
+                        (!req.getContent().getContent().isEmpty()) ? handleRequest(req, depth, "elements") : getAllElements(req);
                     elementsJson = JsonUtil.getOptArray(result, Sjm.ELEMENTS);
                 } catch (IllegalStateException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
@@ -124,21 +124,7 @@ public class ModelsGet extends ModelGet {
                 top.add(Sjm.ELEMENTS, new JsonArray());
             }
 
-            JsonArray errorMessages = new JsonArray();
-            for (String level : Sjm.ERRORLEVELS) {
-                JsonArray errors = JsonUtil.getOptArray(result, level);
-                if (errors.size() > 0) {
-                    for (int i = 0; i < errors.size(); i++) {
-                        JsonObject errorPayload = new JsonObject();
-                        errorPayload.addProperty("code", HttpServletResponse.SC_NOT_FOUND);
-                        errorPayload.add(Sjm.SYSMLID, errors.get(i));
-                        errorPayload.addProperty("message",
-                            String.format("Element %s was not found", errors.get(i).getAsString()));
-                        errorPayload.addProperty("severity", level);
-                        errorMessages.add(errorPayload);
-                    }
-                }
-            }
+            JsonArray errorMessages = parseErrors(result);
 
             if (errorMessages.size() > 0) {
                 top.add("messages", errorMessages);

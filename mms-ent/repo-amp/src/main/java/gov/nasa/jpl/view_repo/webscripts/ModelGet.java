@@ -126,7 +126,7 @@ public class ModelGet extends AbstractJavaWebScript {
             if (validateRequest(req, status)) {
                 try {
                     Long depth = getDepthFromRequest(req);
-                    result = handleRequest(req, depth);
+                    result = handleRequest(req, depth, "elements");
                     elementsJson = JsonUtil.getOptArray(result, Sjm.ELEMENTS);
                 } catch (IllegalStateException e) {
                     log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
@@ -146,21 +146,7 @@ public class ModelGet extends AbstractJavaWebScript {
                 log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
             }
 
-            JsonArray errorMessages = new JsonArray();
-            for (String level : Sjm.ERRORLEVELS) {
-                JsonArray errors = JsonUtil.getOptArray(result, level);
-                if (errors.size() > 0) {
-                    for (int i = 0; i < errors.size(); i++) {
-                        JsonObject errorPayload = new JsonObject();
-                        errorPayload.addProperty("code", HttpServletResponse.SC_NOT_FOUND);
-                        errorPayload.add(Sjm.SYSMLID, errors.get(i));
-                        errorPayload.addProperty("message",
-                            String.format("Element %s was not found", errors.get(i).getAsString()));
-                        errorPayload.addProperty("severity", level);
-                        errorMessages.add(errorPayload);
-                    }
-                }
-            }
+            JsonArray errorMessages = parseErrors(result);
 
             if (errorMessages.size() > 0) {
                 top.add("messages", errorMessages);
@@ -192,23 +178,35 @@ public class ModelGet extends AbstractJavaWebScript {
      * @return
      * @throws IOException
      */
-    protected JsonObject handleRequest(WebScriptRequest req, final Long maxDepth) throws IOException {
+    protected JsonObject handleRequest(WebScriptRequest req, final Long maxDepth, String type) throws IOException {
         JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
         JsonArray elementsToFindJson = new JsonArray();
-        String getElementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
-        if (requestJson.has(Sjm.ELEMENTS)) {
-            elementsToFindJson = requestJson.get(Sjm.ELEMENTS).getAsJsonArray();
-        } else if (getElementId != null) {
-            JsonObject element = new JsonObject();
-            element.addProperty(Sjm.SYSMLID, getElementId);
-            elementsToFindJson.add(element);
-        } else {
-            return new JsonObject();
-        }
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
+        String elementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+
+        if (elementId != null) {
+            if (commitId != null && emsNodeUtil.getById(elementId) != null) {
+                JsonObject element = emsNodeUtil.getElementByElementAndCommitId(elementId, commitId);
+                if (element != null && element.size() > 0) {
+                    JsonObject result = new JsonObject();
+                    JsonArray elements = new JsonArray();
+                    elements.add(element);
+                    result.add(Sjm.ELEMENTS, elements);
+                    return result;
+                }
+            }
+            JsonObject element = new JsonObject();
+            element.addProperty(Sjm.SYSMLID, elementId);
+            elementsToFindJson.add(element);
+        } else if (requestJson.has(Sjm.ELEMENTS)) {
+            elementsToFindJson = requestJson.get(Sjm.ELEMENTS).getAsJsonArray();
+        } else {
+            return new JsonObject();
+        }
 
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
@@ -224,21 +222,20 @@ public class ModelGet extends AbstractJavaWebScript {
             uniqueElements.add(elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
         }
 
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
 
         String timestamp = commitObject != null && commitObject.has(Sjm.CREATED) ?
             commitObject.get(Sjm.CREATED).getAsString() :
             null;
 
-        if (getElementId == null) {
+        if (elementId == null) {
             EmsNodeUtil
                 .handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found, timestamp, null);
         } else if (commitId != null) {
             if (commitObject != null) {
                 String commit = commitObject.get(Sjm.CREATED).getAsString();
                 EmsNodeUtil
-                    .handleMountSearch(mountsJson, false, false, maxDepth, uniqueElements, found, commit, "elements");
+                    .handleMountSearch(mountsJson, false, false, maxDepth, uniqueElements, found, commit, type);
             }
         } else {
             EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found);

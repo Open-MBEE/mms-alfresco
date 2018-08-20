@@ -213,7 +213,7 @@ public class EmsNodeUtil {
         return mounts;
     }
 
-    public JsonObject getElementByElementAndCommitId(String commitId, String sysmlid) {
+    public JsonObject getElementByElementAndCommitId(String sysmlid, String commitId) {
         try {
             return eh.getElementByCommitId(commitId, sysmlid, projectId);
         } catch (IOException e) {
@@ -222,7 +222,7 @@ public class EmsNodeUtil {
         return new JsonObject();
     }
 
-    public JsonObject getArtifactByArtifactAndCommitId(String commitId, String sysmlid) {
+    public JsonObject getArtifactByArtifactAndCommitId(String sysmlid, String commitId) {
         try {
             return eh.getArtifactByCommitId(commitId, sysmlid, projectId);
         } catch (IOException e) {
@@ -1771,7 +1771,7 @@ public class EmsNodeUtil {
 
             pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
 
-            if (pastElement != null && pastElement.has(Sjm.SYSMLID) && deletedElementIds
+            if (pastElement != null && pastElement.has(Sjm.ELASTICID) && deletedElementIds
                 .containsKey(pastElement.get(Sjm.ELASTICID).getAsString())) {
                 pastElement = null;
             }
