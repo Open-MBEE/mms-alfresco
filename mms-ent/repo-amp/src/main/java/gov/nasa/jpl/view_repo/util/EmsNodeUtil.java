@@ -1249,11 +1249,11 @@ public class EmsNodeUtil {
     }
 
     public JsonObject processMove(JsonArray moveData) {
-        HashMap<String, JsonObject> elements = new HashMap<>();
-        HashSet<String> keys = new HashSet<>();
-        HashMap<String, List> toRemove = new HashMap<>();
-        HashMap<String, String> updateOwner = new HashMap<>();
-        HashMap<String, Map> toAdd = new HashMap<>();
+        Map<String, JsonObject> elements = new HashMap<>();
+        Set<String> keys = new HashSet<>();
+        Map<String, List<String>> toRemove = new HashMap<>();
+        Map<String, String> updateOwner = new HashMap<>();
+        Map<String, Map<Integer,String>> toAdd = new HashMap<>();
         HashSet<DbNodeTypes> dbnt = new HashSet<>();
         JsonObject wrapper = new JsonObject();
         dbnt.add(DbNodeTypes.PACKAGE);
