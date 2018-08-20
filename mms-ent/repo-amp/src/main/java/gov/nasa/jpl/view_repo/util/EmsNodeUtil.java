@@ -1353,7 +1353,7 @@ public class EmsNodeUtil {
             toProcess.add(entry.getValue());
 
         }
-        wrapper.add(Sjm.ELEMENT, toProcess);
+        wrapper.add(Sjm.ELEMENTS, toProcess);
         return wrapper;
     }
 
