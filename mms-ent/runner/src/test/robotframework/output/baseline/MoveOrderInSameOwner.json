@@ -1,0 +1,30 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "MoveModel",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "oldParent",
+            "isDerived": false,
+            "name": "org parent of p",
+            "ownedAttributeIds": [
+                "propMove4",
+                "propMove3",
+                "propMove2"
+            ],
+            "ownerId": "package1",
+            "type": "Class",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ],
+    "rejected": []
+}

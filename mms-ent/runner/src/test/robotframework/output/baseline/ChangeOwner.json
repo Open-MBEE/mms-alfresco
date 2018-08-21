@@ -1,0 +1,96 @@
+{
+    "_creator": "admin",
+    "elements": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "MoveModel",
+            "_refId": "master",
+            "id": "a1",
+            "ownedEndIds": [
+                "ap1"
+            ],
+            "ownerId": "package2",
+            "type": "Association"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "MoveModel",
+            "_refId": "master",
+            "id": "ap1",
+            "ownerId": "a1",
+            "type": "Property",
+            "typeId": "newParent"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "MoveModel",
+            "_refId": "master",
+            "associationId": "a1",
+            "documentation": "else",
+            "id": "propMove",
+            "isDerived": false,
+            "name": "three hundred and one",
+            "ownerId": "newParent",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "MoveModel",
+            "_refId": "master",
+            "documentation": "else",
+            "id": "newParent",
+            "isDerived": false,
+            "name": "new parent of p",
+            "ownedAttributeIds": [
+                "propMove"
+            ],
+            "ownerId": "package2",
+            "type": "Class",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "MoveModel",
+            "_refId": "master",
+            "documentation": "something",
+            "id": "oldParent",
+            "isDerived": false,
+            "name": "org parent of p",
+            "ownedAttributeIds": [
+                "propMove2",
+                "propMove3",
+                "propMove4"
+            ],
+            "ownerId": "package1",
+            "type": "Class",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ],
+    "rejected": []
+}

@@ -6,6 +6,36 @@
             "_modifier": "admin",
             "_projectId": "MoveModel",
             "_refId": "master",
+            "documentation": "else",
+            "id": "newParent",
+            "isDerived": false,
+            "name": "new parent of p",
+            "ownedAttributeIds": [],
+            "ownerId": "package2",
+            "type": "Class",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "MoveModel",
+            "_refId": "master",
+            "id": "package1",
+            "ownerId": "MoveModel",
+            "type": "Package"
+        },
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "MoveModel",
+            "_refId": "master",
             "id": "package2",
             "ownerId": "MoveModel",
             "type": "Package"
@@ -61,16 +91,6 @@
             "_modifier": "admin",
             "_projectId": "MoveModel",
             "_refId": "master",
-            "id": "package1",
-            "ownerId": "MoveModel",
-            "type": "Package"
-        },
-        {
-            "_creator": "admin",
-            "_editable": true,
-            "_modifier": "admin",
-            "_projectId": "MoveModel",
-            "_refId": "master",
             "id": "ap1",
             "ownerId": "a1",
             "type": "Property",
@@ -102,12 +122,11 @@
             "_projectId": "MoveModel",
             "_refId": "master",
             "documentation": "else",
-            "id": "newParent",
+            "id": "propMove4",
             "isDerived": false,
-            "name": "new parent of p",
-            "ownedAttributeIds": [],
-            "ownerId": "MoveModel",
-            "type": "Class",
+            "name": "three hundred and one",
+            "ownerId": "oldParent",
+            "type": "Property",
             "value": [
                 {
                     "string": "dlam_string",
@@ -148,25 +167,6 @@
             ]
         },
         {
-            "_creator": "admin",
-            "_editable": true,
-            "_modifier": "admin",
-            "_projectId": "MoveModel",
-            "_refId": "master",
-            "documentation": "else",
-            "id": "propMove4",
-            "isDerived": false,
-            "name": "three hundred and one",
-            "ownerId": "oldParent",
-            "type": "Property",
-            "value": [
-                {
-                    "string": "dlam_string",
-                    "type": "LiteralString"
-                }
-            ]
-        },
-        {
             "URI": null,
             "_appliedStereotypeIds": [],
             "_creator": "admin",
@@ -195,6 +195,16 @@
             "visibility": "public"
         },
         {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "MoveModel",
+            "_refId": "master",
+            "id": "MoveModel",
+            "name": "Project",
+            "type": "Project"
+        },
+        {
             "URI": null,
             "_appliedStereotypeIds": [],
             "_creator": "admin",
@@ -221,16 +231,6 @@
             "templateParameterId": null,
             "type": "Package",
             "visibility": "public"
-        },
-        {
-            "_creator": "admin",
-            "_editable": true,
-            "_modifier": "admin",
-            "_projectId": "MoveModel",
-            "_refId": "master",
-            "id": "MoveModel",
-            "name": "Project",
-            "type": "Project"
         }
     ]
 }

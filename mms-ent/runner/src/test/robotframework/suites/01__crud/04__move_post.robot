@@ -49,15 +49,15 @@ MoveOrderInSameOwner
     Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
     Should Match Baseline		${compare_result}
-ChangeOwnerOfMultipleElements
-	[Documentation]		"Swap to new owner"
-	[Tags]				crud		critical		010406
-	${post_json} =		Get File		${CURDIR}/../../JsonData/MoveMultipleOwners.json
-	${result} =			Post		url=${ROOT}/projects/MoveModel/refs/master/propertyMove		data=${post_json}		headers=&{REQ_HEADER}
-	Should Be Equal		${result.status_code}		${200}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
-    Generate JSON		${TEST_NAME}		${result.json()}		${filter}
-	${compare_result} =		Compare JSON		${TEST_NAME}
-    Should Match Baseline		${compare_result}
+#ChangeOwnerOfMultipleElements
+#	[Documentation]		"Swap to new owner"
+#	[Tags]				crud		critical		010406
+#	${post_json} =		Get File		${CURDIR}/../../JsonData/MoveMultipleOwners.json
+#	${result} =			Post		url=${ROOT}/projects/MoveModel/refs/master/propertyMove		data=${post_json}		headers=&{REQ_HEADER}
+#	Should Be Equal		${result.status_code}		${200}
+#	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+#    Generate JSON		${TEST_NAME}		${result.json()}		${filter}
+#	${compare_result} =		Compare JSON		${TEST_NAME}
+#    Should Match Baseline		${compare_result}
 
 

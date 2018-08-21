@@ -35,7 +35,7 @@
             "id": "newParent",
             "ownedAttributeIds": [],
             "name": "new parent of p",
-            "ownerId": "MoveModel",
+            "ownerId": "package2",
             "type": "Class",
             "isDerived": false,
             "value": [
