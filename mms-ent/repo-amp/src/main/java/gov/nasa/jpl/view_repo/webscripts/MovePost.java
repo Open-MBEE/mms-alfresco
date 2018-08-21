@@ -29,6 +29,7 @@ import java.util.*;
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 
@@ -81,11 +82,20 @@ public class MovePost extends ModelPost {
         // call move logic
         try {
             moved = createDeltaForMove(req);
-        } catch (Exception e) {
-            // 500
+        } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             result.put(Sjm.RES, createResponseJson());
+            status.setCode(responseStatus.getCode());
+            printFooter(user, logger, timer);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            result.put(Sjm.RES, createResponseJson());
+            status.setCode(responseStatus.getCode());
+            printFooter(user, logger, timer);
+            return result;
         }
+
         result = handleElementPost(req, moved, status, user);
 
         printFooter(user, logger, timer);
@@ -101,18 +111,13 @@ public class MovePost extends ModelPost {
 
         JsonObject moved = new JsonObject();
 
-        try {
-            JsonObject postJson = JsonUtil.buildFromStream(req.getContent().getInputStream()).getAsJsonObject();
-            moved = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
-            String comment = JsonUtil.getOptString(postJson, Sjm.COMMENT);
-            String src = JsonUtil.getOptString(postJson, Sjm.SOURCE);
-            moved.addProperty(Sjm.COMMENT, comment);
-            moved.addProperty(Sjm.SOURCE, src);
+        JsonObject postJson = JsonUtil.buildFromStream(req.getContent().getInputStream()).getAsJsonObject();
+        moved = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
+        String comment = JsonUtil.getOptString(postJson, Sjm.COMMENT);
+        String src = JsonUtil.getOptString(postJson, Sjm.SOURCE);
+        moved.addProperty(Sjm.COMMENT, comment);
+        moved.addProperty(Sjm.SOURCE, src);
 
-        } catch (IllegalStateException e) {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
-            //model.put(Sjm.RES, createResponseJson
-        }
         return moved;
     }
 

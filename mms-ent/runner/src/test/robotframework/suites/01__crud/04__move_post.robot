@@ -9,7 +9,6 @@ ProjectCreationForMove
 	${post_json} =		Get File	 ${CURDIR}/../../JsonData/ProjectCreationForMove.json
 	${result} =			Post		url=${ROOT}/orgs/initorg/projects			data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
-
 PostNewElementsToMove
 	[Documentation]		"Post elements to the newly created project and organization."
 	[Tags]				crud		critical		010402
@@ -21,7 +20,6 @@ PostNewElementsToMove
     Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${commit} =	Get Commit Id		${result.json()}
     Set Global Variable	  ${commit}
-
 GetAllElementsForMove
 	[Documentation]		"Get All the elements in the model"
 	[Tags]				mounts		critical		010403
@@ -31,7 +29,6 @@ GetAllElementsForMove
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
-
 ChangeOwner
 	[Documentation]		"Change owner of p from b1 to b2. Remove pId from b1's list of ownedAttributeIds.  Insert pId to b2's list of ownedAttributeIds at i"
 	[Tags]				crud		critical		010404
