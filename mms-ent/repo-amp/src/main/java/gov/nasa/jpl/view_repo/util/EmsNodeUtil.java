@@ -1253,7 +1253,7 @@ public class EmsNodeUtil {
         Set<String> keys = new HashSet<>();
         Map<String, List<String>> toRemove = new HashMap<>();
         Map<String, String> updateOwner = new HashMap<>();
-        Map<String, Map<Integer,String>> toAdd = new HashMap<>();
+        Map<String, Map<Integer, String>> toAdd = new HashMap<>();
         HashSet<DbNodeTypes> dbnt = new HashSet<>();
         JsonObject wrapper = new JsonObject();
         dbnt.add(DbNodeTypes.PACKAGE);
@@ -1309,18 +1309,14 @@ public class EmsNodeUtil {
                         prop.addProperty(Sjm.TYPEID, value);
                         elements.put(prop.get(Sjm.SYSMLID).getAsString(), prop);
                     }
-
-
                 }
-
             }
             elements.get(key).getAsJsonObject().addProperty(Sjm.OWNERID, key);
         }
         for (Map.Entry<String, List<String>> entry : toRemove.entrySet()) {
             List value = entry.getValue();
             String key = entry.getKey();
-            JsonArray ownedAttributeIdsToRemove =
-                JsonUtil.getOptArray(elements.get(key), Sjm.OWNEDATTRIBUTEIDS);
+            JsonArray ownedAttributeIdsToRemove = JsonUtil.getOptArray(elements.get(key), Sjm.OWNEDATTRIBUTEIDS);
             JsonArray removed = new JsonArray();
 
             for (int i = 0; i < ownedAttributeIdsToRemove.size(); i++) {
@@ -1333,8 +1329,10 @@ public class EmsNodeUtil {
         for (Map.Entry<String, Map<Integer, String>> entry : toAdd.entrySet()) {
             Map<Integer, String> value = entry.getValue();
             String key = entry.getKey();
-            List ownedAttributeIdsToAdd =
-                new Gson().fromJson(JsonUtil.getOptArray(elements.get(key), Sjm.OWNEDATTRIBUTEIDS), new TypeToken<List<String>>(){}.getType());
+            List<String> ownedAttributeIdsToAdd = new Gson()
+                .fromJson(JsonUtil.getOptArray(elements.get(key), Sjm.OWNEDATTRIBUTEIDS),
+                    new TypeToken<List<String>>() {
+                    }.getType());
 
             for (Map.Entry<Integer, String> add : value.entrySet()) {
                 Integer index = add.getKey();
@@ -1343,7 +1341,7 @@ public class EmsNodeUtil {
                 if (index >= ownedAttributeIdsToAdd.size()) {
                     ownedAttributeIdsToAdd.add(id);
                 } else {
-                    ownedAttributeIdsToAdd.add(index, new JsonParser().parse(id));
+                    ownedAttributeIdsToAdd.add(index, id);
                 }
             }
             elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, new Gson().toJsonTree(ownedAttributeIdsToAdd));

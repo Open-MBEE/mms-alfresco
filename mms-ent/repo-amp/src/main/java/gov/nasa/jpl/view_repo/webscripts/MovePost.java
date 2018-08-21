@@ -76,15 +76,17 @@ public class MovePost extends ModelPost {
         Timer timer = new Timer();
 
         Map<String, Object> result = new HashMap<String, Object>();
+        JsonObject moved = new JsonObject();
 
         // call move logic
         try {
-            JsonObject moved = createDeltaForMove(req);
-            result = handleElementPost(req, moved, status, user);
-        } catch (IllegalStateException e) {
+            moved = createDeltaForMove(req);
+        } catch (Exception e) {
+            // 500
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             result.put(Sjm.RES, createResponseJson());
         }
+        result = handleElementPost(req, moved, status, user);
 
         printFooter(user, logger, timer);
 
