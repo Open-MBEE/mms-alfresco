@@ -84,10 +84,11 @@ public class Sjm {
     public static final String ISREADONLY = "isReadOnly";
     public static final String ISSTATIC = "isStatic";
     public static final String ISUNIQUE = "isUnique";
-    public static final String KEYWORDS = "keywords";
     public static final String LOWERVALUE = "lowerValue";
+    public static final String KEYWORDS = "keywords";
     public static final String MDEXTENSIONSIDS = "mdExtensionsIds";
     public static final String MEMBERENDIDS = "memberEndIds";
+    public static final String METADATA = "metadata";
     public static final String MOUNTEDELEMENTPROJECTID = "mountedElementProjectId";
     public static final String MOUNTEDREFID = "mountedRefId";
     public static final String NAME = "name";
