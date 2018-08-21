@@ -113,7 +113,7 @@ public class ModelPost extends AbstractJavaWebScript {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             result.put(Sjm.RES, createResponseJson());
         }
-        
+
         if (!postJson.has(Sjm.RES)){
             result = handleElementPost(req, postJson, status, user);
         }

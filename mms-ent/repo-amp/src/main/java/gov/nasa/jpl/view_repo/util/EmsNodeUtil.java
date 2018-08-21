@@ -1311,7 +1311,7 @@ public class EmsNodeUtil {
                     }
                 }
             }
-            elements.get(key).getAsJsonObject().addProperty(Sjm.OWNERID, key);
+            elements.get(key).getAsJsonObject().addProperty(Sjm.OWNERID, value);
         }
         for (Map.Entry<String, List<String>> entry : toRemove.entrySet()) {
             List value = entry.getValue();
