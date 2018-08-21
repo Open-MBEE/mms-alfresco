@@ -105,15 +105,17 @@ public class ModelPost extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> result = new HashMap<String, Object>();
+        JsonObject postJson = new JsonObject();
 
         try {
-
-            JsonObject postJson = JsonUtil.buildFromStream(req.getContent().getInputStream()).getAsJsonObject();
-            result =
-                handleElementPost(req, postJson, status, user);
+            postJson = JsonUtil.buildFromStream(req.getContent().getInputStream()).getAsJsonObject();
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             result.put(Sjm.RES, createResponseJson());
+        }
+        
+        if (!postJson.has(Sjm.RES)){
+            result = handleElementPost(req, postJson, status, user);
         }
 
         printFooter(user, logger, timer);
@@ -121,7 +123,8 @@ public class ModelPost extends AbstractJavaWebScript {
         return result;
     }
 
-    protected Map<String, Object> handleElementPost(final WebScriptRequest req, JsonObject postJson, final Status status, String user) {
+    protected Map<String, Object> handleElementPost(final WebScriptRequest req, JsonObject postJson,
+        final Status status, String user) {
         JsonObject newElementsObject = new JsonObject();
         JsonObject results;
 

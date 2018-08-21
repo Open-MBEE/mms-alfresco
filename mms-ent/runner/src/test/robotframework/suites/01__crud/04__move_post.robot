@@ -35,6 +35,8 @@ ChangeOwner
 	${post_json} =		Get File		${CURDIR}/../../JsonData/MoveOwner.json
 	${result} =			Post		url=${ROOT}/projects/MoveModel/refs/master/propertyMove		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+    Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
     Should Match Baseline		${compare_result}
 MoveOrderInSameOwner
@@ -43,6 +45,8 @@ MoveOrderInSameOwner
 	${post_json} =		Get File		${CURDIR}/../../JsonData/MovePosition.json
 	${result} =			Post		url=${ROOT}/projects/MoveModel/refs/master/propertyMove		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+    Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
     Should Match Baseline		${compare_result}
 ChangeOwnerOfMultipleElements
@@ -51,6 +55,8 @@ ChangeOwnerOfMultipleElements
 	${post_json} =		Get File		${CURDIR}/../../JsonData/MoveMultipleOwners.json
 	${result} =			Post		url=${ROOT}/projects/MoveModel/refs/master/propertyMove		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${result.status_code}		${200}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds
+    Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
     Should Match Baseline		${compare_result}
 
