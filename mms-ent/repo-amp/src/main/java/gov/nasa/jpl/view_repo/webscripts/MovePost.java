@@ -87,7 +87,7 @@ public class MovePost extends ModelPost {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             result.put(Sjm.RES, createResponseJson());
         } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Cannot process move request");
             result.put(Sjm.RES, createResponseJson());
         }
         if (moved.has(Sjm.ELEMENTS)) {

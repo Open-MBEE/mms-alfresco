@@ -30,7 +30,6 @@ import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
-import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -315,8 +314,8 @@ public class EmsNodeUtil {
         JsonArray filtered = new JsonArray();
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(this.workspaceName, 0, 0);
         Set<String> commitSet = new HashSet<>();
-        for (Map<String, Object> commit: refCommits) {
-            commitSet.add((String)commit.get(Sjm.SYSMLID));
+        for (Map<String, Object> commit : refCommits) {
+            commitSet.add((String) commit.get(Sjm.SYSMLID));
         }
         for (int i = 0; i < commits.size(); i++) {
             if (commitSet.contains(commits.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString())) {
