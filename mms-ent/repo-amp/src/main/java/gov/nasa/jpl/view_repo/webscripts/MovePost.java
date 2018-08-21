@@ -37,6 +37,7 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -76,7 +77,7 @@ public class MovePost extends ModelPost {
 
         Timer timer = new Timer();
 
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         JsonObject moved = new JsonObject();
 
         // call move logic
@@ -85,18 +86,15 @@ public class MovePost extends ModelPost {
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
             result.put(Sjm.RES, createResponseJson());
-            status.setCode(responseStatus.getCode());
-            printFooter(user, logger, timer);
-            return result;
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
             result.put(Sjm.RES, createResponseJson());
-            status.setCode(responseStatus.getCode());
-            printFooter(user, logger, timer);
-            return result;
+        }
+        if (moved.has(Sjm.ELEMENTS)) {
+            result = handleElementPost(req, moved, status, user);
         }
 
-        result = handleElementPost(req, moved, status, user);
+        status.setCode(responseStatus.getCode());
 
         printFooter(user, logger, timer);
 
@@ -109,10 +107,8 @@ public class MovePost extends ModelPost {
 
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-        JsonObject moved = new JsonObject();
-
         JsonObject postJson = JsonUtil.buildFromStream(req.getContent().getInputStream()).getAsJsonObject();
-        moved = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
+        JsonObject moved = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
         String comment = JsonUtil.getOptString(postJson, Sjm.COMMENT);
         String src = JsonUtil.getOptString(postJson, Sjm.SOURCE);
         moved.addProperty(Sjm.COMMENT, comment);
