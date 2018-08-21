@@ -110,20 +110,7 @@ public class ArtifactsGet extends ModelsGet {
 
                 top.add(Sjm.ARTIFACTS, elements);
 
-                JsonArray errorMessages = new JsonArray();
-                for (String level : Sjm.ERRORLEVELS) {
-                    errors = JsonUtil.getOptArray(result, level);
-                    if (errors != null && errors.size() > 0) {
-                        for (int i = 0; i < errors.size(); i++) {
-                            JsonObject errorPayload = new JsonObject();
-                            errorPayload.addProperty("code", HttpServletResponse.SC_NOT_FOUND);
-                            errorPayload.add(Sjm.SYSMLID, errors.get(i));
-                            errorPayload.addProperty("message", String.format("Element %s was not found", errors.get(i)));
-                            errorPayload.addProperty("severity", level);
-                            errorMessages.add(errorPayload);
-                        }
-                    }
-                }
+                JsonArray errorMessages = parseErrors(result);
 
                 if (errorMessages.size() > 0) {
                     top.add("messages", errorMessages);
@@ -189,7 +176,7 @@ public class ArtifactsGet extends ModelsGet {
 
             EmsNodeUtil.handleMountSearch(mountsJson, false, false, 0L, uniqueElements, found, timestamp, "artifacts");
             result.add(Sjm.ARTIFACTS, found);
-            JsonUtil.addStringSet(result, Sjm.WARN, uniqueElements);
+            JsonUtil.addStringSet(result, Sjm.FAILED, uniqueElements);
             return result;
         } else {
             return new JsonObject();

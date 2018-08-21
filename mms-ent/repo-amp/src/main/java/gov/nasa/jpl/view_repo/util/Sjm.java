@@ -28,9 +28,11 @@ package gov.nasa.jpl.view_repo.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Simple static class for keeping track of Sysml JSON mappings
@@ -43,7 +45,13 @@ public class Sjm {
     public static final String INFO = "info";
     public static final String WARN = "warn";
     public static final String ERROR = "error";
-    public static final List<String> ERRORLEVELS = new ArrayList<>(Arrays.asList(INFO, WARN, ERROR));
+    public static final Map<String, Integer> ERROR_LEVELS;
+    static {
+        Map<String, Integer> temp = new HashMap<>();
+        temp.put(Sjm.FAILED, HttpServletResponse.SC_NOT_FOUND);
+        temp.put(Sjm.DELETED, HttpServletResponse.SC_GONE);
+        ERROR_LEVELS = Collections.unmodifiableMap(temp);
+    }
 
     public static final String RES = "res";
     public static final String ELEMENTS = "elements";
@@ -54,6 +62,7 @@ public class Sjm {
     public static final String COMMITS = "commits";
     public static final String REJECTED = "rejected";
     public static final String FAILED = "failed";
+    public static final String DELETED = "deleted";
 
     public static final String AGGREGATION = "aggregation";
     public static final String APPLIEDSTEREOTYPEINSTANCEID = "appliedStereotypeInstanceId";

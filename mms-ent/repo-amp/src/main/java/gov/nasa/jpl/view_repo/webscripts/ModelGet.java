@@ -26,12 +26,14 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,6 +69,8 @@ public class ModelGet extends AbstractJavaWebScript {
 
     private static final String ELEMENTID = "elementId";
     private static final String COMMITID = "commitId";
+
+    protected Set<String> elementsToFind = new HashSet<>();
 
     public ModelGet() {
         super();
@@ -136,8 +140,34 @@ public class ModelGet extends AbstractJavaWebScript {
             }
 
             JsonObject top = new JsonObject();
+
             if (elementsJson.size() == 0) {
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
+                if (!elementsToFind.isEmpty()) {
+                    String refId = getRefId(req);
+                    String projectId = getProjectId(req);
+                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+                    JsonArray deleted = filterByPermission(emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true), req);
+                    Set<String> deletedSet = new HashSet<>();
+                    for (int i = 0; i < deleted.size(); i++) {
+                        deletedSet.add(deleted.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
+                    }
+
+                    elementsToFind.removeAll(deletedSet);
+
+                    if (!deletedSet.isEmpty()) {
+                        JsonUtil.addStringSet(result, Sjm.DELETED, deletedSet);
+                        top.add(Sjm.DELETED, deleted);
+
+                        log(Level.ERROR, HttpServletResponse.SC_GONE, "Deleted Elements found");
+                    }
+
+                    if (!elementsToFind.isEmpty()) {
+                        JsonUtil.addStringSet(result, Sjm.FAILED, elementsToFind);
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Some elements not found.");
+                    }
+                } else {
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "No elements to find.");
+                }
             }
             if (elementsJson.size() > 0) {
                 top.add(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
@@ -180,13 +210,13 @@ public class ModelGet extends AbstractJavaWebScript {
      */
     protected JsonObject handleRequest(WebScriptRequest req, final Long maxDepth, String type) throws IOException {
         JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
-        JsonArray elementsToFindJson = new JsonArray();
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
         String elementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        JsonArray elementsToFindJson = new JsonArray();
 
         if (elementId != null) {
             if (commitId != null && emsNodeUtil.getById(elementId) != null) {
@@ -217,9 +247,9 @@ public class ModelGet extends AbstractJavaWebScript {
         JsonArray found = new JsonArray();
         JsonObject result = new JsonObject();
 
-        Set<String> uniqueElements = new HashSet<>();
         for (int i = 0; i < elementsToFindJson.size(); i++) {
-            uniqueElements.add(elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
+            String currentId = elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString();
+            elementsToFind.add(currentId);
         }
 
         JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
@@ -230,19 +260,18 @@ public class ModelGet extends AbstractJavaWebScript {
 
         if (elementId == null) {
             EmsNodeUtil
-                .handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found, timestamp, null);
+                .handleMountSearch(mountsJson, extended, false, maxDepth, elementsToFind, found, timestamp, null);
         } else if (commitId != null) {
             if (commitObject != null) {
                 String commit = commitObject.get(Sjm.CREATED).getAsString();
                 EmsNodeUtil
-                    .handleMountSearch(mountsJson, false, false, maxDepth, uniqueElements, found, commit, type);
+                    .handleMountSearch(mountsJson, false, false, maxDepth, elementsToFind, found, commit, type);
             }
         } else {
-            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, uniqueElements, found);
+            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, elementsToFind, found);
         }
 
         result.add(Sjm.ELEMENTS, found);
-        JsonUtil.addStringSet(result, Sjm.WARN, uniqueElements);
 
         return result;
     }

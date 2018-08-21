@@ -256,7 +256,7 @@ DeleteElement
 	Should Be Equal		${result.status_code}		${200}
 	# Try to get element
 	${result} =         Get         url=${ROOT}/projects/PA/refs/master/elements/DeleteElement          headers=&{REQ_HEADER}
-	Should Be Equal		${result.status_code}		${404}
+	Should Be Equal		${result.status_code}		${410}
 	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}

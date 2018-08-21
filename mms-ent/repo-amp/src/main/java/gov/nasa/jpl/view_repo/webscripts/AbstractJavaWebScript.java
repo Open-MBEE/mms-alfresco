@@ -256,16 +256,16 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
 
     protected JsonArray parseErrors(JsonObject result) {
         JsonArray errorMessages = new JsonArray();
-        for (String level : Sjm.ERRORLEVELS) {
-            JsonArray errors = JsonUtil.getOptArray(result, level);
+
+        for (Map.Entry<String, Integer> level : Sjm.ERROR_LEVELS.entrySet()) {
+            JsonArray errors = JsonUtil.getOptArray(result, level.getKey());
             if (errors.size() > 0) {
                 for (int i = 0; i < errors.size(); i++) {
                     JsonObject errorPayload = new JsonObject();
-                    errorPayload.addProperty("code", HttpServletResponse.SC_NOT_FOUND);
+                    errorPayload.addProperty("code", level.getValue());
                     errorPayload.add(Sjm.SYSMLID, errors.get(i));
                     errorPayload.addProperty("message",
                         String.format("Element %s was not found", errors.get(i).getAsString()));
-                    errorPayload.addProperty("severity", level);
                     errorMessages.add(errorPayload);
                 }
             }
