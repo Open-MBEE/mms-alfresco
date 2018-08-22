@@ -44,6 +44,7 @@ public class MigrationRunner extends AbstractPatch {
         migrationList.add(new ModuleVersionNumber("3.1.0"));
         migrationList.add(new ModuleVersionNumber("3.2.0"));
         migrationList.add(new ModuleVersionNumber("3.3.0"));
+        migrationList.add(new ModuleVersionNumber("3.4.0"));
     }
 
     public void setServices(ServiceRegistry services) {
