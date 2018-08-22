@@ -371,7 +371,9 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
                     permCache.put(cacheKey, writePermMap);
                 }
             }
-            element.addProperty(Sjm.EDITABLE, editable);
+            if (element.has(Sjm.SYSMLID)) {
+                element.addProperty(Sjm.EDITABLE, editable);
+            }
             return element;
         }
         return null;
