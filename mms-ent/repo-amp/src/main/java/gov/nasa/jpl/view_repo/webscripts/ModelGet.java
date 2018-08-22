@@ -325,7 +325,7 @@ public class ModelGet extends AbstractJavaWebScript {
     }
 
     Long parseDepth(String depthParam) {
-        Long depth = 0L;
+        long depth = 0L;
         try {
             depth = Long.parseLong(depthParam);
             if (depth < 0) {
