@@ -1,0 +1,12 @@
+{
+    "moves": [
+        {
+            "_creator": "admin",
+            "_modifier": "admin",
+            "id": "propMove",
+            "from": "oldParent",
+            "to": "newParent",
+            "index":"0"
+        }
+    ]
+}

@@ -277,4 +277,10 @@
         <property name="services" ref="ServiceRegistry" />
         <property name="registryService" ref="RegistryService" />
     </bean>
+    <bean id="webscript.gov.nasa.jpl.mms.refs.elements.moves.post"
+          class="gov.nasa.jpl.view_repo.webscripts.MovePost" parent="webscript"
+          singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
 </beans>
