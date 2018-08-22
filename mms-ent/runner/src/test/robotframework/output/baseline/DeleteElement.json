@@ -3,9 +3,7 @@
         {
             "_creator": "admin",
             "_editable": true,
-            "_inRefIds": [
-                "master"
-            ],
+            "_inRefIds": [],
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",

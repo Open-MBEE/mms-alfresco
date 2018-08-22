@@ -30,10 +30,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,7 +55,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.mbee.util.Utils;
 
 /**
  * Descriptor in /view-repo/src/main/amp/config/alfresco/extension/templates/webscripts
@@ -71,6 +70,7 @@ public class ModelGet extends AbstractJavaWebScript {
     private static final String COMMITID = "commitId";
 
     protected Set<String> elementsToFind = new HashSet<>();
+    protected JsonArray deletedElementsCache = new JsonArray();
 
     public ModelGet() {
         super();
@@ -143,10 +143,7 @@ public class ModelGet extends AbstractJavaWebScript {
 
             if (elementsJson.size() == 0) {
                 if (!elementsToFind.isEmpty()) {
-                    String refId = getRefId(req);
-                    String projectId = getProjectId(req);
-                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-                    JsonArray deleted = filterByPermission(emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true), req);
+                    JsonArray deleted = filterByPermission(deletedElementsCache, req);
                     Set<String> deletedSet = new HashSet<>();
                     for (int i = 0; i < deleted.size(); i++) {
                         deletedSet.add(deleted.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
@@ -154,24 +151,28 @@ public class ModelGet extends AbstractJavaWebScript {
 
                     elementsToFind.removeAll(deletedSet);
 
-                    if (!deletedSet.isEmpty()) {
-                        JsonUtil.addStringSet(result, Sjm.DELETED, deletedSet);
-                        top.add(Sjm.DELETED, deleted);
-
-                        log(Level.ERROR, HttpServletResponse.SC_GONE, "Deleted Elements found");
-                    }
-
                     if (!elementsToFind.isEmpty()) {
                         JsonUtil.addStringSet(result, Sjm.FAILED, elementsToFind);
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Some elements not found.");
+                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
+                    } else if (!deletedSet.isEmpty()) {
+                        JsonUtil.addStringSet(result, Sjm.DELETED, deletedSet);
+                        top.add(Sjm.DELETED, deleted);
+                        log(Level.ERROR, HttpServletResponse.SC_GONE, "Deleted elements found");
                     }
-                } else {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "No elements to find.");
                 }
+
+                if (responseStatus.getCode() == 200) {
+                    log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
+                }
+            } else if (!elementsToFind.isEmpty()) {
+                JsonUtil.addStringSet(result, Sjm.FAILED, elementsToFind);
+                log(Level.ERROR, HttpServletResponse.SC_OK, "Some elements not found.");
             }
+
             if (elementsJson.size() > 0) {
                 top.add(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
             }
+
             if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
                 log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
             }
@@ -266,9 +267,38 @@ public class ModelGet extends AbstractJavaWebScript {
                 String commit = commitObject.get(Sjm.CREATED).getAsString();
                 EmsNodeUtil
                     .handleMountSearch(mountsJson, false, false, maxDepth, elementsToFind, found, commit, type);
+            } else {
+                elementsToFind = new HashSet<>();
             }
         } else {
             EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, elementsToFind, found);
+        }
+
+        JsonArray noexist = new JsonArray();
+
+        if (!elementsToFind.isEmpty()) {
+            deletedElementsCache = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
+            if (timestamp != null) {
+                for (JsonElement check : deletedElementsCache) {
+                    try {
+                        Date created = EmsNodeUtil.df.parse(JsonUtil.getOptString((JsonObject) check, Sjm.CREATED));
+                        Date commitDate = EmsNodeUtil.df.parse(timestamp);
+                        if (created.after(commitDate)) {
+                            String currentId = check.getAsJsonObject().get(Sjm.SYSMLID).getAsString();
+                            elementsToFind.remove(currentId);
+                            noexist.add(currentId);
+                        }
+                    } catch (ParseException pe) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug(pe);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (noexist.size() > 0) {
+            result.add(Sjm.FAILED, noexist);
         }
 
         result.add(Sjm.ELEMENTS, found);

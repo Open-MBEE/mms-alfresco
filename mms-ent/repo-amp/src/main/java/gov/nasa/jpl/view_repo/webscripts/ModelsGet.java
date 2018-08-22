@@ -120,8 +120,13 @@ public class ModelsGet extends ModelGet {
                 }
                 top.add(Sjm.ELEMENTS, elements);
             } else {
-                log(Level.INFO, HttpServletResponse.SC_OK, "No elements found");
+                log(Level.INFO, HttpServletResponse.SC_NOT_FOUND, "No elements found");
                 top.add(Sjm.ELEMENTS, new JsonArray());
+            }
+
+            if (!elementsToFind.isEmpty()) {
+                JsonUtil.addStringSet(result, Sjm.FAILED, elementsToFind);
+                log(Level.ERROR, HttpServletResponse.SC_OK, "Some elements not found.");
             }
 
             JsonArray errorMessages = parseErrors(result);

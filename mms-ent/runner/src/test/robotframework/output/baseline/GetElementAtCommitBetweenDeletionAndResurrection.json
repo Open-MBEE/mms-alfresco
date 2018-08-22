@@ -1,9 +1,28 @@
 {
+    "deleted": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "Element that was deleted and is resurrected",
+            "isDerived": false,
+            "name": "Resurrect Deleted Resurrect Element",
+            "ownerId": "PA",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ],
     "messages": [
         {
-            "code": 404.0,
-            "message": "Element DeleteResurrectElement was not found",
-            "severity": "warn"
+            "code": 410.0,
+            "message": "Element DeleteResurrectElement was not found"
         }
     ]
 }
