@@ -259,19 +259,11 @@ public class ModelGet extends AbstractJavaWebScript {
             commitObject.get(Sjm.CREATED).getAsString() :
             null;
 
-        if (elementId == null) {
-            EmsNodeUtil
-                .handleMountSearch(mountsJson, extended, false, maxDepth, elementsToFind, found, timestamp, null);
-        } else if (commitId != null) {
-            if (commitObject != null) {
-                String commit = commitObject.get(Sjm.CREATED).getAsString();
-                EmsNodeUtil
-                    .handleMountSearch(mountsJson, false, false, maxDepth, elementsToFind, found, commit, type);
-            } else {
-                elementsToFind = new HashSet<>();
-            }
+        if (commitId != null && commitObject == null) {
+            elementsToFind = new HashSet<>();
         } else {
-            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, elementsToFind, found);
+            EmsNodeUtil
+                .handleMountSearch(mountsJson, extended, false, maxDepth, elementsToFind, found, timestamp, type);
         }
 
         JsonArray noexist = new JsonArray();
@@ -314,7 +306,7 @@ public class ModelGet extends AbstractJavaWebScript {
      * parameter)
      */
     Long getDepthFromRequest(WebScriptRequest req) {
-        Long depth = null;
+        long depth = 0L;
         String depthParam = req.getParameter("depth");
         if (depthParam != null) {
             depth = parseDepth(depthParam);
@@ -327,10 +319,6 @@ public class ModelGet extends AbstractJavaWebScript {
         // any depth setting)
         if (recurse) {
             depth = 100000L;
-        }
-
-        if (depth == null) {
-            depth = 0L;
         }
 
         return depth;
