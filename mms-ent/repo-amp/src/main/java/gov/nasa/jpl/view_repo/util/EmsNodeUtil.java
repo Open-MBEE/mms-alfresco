@@ -10,20 +10,10 @@ import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.Calendar;
-import java.util.TimeZone;
+import java.util.*;
 
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import gov.nasa.jpl.view_repo.db.*;
 import org.alfresco.repo.service.ServiceDescriptorRegistry;
 import org.alfresco.service.ServiceRegistry;
@@ -35,11 +25,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.TimeUtils;
@@ -329,8 +314,8 @@ public class EmsNodeUtil {
         JsonArray filtered = new JsonArray();
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(this.workspaceName, 0, 0);
         Set<String> commitSet = new HashSet<>();
-        for (Map<String, Object> commit: refCommits) {
-            commitSet.add((String)commit.get(Sjm.SYSMLID));
+        for (Map<String, Object> commit : refCommits) {
+            commitSet.add((String) commit.get(Sjm.SYSMLID));
         }
         for (int i = 0; i < commits.size(); i++) {
             if (commitSet.contains(commits.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString())) {
@@ -1262,6 +1247,113 @@ public class EmsNodeUtil {
         return result;
     }
 
+    public JsonObject processMove(JsonArray moveData) {
+        Map<String, JsonObject> elements = new HashMap<>();
+        Set<String> keys = new HashSet<>();
+        Map<String, List<String>> toRemove = new HashMap<>();
+        Map<String, String> updateOwner = new HashMap<>();
+        Map<String, Map<Integer, String>> toAdd = new HashMap<>();
+        HashSet<DbNodeTypes> dbnt = new HashSet<>();
+        JsonObject wrapper = new JsonObject();
+        dbnt.add(DbNodeTypes.PACKAGE);
+        for (int i = 0; i < moveData.size(); i++) {
+            String srcId = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "from");
+            String destId = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "to");
+            String id = JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), Sjm.SYSMLID);
+            if (toAdd.containsKey(destId)) {
+                toAdd.get(destId)
+                    .put(Integer.parseInt(JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "index")), id);
+            } else {
+                Map<Integer, String> indexed = new TreeMap<>();
+                indexed.put(Integer.parseInt(JsonUtil.getOptString(moveData.get(i).getAsJsonObject(), "index")), id);
+                toAdd.put(destId, indexed);
+            }
+            if (toRemove.containsKey(srcId)) {
+                toRemove.get(srcId).add(id);
+            } else {
+                List<String> indexed = new ArrayList<>();
+                indexed.add(id);
+                toRemove.put(srcId, indexed);
+            }
+            if (!srcId.equals(destId)) {
+                keys.add(id);
+                updateOwner.put(id, destId);
+            }
+            keys.add(srcId);
+            keys.add(destId);
+        }
+        JsonArray modified = getNodesBySysmlids(keys, false, false);
+        for (int i = 0; i < modified.size(); i++) {
+            String sysmlid = JsonUtil.getOptString(modified.get(i).getAsJsonObject(), Sjm.SYSMLID);
+            elements.put(sysmlid, modified.get(i).getAsJsonObject());
+        }
+        for (Map.Entry<String, String> entry : updateOwner.entrySet()) {
+            String value = entry.getValue();
+            String key = entry.getKey();
+            if (elements.get(key).has(Sjm.ASSOCIATIONID)) {
+                String associationId = elements.get(key).get(Sjm.ASSOCIATIONID).getAsString();
+                String ownerParentPackage = pgh.getImmediateParentOfType(value, DbEdgeTypes.CONTAINMENT, dbnt);
+                JsonObject associationObj = getNodeBySysmlid(associationId);
+                associationObj.addProperty(Sjm.OWNERID, ownerParentPackage);
+                elements.put(associationObj.get(Sjm.SYSMLID).getAsString(), associationObj);
+                //referenced element's typeId to be b2
+                if (associationObj.has(Sjm.OWNEDENDIDS)
+                    && associationObj.get(Sjm.OWNEDENDIDS).getAsJsonArray().size() > 0) {
+                    JsonArray ownedEndIds = associationObj.get(Sjm.OWNEDENDIDS).getAsJsonArray();
+                    for (int i = 0; i < ownedEndIds.size(); i++) {
+                        if (ownedEndIds.get(i).getAsString().equals(key)) {
+                            continue;
+                        }
+                        JsonObject prop = getNodeBySysmlid(ownedEndIds.get(i).getAsString());
+                        prop.addProperty(Sjm.TYPEID, value);
+                        elements.put(prop.get(Sjm.SYSMLID).getAsString(), prop);
+                    }
+                }
+            }
+            elements.get(key).getAsJsonObject().addProperty(Sjm.OWNERID, value);
+        }
+        for (Map.Entry<String, List<String>> entry : toRemove.entrySet()) {
+            List value = entry.getValue();
+            String key = entry.getKey();
+            JsonArray ownedAttributeIdsToRemove = JsonUtil.getOptArray(elements.get(key), Sjm.OWNEDATTRIBUTEIDS);
+            JsonArray removed = new JsonArray();
+
+            for (int i = 0; i < ownedAttributeIdsToRemove.size(); i++) {
+                if (!value.contains(ownedAttributeIdsToRemove.get(i).getAsString())) {
+                    removed.add(ownedAttributeIdsToRemove.get(i));
+                }
+            }
+            elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, removed);
+        }
+        for (Map.Entry<String, Map<Integer, String>> entry : toAdd.entrySet()) {
+            Map<Integer, String> value = entry.getValue();
+            String key = entry.getKey();
+            List<String> ownedAttributeIdsToAdd = new Gson()
+                .fromJson(JsonUtil.getOptArray(elements.get(key), Sjm.OWNEDATTRIBUTEIDS),
+                    new TypeToken<List<String>>() {
+                    }.getType());
+
+            for (Map.Entry<Integer, String> add : value.entrySet()) {
+                Integer index = add.getKey();
+                String id = add.getValue();
+                // Set requires a jsonObject...
+                if (index >= ownedAttributeIdsToAdd.size()) {
+                    ownedAttributeIdsToAdd.add(id);
+                } else {
+                    ownedAttributeIdsToAdd.add(index, id);
+                }
+            }
+            elements.get(key).add(Sjm.OWNEDATTRIBUTEIDS, new Gson().toJsonTree(ownedAttributeIdsToAdd));
+        }
+        JsonArray toProcess = new JsonArray();
+        for (Map.Entry<String, JsonObject> entry : elements.entrySet()) {
+            toProcess.add(entry.getValue());
+
+        }
+        wrapper.add(Sjm.ELEMENTS, toProcess);
+        return wrapper;
+    }
+
     public boolean isDeleted(String sysmlid) {
         return pgh.isDeleted(sysmlid);
     }
@@ -1967,7 +2059,7 @@ public class EmsNodeUtil {
         JsonUtil.addStringList(jsonModule, "mmsAliases", module.getAliases());
         jsonModule.addProperty("mmsClass", module.getClass().toString());
         JsonArray depArray = new JsonArray();
-        for (ModuleDependency depend: module.getDependencies())
+        for (ModuleDependency depend : module.getDependencies())
             depArray.add(depend.toString());
         jsonModule.add("mmsDependencies", depArray);
         JsonUtil.addStringList(jsonModule, "mmsEditions", module.getEditions());
@@ -1975,7 +2067,7 @@ public class EmsNodeUtil {
         JsonObject propObj = new JsonObject();
         Enumeration<?> enumerator = module.getProperties().propertyNames();
         while (enumerator.hasMoreElements()) {
-            String key = (String)enumerator.nextElement();
+            String key = (String) enumerator.nextElement();
             propObj.addProperty(key, module.getProperties().getProperty(key));
         }
         jsonModule.add("mmsProperties", propObj);
