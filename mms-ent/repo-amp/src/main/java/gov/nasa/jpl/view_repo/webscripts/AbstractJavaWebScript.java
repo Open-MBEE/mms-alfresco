@@ -169,16 +169,6 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         }
     }
 
-    // If no need for string formatting (calls with no string concatenation)
-    protected void log(Level level, int code, Exception e) {
-        String levelMessage = addLevelInfoToMsg(level, LogUtil.getStackTrace(e));
-        updateResponse(code, levelMessage);
-        if (level.toInt() >= logger.getLevel().toInt()) {
-            // print to response stream if >= existing log level
-            log(level, levelMessage);
-        }
-    }
-
     protected void updateResponse(int code, String msg) {
         response.append(msg);
         responseStatus.setCode(code);
