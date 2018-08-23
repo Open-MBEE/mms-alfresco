@@ -49,8 +49,9 @@ public class ElasticHelper implements ElasticsearchInterface {
 
     public static final String ELEMENT = "element";
     public static final String COMMIT = "commit";
-    private static final String PROFILE = "profile";
-    private static final String ARTIFACT = "artifact";
+    public static final String PROFILE = "profile";
+    public static final String ARTIFACT = "artifact";
+    public static final String REF = "ref";
 
     private static final String COMMIT_QUERY = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
 
@@ -433,7 +434,6 @@ public class ElasticHelper implements ElasticsearchInterface {
         if (j.has(Sjm.ELASTICID)) {
             JsonObject updateWrapper = new JsonObject();
             String elasticId = j.get(Sjm.ELASTICID).getAsString();
-            j.remove(Sjm.ELASTICID);
             updateWrapper.add("doc", j);
             result.elasticId = client.execute(new Update.Builder(updateWrapper.toString()).id(elasticId)
                 .index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build()).getId();
@@ -461,28 +461,29 @@ public class ElasticHelper implements ElasticsearchInterface {
         return result.isSucceeded();
     }
 
-    public boolean updateElement(String id, JsonObject payload, String index) throws IOException {
-        JsonObject update = new JsonObject();
-        update.add("doc", payload);
-        update.addProperty("_source", true);
-        JestResult updated = client.execute(
-            new Update.Builder(update.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(ELEMENT)
-                .build());
-        return updated.isSucceeded();
+    public JsonObject updateElement(String id, JsonObject payload, String index) throws IOException {
+        return updateById(id, payload, index, ELEMENT);
     }
 
     public JsonObject updateProfile(String id, JsonObject payload, String index) throws IOException {
+        return updateById(id, payload, index, PROFILE);
+    }
+
+    public JsonObject updateById(String id, JsonObject payload, String index, String type) throws IOException {
         JsonObject upsert = new JsonObject();
         upsert.add("doc", payload);
         upsert.addProperty("doc_as_upsert", true);
         upsert.addProperty("_source", true);
         JestResult res = client.execute(
-            new Update.Builder(upsert.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(PROFILE)
+            new Update.Builder(upsert.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(type)
                 .build());
-        if (res.isSucceeded())
+        if (res.isSucceeded()) {
             return res.getJsonObject().get("get").getAsJsonObject().get("_source").getAsJsonObject();
+        }
         return new JsonObject();
     }
+
+
 
     /**
      * Index multiple JSON documents by type using the BulkAPI                        (1)

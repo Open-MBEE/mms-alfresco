@@ -29,6 +29,7 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
+import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -245,7 +246,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.addProperty(Sjm.CREATOR, user);
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
-            elasticId = emsNodeUtil.insertSingleElastic(wsJson);
+            elasticId = emsNodeUtil.insertSingleElastic(wsJson, ElasticHelper.REF);
 
             if (!NO_WORKSPACE_ID.equals(sourceWorkspaceId) && srcWs == null) {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Source workspace not found.");
@@ -287,7 +288,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
             wsJson.addProperty(Sjm.ELASTICID, existingWsJson.get(Sjm.ELASTICID).getAsString());
-            elasticId = emsNodeUtil.updateSingleElastic(wsJson);
+            elasticId = emsNodeUtil.updateSingleElastic(wsJson, ElasticHelper.REF);
             emsNodeUtil.updateRef(newWorkspaceId, workspaceName, elasticId, isTag);
         }
 

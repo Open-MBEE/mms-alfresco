@@ -338,7 +338,7 @@ public class EmsNodeUtil {
         Map<String, String> refInfo = pgh.getRefElastic(refId);
         if (refInfo != null) {
             try {
-                jObj = eh.getElementByElasticId(refInfo.get("elasticId"), projectId);
+                jObj = eh.getByElasticId(refInfo.get("elasticId"), projectId, ElasticHelper.REF);
                 jObj.addProperty("parentRefId",
                     (refInfo.get("parent").equals("")) ? "noParent" : refInfo.get("parent"));
                 jObj.addProperty("type", (refInfo.get("isTag").equals("true")) ? "tag" : "branch");
@@ -1581,9 +1581,9 @@ public class EmsNodeUtil {
         }
     }
 
-    public String insertSingleElastic(JsonObject o) {
+    public String insertSingleElastic(JsonObject o, String type) {
         try {
-            ElasticResult r = eh.indexElement(o, projectId, ElasticHelper.ELEMENT);
+            ElasticResult r = eh.indexElement(o, projectId, type);
             return r.elasticId;
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
@@ -1591,9 +1591,9 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public String updateSingleElastic(JsonObject o) {
+    public String updateSingleElastic(JsonObject o, String type) {
         try {
-            ElasticResult r = eh.updateElement(o, projectId, ElasticHelper.ELEMENT);
+            ElasticResult r = eh.updateElement(o, projectId, type);
             return r.elasticId;
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));

@@ -681,10 +681,8 @@ public class CommitUtil {
             } else {
                 pgh.updateOrganization(orgId, orgName);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
-                if (eh.updateElement(orgId, orgJson, defaultIndex)) {
-                    if (eh.refreshIndex()) {
-                        return eh.getElementByElasticId(orgId, defaultIndex);
-                    }
+                if (eh.updateElement(orgId, orgJson, defaultIndex).size() > 0 && eh.refreshIndex()) {
+                    return eh.getElementByElasticId(orgId, defaultIndex);
                 }
             }
 

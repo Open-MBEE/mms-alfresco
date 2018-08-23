@@ -30,9 +30,9 @@ public interface ElasticsearchInterface {
 
     ElasticResult indexElement(JsonObject j, String index, String eType) throws IOException;
 
-    boolean refreshIndex() throws IOException;
+    JsonObject updateElement(String id, JsonObject payload, String index) throws IOException;
 
-    boolean updateElement(String id, JsonObject payload, String index) throws IOException;
+    boolean refreshIndex() throws IOException;
 
     boolean bulkIndexElements(JsonArray bulkElements, String operation, boolean refresh, String index, String type) throws IOException;
 
