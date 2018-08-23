@@ -87,7 +87,7 @@ GetElementAtInvalidCommit
 	[Documentation]		"Try to get an element at an invalid commit."
 	[Tags]				branches		critical		090208
 	${result} =			Get	url=${ROOT}/projects/PA/refs/master/elements/300?commitId=ThisIdShouldNotExistAtAll		 headers=&{REQ_HEADER}
-	Should be Equal		${result.status_code}	   ${404}
+	Should be Equal		${result.status_code}	   ${400}
 
 BranchFromBranchAndCheckCommits
 	[Documentation]		"Create branch1, create branch 2 immediately from branch 1, getting branch history from branch 1 and branch 2 should be the same."
