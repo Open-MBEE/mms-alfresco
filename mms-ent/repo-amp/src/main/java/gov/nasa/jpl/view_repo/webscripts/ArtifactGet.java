@@ -139,7 +139,7 @@ public class ArtifactGet extends ModelGet {
         String artifactId = req.getServiceMatch().getTemplateVars().get(ARTIFACTID);
         String commitId = req.getParameter(COMMITID);
         if (emsNodeUtil.getArtifactById(artifactId, true) != null) {
-            JsonObject artifact = emsNodeUtil.getArtifactByArtifactAndCommitId(commitId, artifactId);
+            JsonObject artifact = emsNodeUtil.getArtifactByArtifactAndCommitId(artifactId, commitId);
             if (artifact == null || artifact.size() == 0) {
                 // :TODO I don't think this logic needs to be changed at all for Artifact
                 //this is true if element id and artifact id are mutually unique

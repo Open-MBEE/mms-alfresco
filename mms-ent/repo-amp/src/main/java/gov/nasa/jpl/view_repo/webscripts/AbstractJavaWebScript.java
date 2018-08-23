@@ -28,6 +28,8 @@
  ******************************************************************************/
 package gov.nasa.jpl.view_repo.webscripts;
 
+import com.google.gson.JsonArray;
+import gov.nasa.jpl.view_repo.util.Sjm;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -250,6 +252,25 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
             return String.format("[WARNING]: %s%n", msg);
         }
 
+    }
+
+    protected JsonArray parseErrors(JsonObject result) {
+        JsonArray errorMessages = new JsonArray();
+
+        for (Map.Entry<String, Integer> level : Sjm.ERROR_LEVELS.entrySet()) {
+            JsonArray errors = JsonUtil.getOptArray(result, level.getKey());
+            if (errors.size() > 0) {
+                for (int i = 0; i < errors.size(); i++) {
+                    JsonObject errorPayload = new JsonObject();
+                    errorPayload.addProperty("code", level.getValue());
+                    errorPayload.add(Sjm.SYSMLID, errors.get(i));
+                    errorPayload.addProperty("message",
+                        String.format("Element %s was not found", errors.get(i).getAsString()));
+                    errorMessages.add(errorPayload);
+                }
+            }
+        }
+        return errorMessages;
     }
 
     // formatMessage function is used to catch certain objects that must be dealt with individually

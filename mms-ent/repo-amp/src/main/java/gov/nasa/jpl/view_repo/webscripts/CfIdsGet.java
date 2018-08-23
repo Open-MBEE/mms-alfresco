@@ -51,7 +51,7 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.db.Node;
 
-public class CfIdsGet extends AbstractJavaWebScript {
+public class CfIdsGet extends ModelGet {
 
     static Logger logger = Logger.getLogger(CfIdsGet.class);
 
@@ -63,20 +63,6 @@ public class CfIdsGet extends AbstractJavaWebScript {
 
     public CfIdsGet(Repository repositoryHelper, ServiceRegistry registry) {
         super(repositoryHelper, registry);
-    }
-
-    @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
-        String refId = getRefId(req);
-        String projectId = getProjectId(req);
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-
-        if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
-            return true;
-        } else if (refId != null && !emsNodeUtil.refExists(refId)) {
-            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found", refId);
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -137,15 +123,7 @@ public class CfIdsGet extends AbstractJavaWebScript {
         Long depth = null;
         String depthParam = req.getParameter("depth");
         if (depthParam != null) {
-            try {
-                depth = Long.parseLong(depthParam);
-                if (depth < 0) {
-                    depth = 100000L;
-                }
-            } catch (NumberFormatException nfe) {
-                // don't do any recursion, ignore the depth
-                log(Level.WARN, HttpServletResponse.SC_BAD_REQUEST, "Bad depth specified, returning depth 0");
-            }
+            depth = parseDepth(depthParam);
         }
         if (depth == null) {
             depth = 5L;
@@ -156,7 +134,7 @@ public class CfIdsGet extends AbstractJavaWebScript {
     protected JsonArray handleMountSearch(JsonObject mountsJson, String rootSysmlid, Long depth)
         throws SQLException, IOException {
         JsonArray result = null;
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.get(Sjm.SYSMLID).getAsString(), 
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(mountsJson.get(Sjm.SYSMLID).getAsString(),
                         mountsJson.get(Sjm.REFID).getAsString());
         Node n = emsNodeUtil.getById(rootSysmlid);
         if (n != null) {
@@ -168,7 +146,7 @@ public class CfIdsGet extends AbstractJavaWebScript {
         }
         if (!mountsJson.has(Sjm.MOUNTS)) {
             mountsJson = emsNodeUtil.getProjectWithFullMounts(
-                            mountsJson.get(Sjm.SYSMLID).getAsString(), 
+                            mountsJson.get(Sjm.SYSMLID).getAsString(),
                             mountsJson.get(Sjm.REFID).getAsString(), null);
         }
         JsonArray mountsArray = mountsJson.get(Sjm.MOUNTS).getAsJsonArray();

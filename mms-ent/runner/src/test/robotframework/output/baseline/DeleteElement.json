@@ -1,3 +1,31 @@
 {
-    "message": "[ERROR]: Element DeleteElement is deleted\n[ERROR]: No elements found.\n"
+    "deleted": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_inRefIds": [],
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "documentation": "Element that will be deleted",
+            "id": "DeleteElement",
+            "isDerived": false,
+            "name": "Deleted Element",
+            "ownerId": "PA",
+            "type": "Property",
+            "value": [
+                {
+                    "string": "dlam_string",
+                    "type": "LiteralString"
+                }
+            ]
+        }
+    ],
+    "messages": [
+        {
+            "code": 410.0,
+            "id": "DeleteElement",
+            "message": "Element DeleteElement was not found"
+        }
+    ]
 }
