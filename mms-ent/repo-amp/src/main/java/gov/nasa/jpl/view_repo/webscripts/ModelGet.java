@@ -141,40 +141,27 @@ public class ModelGet extends AbstractJavaWebScript {
 
             JsonObject top = new JsonObject();
 
-            if (elementsJson.size() == 0) {
-                if (!elementsToFind.isEmpty()) {
-                    JsonArray deleted = filterByPermission(deletedElementsCache, req);
+            if (elementsJson.size() > 0) {
+                top.add(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
+                if (top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
+                    log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
+                }
+            } else if (deletedElementsCache.size() > 0) {
+                JsonArray deleted = filterByPermission(deletedElementsCache, req);
+                if (deleted.size() > 0) {
                     Set<String> deletedSet = new HashSet<>();
                     for (int i = 0; i < deleted.size(); i++) {
                         deletedSet.add(deleted.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
                     }
-
                     elementsToFind.removeAll(deletedSet);
-
-                    if (!elementsToFind.isEmpty()) {
-                        JsonUtil.addStringSet(result, Sjm.FAILED, elementsToFind);
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
-                    } else if (!deletedSet.isEmpty()) {
-                        JsonUtil.addStringSet(result, Sjm.DELETED, deletedSet);
-                        top.add(Sjm.DELETED, deleted);
-                        log(Level.ERROR, HttpServletResponse.SC_GONE, "Deleted elements found");
-                    }
+                    JsonUtil.addStringSet(result, Sjm.DELETED, deletedSet);
+                    top.add(Sjm.DELETED, deleted);
+                    log(Level.ERROR, HttpServletResponse.SC_GONE, "Deleted elements found");
                 }
-
-                if (responseStatus.getCode() == 200) {
-                    log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
-                }
-            } else if (!elementsToFind.isEmpty()) {
+            }
+            if (!elementsToFind.isEmpty()) {
                 JsonUtil.addStringSet(result, Sjm.FAILED, elementsToFind);
-                log(Level.ERROR, HttpServletResponse.SC_OK, "Some elements not found.");
-            }
-
-            if (elementsJson.size() > 0) {
-                top.add(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
-            }
-
-            if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
-                log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
+                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
             }
 
             JsonArray errorMessages = parseErrors(result);
@@ -249,8 +236,10 @@ public class ModelGet extends AbstractJavaWebScript {
         JsonObject result = new JsonObject();
 
         for (int i = 0; i < elementsToFindJson.size(); i++) {
-            String currentId = elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString();
-            elementsToFind.add(currentId);
+            try {
+                String currentId = elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString();
+                elementsToFind.add(currentId);
+            } catch (Exception e) {}
         }
 
         JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
@@ -261,24 +250,21 @@ public class ModelGet extends AbstractJavaWebScript {
 
         if (commitId != null && commitObject == null) {
             elementsToFind = new HashSet<>();
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid commit id");
         } else {
             EmsNodeUtil
                 .handleMountSearch(mountsJson, extended, false, maxDepth, elementsToFind, found, timestamp, type);
         }
 
-        JsonArray noexist = new JsonArray();
-
         if (!elementsToFind.isEmpty()) {
-            deletedElementsCache = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
+            JsonArray deletedElementsCache = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
             if (timestamp != null) {
                 for (JsonElement check : deletedElementsCache) {
                     try {
                         Date created = EmsNodeUtil.df.parse(JsonUtil.getOptString((JsonObject) check, Sjm.CREATED));
                         Date commitDate = EmsNodeUtil.df.parse(timestamp);
-                        if (created.after(commitDate)) {
-                            String currentId = check.getAsJsonObject().get(Sjm.SYSMLID).getAsString();
-                            elementsToFind.remove(currentId);
-                            noexist.add(currentId);
+                        if (!created.after(commitDate)) {
+                            this.deletedElementsCache.add(check);
                         }
                     } catch (ParseException pe) {
                         if (logger.isDebugEnabled()) {
@@ -286,11 +272,9 @@ public class ModelGet extends AbstractJavaWebScript {
                         }
                     }
                 }
+            } else {
+                this.deletedElementsCache = deletedElementsCache;
             }
-        }
-
-        if (noexist.size() > 0) {
-            result.add(Sjm.FAILED, noexist);
         }
 
         result.add(Sjm.ELEMENTS, found);
