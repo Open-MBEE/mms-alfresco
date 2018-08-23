@@ -133,7 +133,6 @@ public class OrgPost extends AbstractJavaWebScript {
                             }
 
                         } else {
-                            EmsScriptNode site = new EmsScriptNode(siteInfo.getNodeRef(), services, response);
                             JsonObject res = CommitUtil.sendOrganizationDelta(orgId, orgName, projJson);
                             if (res != null && !JsonUtil.getOptString(res, Sjm.SYSMLID).isEmpty()) {
                                 log(Level.INFO, HttpServletResponse.SC_OK,

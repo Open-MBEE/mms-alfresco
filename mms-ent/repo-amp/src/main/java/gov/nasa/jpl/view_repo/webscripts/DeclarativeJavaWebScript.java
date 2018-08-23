@@ -56,7 +56,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     // Logger
     private static final Log logger = LogFactory.getLog(DeclarativeJavaWebScript.class);
 
-    static boolean cacheSnapshotsFlag = false;
     protected boolean editable = false;
 
     public static final String REF_ID = "refId";
@@ -69,9 +68,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     public static final String NO_WORKSPACE_ID = "master"; // default is master if unspecified
     public static final String NO_PROJECT_ID = "no_project";
     public static final String NO_SITE_ID = "no_site";
-
-    private static final String HEADER_CONTENT_RANGE = "Content-Range";
-    private static final String HEADER_CONTENT_LENGTH = "Content-Length";
 
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
@@ -91,7 +87,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             // construct model for script / template
             Status status = new Status();
             Cache cache = new Cache(getDescription().getRequiredCache());
-            setCacheHeaders(req, cache); // add in custom headers for nginx caching
 
             Map<String, Object> model;
 
@@ -121,49 +116,29 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
             model.put("cache", cache);
 
             try {
-                // create model for template rendering
-                Map<String, Object> templateModel = createTemplateParameters(req, res, model);
-                // is a redirect to a status specific template required?
-                if (status.getRedirect()) {
-                    sendStatus(req, res, status, cache, format, templateModel);
-                } else {
-                    // render output
-                    int statusCode = status.getCode();
-                    if (statusCode != HttpServletResponse.SC_OK && !req.forceSuccessStatus()) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Force success status header in response: " + req.forceSuccessStatus());
-                            logger.debug("Setting status " + statusCode);
-                        }
-                        res.setStatus(statusCode);
-                    }
+                res.setStatus(status.getCode());
+                String location = status.getLocation();
+                if (location != null && location.length() > 0) {
+                    res.setHeader(WebScriptResponse.HEADER_LOCATION, location);
+                }
+                // apply cache
+                res.setCache(cache);
 
-                    // apply location
-                    String location = status.getLocation();
-                    if (location != null && location.length() > 0) {
-                        if (logger.isDebugEnabled())
-                            logger.debug("Setting location to " + location);
-                        res.setHeader(WebScriptResponse.HEADER_LOCATION, location);
-                    }
+                // render response according to requested format
+                if (model.containsKey(Sjm.RES) && model.get(Sjm.RES) != null) {
+                    res.setContentType("application/json");
+                    res.setContentEncoding("UTF-8");
+                    if (model.get(Sjm.RES) instanceof JsonObject) {
+                        JsonObject json = (JsonObject) model.get(Sjm.RES);
+                        Map<String, Object> jsonMap = new Gson().fromJson(json, new TypeToken<Map<String, Object>>(){}.getType());
+                        JsonContentReader reader = new JsonContentReader(jsonMap);
 
-                    // apply cache
-                    res.setCache(cache);
-
-                    // render response according to requested format
-                    if (templateModel.containsKey(Sjm.RES) && templateModel.get(Sjm.RES) != null) {
-                        res.setContentType("application/json");
-                        res.setContentEncoding("UTF-8");
-                        if (templateModel.get(Sjm.RES) instanceof JsonObject) {
-                            JsonObject json = (JsonObject) templateModel.get(Sjm.RES);
-                            Map<String, Object> jsonMap = new Gson().fromJson(json, new TypeToken<Map<String, Object>>(){}.getType());
-                            JsonContentReader reader = new JsonContentReader(jsonMap);
-
-                            // get the content and stream directly to the response output stream
-                            // assuming the repository is capable of streaming in chunks, this should allow large files
-                            // to be streamed directly to the browser response stream.
-                            reader.getStreamContent(res.getOutputStream());
-                        } else {
-                            res.getWriter().write(templateModel.get(Sjm.RES).toString());
-                        }
+                        // get the content and stream directly to the response output stream
+                        // assuming the repository is capable of streaming in chunks, this should allow large files
+                        // to be streamed directly to the browser response stream.
+                        reader.getStreamContent(res.getOutputStream());
+                    } else {
+                        res.getWriter().write(model.get(Sjm.RES).toString());
                     }
                 }
             } finally {
@@ -178,73 +153,6 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
     }
 
     /**
-     * Set the cache headers for caching server based on the request. This is single place
-     * that we need to modify to update cache-control headers across all webscripts.
-     *
-     * @param req
-     * @param cache
-     */
-    private boolean setCacheHeaders(WebScriptRequest req, Cache cache) {
-        String[] names = req.getParameterNames();
-        boolean cacheUpdated = false;
-        // check if timestamp
-        for (String name : names) {
-            if (name.equals("timestamp")) {
-                cacheUpdated = updateCache(cache);
-                break;
-            }
-        }
-        // check if configuration snapshots and products
-        if (!cacheUpdated) {
-            if (cacheSnapshotsFlag) {
-                String url = req.getURL();
-                if (url.contains("configurations")) {
-                    if (url.contains("snapshots") || url.contains(Sjm.PRODUCTS)) {
-                        cacheUpdated = updateCache(cache);
-                    }
-                }
-            }
-        }
-
-        return cacheUpdated;
-    }
-
-    private boolean updateCache(Cache cache) {
-        if (!cache.getIsPublic()) {
-            cache.setIsPublic(true);
-            cache.setMaxAge(31557000L);
-            // following are true by default, so need to set them to false
-            cache.setNeverCache(false);
-            cache.setMustRevalidate(false);
-        }
-        return true;
-    }
-
-    /**
-     * Execute custom Java logic
-     *
-     * @param req    Web Script request
-     * @param status Web Script status
-     * @return custom service model
-     * @deprecated
-     */
-    @Deprecated protected Map<String, Object> executeImpl(WebScriptRequest req, WebScriptStatus status) {
-        return null;
-    }
-
-    /**
-     * Execute custom Java logic
-     *
-     * @param req    Web Script request
-     * @param status Web Script status
-     * @return custom service model
-     * @deprecated
-     */
-    @Deprecated protected Map<String, Object> executeImpl(WebScriptRequest req, Status status) {
-        return executeImpl(req, new WebScriptStatus(status));
-    }
-
-    /**
      * Execute custom Java logic
      *
      * @param req    Web Script request
@@ -253,8 +161,7 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
      * @return custom service model
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
-        // NOTE: Redirect to those web scripts implemented before cache support and v2.9
-        return executeImpl(req, status);
+        return null;
     }
 
     /**

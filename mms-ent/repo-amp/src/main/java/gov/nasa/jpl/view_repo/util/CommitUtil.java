@@ -916,20 +916,20 @@ public class CommitUtil {
 
                 EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary");
                 if (documentLibrary == null) {
-                    documentLibrary = site.createFolder("documentLibrary", null, null);
-                    documentLibrary.createOrUpdateProperty(Acm.CM_TITLE, "Document Library");
+                    documentLibrary = site.createFolder("documentLibrary", null);
+                    documentLibrary.setProperty(Acm.CM_TITLE, "Document Library");
                 }
                 EmsScriptNode projectDocumentLibrary = documentLibrary.childByNamePath(projectId);
                 if (projectDocumentLibrary == null) {
-                    projectDocumentLibrary = documentLibrary.createFolder(projectId, null, null);
+                    projectDocumentLibrary = documentLibrary.createFolder(projectId, null);
                 }
                 EmsScriptNode siteCharFolder = projectDocumentLibrary.childByNamePath(folderId);
                 if (siteCharFolder == null) {
-                    siteCharFolder = projectDocumentLibrary.createFolder(folderId, null, null);
-                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
+                    siteCharFolder = projectDocumentLibrary.createFolder(folderId, null);
+                    siteCharFolder.setProperty(Acm.CM_TITLE, folderName);
                     return true;
                 } else {
-                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
+                    siteCharFolder.setProperty(Acm.CM_TITLE, folderName);
                     return true;
                 }
             }

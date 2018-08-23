@@ -62,7 +62,6 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
-        HtmlConverterPost instance = new HtmlConverterPost(repository, services);
         JsonObject postJson = null;
         JsonObject result = new JsonObject();
         try {
@@ -99,7 +98,6 @@ public class HtmlConverterPost extends AbstractJavaWebScript {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
 
-        appendResponseStatusInfo(instance);
         status.setCode(responseStatus.getCode());
 
         if (postJson == null) {
