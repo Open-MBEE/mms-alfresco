@@ -1289,7 +1289,7 @@ public class EmsNodeUtil {
         for (Map.Entry<String, String> entry : updateOwner.entrySet()) {
             String value = entry.getValue();
             String key = entry.getKey();
-            if (elements.get(key).has(Sjm.ASSOCIATIONID)) {
+            if (elements.containsKey(key) && elements.get(key).has(Sjm.ASSOCIATIONID)) {
                 String associationId = elements.get(key).get(Sjm.ASSOCIATIONID).getAsString();
                 String ownerParentPackage = pgh.getImmediateParentOfType(value, DbEdgeTypes.CONTAINMENT, dbnt);
                 JsonObject associationObj = getNodeBySysmlid(associationId);
@@ -1584,6 +1584,16 @@ public class EmsNodeUtil {
     public String insertSingleElastic(JsonObject o) {
         try {
             ElasticResult r = eh.indexElement(o, projectId, ElasticHelper.ELEMENT);
+            return r.elasticId;
+        } catch (IOException e) {
+            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return null;
+    }
+
+    public String updateSingleElastic(JsonObject o) {
+        try {
+            ElasticResult r = eh.updateElement(o, projectId, ElasticHelper.ELEMENT);
             return r.elasticId;
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));

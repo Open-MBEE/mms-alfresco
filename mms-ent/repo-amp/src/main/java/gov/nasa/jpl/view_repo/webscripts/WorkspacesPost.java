@@ -282,9 +282,12 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 return null;
             }
 
+            JsonObject existingWsJson = emsNodeUtil.getRefJson(newWorkspaceId);
+
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
-            elasticId = emsNodeUtil.insertSingleElastic(wsJson);
+            wsJson.addProperty(Sjm.ELASTICID, existingWsJson.get(Sjm.ELASTICID).getAsString());
+            elasticId = emsNodeUtil.updateSingleElastic(wsJson);
             emsNodeUtil.updateRef(newWorkspaceId, workspaceName, elasticId, isTag);
         }
 
