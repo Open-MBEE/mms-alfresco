@@ -300,11 +300,7 @@ public class EmsScriptNode extends ScriptNode {
         }
         return b;
     }
-
-    @Override public int hashCode() {
-        return parent.hashCode();
-    }
-
+    
     public static ServiceRegistry getServices() {
         return services;
     }
