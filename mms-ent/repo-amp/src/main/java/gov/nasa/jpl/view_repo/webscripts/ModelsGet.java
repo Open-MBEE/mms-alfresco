@@ -94,6 +94,7 @@ public class ModelsGet extends ModelGet {
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
         Map<String, Object> model = new HashMap<>();
+        Map<String, Set<String>> errors = new HashMap<>();
         JsonArray elementsJson = new JsonArray();
         JsonObject result = new JsonObject();
 
@@ -125,11 +126,11 @@ public class ModelsGet extends ModelGet {
             }
 
             if (!elementsToFind.isEmpty()) {
-                JsonUtil.addStringSet(result, Sjm.FAILED, elementsToFind);
+                errors.put(Sjm.FAILED, elementsToFind);
                 log(Level.ERROR, HttpServletResponse.SC_OK, "Some elements not found.");
             }
 
-            JsonArray errorMessages = parseErrors(result);
+            JsonArray errorMessages = parseErrors(errors);
 
             if (errorMessages.size() > 0) {
                 top.add("messages", errorMessages);
