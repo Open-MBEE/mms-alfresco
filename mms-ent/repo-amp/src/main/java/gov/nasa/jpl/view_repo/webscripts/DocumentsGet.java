@@ -51,14 +51,6 @@ public class DocumentsGet extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
-        // Checks mms versions
-        if (checkMmsVersions) {
-            if (compareMmsVersions(req, getResponse(), getResponseStatus())) {
-                model.put(Sjm.RES, createResponseJson());
-                return model;
-            }
-        }
-
         JsonObject jsonObject = new JsonObject();
 
         try {

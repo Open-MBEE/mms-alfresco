@@ -900,7 +900,6 @@ public class PostgresHelper implements GraphInterface {
             Map<String, Object> map = new HashMap<>();
             // we can hard code the commit type here....but we should still store the integer value
             // from the DB in memory
-            int parentId = getHeadCommit();
             map.put("elasticId", elasticId);
             map.put("commitType", type.getValue());
             map.put("refId", workspaceId);
@@ -1107,10 +1106,10 @@ public class PostgresHelper implements GraphInterface {
         }
         try (PreparedStatement statement = prepareStatement("SELECT id FROM commits WHERE elasticid = ?")) {
             statement.setString(1, commitId);
-            ResultSet rs = statement.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -1359,13 +1358,13 @@ public class PostgresHelper implements GraphInterface {
                 statement.setInt(1, n.getId());
                 statement.setInt(2, DbEdgeTypes.CONTAINMENT.getValue());
                 statement.setString(3, workspaceId);
-                ResultSet rs = statement.executeQuery();
-
-                while (rs.next()) {
-                    if (rs.getInt(3) == DbNodeTypes.SITEANDPACKAGE.getValue()) {
-                        return rs.getString(1);
-                    } else if (rs.getInt(3) == DbNodeTypes.SITE.getValue()) {
-                        return null;
+                try (ResultSet rs = statement.executeQuery()) {
+                    while (rs.next()) {
+                        if (rs.getInt(3) == DbNodeTypes.SITEANDPACKAGE.getValue()) {
+                            return rs.getString(1);
+                        } else if (rs.getInt(3) == DbNodeTypes.SITE.getValue()) {
+                            return null;
+                        }
                     }
                 }
             }
@@ -1925,9 +1924,10 @@ public class PostgresHelper implements GraphInterface {
             "SELECT tag FROM refs WHERE (refId = ? OR refName = ?) AND deleted = false")) {
             statement.setString(1, sanitizeRefId(refId));
             statement.setString(2, sanitizeRefId(refId));
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                return rs.getBoolean(1);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean(1);
+                }
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
@@ -1998,13 +1998,12 @@ public class PostgresHelper implements GraphInterface {
         try (PreparedStatement statement = prepareStatement(
             "SELECT parent, timestamp FROM refs WHERE deleted = false AND refId = ?")) {
             statement.setString(1, sanitizeRefId(refId));
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                String checkForMaster =
-                    (rs.getString(1).equals("") && !refId.equals("master")) ? "master" : rs.getString(1);
-                return new Pair<>(checkForMaster, rs.getTimestamp(2).getTime());
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    String checkForMaster = (rs.getString(1).equals("") && !refId.equals("master")) ? "master" : rs.getString(1);
+                    return new Pair<>(checkForMaster, rs.getTimestamp(2).getTime());
+                }
             }
-
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {
@@ -2144,9 +2143,10 @@ public class PostgresHelper implements GraphInterface {
     public String getProjectInitialCommit() {
         try (PreparedStatement statement = prepareStatement(
             "SELECT elasticid FROM commits WHERE id = (SELECT min(id) FROM commits)")) {
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                return rs.getString(1);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString(1);
+                }
             }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));

@@ -3,6 +3,8 @@ package gov.nasa.jpl.view_repo.util;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -81,6 +82,8 @@ public class CommitUtil {
     private static JmsConnection jmsConnection = null;
 
     private static String user = null;
+
+    private static SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     private static HazelcastInstance hzInstance = null;
     private static BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(1);
@@ -223,6 +226,7 @@ public class CommitUtil {
         JsonArray deleted = JsonUtil.getOptArray(delta, "deletedElements");
 
         String creator = delta.get("commit").getAsJsonObject().get(Sjm.CREATOR).getAsString();
+        String created = delta.get("commit").getAsJsonObject().get(Sjm.CREATED).getAsString();
         String commitElasticId = delta.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
 
         JsonObject jmsWorkspace = new JsonObject();
@@ -280,7 +284,7 @@ public class CommitUtil {
                     pgh.runBatchQueries(artifactUpdates, "artifactUpdates");
                     pgh.updateLastCommitsArtifacts(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
-                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
+                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator, new Timestamp(df.parse(created).getTime()));
                 } catch (Exception e) {
                     try {
                         pgh.rollBackToSavepoint(sp);
@@ -335,6 +339,7 @@ public class CommitUtil {
         JsonArray deleted = JsonUtil.getOptArray(delta, "deletedElements");
 
         String creator = delta.get("commit").getAsJsonObject().get(Sjm.CREATOR).getAsString();
+        String created = delta.get("commit").getAsJsonObject().get(Sjm.CREATED).getAsString();
         String commitElasticId = delta.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
 
         JsonObject jmsWorkspace = new JsonObject();
@@ -529,7 +534,7 @@ public class CommitUtil {
                     //pgh.updateBySysmlIds(NODES, LASTCOMMIT, commitElasticId, deletedSysmlIds);
                     pgh.updateLastCommitsNodes(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
-                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
+                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator, new Timestamp(df.parse(created).getTime()));
                     sp = pgh.startTransaction();
                     pgh.runBatchQueries(edgeInserts, EDGES);
                     pgh.commitTransaction();
@@ -911,20 +916,20 @@ public class CommitUtil {
 
                 EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary");
                 if (documentLibrary == null) {
-                    documentLibrary = site.createFolder("documentLibrary", null, null);
-                    documentLibrary.createOrUpdateProperty(Acm.CM_TITLE, "Document Library");
+                    documentLibrary = site.createFolder("documentLibrary", null);
+                    documentLibrary.setProperty(Acm.CM_TITLE, "Document Library");
                 }
                 EmsScriptNode projectDocumentLibrary = documentLibrary.childByNamePath(projectId);
                 if (projectDocumentLibrary == null) {
-                    projectDocumentLibrary = documentLibrary.createFolder(projectId, null, null);
+                    projectDocumentLibrary = documentLibrary.createFolder(projectId, null);
                 }
                 EmsScriptNode siteCharFolder = projectDocumentLibrary.childByNamePath(folderId);
                 if (siteCharFolder == null) {
-                    siteCharFolder = projectDocumentLibrary.createFolder(folderId, null, null);
-                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
+                    siteCharFolder = projectDocumentLibrary.createFolder(folderId, null);
+                    siteCharFolder.setProperty(Acm.CM_TITLE, folderName);
                     return true;
                 } else {
-                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
+                    siteCharFolder.setProperty(Acm.CM_TITLE, folderName);
                     return true;
                 }
             }

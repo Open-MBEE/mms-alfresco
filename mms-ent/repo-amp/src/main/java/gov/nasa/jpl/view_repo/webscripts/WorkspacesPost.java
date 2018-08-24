@@ -177,7 +177,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
         if (orgNode == null) {
-            log(Level.WARN, "Site Not Found", HttpServletResponse.SC_NOT_FOUND);
+            log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Site Not Found");
             status.setCode(HttpServletResponse.SC_NOT_FOUND);
             return null;
         }
@@ -253,7 +253,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 return null;
             } else {
                 EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs");
-                EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId, null, null);
+                EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId, null);
 
                 if (dstWs != null && srcWs != null) {
                     // keep history of the branch
@@ -274,7 +274,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         } else {
             // Workspace was found, so update it:
             if (existingRef.getId() != null) {
-                log(Level.INFO, "Workspace is modified", HttpServletResponse.SC_OK);
+                log(Level.INFO, HttpServletResponse.SC_OK, "Workspace is modified");
                 finalWorkspace = existingRef;
             } else {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Workspace not found.");

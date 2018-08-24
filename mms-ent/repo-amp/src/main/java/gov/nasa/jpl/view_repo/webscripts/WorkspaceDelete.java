@@ -68,14 +68,7 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
                 } else {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, wsId);
                     emsNodeUtil.deleteRef(wsId);
-                    EmsScriptNode target = getWorkspace(req);
-                    if (target != null) {
-                        object = printObject(target);
-                        target.delete(); //this didn't actually delete the alfresco folder just added deleted aspect
-                        responseStatus.setCode(HttpServletResponse.SC_OK);
-                    } else {
-                        log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Could not find workspace %s", wsId);
-                    }
+                    object = new JsonObject();
                 }
             }
         } catch (JsonParseException e) {
@@ -107,10 +100,6 @@ public class WorkspaceDelete extends AbstractJavaWebScript {
         printFooter(user, logger, timer);
 
         return model;
-    }
-
-    private JsonObject printObject(EmsScriptNode workspace) {
-        return new JsonObject();
     }
 }
 

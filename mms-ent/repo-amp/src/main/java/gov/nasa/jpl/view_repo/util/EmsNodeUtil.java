@@ -31,7 +31,6 @@ import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class EmsNodeUtil {
@@ -45,7 +44,7 @@ public class EmsNodeUtil {
     private static final String ORG_ID = "orgId";
     private static final String ORG_NAME = "orgName";
 
-    private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    public static SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     public EmsNodeUtil() {
         try {
@@ -198,7 +197,7 @@ public class EmsNodeUtil {
         return mounts;
     }
 
-    public JsonObject getElementByElementAndCommitId(String commitId, String sysmlid) {
+    public JsonObject getElementByElementAndCommitId(String sysmlid, String commitId) {
         try {
             return eh.getElementByCommitId(commitId, sysmlid, projectId);
         } catch (IOException e) {
@@ -207,7 +206,7 @@ public class EmsNodeUtil {
         return new JsonObject();
     }
 
-    public JsonObject getArtifactByArtifactAndCommitId(String commitId, String sysmlid) {
+    public JsonObject getArtifactByArtifactAndCommitId(String sysmlid, String commitId) {
         try {
             return eh.getArtifactByCommitId(commitId, sysmlid, projectId);
         } catch (IOException e) {
@@ -303,7 +302,7 @@ public class EmsNodeUtil {
         JsonArray result = new JsonArray();
         int cId = pgh.getCommitId(commitId);
         List<Map<String, Object>> refCommits = pgh.getRefsCommits(refId, cId, limit);
-        if (refCommits.size() > 0) {
+        if (!refCommits.isEmpty()) {
             result = processCommits(refCommits);
         }
 
@@ -1863,16 +1862,16 @@ public class EmsNodeUtil {
 
             pastElement = getElementAtCommit(sysmlId, commitId, refsCommitsIds);
 
-            if (pastElement != null && pastElement.has(Sjm.SYSMLID) && deletedElementIds
+            if (pastElement != null && pastElement.has(Sjm.ELASTICID) && deletedElementIds
                 .containsKey(pastElement.get(Sjm.ELASTICID).getAsString())) {
-                pastElement = new JsonObject();
+                pastElement = null;
             }
         }
-        return pastElement == null ? new JsonObject() : pastElement;
+        return pastElement;
     }
 
     public JsonObject getElementAtCommit(String sysmlId, String commitId, List<String> refIds) {
-        JsonObject result = new JsonObject();
+        JsonObject result = null;
 
         try {
             // Get commit object and retrieve the refs commits
@@ -1897,6 +1896,7 @@ public class EmsNodeUtil {
         Date requestedTime;
         List<Map<String, Object>> commits;
         JsonArray response = new JsonArray();
+
         try {
             requestedTime = df.parse(timestamp);
             Timestamp time = new Timestamp(requestedTime.getTime());
@@ -2002,7 +2002,15 @@ public class EmsNodeUtil {
 
     public static String getHostname() {
         ServiceDescriptorRegistry sdr = new ServiceDescriptorRegistry();
-        return sdr.getSysAdminParams().getAlfrescoHost();
+        String hostname = "localhost";
+        try {
+            hostname = sdr.getSysAdminParams().getAlfrescoHost();
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(e.getLocalizedMessage());
+            }
+        }
+        return hostname;
     }
 
     /**

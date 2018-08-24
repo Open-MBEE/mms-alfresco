@@ -28,6 +28,8 @@
  ******************************************************************************/
 package gov.nasa.jpl.view_repo.webscripts;
 
+import com.google.gson.JsonArray;
+import gov.nasa.jpl.view_repo.util.Sjm;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -167,48 +169,10 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         }
     }
 
-    // If no need for string formatting (calls with no string concatenation)
-    protected void log(Level level, int code, Exception e) {
-        String levelMessage = addLevelInfoToMsg(level, LogUtil.getStackTrace(e));
-        updateResponse(code, levelMessage);
-        if (level.toInt() >= logger.getLevel().toInt()) {
-            // print to response stream if >= existing log level
-            log(level, levelMessage);
-        }
-    }
-
-    // only logging loglevel and a message (no code)
-    protected void log(Level level, String msg, Object... params) {
-        if (level.toInt() >= logger.getLevel().toInt()) {
-            String formattedMsg = formatMessage(msg, params); //formatter.format (msg,params).toString();
-            String levelMessage = addLevelInfoToMsg(level, formattedMsg);
-            //TODO: unsure if need to call responseStatus.setMessage(...) since there is no code
-            response.append(levelMessage);
-            log(level, levelMessage);
-        }
-    }
-
-    // only logging code and a message (no loglevel, and thus, no check for log level status)
-    protected void log(int code, String msg, Object... params) {
-        String formattedMsg = formatMessage(msg, params); //formatter.format (msg,params).toString();
-        updateResponse(code, formattedMsg);
-    }
-
-    protected void log(String msg, Object... params) {
-        String formattedMsg = formatMessage(msg, params); //formatter.format (msg,params).toString();
-        log(formattedMsg);
-    }
-
     protected void updateResponse(int code, String msg) {
         response.append(msg);
         responseStatus.setCode(code);
         responseStatus.setMessage(msg);
-    }
-
-    protected void log(String msg) {
-        response.append(msg + System.lineSeparator());
-        //TODO: add to responseStatus too (below)?
-        //responseStatus.setMessage(msg);
     }
 
     protected static void log(Level level, Exception e) {
@@ -250,6 +214,25 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
             return String.format("[WARNING]: %s%n", msg);
         }
 
+    }
+
+    protected JsonArray parseErrors(JsonObject result) {
+        JsonArray errorMessages = new JsonArray();
+
+        for (Map.Entry<String, Integer> level : Sjm.ERROR_LEVELS.entrySet()) {
+            JsonArray errors = JsonUtil.getOptArray(result, level.getKey());
+            if (errors.size() > 0) {
+                for (int i = 0; i < errors.size(); i++) {
+                    JsonObject errorPayload = new JsonObject();
+                    errorPayload.addProperty("code", level.getValue());
+                    errorPayload.add(Sjm.SYSMLID, errors.get(i));
+                    errorPayload.addProperty("message",
+                        String.format("Element %s was not found", errors.get(i).getAsString()));
+                    errorMessages.add(errorPayload);
+                }
+            }
+        }
+        return errorMessages;
     }
 
     // formatMessage function is used to catch certain objects that must be dealt with individually
@@ -339,28 +322,8 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         return defaultValue;
     }
 
-
-    public StringBuffer getResponse() {
-        return response;
-    }
-
-    public Status getResponseStatus() {
-        return responseStatus;
-    }
-
-    /**
-     * Should create the new instances with the response in constructor, so
-     * this can be removed every where
-     *
-     * @param instance
-     */
-    public void appendResponseStatusInfo(AbstractJavaWebScript instance) {
-        response.append(instance.getResponse());
-        responseStatus.setCode(instance.getResponseStatus().getCode());
-    }
-
     protected void printFooter(String user, Logger logger, Timer timer) {
-        logger.info(String.format("%d %s %s", getResponseStatus().getCode(), user, timer));
+        logger.info(String.format("%d %s %s", responseStatus.getCode(), user, timer));
     }
 
     protected void printHeader(String user, Logger logger, WebScriptRequest req) {
@@ -401,37 +364,12 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         return null;
     }
 
-    public static String getProjectId(WebScriptRequest req, String siteName) {
-        String projectId = req.getServiceMatch().getTemplateVars().get(PROJECT_ID);
-        if (projectId == null || projectId.length() <= 0) {
-            if (siteName == null) {
-                siteName = NO_SITE_ID;
-            }
-            projectId = siteName + "_" + NO_PROJECT_ID;
-        }
-        return projectId;
-    }
-
     public static String getRefId(WebScriptRequest req) {
         String refId = req.getServiceMatch().getTemplateVars().get(REF_ID);
         if (refId == null || refId.length() <= 0) {
             refId = NO_WORKSPACE_ID;
         }
         return refId;
-    }
-
-    public EmsScriptNode getWorkspace(WebScriptRequest req) {
-        String refId = getRefId(req);
-        String projectId = getProjectId(req);
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
-        EmsScriptNode node = EmsScriptNode.getSiteNode(orgId);
-        node = node.childByNamePath("/" + projectId + "/refs/" + refId);
-        if (node != null) {
-            return new EmsScriptNode(node.getNodeRef(), services);
-        }
-
-        return null;
     }
 
     /**
@@ -453,179 +391,5 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
         String resToString = response.toString();
         String resStr = !Utils.isNullOrEmpty(resToString) ? resToString.replaceAll(System.lineSeparator(), "") : "";
         return !Utils.isNullOrEmpty(resStr) ? String.format("{\"message\":\"%s\"}", resStr) : "{}";
-    }
-
-
-    /**
-     * compareMmsVersions
-     * <br>
-     * <h3>Note: Returns true if this compare fails for either incorrect versions or if there is an error with the request.<br/>
-     * Returns false if the check is successful and the versions match.</h3>
-     * <pre>
-     * Takes a request created when a service is called and will retrieve the mmsVersion that is sent with it.
-     *  <b>The flag checkMmsVersions needs to be set to true for this service to work.</b>
-     *  <br/><b>1. </b>Check if there the request comes with the parameter mmsVersion=2.#. If the global flag
-     *  is set to check for mmsVersion it will then return either none if either invalid input or if none has been
-     *  specified, or the value of the version the service is being called with.
-     *  <br/><b>2. </b>If the value that is received after checking for mmsVersion in the request, is 'none' then
-     *  it will call parseContent of the request to create a JSONObject. If that fails, an exception is thrown
-     *  and the boolean value 'true' is returned to the calling method to signify failure of the check. Else it
-     *  will try to grab the mmsVersion from where ever it may lie within the JSONObject.
-     *  <br/><b>3. </b>
-     * </pre>
-     *
-     * @param req      WebScriptRequest
-     * @param response StringBuffer response
-     * @param status   Status of the request
-     * @return boolean false if versions match, true if they do not match or if is an incorrect request.
-     * @author EDK
-     */
-    public boolean compareMmsVersions(WebScriptRequest req, StringBuffer response, Status status) {
-        // Calls getBooleanArg to check if they have request for mms version
-        // TODO: Possibly remove this and implement as an aspect?
-        boolean incorrectVersion = true;
-        JsonObject jsonRequest = null;
-        char logCase = '0';
-        JsonObject jsonVersion = null;
-        String mmsVersion = null;
-
-        // Checks if the argument is mmsVersion and returns the value specified
-        // by the request
-        // if there is no request it will return 'none'
-        String paramVal = getStringArg(req, "mmsVersion", "none");
-        String paramArg = paramVal;
-        // Checks data member requestJSON to see if it is not null and if
-        // paramVal is none
-
-        //     // Check if input is K or JSON
-        String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
-
-        boolean jsonNotK = !contentType.contains("application/k");
-
-
-        if (!jsonNotK && paramVal.equals("none")) {
-            jsonRequest = getRequestJSON(req);
-
-            if (jsonRequest != null) {
-                paramVal = JsonUtil.getOptString(jsonRequest, "mmsVersion");
-            }
-        }
-
-        if (paramVal != null && !paramVal.equals("none") && paramVal.length() > 0) {
-            jsonVersion = getMMSversion(getServices());
-            mmsVersion = jsonVersion.get("mmsVersion").toString();
-
-            log(Level.INFO, HttpServletResponse.SC_OK, "Comparing Versions....");
-            if (mmsVersion.equals(paramVal)) {
-                // Compared versions matches
-                logCase = '1';
-                incorrectVersion = false;
-            } else {
-                // Versions do not match
-                logCase = '2';
-            }
-        } else if (Utils.isNullOrEmpty(paramVal) || paramVal.equals("none")) {
-            // Missing MMS Version parameter
-            logCase = '3';
-        } else {
-            // Wrong MMS Version or Invalid input
-            logCase = '4';
-        }
-        switch (logCase) {
-            case '1':
-                log(Level.INFO, HttpServletResponse.SC_OK, "Correct Versions");
-                break;
-            case '2':
-                log(Level.WARN, HttpServletResponse.SC_CONFLICT,
-                    "Versions do not match! Expected Version " + mmsVersion + ". Instead received " + paramVal);
-                break;
-            case '3':
-                log(Level.ERROR, HttpServletResponse.SC_CONFLICT,
-                    "Missing MMS Version or invalid parameter. Received parameter:" + paramArg + " and argument:"
-                        + mmsVersion + ". Request was: " + jsonRequest);
-                break;
-            // TODO: This should be removed but for the moment I am leaving this
-            // in as a contingency if anything else may break this.
-            case '4':
-                log(Level.ERROR, HttpServletResponse.SC_CONFLICT,
-                    "Wrong MMS Version or invalid input. Expected mmsVersion=" + mmsVersion + ". Instead received "
-                        + paramVal);
-                break;
-        }
-        // Returns true if it is either the wrong version or if it failed to
-        // compare it
-        // Returns false if it was successful in retrieving the mmsVersions from
-        // both the MMS and the request and
-        return incorrectVersion;
-    }
-
-    /**
-     * getMMSversion<br>
-     * Returns a JSONObject representing the mms version being used. It's format
-     * will be
-     *
-     * <pre>
-     *  {
-     *     "mmsVersion":"2.2"
-     * }
-     * </pre>
-     *
-     * @return JSONObject mmsVersion
-     */
-    public static JsonObject getMMSversion(ServiceRegistry services) {
-        JsonObject version = new JsonObject();
-        version.addProperty("mmsVersion", EmsNodeUtil.getMMSversion(services));
-        return version;
-    }
-
-    /**
-     * Helper utility to get the String value of a request parameter, calls on
-     * getParameterNames from the WebScriptRequest object to compare the
-     * parameter name passed in that is desired from the header.
-     *
-     * @param req          WebScriptRequest with parameter to be checked
-     * @param name         String of the request parameter name to check
-     * @param defaultValue default value if there is no parameter with the given name
-     * @return 'empty' if the parameter is assigned no value, if it is assigned
-     * "parameter value" (ignoring case), or if it's default is default
-     * value and it is not assigned "empty" (ignoring case).
-     * @author dank
-     */
-    public static String getStringArg(WebScriptRequest req, String name, String defaultValue) {
-        if (!Arrays.asList(req.getParameterNames()).contains(name)) {
-            return defaultValue;
-        }
-        return req.getParameter(name);
-    }
-
-    /**
-     * setRequestJSON <br>
-     * This will set the AbstractJavaWebScript data member requestJSON. It will
-     * make the parsedContent JSONObject remain within the scope of the
-     * AbstractJavaWebScript. {@link}
-     *
-     * @param req WebScriptRequest
-     */
-    private void setRequestJSON(WebScriptRequest req) {
-
-        JsonParser parser = new JsonParser();
-        try {
-            JsonElement parsed = parser.parse(req.getContent().getContent());
-            privateRequestJSON = parsed.isJsonNull() ? new JsonObject() :
-                parsed.getAsJsonObject();
-        } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Could not retrieve JSON");
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-    }
-
-    private JsonObject getRequestJSON(WebScriptRequest req) {
-        // Returns immediately if requestJSON has already been set before checking MMS Versions
-        if (privateRequestJSON == null) {
-            return null;
-        }
-        // Sets privateRequestJSON
-        setRequestJSON(req);
-        return privateRequestJSON;
     }
 }
