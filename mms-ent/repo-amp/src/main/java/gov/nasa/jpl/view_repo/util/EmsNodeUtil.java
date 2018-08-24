@@ -1593,8 +1593,10 @@ public class EmsNodeUtil {
 
     public String updateSingleElastic(JsonObject o, String type) {
         try {
-            ElasticResult r = eh.updateElement(o, projectId, type);
-            return r.elasticId;
+            if (o.has(Sjm.ELASTICID)) {
+                JsonObject r = eh.updateById(o.get(Sjm.ELASTICID).getAsString(), o, projectId, type);
+                return r.has(Sjm.ELASTICID) ? r.get(Sjm.ELASTICID).getAsString() : null;
+            }
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
         }

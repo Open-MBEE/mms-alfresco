@@ -285,6 +285,16 @@ public class WorkspacesPost extends AbstractJavaWebScript {
 
             JsonObject existingWsJson = emsNodeUtil.getRefJson(newWorkspaceId);
 
+            if (wsJson.get(Sjm.COMMITID) != null) {
+                wsJson.remove(Sjm.COMMITID);
+            }
+            if (wsJson.get("parentRefId") != null) {
+                wsJson.remove("parentRefId");
+            }
+            if (wsJson.get("parentCommitId") != null) {
+                wsJson.remove("parentCommitId");
+            }
+
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
             wsJson.addProperty(Sjm.ELASTICID, existingWsJson.get(Sjm.ELASTICID).getAsString());

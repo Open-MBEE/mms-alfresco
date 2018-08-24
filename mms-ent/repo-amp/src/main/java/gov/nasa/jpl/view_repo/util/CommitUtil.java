@@ -667,7 +667,6 @@ public class CommitUtil {
         PostgresHelper pgh = new PostgresHelper();
 
         String defaultIndex = EmsConfig.get("elastic.index.element");
-        ElasticResult result = null;
 
         try {
             ElasticHelper eh = new ElasticHelper();
@@ -676,12 +675,12 @@ public class CommitUtil {
                 pgh.createOrganization(orgId, orgName);
                 eh.createIndex(defaultIndex);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
-                result = eh.indexElement(orgJson, defaultIndex, ElasticHelper.ELEMENT);
+                ElasticResult result = eh.indexElement(orgJson, defaultIndex, ElasticHelper.ELEMENT);
                 return result.current;
             } else {
                 pgh.updateOrganization(orgId, orgName);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
-                if (eh.updateElement(orgId, orgJson, defaultIndex).size() > 0 && eh.refreshIndex()) {
+                if (eh.updateById(orgId, orgJson, defaultIndex, ElasticHelper.ELEMENT).size() > 0 && eh.refreshIndex()) {
                     return eh.getElementByElasticId(orgId, defaultIndex);
                 }
             }

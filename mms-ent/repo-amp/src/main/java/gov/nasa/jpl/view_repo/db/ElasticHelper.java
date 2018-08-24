@@ -413,42 +413,6 @@ public class ElasticHelper implements ElasticsearchInterface {
     }
 
     /**
-     * Update single JSON document by type                         (1)
-     *
-     * @param j JSON document to index          (2)
-     * @return ElasticResult result
-     */
-    public ElasticResult updateElement(JsonObject j, String index, String eType) throws IOException {
-        // :TODO error handling
-        ElasticResult result = new ElasticResult();
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("indexElement: %s", j));
-        }
-
-        if (j.has(Sjm.SYSMLID)) {
-            result.sysmlid = j.get(Sjm.SYSMLID).getAsString();
-        }
-
-
-        if (j.has(Sjm.ELASTICID)) {
-            JsonObject updateWrapper = new JsonObject();
-            String elasticId = j.get(Sjm.ELASTICID).getAsString();
-            updateWrapper.add("doc", j);
-            result.elasticId = client.execute(new Update.Builder(updateWrapper.toString()).id(elasticId)
-                .index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build()).getId();
-        }
-
-        if (result.elasticId == null) {
-            throw new IOException("Unable to update node in elasticsearch");
-        }
-
-        result.current = j;
-
-        return result;
-    }
-
-    /**
      * refresh the index                         (1)
      *
      * @return Boolean isRefreshed

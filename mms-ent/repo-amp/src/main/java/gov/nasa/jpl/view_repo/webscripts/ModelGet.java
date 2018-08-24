@@ -161,7 +161,6 @@ public class ModelGet extends AbstractJavaWebScript {
                 }
             }
             if (!elementsToFind.isEmpty()) {
-                JsonUtil.addStringSet(result, Sjm.FAILED, elementsToFind);
                 errors.put(Sjm.FAILED, elementsToFind);
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
             }
