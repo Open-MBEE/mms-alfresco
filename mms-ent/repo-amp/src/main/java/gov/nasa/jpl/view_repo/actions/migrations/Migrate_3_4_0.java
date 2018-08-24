@@ -3,7 +3,9 @@ package gov.nasa.jpl.view_repo.actions.migrations;
 import com.google.gson.JsonObject;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
+import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -11,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Logger;
 
@@ -34,6 +37,14 @@ public class Migrate_3_4_0 {
         eh.updateClusterSettings(transientSettings);
 
         boolean noErrors = true;
+
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        InputStream resourceAsStream = classLoader.getResourceAsStream("mapping_template.json");
+        Scanner s = new Scanner(resourceAsStream).useDelimiter("\\A");
+        if (s.hasNext()) {
+            JsonObject mappingTemplate = JsonUtil.buildFromString(s.next());
+            eh.applyTemplate(mappingTemplate.toString());
+        }
 
         List<Map<String, String>> orgs = pgh.getOrganizations(null);
 
