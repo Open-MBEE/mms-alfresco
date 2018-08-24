@@ -87,12 +87,7 @@ public class SiteGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        if (checkMmsVersions) {
-            if (compareMmsVersions(req, getResponse(), getResponseStatus())) {
-                model.put(Sjm.RES, createResponseJson());
-                return model;
-            }
-        }
+
         JsonObject json = null;
 
         try {

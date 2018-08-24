@@ -3,6 +3,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 import java.util.HashMap;
 import java.util.Map;
 
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -47,13 +48,11 @@ public class MmsVersion extends AbstractJavaWebScript {
 
         Map<String, Object> model = new HashMap<>();
 
-        JsonObject mmsVersion;
-
         if (logger.isDebugEnabled()) {
         	logger.debug("Checking MMS Versions");
         }
-
-        mmsVersion = getMMSversion(getServices());
+        JsonObject mmsVersion = new JsonObject();
+        mmsVersion.addProperty("mmsVersion", EmsNodeUtil.getMMSversion(services));
         if (prettyPrint) {
         	Gson gson = new GsonBuilder().setPrettyPrinting().create();
         	model.put(Sjm.RES, gson.toJson(mmsVersion));

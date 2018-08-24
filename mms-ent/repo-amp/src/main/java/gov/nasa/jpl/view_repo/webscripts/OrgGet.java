@@ -79,10 +79,7 @@ public class OrgGet extends AbstractJavaWebScript {
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
-        if (checkMmsVersions && compareMmsVersions(req, getResponse(), getResponseStatus())) {
-            model.put(Sjm.RES, createResponseJson());
-            return model;
-        }
+
         JsonObject json = null;
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";

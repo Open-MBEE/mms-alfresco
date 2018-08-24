@@ -56,8 +56,8 @@ public class ActionUtil {
      * @param services
      */
     public static void sendEmailToModifier(EmsScriptNode node, String msg, String subject, ServiceRegistry services) {
-        String username = (String)node.getProperty("cm:modifier", false);
-        EmsScriptNode user = new EmsScriptNode(services.getPersonService().getPerson(username), services, new StringBuffer());
+        String username = (String)node.getProperty("cm:modifier");
+        EmsScriptNode user = new EmsScriptNode(services.getPersonService().getPerson(username), services);
         String recipient = (String) user.getProperty("cm:email");
 
         String sender = EmsNodeUtil.getHostname() + "@jpl.nasa.gov";
