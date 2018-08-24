@@ -134,38 +134,18 @@ public class ElasticHelper implements ElasticsearchInterface {
         client.execute(updateSettings);
     }
 
-    /**
-     * Gets the JSON document of element type using a elastic _id (1)
-     *
-     * @param id _id elasticsearch property          (2)
-     * @return JSONObject o or null
-     */
-    public JsonObject getElementByElasticId(String id, String index) throws IOException {
-        // Cannot use method for commit type
-        return getByElasticId(id, index, ELEMENT);
-    }
-
-    public JsonObject getProfileByElasticId(String id, String index) throws IOException {
-        // Cannot use method for commit type
-        return getByElasticId(id, index, PROFILE);
-    }
-
-    public JsonObject getElementByElasticIdArtifact(String id, String index) throws IOException {
-        // Cannot use method for commit type
-        return getByElasticId(id, index, ARTIFACT);
-    }
-
     public JsonObject getByElasticId(String id, String index, String type) throws IOException {
         Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(type).build();
 
         JestResult result = client.execute(get);
-
         if (result.isSucceeded()) {
             JsonObject o = result.getJsonObject().get("_source").getAsJsonObject();
             o.add(Sjm.ELASTICID, result.getJsonObject().get("_id"));
+            if (type.equals(COMMIT)) {
+                o.add(Sjm.SYSMLID, result.getJsonObject().get("_id"));
+            }
             return o;
         }
-
         return null;
     }
 
@@ -259,42 +239,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         return array;
     }
 
-    /**
-     * Gets the JSON document of commit type using a elastic _id (1)
-     *
-     * @param id _id elasticsearch property          (2)
-     * @return JSONObject o or null
-     */
-    public JsonObject getCommitByElasticId(String id, String index) throws IOException {
-        if (id == null) {
-            return null;
-        }
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(COMMIT).build();
-
-        JestResult result = client.execute(get);
-
-        if (!result.isSucceeded() && result.getResponseCode() != 404) {
-            throw new IOException(
-                    String.format("Elasticsearch error[%1$s]:%2$s",
-                            result.getResponseCode(), result.getErrorMessage()));
-        } else if (result.isSucceeded()) {
-            JsonObject o = result.getJsonObject().getAsJsonObject("_source");
-            o.add(Sjm.SYSMLID, result.getJsonObject().get("_id"));
-            return o;
-        }
-
-        return null;
-    }
-
-    public JsonObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException {
-        return getByCommitId(elasticId, sysmlid, index, ELEMENT);
-    }
-
-    public JsonObject getArtifactByCommitId(String elasticId, String sysmlid, String index) throws IOException {
-        return getByCommitId(elasticId, sysmlid, index, ARTIFACT);
-    }
-
-    private JsonObject getByCommitId(String elasticId, String sysmlid, String index, String type) throws IOException {
+    public JsonObject getByCommitId(String elasticId, String sysmlid, String index, String type) throws IOException {
         String query = String.format(COMMIT_QUERY, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
 
         if (logger.isDebugEnabled()) {
@@ -425,14 +370,6 @@ public class ElasticHelper implements ElasticsearchInterface {
         return result.isSucceeded();
     }
 
-    public JsonObject updateElement(String id, JsonObject payload, String index) throws IOException {
-        return updateById(id, payload, index, ELEMENT);
-    }
-
-    public JsonObject updateProfile(String id, JsonObject payload, String index) throws IOException {
-        return updateById(id, payload, index, PROFILE);
-    }
-
     public JsonObject updateById(String id, JsonObject payload, String index, String type) throws IOException {
         JsonObject upsert = new JsonObject();
         upsert.add("doc", payload);
@@ -446,8 +383,6 @@ public class ElasticHelper implements ElasticsearchInterface {
         }
         return new JsonObject();
     }
-
-
 
     /**
      * Index multiple JSON documents by type using the BulkAPI                        (1)
