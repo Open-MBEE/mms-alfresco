@@ -197,18 +197,9 @@ public class EmsNodeUtil {
         return mounts;
     }
 
-    public JsonObject getElementByElementAndCommitId(String sysmlid, String commitId) {
+    public JsonObject getByCommitId(String sysmlid, String commitId, String type) {
         try {
-            return eh.getByCommitId(commitId, sysmlid, projectId, ElasticHelper.ELEMENT);
-        } catch (IOException e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-        return new JsonObject();
-    }
-
-    public JsonObject getArtifactByArtifactAndCommitId(String sysmlid, String commitId) {
-        try {
-            return eh.getByCommitId(commitId, sysmlid, projectId, ElasticHelper.ARTIFACT);
+            return eh.getByCommitId(commitId, sysmlid, projectId, type.contains("element") ? ElasticHelper.ELEMENT : ElasticHelper.ARTIFACT);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -261,9 +252,9 @@ public class EmsNodeUtil {
         return getJsonByElasticIds(elasticids, withChildViews);
     }
 
-    public JsonArray getArtifactsBySysmlids(Set<String> sysmlids, boolean withChildViews, boolean withDeleted) {
+    public JsonArray getArtifactsBySysmlids(Set<String> sysmlids, boolean withDeleted) {
         List<String> elasticIds = pgh.getElasticIdsFromSysmlIdsArtifacts(new ArrayList<>(sysmlids), withDeleted);
-        return getJsonByElasticIds(elasticIds, withChildViews);
+        return getJsonByElasticIds(elasticIds, false);
     }
 
     public JsonArray getJsonByElasticIds(List<String> elasticIds, boolean withChildViews) {
@@ -385,19 +376,6 @@ public class EmsNodeUtil {
         }
         return children;
     }
-
-    public JsonObject getArtifactById(String sysmlid, boolean withDeleted) {
-        String artifact = pgh.getElasticIdFromSysmlIdArtifact(sysmlid, withDeleted);
-        if (artifact != null) {
-            try {
-                return eh.getByElasticId(artifact, projectId, ElasticHelper.ARTIFACT);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return new JsonObject();
-    }
-
 
     public JsonArray getChildren(String sysmlid, DbEdgeTypes dbEdge, final Long maxDepth) {
         Set<String> children = new HashSet<>();
@@ -578,7 +556,7 @@ public class EmsNodeUtil {
 
         Map<String, JsonObject> existingMap = (!type.equals("Artifact")) ?
             convertToMap(getNodesBySysmlids(sysmlids, false, true)) :
-            convertToMap(getArtifactsBySysmlids(sysmlids, false, true));
+            convertToMap(getArtifactsBySysmlids(sysmlids, true));
 
         for (int i = 0; i < elements.size(); i++) {
             JsonObject o = elements.get(i).getAsJsonObject();
@@ -827,7 +805,7 @@ public class EmsNodeUtil {
                                     getProjectWithFullMounts(JsonUtil.getOptString(ownedAttribute, Sjm.PROJECTID),
                                         JsonUtil.getOptString(ownedAttribute, Sjm.REFID), null);
                             }
-                            handleMountSearch(mountJson, false, false, 0L, childViewsSet, childViews);
+                            handleMountSearch(mountJson, false, false, 0L, childViewsSet, childViews, null, Sjm.ELEMENTS);
                         } catch (Exception e) {
                             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
                         }
@@ -1353,10 +1331,6 @@ public class EmsNodeUtil {
         return wrapper;
     }
 
-    public boolean isDeleted(String sysmlid) {
-        return pgh.isDeleted(sysmlid);
-    }
-
     public boolean orgExists(String orgName) {
         return orgName.equals("swsdp") || pgh.orgExists(orgName);
     }
@@ -1464,13 +1438,7 @@ public class EmsNodeUtil {
     }
 
     public static void handleMountSearch(JsonObject mountsJson, boolean extended, boolean extraDocs,
-        final Long maxDepth, Set<String> elementsToFind, JsonArray result) throws IOException {
-
-        handleMountSearch(mountsJson, extended, extraDocs, maxDepth, elementsToFind, result, null, null);
-    }
-
-    public static void handleMountSearch(JsonObject mountsJson, boolean extended, boolean extraDocs,
-        final Long maxDepth, Set<String> elementsToFind, JsonArray result, String timestamp, String type)
+           Long maxDepth, Set<String> elementsToFind, JsonArray result, String timestamp, String type)
         throws IOException {
         if (elementsToFind.isEmpty() || mountsJson == null) {
             return;
@@ -1485,8 +1453,8 @@ public class EmsNodeUtil {
             extended = false;
             extraDocs = false;
 
-            if (type != null && type.contains("artifacts")) {
-                nodeList = emsNodeUtil.getArtifactsBySysmlids(elementsToFind, false, true);
+            if (type != null && type.equals(Sjm.ARTIFACTS)) {
+                nodeList = emsNodeUtil.getArtifactsBySysmlids(elementsToFind, true);
             } else {
                 nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
             }
@@ -1506,8 +1474,10 @@ public class EmsNodeUtil {
                 }
             }
         } else {
-            if (type != null && type.contains("artifacts")) {
-                nodeList = emsNodeUtil.getArtifactsBySysmlids(elementsToFind, false, false);
+            if (type != null && type.equals(Sjm.ARTIFACTS)) {
+                extended = false;
+                maxDepth = 0L;
+                nodeList = emsNodeUtil.getArtifactsBySysmlids(elementsToFind, false);
             } else {
                 nodeList = emsNodeUtil.getNodesBySysmlids(elementsToFind, true, false);
             }
@@ -1971,10 +1941,6 @@ public class EmsNodeUtil {
 
     public static String md5Hash(String str) {
         return DigestUtils.md5Hex(str);
-    }
-
-    public JsonObject getProfile(String id) throws IOException {
-        return eh.getByElasticId(id, EmsConfig.get("elastic.index.element"), ElasticHelper.PROFILE);
     }
 
     public static String md5Hash(File file) {
