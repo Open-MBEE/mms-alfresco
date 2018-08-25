@@ -18,19 +18,11 @@ public interface ElasticsearchInterface {
 
     void deleteIndex(String index) throws IOException;
 
-    JsonObject getElementByElasticId(String id, String index) throws IOException;
-
     JsonArray getCommitHistory(String sysmlid, String index) throws IOException;
-
-    JsonObject getCommitByElasticId(String id, String index) throws IOException;
-
-    JsonObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException;
 
     JsonArray getElementsFromElasticIds(List<String> ids, String index) throws IOException;
 
     ElasticResult indexElement(JsonObject j, String index, String eType) throws IOException;
-
-    JsonObject updateElement(String id, JsonObject payload, String index) throws IOException;
 
     boolean refreshIndex() throws IOException;
 
