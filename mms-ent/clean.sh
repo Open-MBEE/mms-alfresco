@@ -130,7 +130,7 @@ expect eof
 EOD
         $EXPECT <<EOD
 log_user 0
-spawn dropdb -U $dbuser _MovelModel
+spawn dropdb -U $dbuser _MoveModel
 expect "*Password*"
 send "$password\r"
 expect eof

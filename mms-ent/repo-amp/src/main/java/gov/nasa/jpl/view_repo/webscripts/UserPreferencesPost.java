@@ -27,6 +27,7 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
+import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -87,7 +88,7 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
                     JsonObject postJson = postJsonTop.get(Sjm.PROFILES).getAsJsonObject();
 
                     // creates a new document if one didn't exist, otherwise updates existing document
-                    JsonObject res = CommitUtil.indexProfile(username, postJson, elementIndex);
+                    JsonObject res = (new ElasticHelper()).updateById(username, postJson, elementIndex, ElasticHelper.PROFILE);
                     if (res != null && res.size() > 0) {
                         response.add(Sjm.PROFILES, res);
                     } else {

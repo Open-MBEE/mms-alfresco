@@ -201,7 +201,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         }
 
         try {
-            eh.updateElement(elasticId, created, projectId);
+            eh.updateById(elasticId, created, projectId, ElasticHelper.REF);
         } catch (Exception e) {
             //Do nothing
         }

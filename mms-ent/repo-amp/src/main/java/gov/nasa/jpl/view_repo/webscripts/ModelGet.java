@@ -122,6 +122,7 @@ public class ModelGet extends AbstractJavaWebScript {
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
         Map<String, Object> model = new HashMap<>();
+        Map<String, Set<String>> errors = new HashMap<>();
         JsonArray elementsJson = new JsonArray();
         JsonObject result = new JsonObject();
 
@@ -154,17 +155,17 @@ public class ModelGet extends AbstractJavaWebScript {
                         deletedSet.add(deleted.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
                     }
                     elementsToFind.removeAll(deletedSet);
-                    JsonUtil.addStringSet(result, Sjm.DELETED, deletedSet);
+                    errors.put(Sjm.DELETED, deletedSet);
                     top.add(Sjm.DELETED, deleted);
                     log(Level.ERROR, HttpServletResponse.SC_GONE, "Deleted elements found");
                 }
             }
             if (!elementsToFind.isEmpty()) {
-                JsonUtil.addStringSet(result, Sjm.FAILED, elementsToFind);
+                errors.put(Sjm.FAILED, elementsToFind);
                 log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
             }
 
-            JsonArray errorMessages = parseErrors(result);
+            JsonArray errorMessages = parseErrors(errors);
 
             if (errorMessages.size() > 0) {
                 top.add("messages", errorMessages);
@@ -239,7 +240,9 @@ public class ModelGet extends AbstractJavaWebScript {
             try {
                 String currentId = elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString();
                 elementsToFind.add(currentId);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                // Intentionally empty
+            }
         }
 
         JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
@@ -257,9 +260,9 @@ public class ModelGet extends AbstractJavaWebScript {
         }
 
         if (!elementsToFind.isEmpty()) {
-            JsonArray deletedElementsCache = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
+            JsonArray deletedElementsJson = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
             if (timestamp != null) {
-                for (JsonElement check : deletedElementsCache) {
+                for (JsonElement check : deletedElementsJson) {
                     try {
                         Date created = EmsNodeUtil.df.parse(JsonUtil.getOptString((JsonObject) check, Sjm.CREATED));
                         Date commitDate = EmsNodeUtil.df.parse(timestamp);
@@ -273,7 +276,7 @@ public class ModelGet extends AbstractJavaWebScript {
                     }
                 }
             } else {
-                this.deletedElementsCache = deletedElementsCache;
+                this.deletedElementsCache = deletedElementsJson;
             }
         }
 
@@ -296,16 +299,7 @@ public class ModelGet extends AbstractJavaWebScript {
             depth = parseDepth(depthParam);
         }
 
-        // recurse default is false
-        boolean recurse = getBooleanArg(req, "recurse", false);
-        // for backwards compatiblity convert recurse to infinite depth (this
-        // overrides
-        // any depth setting)
-        if (recurse) {
-            depth = 100000L;
-        }
-
-        return depth;
+        return getBooleanArg(req, "recurse", false) ? 100000L : depth;
     }
 
     Long parseDepth(String depthParam) {

@@ -91,7 +91,7 @@ public class ArtifactsGet extends ModelsGet {
 
         Map<String, Object> model = new HashMap<>();
         JsonArray elementsJson = new JsonArray();
-        JsonArray errors = new JsonArray();
+        Map<String, Set<String>> errors = new HashMap<>();
         JsonObject result = new JsonObject();
 
         try {
@@ -110,7 +110,7 @@ public class ArtifactsGet extends ModelsGet {
 
                 top.add(Sjm.ARTIFACTS, elements);
 
-                JsonArray errorMessages = parseErrors(result);
+                JsonArray errorMessages = parseErrors(errors);
 
                 if (errorMessages.size() > 0) {
                     top.add("messages", errorMessages);

@@ -89,7 +89,7 @@ public class EmsNodeUtil {
         List<Map<String, String>> organizations = pgh.getOrganizations(orgId);
         for (Map<String, String> n : organizations) {
             try {
-                JsonObject current = eh.getElementByElasticId(n.get(ORG_ID), EmsConfig.get("elastic.index.element"));
+                JsonObject current = eh.getByElasticId(n.get(ORG_ID), EmsConfig.get("elastic.index.element"), ElasticHelper.ELEMENT);
                 if (current != null) {
                     orgs.add(current);
                 } else {
@@ -199,7 +199,7 @@ public class EmsNodeUtil {
 
     public JsonObject getElementByElementAndCommitId(String sysmlid, String commitId) {
         try {
-            return eh.getElementByCommitId(commitId, sysmlid, projectId);
+            return eh.getByCommitId(commitId, sysmlid, projectId, ElasticHelper.ELEMENT);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -208,7 +208,7 @@ public class EmsNodeUtil {
 
     public JsonObject getArtifactByArtifactAndCommitId(String sysmlid, String commitId) {
         try {
-            return eh.getArtifactByCommitId(commitId, sysmlid, projectId);
+            return eh.getByCommitId(commitId, sysmlid, projectId, ElasticHelper.ARTIFACT);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -239,7 +239,7 @@ public class EmsNodeUtil {
         String elasticId = pgh.getElasticIdFromSysmlId(sysmlid);
         if (elasticId != null) {
             try {
-                JsonObject result = eh.getElementByElasticId(elasticId, projectId);
+                JsonObject result = eh.getByElasticId(elasticId, projectId, ElasticHelper.ELEMENT);
                 if (result != null) {
                     result.addProperty(Sjm.PROJECTID, this.projectId);
                     result.addProperty(Sjm.REFID, this.workspaceName);
@@ -338,7 +338,7 @@ public class EmsNodeUtil {
         Map<String, String> refInfo = pgh.getRefElastic(refId);
         if (refInfo != null) {
             try {
-                jObj = eh.getElementByElasticId(refInfo.get("elasticId"), projectId);
+                jObj = eh.getByElasticId(refInfo.get("elasticId"), projectId, ElasticHelper.REF);
                 jObj.addProperty("parentRefId",
                     (refInfo.get("parent").equals("")) ? "noParent" : refInfo.get("parent"));
                 jObj.addProperty("type", (refInfo.get("isTag").equals("true")) ? "tag" : "branch");
@@ -390,7 +390,7 @@ public class EmsNodeUtil {
         String artifact = pgh.getElasticIdFromSysmlIdArtifact(sysmlid, withDeleted);
         if (artifact != null) {
             try {
-                return eh.getElementByElasticIdArtifact(artifact, projectId);
+                return eh.getByElasticId(artifact, projectId, ElasticHelper.ARTIFACT);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -1289,7 +1289,7 @@ public class EmsNodeUtil {
         for (Map.Entry<String, String> entry : updateOwner.entrySet()) {
             String value = entry.getValue();
             String key = entry.getKey();
-            if (elements.get(key).has(Sjm.ASSOCIATIONID)) {
+            if (elements.containsKey(key) && elements.get(key).has(Sjm.ASSOCIATIONID)) {
                 String associationId = elements.get(key).get(Sjm.ASSOCIATIONID).getAsString();
                 String ownerParentPackage = pgh.getImmediateParentOfType(value, DbEdgeTypes.CONTAINMENT, dbnt);
                 JsonObject associationObj = getNodeBySysmlid(associationId);
@@ -1557,7 +1557,7 @@ public class EmsNodeUtil {
 
     public JsonObject getCommitObject(String commitId) {
         try {
-            return eh.getCommitByElasticId(commitId, projectId);
+            return eh.getByElasticId(commitId, projectId, ElasticHelper.COMMIT);
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -1581,10 +1581,22 @@ public class EmsNodeUtil {
         }
     }
 
-    public String insertSingleElastic(JsonObject o) {
+    public String insertSingleElastic(JsonObject o, String type) {
         try {
-            ElasticResult r = eh.indexElement(o, projectId, ElasticHelper.ELEMENT);
+            ElasticResult r = eh.indexElement(o, projectId, type);
             return r.elasticId;
+        } catch (IOException e) {
+            logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        return null;
+    }
+
+    public String updateSingleElastic(JsonObject o, String type) {
+        try {
+            if (o.has(Sjm.ELASTICID)) {
+                JsonObject r = eh.updateById(o.get(Sjm.ELASTICID).getAsString(), o, projectId, type);
+                return r.has(Sjm.ELASTICID) ? r.get(Sjm.ELASTICID).getAsString() : null;
+            }
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -1962,7 +1974,7 @@ public class EmsNodeUtil {
     }
 
     public JsonObject getProfile(String id) throws IOException {
-        return eh.getProfileByElasticId(id, "mms");
+        return eh.getByElasticId(id, EmsConfig.get("elastic.index.element"), ElasticHelper.PROFILE);
     }
 
     public static String md5Hash(File file) {

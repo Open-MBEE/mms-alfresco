@@ -60,7 +60,6 @@ public class CommitUtil {
     static Logger logger = Logger.getLogger(CommitUtil.class);
 
     public static final String TYPE_BRANCH = "BRANCH";
-    public static final String TYPE_COMMIT = "COMMIT";
     public static final String TYPE_DELTA = "DELTA";
     public static final String TYPE_MERGE = "MERGE";
 
@@ -74,7 +73,6 @@ public class CommitUtil {
     private static final String INITIALCOMMIT = "initialcommit";
     private static final String LASTCOMMIT = "lastcommit";
     private static final String ARTIFACTS = "artifacts";
-    private static final String CONTENTTYPE = "contentType";
 
     private static final String HOLDING_BIN_PREFIX = "holding_bin_";
 
@@ -172,10 +170,6 @@ public class CommitUtil {
 
     public static boolean isGroup(JsonObject element) {
         return element.has(Sjm.ISGROUP) && element.get(Sjm.ISGROUP).getAsBoolean();
-    }
-
-    public static JsonObject indexProfile(String id, JsonObject elements, String index) throws IOException {
-        return eh.updateProfile(id, elements, index);
     }
 
     private static boolean bulkElasticEntry(JsonArray elements, String operation, boolean refresh, String index,
@@ -667,7 +661,6 @@ public class CommitUtil {
         PostgresHelper pgh = new PostgresHelper();
 
         String defaultIndex = EmsConfig.get("elastic.index.element");
-        ElasticResult result = null;
 
         try {
             ElasticHelper eh = new ElasticHelper();
@@ -676,15 +669,13 @@ public class CommitUtil {
                 pgh.createOrganization(orgId, orgName);
                 eh.createIndex(defaultIndex);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
-                result = eh.indexElement(orgJson, defaultIndex, ElasticHelper.ELEMENT);
+                ElasticResult result = eh.indexElement(orgJson, defaultIndex, ElasticHelper.ELEMENT);
                 return result.current;
             } else {
                 pgh.updateOrganization(orgId, orgName);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
-                if (eh.updateElement(orgId, orgJson, defaultIndex)) {
-                    if (eh.refreshIndex()) {
-                        return eh.getElementByElasticId(orgId, defaultIndex);
-                    }
+                if (eh.updateById(orgId, orgJson, defaultIndex, ElasticHelper.ELEMENT).size() > 0 && eh.refreshIndex()) {
+                    return eh.getByElasticId(orgId, defaultIndex, ElasticHelper.ELEMENT);
                 }
             }
 
