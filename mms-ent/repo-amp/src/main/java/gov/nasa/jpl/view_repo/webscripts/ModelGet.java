@@ -66,7 +66,7 @@ public class ModelGet extends AbstractJavaWebScript {
 
     static Logger logger = Logger.getLogger(ModelGet.class);
 
-    private static final String ELEMENTID = "elementId";
+    protected static final String ELEMENTID = "elementId";
     protected static final String ARTIFACTID = "artifactId";
 
     protected Set<String> elementsToFind = new HashSet<>();
@@ -109,15 +109,17 @@ public class ModelGet extends AbstractJavaWebScript {
 
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        printHeader(user, logger, req, true);
+        if (logger.isDebugEnabled()) {
+            printHeader(user, logger, req);
+        } else {
+            printHeader(user, logger, req, true);
+        }
         Timer timer = new Timer();
 
         Map<String, Object> model = new HashMap<>();
         try {
             if (validateRequest(req, status)) {
-                Long depth = getDepthFromRequest(req);
-                JsonObject result = handleRequest(req, depth, Sjm.ELEMENTS);
-                model = finish(req, result, true, Sjm.ELEMENTS);
+                model = getModel(req);
             }
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
@@ -134,8 +136,13 @@ public class ModelGet extends AbstractJavaWebScript {
         return model;
     }
 
+    protected Map<String, Object> getModel(WebScriptRequest req) throws IOException {
+        Long depth = getDepthFromRequest(req);
+        JsonObject result = handleRequest(req, depth, Sjm.ELEMENTS);
+        return finish(req, result, true, Sjm.ELEMENTS);
+    }
+
     protected Map<String, Object> finish(WebScriptRequest req, JsonObject result, boolean single, String type) {
-        String object = type.equals(Sjm.ELEMENTS) ? "element" : "artifact";
         Map<String, Set<String>> errors = new HashMap<>();
         JsonArray elementsJson = JsonUtil.getOptArray(result, type);
         JsonObject top = new JsonObject();

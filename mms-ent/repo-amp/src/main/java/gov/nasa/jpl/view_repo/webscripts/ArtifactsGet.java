@@ -30,29 +30,16 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.*;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import gov.nasa.jpl.mbee.util.Timer;
-
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.JsonUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
@@ -77,35 +64,9 @@ public class ArtifactsGet extends ModelsGet {
         return instance.executeImplImpl(req, status, cache);
     }
 
-    @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
-        String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (logger.isDebugEnabled()) {
-            printHeader(user, logger, req);
-        } else {
-            printHeader(user, logger, req, true);
-        }
-        Timer timer = new Timer();
-
-        Map<String, Object> model = new HashMap<>();
-        try {
-            if (validateRequest(req, status)) {
-                JsonObject result = handleRequest(req, 0L, Sjm.ARTIFACTS);
-                model = finish(req, result, false, Sjm.ARTIFACTS);
-            }
-        } catch (IllegalStateException e) {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
-        } catch (JsonParseException e) {
-            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-            log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server Error");
-        }
-        if (model.isEmpty()) {
-            model.put(Sjm.RES, createResponseJson());
-        }
-        status.setCode(responseStatus.getCode());
-        printFooter(user, logger, timer);
-        return model;
+    @Override protected Map<String, Object> getModel(WebScriptRequest req) throws IOException {
+        JsonObject result = handleRequest(req, 0L, Sjm.ARTIFACTS);
+        return finish(req, result, false, Sjm.ARTIFACTS);
     }
 }
 
