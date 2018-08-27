@@ -1,7 +1,6 @@
 package gov.nasa.jpl.view_repo.actions.migrations;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import gov.nasa.jpl.mbee.util.Pair;
