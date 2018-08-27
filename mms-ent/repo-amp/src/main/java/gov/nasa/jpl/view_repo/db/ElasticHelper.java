@@ -129,6 +129,13 @@ public class ElasticHelper implements ElasticsearchInterface {
         client.execute(updateByQuery);
     }
 
+    public void deleteByQuery(String index, String payload, String type) throws IOException {
+        DeleteByQuery deleteByQuery =
+            new DeleteByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
+                .build();
+        client.execute(deleteByQuery);
+    }
+
     public void updateClusterSettings(String payload) throws IOException {
         UpdateSettings updateSettings = new UpdateSettings.Builder(payload).build();
         client.execute(updateSettings);
@@ -519,9 +526,9 @@ public class ElasticHelper implements ElasticsearchInterface {
         try {
             ArrayList<Delete> deleteList = new ArrayList<>();
 
-            for (String commitId : ids) {
+            for (String elasticId : ids) {
                 deleteList.add(
-                    new Delete.Builder(commitId).type(type).index(index.toLowerCase().replaceAll("\\s+", "")).build());
+                    new Delete.Builder(elasticId).type(type).index(index.toLowerCase().replaceAll("\\s+", "")).build());
             }
             Bulk bulk = new Bulk.Builder().defaultIndex(index.toLowerCase().replaceAll("\\s+", "")).defaultIndex(type)
                 .addAction(deleteList).build();

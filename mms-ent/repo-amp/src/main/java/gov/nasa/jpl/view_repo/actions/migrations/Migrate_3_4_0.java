@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
@@ -13,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +32,11 @@ public class Migrate_3_4_0 {
 
     private static final String transientSettings = "{\"transient\": {\"script.max_compilations_per_minute\":120}}";
 
-    private static final String searchQuery = "{\"query\": {\"type\" : {\"value\": \"ref\"}}}";
+    private static final String updateMasterRef =
+        "{\"query\": {\"terms\": {\"id\":[\"master\"]}}, \"script\": {\"inline\": \"ctx._source.type = \\\"Branch\\\"\"}}";
+
+    private static final String deleteQuery =
+        "{\"query\": {\"constant_score\": {\"filter\": {\"terms\": {}}}}}";
 
     private static final String updateQuery = "UPDATE \"commits\" SET timestamp = ? WHERE elasticid = ?";
 
@@ -61,21 +67,44 @@ public class Migrate_3_4_0 {
                 String projectId = project.get(Sjm.SYSMLID).toString();
                 pgh.setProject(projectId);
 
-                JsonObject refs = eh.search(parser.parse(searchQuery).getAsJsonObject());
-                Set<String> refsToMove = new HashSet<>();
-                JsonArray payload = new JsonArray();
-                if (refs.has("elements")) {
-                    for (JsonElement ref : refs.get("elements").getAsJsonArray()) {
-                        if (ref.getAsJsonObject().get(Sjm.ELASTICID) != null) {
-                            refsToMove.add(ref.getAsJsonObject().get(Sjm.ELASTICID).getAsString());
-                            payload.add(ref.getAsJsonObject());
-                        }
+                List<Pair<String, String>> allRefs = pgh.getRefsElastic(true);
+
+                if (!allRefs.isEmpty()) {
+                    Set<String> refsToMove = new HashSet<>();
+                    JsonArray insertPayload = new JsonArray();
+                    JsonArray deleteSet = new JsonArray();
+
+                    for (Pair<String, String> singleRef : allRefs) {
+                        refsToMove.add(singleRef.second);
                     }
 
-                    if (!refsToMove.isEmpty()) {
-                        eh.bulkDeleteByType(refsToMove, projectId, ElasticHelper.ELEMENT);
-                        if (eh.refreshIndex()) {
-                            eh.bulkIndexElements(payload, "added", true, projectId, ElasticHelper.REF);
+                    List<String> refIds = new ArrayList<>();
+                    refIds.addAll(refsToMove);
+
+                    JsonArray refs = eh.getElementsFromElasticIds(refIds, projectId);
+
+                    if (refs.size() > 0) {
+                        for (int i = 0; i < refs.size(); i++) {
+                            JsonObject ref = refs.get(i).getAsJsonObject();
+                            if (ref.get(Sjm.ELASTICID) != null) {
+                                insertPayload.add(ref);
+                            }
+                            if (ref.get(Sjm.SYSMLID) != null) {
+                                deleteSet.add(ref.get(Sjm.SYSMLID).getAsString());
+                            }
+                        }
+
+                        if (deleteSet.size() > 0) {
+                            JsonObject delQuery = parser.parse(deleteQuery).getAsJsonObject();
+                            delQuery.get("query").getAsJsonObject().get("constant_score").getAsJsonObject()
+                                .get("filter").getAsJsonObject().get("terms").getAsJsonObject()
+                                .add(Sjm.SYSMLID, deleteSet);
+                            eh.deleteByQuery(projectId, delQuery.toString(), ElasticHelper.ELEMENT);
+                        }
+
+                        if (!refsToMove.isEmpty()) {
+                            eh.bulkIndexElements(insertPayload, "added", true, projectId, ElasticHelper.REF);
+                            eh.updateByQuery(projectId, updateMasterRef, ElasticHelper.REF);
                         }
                     }
                 }
@@ -85,7 +114,7 @@ public class Migrate_3_4_0 {
                     String commitId = commit.get("commitId");
                     if (!commitId.isEmpty()) {
                         JsonObject commitObject = eh.getByElasticId(commitId, projectId, ElasticHelper.COMMIT);
-                        if (commitObject.has(Sjm.CREATED)) {
+                        if (commitObject != null && commitObject.has(Sjm.CREATED)) {
                             try (PreparedStatement statement = pgh.prepareStatement(updateQuery)) {
                                 Date created = df.parse(commitObject.get(Sjm.CREATED).getAsString());
                                 Timestamp ts = new Timestamp(created.getTime());

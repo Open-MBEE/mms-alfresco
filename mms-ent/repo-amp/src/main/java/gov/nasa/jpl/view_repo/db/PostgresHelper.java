@@ -2210,10 +2210,11 @@ public class PostgresHelper implements GraphInterface {
         try (PreparedStatement query = getConn("config")
             .prepareStatement("SELECT count(id) FROM organizations WHERE orgId = ?")) {
             query.setString(1, orgId);
-            ResultSet rs = query.executeQuery();
-            if (rs.next()) {
-                if (rs.getInt(1) > 0) {
-                    return true;
+            try (ResultSet rs = query.executeQuery()) {
+                if (rs.next()) {
+                    if (rs.getInt(1) > 0) {
+                        return true;
+                    }
                 }
             }
         } catch (SQLException e) {

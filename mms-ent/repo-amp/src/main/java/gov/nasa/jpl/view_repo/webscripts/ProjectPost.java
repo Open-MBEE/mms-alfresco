@@ -239,6 +239,7 @@ public class ProjectPost extends AbstractJavaWebScript {
                 JsonObject masterWs = new JsonObject();
                 masterWs.addProperty("id", NO_WORKSPACE_ID);
                 masterWs.addProperty("name", NO_WORKSPACE_ID);
+                masterWs.addProperty("type", "Branch");
                 // :TODO going to have to check that index doesn't exist if ES doesn't already do this
                 emsNodeUtil.insertProjectIndex(projectId);
                 String elasticId = emsNodeUtil.insertSingleElastic(masterWs, ElasticHelper.REF);
