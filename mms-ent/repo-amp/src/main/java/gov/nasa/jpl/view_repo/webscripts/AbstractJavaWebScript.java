@@ -32,6 +32,7 @@ import com.google.gson.JsonArray;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,9 +66,6 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
  */
 public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     private static Logger logger = Logger.getLogger(AbstractJavaWebScript.class);
-
-    static boolean checkMmsVersions = false;
-    private JsonObject privateRequestJSON = null;
 
     // injected members
     protected ServiceRegistry services;        // get any of the Alfresco services
@@ -216,18 +214,17 @@ public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
 
     }
 
-    protected JsonArray parseErrors(JsonObject result) {
+    protected JsonArray parseErrors(Map<String, Set<String>> errors) {
         JsonArray errorMessages = new JsonArray();
 
         for (Map.Entry<String, Integer> level : Sjm.ERROR_LEVELS.entrySet()) {
-            JsonArray errors = JsonUtil.getOptArray(result, level.getKey());
-            if (errors.size() > 0) {
-                for (int i = 0; i < errors.size(); i++) {
+            if (errors.get(level.getKey()) != null && !errors.get(level.getKey()).isEmpty()) {
+                for (String sysmlid : errors.get(level.getKey())) {
                     JsonObject errorPayload = new JsonObject();
                     errorPayload.addProperty("code", level.getValue());
-                    errorPayload.add(Sjm.SYSMLID, errors.get(i));
+                    errorPayload.addProperty(Sjm.SYSMLID, sysmlid);
                     errorPayload.addProperty("message",
-                        String.format("Element %s was not found", errors.get(i).getAsString()));
+                        String.format("Element %s was not found", sysmlid));
                     errorMessages.add(errorPayload);
                 }
             }

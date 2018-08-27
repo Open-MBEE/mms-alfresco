@@ -203,8 +203,8 @@ DeleteArtifact
 	Should Be Equal		${result.status_code}		${200}
 	# Try to get element
 	${result} =         requests.Get         url=${ROOT}/projects/PA/refs/master/artifacts/deleteArtifact          headers=&{REQ_HEADER}
-	Should Be Equal		${result.status_code}		${404}
-	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _modified
+	Should Be Equal		${result.status_code}		${410}
+	${filter} =			Create List	 _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _modified		 artifactLocation
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
 	${compare_result} =		Compare JSON		${TEST_NAME}
 	Should Match Baseline		${compare_result}
