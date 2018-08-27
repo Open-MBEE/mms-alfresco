@@ -58,7 +58,7 @@ public class Migrate_3_4_0 {
                 for (Map<String, String> commit : commits) {
                     String commitId = commit.get("commitId");
                     if (!commitId.isEmpty()) {
-                        JsonObject commitObject = eh.getCommitByElasticId(commitId, projectId);
+                        JsonObject commitObject = eh.getByElasticId(commitId, projectId, ElasticHelper.COMMIT);
                         if (commitObject.has(Sjm.CREATED)) {
                             String query = "UPDATE \"commits\" SET timestamp = ? WHERE elasticid = ?";
                             try (PreparedStatement statement = pgh.prepareStatement(query)) {
