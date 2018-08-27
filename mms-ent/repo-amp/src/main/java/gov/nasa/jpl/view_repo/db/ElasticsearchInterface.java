@@ -32,7 +32,7 @@ public interface ElasticsearchInterface {
 
     JsonObject search(JsonObject queryJson) throws IOException;
 
-    JsonObject bulkDeleteByType(String type, ArrayList<String> ids, String index);
+    JsonObject bulkDeleteByType(Set<String> ids, String index, String type);
 
     JsonObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds, String index);
 

@@ -510,7 +510,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param ids
      * @return JSONObject Result
      */
-    public JsonObject bulkDeleteByType(String type, ArrayList<String> ids, String index) {
+    public JsonObject bulkDeleteByType(Set<String> ids, String index, String type) {
         if (ids.isEmpty()) {
             return new JsonObject();
         }
