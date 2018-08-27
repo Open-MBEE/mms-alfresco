@@ -2,6 +2,7 @@
     "artifacts": [
         {
             "_creator": "admin",
+            "_editable": true,
             "_modifier": "admin",
             "_projectId": "PB",
             "_refId": "master",

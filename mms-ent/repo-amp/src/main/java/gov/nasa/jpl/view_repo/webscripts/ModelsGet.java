@@ -32,29 +32,17 @@ package gov.nasa.jpl.view_repo.webscripts;
 import java.io.IOException;
 import java.util.*;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-
-import gov.nasa.jpl.mbee.util.TimeUtils;
-import gov.nasa.jpl.mbee.util.Timer;
 
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.JsonUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
@@ -79,79 +67,11 @@ public class ModelsGet extends ModelGet {
         return instance.executeImplImpl(req, status, cache);
     }
 
-    @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
-        String user = AuthenticationUtil.getFullyAuthenticatedUser();
-
-        if (logger.isDebugEnabled()) {
-            printHeader(user, logger, req);
-        } else {
-            printHeader(user, logger, req, true);
-        }
-
-        Timer timer = new Timer();
-
-        String[] accepts = req.getHeaderValues("Accept");
-        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
-
-        Map<String, Object> model = new HashMap<>();
-        Map<String, Set<String>> errors = new HashMap<>();
-        JsonArray elementsJson = new JsonArray();
-        JsonObject result = new JsonObject();
-
-        try {
-
-            if (validateRequest(req, status)) {
-                try {
-                    Long depth = getDepthFromRequest(req);
-                    result =
-                        (!req.getContent().getContent().isEmpty()) ? handleRequest(req, depth, "elements") : getAllElements(req);
-                    elementsJson = JsonUtil.getOptArray(result, Sjm.ELEMENTS);
-                } catch (IllegalStateException e) {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
-                } catch (JsonParseException e) {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
-                }
-            }
-
-            JsonObject top = new JsonObject();
-            if (elementsJson.size() > 0) {
-                JsonArray elements = filterByPermission(elementsJson, req);
-                if (elements.size() == 0) {
-                    log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
-                }
-                top.add(Sjm.ELEMENTS, elements);
-            } else {
-                log(Level.INFO, HttpServletResponse.SC_NOT_FOUND, "No elements found");
-                top.add(Sjm.ELEMENTS, new JsonArray());
-            }
-
-            if (!elementsToFind.isEmpty()) {
-                errors.put(Sjm.FAILED, elementsToFind);
-                log(Level.ERROR, HttpServletResponse.SC_OK, "Some elements not found.");
-            }
-
-            JsonArray errorMessages = parseErrors(errors);
-
-            if (errorMessages.size() > 0) {
-                top.add("messages", errorMessages);
-            }
-
-            if (prettyPrint || accept.contains("webp")) {
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                model.put(Sjm.RES, gson.toJson(top));
-            } else {
-                model.put(Sjm.RES, top);
-            }
-
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-
-        status.setCode(responseStatus.getCode());
-
-        printFooter(user, logger, timer);
-
-        return model;
+    @Override protected Map<String, Object> getModel(WebScriptRequest req) throws IOException {
+        Long depth = getDepthFromRequest(req);
+        JsonObject result =
+            (!req.getContent().getContent().isEmpty()) ? handleRequest(req, depth, Sjm.ELEMENTS) : getAllElements(req);
+        return finish(req, result, false, Sjm.ELEMENTS);
     }
 
     /**
@@ -177,7 +97,7 @@ public class ModelsGet extends ModelGet {
             JsonArray elements = emsNodeUtil.getJsonByElasticIds(elementsToFindJson, false);
             result.add(Sjm.ELEMENTS, elements);
         } else {
-            result = emsNodeUtil.getModelAtCommit(commitId);
+            result = emsNodeUtil.getModelAtCommit(commitId); //this now gets all artifacts too
         }
         if (extended && commitId == null) {
             extendedElements

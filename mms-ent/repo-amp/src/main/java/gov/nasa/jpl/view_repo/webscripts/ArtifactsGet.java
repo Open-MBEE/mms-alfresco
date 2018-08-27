@@ -30,33 +30,16 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.gson.*;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
-import gov.nasa.jpl.mbee.util.Timer;
-
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.JsonUtil;
-import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
@@ -81,106 +64,9 @@ public class ArtifactsGet extends ModelsGet {
         return instance.executeImplImpl(req, status, cache);
     }
 
-    @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
-        String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        printHeader(user, logger, req);
-        Timer timer = new Timer();
-
-        String[] accepts = req.getHeaderValues("Accept");
-        String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
-
-        Map<String, Object> model = new HashMap<>();
-        JsonArray elementsJson = new JsonArray();
-        Map<String, Set<String>> errors = new HashMap<>();
-        JsonObject result = new JsonObject();
-
-        try {
-
-            if (validateRequest(req, status)) {
-                result = handleRequest(req);
-                elementsJson = JsonUtil.getOptArray(result, Sjm.ARTIFACTS);
-            }
-
-            JsonObject top = new JsonObject();
-            if (elementsJson != null && elementsJson.size() > 0) {
-                JsonArray elements = filterByPermission(elementsJson, req);
-                if (elements.size() == 0) {
-                    log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
-                }
-
-                top.add(Sjm.ARTIFACTS, elements);
-
-                JsonArray errorMessages = parseErrors(errors);
-
-                if (errorMessages.size() > 0) {
-                    top.add("messages", errorMessages);
-                }
-
-                if (prettyPrint || accept.contains("webp")) {
-                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                    model.put(Sjm.RES, gson.toJson(top));
-                } else {
-                    model.put(Sjm.RES, top);
-                }
-            } else {
-                log(Level.INFO, HttpServletResponse.SC_OK, "No elements found");
-                top.add(Sjm.ARTIFACTS, new JsonArray());
-                model.put(Sjm.RES, top);
-            }
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-
-        status.setCode(responseStatus.getCode());
-
-        printFooter(user, logger, timer);
-
-        return model;
-    }
-
-    /**
-     * Wrapper for handling a request and getting the appropriate JSONArray of
-     * elements
-     *
-     * @param req
-     * @return
-     * @throws IOException
-     */
-    private JsonObject handleRequest(WebScriptRequest req)
-        throws IOException, SQLException {
-        JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
-        if (requestJson.has(Sjm.ARTIFACTS)) {
-            JsonArray elementsToFindJson = requestJson.get(Sjm.ARTIFACTS).getAsJsonArray();
-
-            String refId = getRefId(req);
-            String projectId = getProjectId(req);
-            String commitId = req.getParameter(Sjm.COMMITID.replace("_",""));
-
-            JsonObject mountsJson = new JsonObject();
-            mountsJson.addProperty(Sjm.SYSMLID, projectId);
-            mountsJson.addProperty(Sjm.REFID, refId);
-
-            JsonArray found = new JsonArray();
-            JsonObject result = new JsonObject();
-
-            Set<String> uniqueElements = new HashSet<>();
-            for (int i = 0; i < elementsToFindJson.size(); i++) {
-                uniqueElements.add(elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
-            }
-
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
-
-            String timestamp =
-                commitObject != null && commitObject.has(Sjm.CREATED) ? commitObject.get(Sjm.CREATED).getAsString() : null;
-
-            EmsNodeUtil.handleMountSearch(mountsJson, false, false, 0L, uniqueElements, found, timestamp, "artifacts");
-            result.add(Sjm.ARTIFACTS, found);
-            JsonUtil.addStringSet(result, Sjm.FAILED, uniqueElements);
-            return result;
-        } else {
-            return new JsonObject();
-        }
+    @Override protected Map<String, Object> getModel(WebScriptRequest req) throws IOException {
+        JsonObject result = handleRequest(req, 0L, Sjm.ARTIFACTS);
+        return finish(req, result, false, Sjm.ARTIFACTS);
     }
 }
 

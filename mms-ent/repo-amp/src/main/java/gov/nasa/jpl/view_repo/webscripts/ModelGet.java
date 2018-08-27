@@ -66,8 +66,8 @@ public class ModelGet extends AbstractJavaWebScript {
 
     static Logger logger = Logger.getLogger(ModelGet.class);
 
-    private static final String ELEMENTID = "elementId";
-    private static final String COMMITID = "commitId";
+    protected static final String ELEMENTID = "elementId";
+    protected static final String ARTIFACTID = "artifactId";
 
     protected Set<String> elementsToFind = new HashSet<>();
     protected JsonArray deletedElementsCache = new JsonArray();
@@ -109,83 +109,87 @@ public class ModelGet extends AbstractJavaWebScript {
 
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-
         if (logger.isDebugEnabled()) {
             printHeader(user, logger, req);
         } else {
             printHeader(user, logger, req, true);
         }
-
         Timer timer = new Timer();
+
+        Map<String, Object> model = new HashMap<>();
+        try {
+            if (validateRequest(req, status)) {
+                model = getModel(req);
+            }
+        } catch (IllegalStateException e) {
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
+        } catch (JsonParseException e) {
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        if (model.isEmpty()) {
+            model.put(Sjm.RES, createResponseJson());
+        }
+        status.setCode(responseStatus.getCode());
+        printFooter(user, logger, timer);
+        return model;
+    }
+
+    protected Map<String, Object> getModel(WebScriptRequest req) throws IOException {
+        Long depth = getDepthFromRequest(req);
+        JsonObject result = handleRequest(req, depth, Sjm.ELEMENTS);
+        return finish(req, result, true, Sjm.ELEMENTS);
+    }
+
+    protected Map<String, Object> finish(WebScriptRequest req, JsonObject result, boolean single, String type) {
+        Map<String, Set<String>> errors = new HashMap<>();
+        JsonArray elementsJson = JsonUtil.getOptArray(result, type);
+        JsonObject top = new JsonObject();
+        JsonArray got = filterByPermission(elementsJson, req);
+        if (elementsJson.size() > 0) {
+            top.add(type, got);
+            if (got.size() < 1) {
+                responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
+            }
+        }
+        if (deletedElementsCache.size() > 0) {
+            JsonArray deleted = filterByPermission(deletedElementsCache, req);
+            if (deleted.size() > 0) {
+                Set<String> deletedSet = new HashSet<>();
+                for (int i = 0; i < deleted.size(); i++) {
+                    deletedSet.add(deleted.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
+                }
+                elementsToFind.removeAll(deletedSet);
+                errors.put(Sjm.DELETED, deletedSet);
+                top.add(Sjm.DELETED, deleted);
+                if (single) {
+                    responseStatus.setCode(HttpServletResponse.SC_GONE);
+                }
+            }
+        }
+        if (!elementsToFind.isEmpty()) {
+            errors.put(Sjm.FAILED, elementsToFind);
+            if (single) {
+                responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+            }
+        }
+
+        JsonArray errorMessages = parseErrors(errors);
+        if (errorMessages.size() > 0) {
+            top.add("messages", errorMessages);
+        }
 
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
         Map<String, Object> model = new HashMap<>();
-        Map<String, Set<String>> errors = new HashMap<>();
-        JsonArray elementsJson = new JsonArray();
-        JsonObject result = new JsonObject();
-
-        try {
-
-            if (validateRequest(req, status)) {
-                try {
-                    Long depth = getDepthFromRequest(req);
-                    result = handleRequest(req, depth, "elements");
-                    elementsJson = JsonUtil.getOptArray(result, Sjm.ELEMENTS);
-                } catch (IllegalStateException e) {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
-                } catch (JsonParseException e) {
-                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
-                }
-            }
-
-            JsonObject top = new JsonObject();
-
-            if (elementsJson.size() > 0) {
-                top.add(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
-                if (top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
-                    log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
-                }
-            } else if (deletedElementsCache.size() > 0) {
-                JsonArray deleted = filterByPermission(deletedElementsCache, req);
-                if (deleted.size() > 0) {
-                    Set<String> deletedSet = new HashSet<>();
-                    for (int i = 0; i < deleted.size(); i++) {
-                        deletedSet.add(deleted.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
-                    }
-                    elementsToFind.removeAll(deletedSet);
-                    errors.put(Sjm.DELETED, deletedSet);
-                    top.add(Sjm.DELETED, deleted);
-                    log(Level.ERROR, HttpServletResponse.SC_GONE, "Deleted elements found");
-                }
-            }
-            if (!elementsToFind.isEmpty()) {
-                errors.put(Sjm.FAILED, elementsToFind);
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
-            }
-
-            JsonArray errorMessages = parseErrors(errors);
-
-            if (errorMessages.size() > 0) {
-                top.add("messages", errorMessages);
-            }
-
-            if (prettyPrint || accept.contains("webp")) {
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                model.put(Sjm.RES, gson.toJson(top));
-            } else {
-                model.put(Sjm.RES, top);
-            }
-
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        if (prettyPrint || accept.contains("html")) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            model.put(Sjm.RES, gson.toJson(top));
+        } else {
+            model.put(Sjm.RES, top);
         }
-
-        status.setCode(responseStatus.getCode());
-
-        printFooter(user, logger, timer);
-
         return model;
     }
 
@@ -199,30 +203,31 @@ public class ModelGet extends AbstractJavaWebScript {
      */
     protected JsonObject handleRequest(WebScriptRequest req, final Long maxDepth, String type) throws IOException {
         JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
+        String templateVar = type.equals(Sjm.ELEMENTS) ? ELEMENTID : ARTIFACTID;
 
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
-        String elementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
+        String elementId = req.getServiceMatch().getTemplateVars().get(templateVar);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         JsonArray elementsToFindJson = new JsonArray();
 
         if (elementId != null) {
-            if (commitId != null && emsNodeUtil.getById(elementId) != null) {
-                JsonObject element = emsNodeUtil.getElementByElementAndCommitId(elementId, commitId);
+            if (commitId != null) {
+                JsonObject element = emsNodeUtil.getByCommitId(elementId, commitId, type);
                 if (element != null && element.size() > 0) {
                     JsonObject result = new JsonObject();
                     JsonArray elements = new JsonArray();
                     elements.add(element);
-                    result.add(Sjm.ELEMENTS, elements);
+                    result.add(type, elements);
                     return result;
                 }
             }
             JsonObject element = new JsonObject();
             element.addProperty(Sjm.SYSMLID, elementId);
             elementsToFindJson.add(element);
-        } else if (requestJson.has(Sjm.ELEMENTS)) {
-            elementsToFindJson = requestJson.get(Sjm.ELEMENTS).getAsJsonArray();
+        } else if (requestJson.has(type)) {
+            elementsToFindJson = requestJson.get(type).getAsJsonArray();
         } else {
             return new JsonObject();
         }
@@ -255,12 +260,16 @@ public class ModelGet extends AbstractJavaWebScript {
             elementsToFind = new HashSet<>();
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid commit id");
         } else {
-            EmsNodeUtil
-                .handleMountSearch(mountsJson, extended, false, maxDepth, elementsToFind, found, timestamp, type);
+            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, elementsToFind, found, timestamp, type);
         }
 
         if (!elementsToFind.isEmpty()) {
-            JsonArray deletedElementsJson = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
+            JsonArray deletedElementsJson;
+            if (type.equals(Sjm.ELEMENTS)) {
+                deletedElementsJson = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
+            } else {
+                deletedElementsJson = emsNodeUtil.getArtifactsBySysmlids(elementsToFind, true);
+            }
             if (timestamp != null) {
                 for (JsonElement check : deletedElementsJson) {
                     try {
@@ -279,9 +288,7 @@ public class ModelGet extends AbstractJavaWebScript {
                 this.deletedElementsCache = deletedElementsJson;
             }
         }
-
-        result.add(Sjm.ELEMENTS, found);
-
+        result.add(type, found);
         return result;
     }
 

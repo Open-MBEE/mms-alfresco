@@ -27,6 +27,7 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
+import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -83,7 +84,7 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
             try {
                 if (validateRequest(req, status)) {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
-                    JsonObject res = emsNodeUtil.getProfile(username);
+                    JsonObject res = (new ElasticHelper()).getByElasticId(username, EmsConfig.get("elastic.index.element"), ElasticHelper.PROFILE);
                     if (res != null && res.size() > 0) {
                         response.add(Sjm.PROFILES, res);
                     } else {

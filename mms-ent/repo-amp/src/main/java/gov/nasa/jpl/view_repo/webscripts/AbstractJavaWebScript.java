@@ -67,9 +67,6 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 public abstract class AbstractJavaWebScript extends DeclarativeJavaWebScript {
     private static Logger logger = Logger.getLogger(AbstractJavaWebScript.class);
 
-    static boolean checkMmsVersions = false;
-    private JsonObject privateRequestJSON = null;
-
     // injected members
     protected ServiceRegistry services;        // get any of the Alfresco services
     protected Repository repository;        // used for lucene search
