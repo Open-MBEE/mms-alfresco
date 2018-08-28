@@ -407,7 +407,9 @@ public class EmsNodeUtil {
 
     public JsonObject search(JsonObject query) {
         try {
-            return eh.search(query);
+            JsonObject sanitized = ElasticHelper.sanitizeSearchQuery(query);
+            logger.debug(String.format("Sanitized JSON: %s", sanitized.toString()));
+            return eh.search(sanitized);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
