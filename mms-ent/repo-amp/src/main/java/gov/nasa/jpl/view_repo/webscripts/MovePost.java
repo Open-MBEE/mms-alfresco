@@ -1,8 +1,7 @@
 /*******************************************************************************
- * Copyright (c) <2013>, California Institute of Technology ("Caltech"). U.S. Government sponsorship
- * acknowledged.
+ * Copyright (c) <2013>, California Institute of Technology ("Caltech").
  *
- * All rights reserved.
+ * U.S. Government sponsorship acknowledged. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted
  * provided that the following conditions are met:
@@ -26,92 +25,107 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
-import gov.nasa.jpl.view_repo.util.*;
+import java.util.*;
+import javax.servlet.http.HttpServletResponse;
+
+import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
+import gov.nasa.jpl.view_repo.util.JsonUtil;
+
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import gov.nasa.jpl.mbee.util.Timer;
 
-/**
- *
- * @author Lemmy
- */
-public class UserPreferencesGet extends AbstractJavaWebScript {
-    static Logger logger = Logger.getLogger(OrgPost.class);
+public class MovePost extends ModelPost {
 
-    public UserPreferencesGet() {
+    private final String NEWELEMENTS = "newElements";
+
+    public MovePost() {
         super();
     }
 
-    public UserPreferencesGet(Repository repositoryHelper, ServiceRegistry registry) {
+    public MovePost(Repository repositoryHelper, ServiceRegistry registry) {
         super(repositoryHelper, registry);
     }
 
     /**
-     * Webscript entry point
+     * Entry point
      */
     @Override protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
-        UserPreferencesGet instance = new UserPreferencesGet(repository, getServices());
+
+        MovePost instance = new MovePost(repository, services);
+        instance.setServices(getServices());
+
         return instance.executeImplImpl(req, status, cache);
     }
 
-    @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
+    @Override
+    protected Map<String, Object> executeImplImpl(final WebScriptRequest req, final Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        String username = req.getServiceMatch().getTemplateVars().get(USERNAME);
-        Map<String, Object> model = new HashMap<>();
-//        JsonArray success = new JsonArray();
-//        JsonArray failure = new JsonArray();
-        JsonObject response = new JsonObject();
 
-        Timer timer = new Timer();
         printHeader(user, logger, req, true);
 
-        if (user != null && username.equals(user)) {
-            try {
-                if (validateRequest(req, status)) {
-                    EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
-                    JsonObject res = (new ElasticHelper()).getByElasticId(username, EmsConfig.get("elastic.index.element"), ElasticHelper.PROFILE);
-                    if (res != null && res.size() > 0) {
-                        response.add(Sjm.PROFILES, res);
-                    } else {
-                        response.add("failed", res);
-                    }
-                }
-            } catch (IOException e) {
-                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
-                    "Commit failed, please check server logs for failed items", e);
-            }
-        } else {
-            log(Level.ERROR, HttpServletResponse.SC_UNAUTHORIZED, "You are not authorized to make this post");
+        Timer timer = new Timer();
+
+        Map<String, Object> result = new HashMap<>();
+        JsonObject moved = new JsonObject();
+
+        // call move logic
+        try {
+            moved = createDeltaForMove(req);
+        } catch (IllegalStateException e) {
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
+            result.put(Sjm.RES, createResponseJson());
+        } catch (Exception e) {
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Cannot process move request");
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+            result.put(Sjm.RES, createResponseJson());
+        }
+        if (moved.has(Sjm.ELEMENTS)) {
+            result = handleElementPost(req, moved, status, user);
         }
 
         status.setCode(responseStatus.getCode());
-        model.put(Sjm.RES, response);
 
         printFooter(user, logger, timer);
 
-        return model;
+        return result;
     }
 
-    /**
-     * Validate the request and check some permissions
-     */
+    protected JsonObject createDeltaForMove(final WebScriptRequest req) {
+        String refId = getRefId(req);
+        String projectId = getProjectId(req);
+
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+
+        JsonObject postJson = JsonUtil.buildFromStream(req.getContent().getInputStream()).getAsJsonObject();
+        JsonObject moved = emsNodeUtil.processMove(postJson.get(Sjm.MOVES).getAsJsonArray());
+        String comment = JsonUtil.getOptString(postJson, Sjm.COMMENT);
+        String src = JsonUtil.getOptString(postJson, Sjm.SOURCE);
+        moved.addProperty(Sjm.COMMENT, comment);
+        moved.addProperty(Sjm.SOURCE, src);
+
+        return moved;
+    }
+
+
+
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
+        String elementId = req.getServiceMatch().getTemplateVars().get("elementid");
+        if (elementId != null && !checkRequestVariable(elementId, "elementid")) {
+            return false;
+        }
+
         return checkRequestContent(req);
     }
-
 }

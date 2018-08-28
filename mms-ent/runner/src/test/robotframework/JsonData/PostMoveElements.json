@@ -1,0 +1,118 @@
+{        // ownerId of a1 becomes pack2 and propertyType of ap1 becomes b2
+    "elements": [
+        {
+            "id": "package1",
+            "type": "Package",
+            "ownerId": "MoveModel"
+        },
+        {
+            "id": "package2",
+            "type": "Package",
+            "ownerId": "MoveModel"
+        },
+        {
+            "documentation": "something",
+            "id": "oldParent",
+            "ownedAttributeIds": [
+                "propMove",
+                "propMove2",
+                "propMove3",
+                "propMove4"
+            ],
+            "name": "org parent of p",
+            "ownerId": "package1",
+            "type": "Class",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "else",
+            "id": "newParent",
+            "ownedAttributeIds": [],
+            "name": "new parent of p",
+            "ownerId": "package2",
+            "type": "Class",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "else",
+            "id": "propMove",
+            "associationId":"a1",
+            "name": "three hundred and one",
+            "ownerId": "oldParent",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "type": "Association",
+            "id": "a1",
+            "ownedEndIds": ["ap1"],
+            "ownerId": "package1"
+        },
+        {
+            "type": "Property",
+            "id": "ap1",
+            "typeId": "oldParent",
+            "ownerId": "a1"
+        },
+        {
+            "documentation": "else",
+            "id": "propMove2",
+            "name": "three hundred and one",
+            "ownerId": "oldParent",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "else",
+            "id": "propMove3",
+            "name": "three hundred and one",
+            "ownerId": "oldParent",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        },
+        {
+            "documentation": "else",
+            "id": "propMove4",
+            "name": "three hundred and one",
+            "ownerId": "oldParent",
+            "type": "Property",
+            "isDerived": false,
+            "value": [
+                {
+                    "type": "LiteralString",
+                    "string": "dlam_string"
+                }
+            ]
+        }
+    ]
+}

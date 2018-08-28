@@ -1,3 +1,25 @@
 {
-    "message": "[ERROR]: Artifact not found!"
+    "deleted": [
+        {
+            "_creator": "admin",
+            "_editable": true,
+            "_inRefIds": [
+                "master"
+            ],
+            "_modifier": "admin",
+            "_projectId": "PA",
+            "_refId": "master",
+            "checksum": "3bb7ef11b648725af351525ba6e77a38",
+            "contentType": "image/png",
+            "id": "deleteArtifact",
+            "type": "Artifact"
+        }
+    ],
+    "messages": [
+        {
+            "code": 410.0,
+            "id": "deleteArtifact",
+            "message": "Element deleteArtifact was not found"
+        }
+    ]
 }

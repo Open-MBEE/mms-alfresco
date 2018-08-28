@@ -4,6 +4,10 @@
             "_creator": "admin",
             "_modifier": "admin",
             "id": "newbranch",
+            "metadata": {
+                "active": true,
+                "someAttribute": "blah"
+            },
             "name": "newBranch",
             "parentRefId": "master",
             "status": "creating",

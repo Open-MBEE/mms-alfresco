@@ -27,6 +27,7 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
+import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.util.Acm;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
@@ -71,8 +72,6 @@ public class ProjectPost extends AbstractJavaWebScript {
 
     private static final String REF_PATH = "refs";
     private static final String REF_PATH_SEARCH = "/" + REF_PATH;
-    private static final String JSON_SPECIALIZATION = "specialization";
-    private static final String JSON_PROJECT_VERSION = "projectVersion";
 
     /**
      * Webscript entry point
@@ -212,37 +211,37 @@ public class ProjectPost extends AbstractJavaWebScript {
 
             EmsScriptNode projectContainerNode = site.childByNamePath(projectId);
             if (projectContainerNode == null) {
-                projectContainerNode = site.createFolder(projectId, null, null);
-                projectContainerNode.createOrUpdateProperty(Acm.CM_TITLE, JsonUtil.getOptString(jsonObject, Sjm.NAME));
+                projectContainerNode = site.createFolder(projectId, null);
+                projectContainerNode.setProperty(Acm.CM_TITLE, JsonUtil.getOptString(jsonObject, Sjm.NAME));
                 log(Level.INFO, HttpServletResponse.SC_OK, "Project folder created.\n");
             }
 
             EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary");
             if (documentLibrary == null) {
-                documentLibrary = site.createFolder("documentLibrary", null, null);
+                documentLibrary = site.createFolder("documentLibrary", null);
             }
 
             EmsScriptNode documentProjectContainer = documentLibrary.childByNamePath(projectId);
             if (documentProjectContainer == null) {
-                documentProjectContainer = documentLibrary.createFolder(projectId, null, null);
-                documentProjectContainer.createOrUpdateProperty(Acm.CM_TITLE, JsonUtil.getOptString(jsonObject, Sjm.NAME));
+                documentProjectContainer = documentLibrary.createFolder(projectId, null);
+                documentProjectContainer.setProperty(Acm.CM_TITLE, JsonUtil.getOptString(jsonObject, Sjm.NAME));
             }
 
             EmsScriptNode refContainerNode = projectContainerNode.childByNamePath(REF_PATH_SEARCH);
             if (refContainerNode == null) {
-                refContainerNode = projectContainerNode.createFolder("refs", null, null);
+                refContainerNode = projectContainerNode.createFolder("refs", null);
             }
 
             EmsScriptNode branch = refContainerNode.childByNamePath(NO_WORKSPACE_ID);
             if (branch == null) {
-                branch = refContainerNode.createFolder(NO_WORKSPACE_ID, null, null);
+                branch = refContainerNode.createFolder(NO_WORKSPACE_ID, null);
                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
                 JsonObject masterWs = new JsonObject();
                 masterWs.addProperty("id", NO_WORKSPACE_ID);
                 masterWs.addProperty("name", NO_WORKSPACE_ID);
                 // :TODO going to have to check that index doesn't exist if ES doesn't already do this
                 emsNodeUtil.insertProjectIndex(projectId);
-                String elasticId = emsNodeUtil.insertSingleElastic(masterWs);
+                String elasticId = emsNodeUtil.insertSingleElastic(masterWs, ElasticHelper.REF);
                 emsNodeUtil.insertRef(NO_WORKSPACE_ID, NO_WORKSPACE_ID, elasticId, false);
             }
 

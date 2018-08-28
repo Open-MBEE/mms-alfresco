@@ -3,6 +3,8 @@ package gov.nasa.jpl.view_repo.util;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +60,6 @@ public class CommitUtil {
     static Logger logger = Logger.getLogger(CommitUtil.class);
 
     public static final String TYPE_BRANCH = "BRANCH";
-    public static final String TYPE_COMMIT = "COMMIT";
     public static final String TYPE_DELTA = "DELTA";
     public static final String TYPE_MERGE = "MERGE";
 
@@ -73,7 +73,6 @@ public class CommitUtil {
     private static final String INITIALCOMMIT = "initialcommit";
     private static final String LASTCOMMIT = "lastcommit";
     private static final String ARTIFACTS = "artifacts";
-    private static final String CONTENTTYPE = "contentType";
 
     private static final String HOLDING_BIN_PREFIX = "holding_bin_";
 
@@ -81,6 +80,8 @@ public class CommitUtil {
     private static JmsConnection jmsConnection = null;
 
     private static String user = null;
+
+    private static SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     private static HazelcastInstance hzInstance = null;
     private static BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(1);
@@ -171,10 +172,6 @@ public class CommitUtil {
         return element.has(Sjm.ISGROUP) && element.get(Sjm.ISGROUP).getAsBoolean();
     }
 
-    public static JsonObject indexProfile(String id, JsonObject elements, String index) throws IOException {
-        return eh.updateProfile(id, elements, index);
-    }
-
     private static boolean bulkElasticEntry(JsonArray elements, String operation, boolean refresh, String index,
         String type) {
         if (elements.size() > 0) {
@@ -223,6 +220,7 @@ public class CommitUtil {
         JsonArray deleted = JsonUtil.getOptArray(delta, "deletedElements");
 
         String creator = delta.get("commit").getAsJsonObject().get(Sjm.CREATOR).getAsString();
+        String created = delta.get("commit").getAsJsonObject().get(Sjm.CREATED).getAsString();
         String commitElasticId = delta.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
 
         JsonObject jmsWorkspace = new JsonObject();
@@ -280,7 +278,7 @@ public class CommitUtil {
                     pgh.runBatchQueries(artifactUpdates, "artifactUpdates");
                     pgh.updateLastCommitsArtifacts(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
-                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
+                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator, new Timestamp(df.parse(created).getTime()));
                 } catch (Exception e) {
                     try {
                         pgh.rollBackToSavepoint(sp);
@@ -335,6 +333,7 @@ public class CommitUtil {
         JsonArray deleted = JsonUtil.getOptArray(delta, "deletedElements");
 
         String creator = delta.get("commit").getAsJsonObject().get(Sjm.CREATOR).getAsString();
+        String created = delta.get("commit").getAsJsonObject().get(Sjm.CREATED).getAsString();
         String commitElasticId = delta.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
 
         JsonObject jmsWorkspace = new JsonObject();
@@ -529,7 +528,7 @@ public class CommitUtil {
                     //pgh.updateBySysmlIds(NODES, LASTCOMMIT, commitElasticId, deletedSysmlIds);
                     pgh.updateLastCommitsNodes(commitElasticId, deletedSysmlIds);
                     pgh.commitTransaction();
-                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator);
+                    pgh.insertCommit(commitElasticId, DbCommitTypes.COMMIT, creator, new Timestamp(df.parse(created).getTime()));
                     sp = pgh.startTransaction();
                     pgh.runBatchQueries(edgeInserts, EDGES);
                     pgh.commitTransaction();
@@ -662,7 +661,6 @@ public class CommitUtil {
         PostgresHelper pgh = new PostgresHelper();
 
         String defaultIndex = EmsConfig.get("elastic.index.element");
-        ElasticResult result = null;
 
         try {
             ElasticHelper eh = new ElasticHelper();
@@ -671,15 +669,13 @@ public class CommitUtil {
                 pgh.createOrganization(orgId, orgName);
                 eh.createIndex(defaultIndex);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
-                result = eh.indexElement(orgJson, defaultIndex, ElasticHelper.ELEMENT);
+                ElasticResult result = eh.indexElement(orgJson, defaultIndex, ElasticHelper.ELEMENT);
                 return result.current;
             } else {
                 pgh.updateOrganization(orgId, orgName);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
-                if (eh.updateElement(orgId, orgJson, defaultIndex)) {
-                    if (eh.refreshIndex()) {
-                        return eh.getElementByElasticId(orgId, defaultIndex);
-                    }
+                if (eh.updateById(orgId, orgJson, defaultIndex, ElasticHelper.ELEMENT).size() > 0 && eh.refreshIndex()) {
+                    return eh.getByElasticId(orgId, defaultIndex, ElasticHelper.ELEMENT);
                 }
             }
 
@@ -911,20 +907,20 @@ public class CommitUtil {
 
                 EmsScriptNode documentLibrary = site.childByNamePath("documentLibrary");
                 if (documentLibrary == null) {
-                    documentLibrary = site.createFolder("documentLibrary", null, null);
-                    documentLibrary.createOrUpdateProperty(Acm.CM_TITLE, "Document Library");
+                    documentLibrary = site.createFolder("documentLibrary", null);
+                    documentLibrary.setProperty(Acm.CM_TITLE, "Document Library");
                 }
                 EmsScriptNode projectDocumentLibrary = documentLibrary.childByNamePath(projectId);
                 if (projectDocumentLibrary == null) {
-                    projectDocumentLibrary = documentLibrary.createFolder(projectId, null, null);
+                    projectDocumentLibrary = documentLibrary.createFolder(projectId, null);
                 }
                 EmsScriptNode siteCharFolder = projectDocumentLibrary.childByNamePath(folderId);
                 if (siteCharFolder == null) {
-                    siteCharFolder = projectDocumentLibrary.createFolder(folderId, null, null);
-                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
+                    siteCharFolder = projectDocumentLibrary.createFolder(folderId, null);
+                    siteCharFolder.setProperty(Acm.CM_TITLE, folderName);
                     return true;
                 } else {
-                    siteCharFolder.createOrUpdateProperty(Acm.CM_TITLE, folderName);
+                    siteCharFolder.setProperty(Acm.CM_TITLE, folderName);
                     return true;
                 }
             }
