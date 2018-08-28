@@ -44,6 +44,8 @@ public class Migrate_3_4_0 {
         PostgresHelper pgh = new PostgresHelper();
         ElasticHelper eh = new ElasticHelper();
 
+        JsonObject mappingTemplate = new JsonObject();
+
         // Temporarily increase max_compilations_per_minute
         eh.updateClusterSettings(transientSettings);
 
@@ -53,7 +55,7 @@ public class Migrate_3_4_0 {
         InputStream resourceAsStream = classLoader.getResourceAsStream("mapping_template.json");
         Scanner s = new Scanner(resourceAsStream).useDelimiter("\\A");
         if (s.hasNext()) {
-            JsonObject mappingTemplate = JsonUtil.buildFromString(s.next());
+            mappingTemplate = JsonUtil.buildFromString(s.next());
             eh.applyTemplate(mappingTemplate.toString());
         }
 
@@ -65,6 +67,11 @@ public class Migrate_3_4_0 {
             for (Map<String, Object> project : projects) {
                 String projectId = project.get(Sjm.SYSMLID).toString();
                 pgh.setProject(projectId);
+
+                if (mappingTemplate.isJsonObject()) {
+                    eh.updateMapping(projectId, ElasticHelper.REF,
+                        mappingTemplate.get("mappings").getAsJsonObject().get(ElasticHelper.REF).getAsJsonObject().toString());
+                }
 
                 List<Pair<String, String>> allRefs = pgh.getRefsElastic(true);
 

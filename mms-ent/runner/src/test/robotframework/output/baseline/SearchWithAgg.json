@@ -1,4 +1,16 @@
 {
+    "aggregations": {
+        "group_by_type": {
+            "buckets": [
+                {
+                    "doc_count": 1.0,
+                    "key": "Property"
+                }
+            ],
+            "doc_count_error_upper_bound": 0.0,
+            "sum_other_doc_count": 0.0
+        }
+    },
     "elements": [
         {
             "_creator": "admin",
@@ -27,16 +39,5 @@
             ]
         }
     ],
-    "aggregations": {
-        "group_by_type": {
-            "buckets": [
-                {
-                    "doc_count": 1,
-                    "key": "Property"
-                }
-            ],
-            "doc_count_error_upper_bound": 0,
-            "sum_other_doc_count": 0
-        }
-    }
+    "total": 1.0
 }

@@ -486,7 +486,9 @@ public class ElasticHelper implements ElasticsearchInterface {
             return top;
         }
 
+
         if (result.getTotal() > 0) {
+            top.addProperty("total", result.getJsonObject().getAsJsonObject("hits").get("total").getAsInt());
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
             for (int i = 0; i < hits.size(); i++) {
 

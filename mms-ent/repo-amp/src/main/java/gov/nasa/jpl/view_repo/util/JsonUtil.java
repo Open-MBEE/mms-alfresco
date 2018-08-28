@@ -27,16 +27,17 @@ import com.google.gson.JsonElement;
  */
 public class JsonUtil {
 
+    private static JsonParser parser = new JsonParser();
+
     public static JsonObject buildFromString(String str) {
         if (str == null || str.isEmpty()) {
             return new JsonObject();
         }
-        JsonParser parser = new JsonParser();
         return parser.parse(str).getAsJsonObject();
     }
 
     public static JsonElement buildFromStream(InputStream is) {
-        JsonElement result = new JsonParser().parse(new InputStreamReader(is));
+        JsonElement result = parser.parse(new InputStreamReader(is));
         return result != null ? result : new JsonObject();
     }
 
