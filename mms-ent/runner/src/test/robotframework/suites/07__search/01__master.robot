@@ -21,7 +21,7 @@ SearchLiteral
     [Tags]              search      critical        0702
     ${post_json}        Get File        ${CURDIR}/../../JsonData/SearchQueryLiteral.json
     ${result}           Post            url=${ROOT}/projects/PA/refs/master/search?literal=true      data=${post_json}       headers=&{REQ_HEADER}
-    Should Be Equal     ${result.status_code}       ${200}
+    Should Be Equal     ${result.status_code}       ${400}
 	${filter} =			Create List	 _id    _shards     _score  sort    took    _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp
     Generate JSON           ${TEST_NAME}        ${result.json()}        ${filter}
     ${compare_result} =     Compare JSON        ${TEST_NAME}
