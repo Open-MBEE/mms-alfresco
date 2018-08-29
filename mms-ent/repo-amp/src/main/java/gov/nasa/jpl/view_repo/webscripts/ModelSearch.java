@@ -92,8 +92,7 @@ public class ModelSearch extends ModelPost {
 
         try {
             JsonObject json = JsonUtil.buildFromString(req.getContent().getContent());
-            boolean hasScript = ElasticHelper.containsScript(json);
-            if (!hasScript) {
+            if (!ElasticHelper.containsScript(json)) {
                 JsonObject top = executeSearchRequest(req, json);
 
                 if (!Utils.isNullOrEmpty(response.toString())) {
