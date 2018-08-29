@@ -152,6 +152,8 @@ public class ModelGet extends AbstractJavaWebScript {
             if (got.size() < 1) {
                 responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
             }
+        } else if (!single) {
+            top.add(type, got);
         }
         if (deletedElementsCache.size() > 0) {
             JsonArray deleted = filterByPermission(deletedElementsCache, req);
