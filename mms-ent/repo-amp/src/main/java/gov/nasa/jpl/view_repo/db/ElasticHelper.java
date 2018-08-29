@@ -129,6 +129,13 @@ public class ElasticHelper implements ElasticsearchInterface {
         client.execute(updateByQuery);
     }
 
+    public void deleteByQuery(String index, String payload, String type) throws IOException {
+        DeleteByQuery deleteByQuery =
+            new DeleteByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
+                .build();
+        client.execute(deleteByQuery);
+    }
+
     public void updateClusterSettings(String payload) throws IOException {
         UpdateSettings updateSettings = new UpdateSettings.Builder(payload).build();
         client.execute(updateSettings);
@@ -479,7 +486,9 @@ public class ElasticHelper implements ElasticsearchInterface {
             return top;
         }
 
+
         if (result.getTotal() > 0) {
+            top.addProperty("total", result.getJsonObject().getAsJsonObject("hits").get("total").getAsInt());
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
             for (int i = 0; i < hits.size(); i++) {
 
@@ -510,7 +519,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param ids
      * @return JSONObject Result
      */
-    public JsonObject bulkDeleteByType(String type, ArrayList<String> ids, String index) {
+    public JsonObject bulkDeleteByType(Set<String> ids, String index, String type) {
         if (ids.isEmpty()) {
             return new JsonObject();
         }
@@ -519,9 +528,9 @@ public class ElasticHelper implements ElasticsearchInterface {
         try {
             ArrayList<Delete> deleteList = new ArrayList<>();
 
-            for (String commitId : ids) {
+            for (String elasticId : ids) {
                 deleteList.add(
-                    new Delete.Builder(commitId).type(type).index(index.toLowerCase().replaceAll("\\s+", "")).build());
+                    new Delete.Builder(elasticId).type(type).index(index.toLowerCase().replaceAll("\\s+", "")).build());
             }
             Bulk bulk = new Bulk.Builder().defaultIndex(index.toLowerCase().replaceAll("\\s+", "")).defaultIndex(type)
                 .addAction(deleteList).build();

@@ -3,9 +3,11 @@ package gov.nasa.jpl.view_repo.webscripts;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
@@ -76,7 +78,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
                 deleteProjectSiteFolder(projectId);
 
                 // Postgres helper to commit elasticids before dropping db
-                ArrayList<String> commitList = getCommitElasticIDs(projectId);
+                Set<String> commitList = getCommitElasticIDs(projectId);
 
                 // Search and delete for all elements in elasticsearch with project id
                 deleteCommitsInElastic(commitList, projectId);
@@ -124,8 +126,8 @@ public class ProjectDelete extends AbstractJavaWebScript {
      * @param projectId
      * @return CommitElasticIDs
      */
-    protected ArrayList<String> getCommitElasticIDs(String projectId) {
-        ArrayList<String> commitIds = new ArrayList<>();
+    protected Set<String> getCommitElasticIDs(String projectId) {
+        Set<String> commitIds = new HashSet<>();
         logger.debug("Getting Commit Elastic IDs for " + projectId);
 
         // Instantiate and configure pgh.
@@ -147,12 +149,12 @@ public class ProjectDelete extends AbstractJavaWebScript {
      * @param commitIds
      * @return
      */
-    protected void deleteCommitsInElastic(ArrayList<String> commitIds, String projectId) {
+    protected void deleteCommitsInElastic(Set<String> commitIds, String projectId) {
         logger.debug("Deleting commits in Elastic");
 
         try {
             ElasticHelper elasticHelper = new ElasticHelper();
-            elasticHelper.bulkDeleteByType("commit", commitIds, projectId);
+            elasticHelper.bulkDeleteByType(commitIds, projectId, ElasticHelper.COMMIT);
         } catch (IOException e) {
             logger.error(e.getMessage());
         } catch (Exception e) {
