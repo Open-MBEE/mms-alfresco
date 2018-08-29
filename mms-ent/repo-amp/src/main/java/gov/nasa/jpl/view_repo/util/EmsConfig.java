@@ -18,12 +18,13 @@ public class EmsConfig {
         }
     }
 
-    public static void setAlfrescoProperties(Properties alfrescoProperties) throws Exception {
+    public static void setAlfrescoProperties(Properties alfrescoProperties) {
         EmsConfig.properties.putAll(alfrescoProperties);
     }
 
     public static String get(String key) {
-        return EmsConfig.properties.getProperty(key);
+        String value = EmsConfig.properties.getProperty(key);
+        return value != null ? value : "";
     }
 
     public static void setProperty(String key, String value) {
