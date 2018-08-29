@@ -90,21 +90,18 @@ public class ModelSearch extends ModelPost {
 
         Map<String, Object> model = new HashMap<>();
 
-
         try {
-            boolean noprocess = Boolean.parseBoolean(req.getParameter("literal"));
             JsonObject json = JsonUtil.buildFromString(req.getContent().getContent());
-            if (noprocess) {
-                ElasticHelper eh = new ElasticHelper();
-                JsonObject result = eh.searchLiteral(json);
-                model.put(Sjm.RES, result.toString());
-            } else {
+            boolean hasScript = ElasticHelper.containsScript(json);
+            if (!hasScript) {
                 JsonObject top = executeSearchRequest(req, json);
 
                 if (!Utils.isNullOrEmpty(response.toString())) {
                     top.addProperty("message", response.toString());
                 }
                 model.put(Sjm.RES, top);
+            } else {
+                log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Request contained script");
             }
         } catch (IllegalStateException e) {
             log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
@@ -150,9 +147,11 @@ public class ModelSearch extends ModelPost {
                     } else if (e.get(Sjm.TYPE).getAsString().equals("Slot")) {
                         ownere = getGrandOwnerJson(eprojId, erefId, e.get(Sjm.OWNERID).getAsString());
                     }
-                    if (ownere != null && ownere.has(Sjm.SYSMLID) && !found.contains(ownere.get(Sjm.SYSMLID).getAsString())) {
+                    if (ownere != null && ownere.has(Sjm.SYSMLID) && !found
+                        .contains(ownere.get(Sjm.SYSMLID).getAsString())) {
                         finalResult.add(ownere);
-                        String key = ownere.get(Sjm.PROJECTID).getAsString() + " " +  ownere.get(Sjm.REFID).getAsString();
+                        String key =
+                            ownere.get(Sjm.PROJECTID).getAsString() + " " + ownere.get(Sjm.REFID).getAsString();
                         if (!bins.containsKey(key)) {
                             bins.put(key, new JsonArray());
                         }
@@ -162,13 +161,13 @@ public class ModelSearch extends ModelPost {
                 }
                 finalResult.add(e);
                 found.add(e.get(Sjm.SYSMLID).getAsString());
-                String key = e.get(Sjm.PROJECTID).getAsString() + " " +  e.get(Sjm.REFID).getAsString();
+                String key = e.get(Sjm.PROJECTID).getAsString() + " " + e.get(Sjm.REFID).getAsString();
                 if (!bins.containsKey(key)) {
                     bins.put(key, new JsonArray());
                 }
                 bins.get(key).add(e);
             }
-            for (Entry<String, JsonArray> entry: bins.entrySet()) {
+            for (Entry<String, JsonArray> entry : bins.entrySet()) {
                 String[] split = entry.getKey().split(" ");
                 projectId = split[0];
                 refId = split[1];

@@ -473,7 +473,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         JsonObject top = new JsonObject();
         JsonArray elements = new JsonArray();
 
-        Search search = new Search.Builder(queryJson.toString().replaceAll("\"script\"[ ]*:[^,}\\]]*[,]?", "")).build();
+        Search search = new Search.Builder(queryJson.toString()).build();
         SearchResult result = client.execute(search);
 
         if (result == null) {
@@ -674,39 +674,8 @@ public class ElasticHelper implements ElasticsearchInterface {
         return deletedElements;
     }
 
-    public static JsonObject sanitizeSearchQuery(JsonObject json) {
-        JsonObject sanitized = new JsonObject();
-        for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
-            if (entry.getValue() instanceof JsonObject) {
-                if (!entry.getKey().equals("script")) {
-                    sanitized.add(entry.getKey(), sanitizeSearchQuery(entry.getValue().getAsJsonObject()));
-                }
-            } else if (!entry.getKey().equals("script")) {
-                if (entry.getValue() instanceof JsonArray) {
-                    sanitized.add(entry.getKey(), sanitizeSearchQuery(entry.getValue().getAsJsonArray()));
-                } else {
-                    sanitized.add(entry.getKey(), entry.getValue());
-                }
-            }
-        }
-        logger.error("Sanitized: ");
-        logger.error(sanitized.toString());
-        return sanitized;
-    }
-
-    public static JsonArray sanitizeSearchQuery(JsonArray json) {
-        JsonArray sanitized = new JsonArray();
-        for (JsonElement entry : json) {
-            if (entry instanceof JsonObject) {
-                if (!entry.equals("script")) {
-                    sanitized.add(sanitizeSearchQuery(entry.getAsJsonObject()));
-                }
-            } else if (!entry.equals("script")) {
-                sanitized.add(entry);
-            }
-        }
-        logger.error("Sanitized: ");
-        logger.error(sanitized.toString());
-        return sanitized;
+    public static boolean containsScript(JsonObject json) {
+        String jsonString = json.toString();
+        return jsonString.contains("\"script\"");
     }
 }
