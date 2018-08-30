@@ -58,22 +58,22 @@ jobs:
           command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
       - run:
           name: Send mms-amp
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-amp/3.4.0/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-amp/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms-share-amp
-          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-share-amp/3.4.0/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-share-amp/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms java client
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-client/mms-java-*.jar' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/3.4.0/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-client/mms-java-*.jar' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms java client
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-client/pom.xml' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/3.4.0/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-client/pom.xml' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms python client
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-python-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-python-client/3.4.0/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-python-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-python-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms mathematica client
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-mathematica-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-mathematica-client/3.4.0/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-mathematica-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-mathematica-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
 
 workflows:
   version: 2
