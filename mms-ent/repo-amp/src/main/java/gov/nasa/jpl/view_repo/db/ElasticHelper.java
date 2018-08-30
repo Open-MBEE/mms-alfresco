@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gson.JsonElement;
 import io.searchbox.cluster.UpdateSettings;
 import io.searchbox.core.*;
 import io.searchbox.indices.DeleteIndex;
@@ -680,5 +681,10 @@ public class ElasticHelper implements ElasticsearchInterface {
             count += termLimit;
         }
         return deletedElements;
+    }
+
+    public static boolean containsScript(JsonObject json) {
+        String jsonString = json.toString();
+        return jsonString.contains("\"script\"");
     }
 }
