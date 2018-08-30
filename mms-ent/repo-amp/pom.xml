@@ -327,12 +327,29 @@
                             <output>${swagger.codegen.target}/mathematica</output>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>matlab-codegen</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${swagger.codegen.yaml}</inputSpec>
+                            <language>matlab-client</language>
+                            <invokerPackage>MMS</invokerPackage>
+                            <output>${swagger.codegen.target}/matlab</output>
+                        </configuration>
+                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>
                         <groupId>org.openmbee.swagger</groupId>
                         <artifactId>swagger-codegen-mathematica-client</artifactId>
                         <version>1.0.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.openmbee.swagger</groupId>
+                        <artifactId>swagger-codegen-matlab-client</artifactId>
+                        <version>1.0.0-SNAPSHOT</version>
                     </dependency>
                 </dependencies>
             </plugin>

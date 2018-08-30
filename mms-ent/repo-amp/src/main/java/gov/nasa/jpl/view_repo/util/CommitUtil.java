@@ -84,8 +84,6 @@ public class CommitUtil {
     private static SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     private static HazelcastInstance hzInstance = null;
-    private static BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(1);
-    private static ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, blockingQueue, new QueueRejector());
 
     public static void setJmsConnection(JmsConnection jmsConnection) {
         if (logger.isInfoEnabled()) {
@@ -98,7 +96,7 @@ public class CommitUtil {
         if (hzInstance == null) {
             Config config = new Config();
             config.getNetworkConfig().setPort(5901).setPortAutoIncrement(true);
-            hzInstance = Hazelcast.newHazelcastInstance(config);
+            hzInstance = Hazelcast.newHazelcastInstance(config);git sta
         }
     }
 
@@ -826,29 +824,19 @@ public class CommitUtil {
 
         created.addProperty("status", "creating");
 
-        if (hasCommit) {
-            try {
-                executor.submit(task);
-                executor.shutdown();
-            } catch (RejectedExecutionException e) {
-                created.addProperty("status", "rejected");
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("Rejected: %s", LogUtil.getStackTrace(e)));
-                }
-            }
-        } else {
-            initHazelcastQueue(String.format("%s-%s", projectId, createdId));
-            BlockingQueue<BranchTask> queue = hzInstance.getQueue(String.format("%s-%s", projectId, createdId));
+        String queueId = hasCommit ? "branch_from_the_past" : String.format("%s-%s", projectId, createdId);
 
-            try {
-                queue.put(task);
-            } catch (InterruptedException ie) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("Interrupted: %s", LogUtil.getStackTrace(ie)));
-                }
-                created.addProperty("status", "rejected");
-                Thread.currentThread().interrupt();
+        initHazelcastQueue(queueId);
+        BlockingQueue<BranchTask> queue = hzInstance.getQueue(queueId);
+
+        try {
+            queue.put(task);
+        } catch (InterruptedException ie) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("Interrupted: %s", LogUtil.getStackTrace(ie)));
             }
+            created.addProperty("status", "rejected");
+            Thread.currentThread().interrupt();
         }
 
         return branchJson;
