@@ -96,7 +96,7 @@ public class CommitUtil {
         if (hzInstance == null) {
             Config config = new Config();
             config.getNetworkConfig().setPort(5901).setPortAutoIncrement(true);
-            hzInstance = Hazelcast.newHazelcastInstance(config);git sta
+            hzInstance = Hazelcast.newHazelcastInstance(config);
         }
     }
 
