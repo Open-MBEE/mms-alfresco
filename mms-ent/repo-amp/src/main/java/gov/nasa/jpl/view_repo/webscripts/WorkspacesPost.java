@@ -114,7 +114,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                         String commitId = !JsonUtil.getOptString(o, "parentCommitId").isEmpty() ?
                                 JsonUtil.getOptString(o, "parentCommitId") : req.getParameter("commitId");
 
-                        json = createWorkSpace(projectId, sourceWorkspaceParam, newName, commitId, reqJson, user, status);
+                        json = createWorkSpace(projectId, sourceWorkspaceParam, newName, commitId, o, user, status);
                         statusCode = status.getCode();
                         if (statusCode == HttpServletResponse.SC_OK) {
                             success.add(json);
@@ -200,8 +200,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         // and ignore any URL parameters:
         if (jsonObject != null) {
 
-            JsonArray jarr = jsonObject.get("refs").getAsJsonArray();
-            wsJson = jarr.get(0).getAsJsonObject();  // Will only post/update one workspace
+            wsJson = jsonObject;
             sourceWorkspaceId = JsonUtil.getOptString(wsJson, "parentRefId");
             srcJson = emsNodeUtil.getRefJson(sourceWorkspaceId);
             newWorkspaceId = JsonUtil.getOptString(wsJson, Sjm.SYSMLID, null); // alfresco id of workspace node
