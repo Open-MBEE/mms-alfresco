@@ -67,7 +67,7 @@ public class PostgresPool {
         this.bds.setTimeBetweenEvictionRunsMillis(1000 * 60);
         this.bds.setMinEvictableIdleTimeMillis(1000 * 60 * 5);
 
-        if (EmsConfig.get(PG_SEC).toLowerCase().equals("true")) {
+        if (EmsConfig.get(PG_SEC) != null && EmsConfig.get(PG_SEC).equalsIgnoreCase("true")) {
             this.bds.setConnectionProperties("ssl=true");
         }
     }

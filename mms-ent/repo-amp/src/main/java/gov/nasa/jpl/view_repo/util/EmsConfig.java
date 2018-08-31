@@ -23,8 +23,7 @@ public class EmsConfig {
     }
 
     public static String get(String key) {
-        String value = EmsConfig.properties.getProperty(key);
-        return value != null ? value : "";
+        return EmsConfig.properties.getProperty(key);
     }
 
     public static void setProperty(String key, String value) {
