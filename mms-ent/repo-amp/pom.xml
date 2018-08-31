@@ -327,6 +327,7 @@
                             <output>${swagger.codegen.target}/mathematica</output>
                         </configuration>
                     </execution>
+                    <!--
                     <execution>
                         <id>matlab-codegen</id>
                         <goals>
@@ -339,6 +340,7 @@
                             <output>${swagger.codegen.target}/matlab</output>
                         </configuration>
                     </execution>
+                    -->
                 </executions>
                 <dependencies>
                     <dependency>
@@ -346,11 +348,13 @@
                         <artifactId>swagger-codegen-mathematica-client</artifactId>
                         <version>1.0.1</version>
                     </dependency>
+                    <!--
                     <dependency>
                         <groupId>org.openmbee.swagger</groupId>
                         <artifactId>swagger-codegen-matlab-client</artifactId>
                         <version>1.0.0-SNAPSHOT</version>
                     </dependency>
+                    -->
                 </dependencies>
             </plugin>
             <plugin>
