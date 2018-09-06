@@ -71,6 +71,8 @@ public class Migrate_3_4_0 {
                 if (mappingTemplate.isJsonObject()) {
                     eh.updateMapping(projectId, ElasticHelper.REF,
                         mappingTemplate.get("mappings").getAsJsonObject().get(ElasticHelper.REF).getAsJsonObject().toString());
+                    eh.updateMapping(projectId, ElasticHelper.PROFILE,
+                        mappingTemplate.get("mappings").getAsJsonObject().get(ElasticHelper.PROFILE).getAsJsonObject().toString());
                 }
 
                 List<Pair<String, String>> allRefs = pgh.getRefsElastic(true);
