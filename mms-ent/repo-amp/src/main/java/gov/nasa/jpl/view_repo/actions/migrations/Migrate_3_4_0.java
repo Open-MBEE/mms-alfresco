@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import java.io.InputStream;
@@ -58,7 +59,8 @@ public class Migrate_3_4_0 {
             mappingTemplate = JsonUtil.buildFromString(s.next());
             eh.applyTemplate(mappingTemplate.toString());
         }
-
+        eh.updateMapping(EmsConfig.get("elastic.index.element"), ElasticHelper.PROFILE,
+            mappingTemplate.get("mappings").getAsJsonObject().get(ElasticHelper.PROFILE).getAsJsonObject().toString());
         List<Map<String, String>> orgs = pgh.getOrganizations(null);
 
         for (Map<String, String> org : orgs) {

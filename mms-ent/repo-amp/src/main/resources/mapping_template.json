@@ -229,6 +229,28 @@
             }
         },
         "profile": {
+            "dynamic_templates": [
+                {
+                    "id_as_keywords": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": ".*(Id|Ids)",
+                        "mapping": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+                {
+                    "id_and_type": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": "(id|ids|type|uri|URI)",
+                        "mapping": {
+                            "type": "keyword"
+                        }
+                    }
+                }
+            ],
             "properties": {
                 "username": {
                     "type": "keyword"
@@ -250,6 +272,26 @@
             ],
             "properties": {
                 "status" : {
+                    "type": "keyword"
+                },
+                "_created": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                },
+                "_modified": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                },
+                "_creator": {
+                    "type": "keyword"
+                },
+                "_modifier": {
+                    "type": "keyword"
+                },
+                "type": {
+                    "type": "keyword"
+                },
+                "id": {
                     "type": "keyword"
                 }
             }
