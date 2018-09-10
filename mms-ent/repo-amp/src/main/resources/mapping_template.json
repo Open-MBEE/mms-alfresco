@@ -239,6 +239,16 @@
                             "type": "keyword"
                         }
                     }
+                },
+                {
+                    "id_and_type": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": "(id|ids|type|uri|URI)",
+                        "mapping": {
+                            "type": "keyword"
+                        }
+                    }
                 }
             ],
             "properties": {
