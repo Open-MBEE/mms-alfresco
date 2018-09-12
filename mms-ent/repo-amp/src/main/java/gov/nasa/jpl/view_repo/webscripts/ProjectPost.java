@@ -109,15 +109,17 @@ public class ProjectPost extends AbstractJavaWebScript {
                                 orgId = emsNodeUtil.getOrganizationFromProject(projectId);
                             }
 
-                            SiteInfo siteInfo = services.getSiteService().getSite(orgId);
-                            if (siteInfo != null) {
-
-                                CommitUtil.sendProjectDelta(projJson, orgId, user);
-
-                                if (projectId != null && !projectId.equals(NO_SITE_ID)) {
-                                    responseStatus.setCode(updateOrCreateProject(projJson, projectId, orgId));
+                            EmsScriptNode siteNode = getSiteNode(orgId);
+                            if (siteNode != null) {
+                                if (siteNode.checkPermissions(PermissionService.WRITE)) {
+                                    CommitUtil.sendProjectDelta(projJson, orgId, user);
+                                    if (projectId != null && !projectId.equals(NO_SITE_ID)) {
+                                        responseStatus.setCode(updateOrCreateProject(projJson, projectId, orgId));
+                                    } else {
+                                        responseStatus.setCode(checkNoProject(siteNode));
+                                    }
                                 } else {
-                                    responseStatus.setCode(updateOrCreateProject(projJson, projectId));
+                                    responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
                                 }
 
                                 if (responseStatus.getCode() == HttpServletResponse.SC_OK) {
@@ -125,7 +127,6 @@ public class ProjectPost extends AbstractJavaWebScript {
                                 } else {
                                     failure.add(projJson);
                                 }
-
                             } else {
                                 EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, NO_WORKSPACE_ID);
                                 // This should not happen, since the Organization should be created before a Project is posted
@@ -175,9 +176,7 @@ public class ProjectPost extends AbstractJavaWebScript {
         return model;
     }
 
-    public int updateOrCreateProject(JsonObject jsonObject, String projectId) {
-        EmsScriptNode projectNode = getSiteNode(projectId);
-
+    public int checkNoProject(EmsScriptNode projectNode) {
         if (projectNode == null) {
             log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find project");
             return HttpServletResponse.SC_NOT_FOUND;
