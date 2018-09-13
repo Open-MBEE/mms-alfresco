@@ -294,7 +294,9 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
 
                 Transport.send(msg);
             } catch (SendFailedException sfe) {
+                logger.error("Could not send email: ", sfe);
             } catch (Exception e) {
+                logger.error("Sending Email Exception: ", e);
             }
 
         }
