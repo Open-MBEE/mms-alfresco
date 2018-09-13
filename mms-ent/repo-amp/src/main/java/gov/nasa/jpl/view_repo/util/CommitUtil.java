@@ -1,5 +1,6 @@
 package gov.nasa.jpl.view_repo.util;
 
+import gov.nasa.jpl.view_repo.db.Node;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -755,12 +756,14 @@ public class CommitUtil {
 
         try {
             ElasticHelper eh = new ElasticHelper();
-            eh.createIndex(projectSysmlid);
-            eProject = eh.indexElement(project, projectSysmlid, ElasticHelper.ELEMENT);
-            eh.refreshIndex();
+            Node projectNode = pgh.getNodeFromSysmlId(projectSysmlid);
 
             // only insert if the project does not exist already
-            if (pgh.getNodeFromSysmlId(projectSysmlid) == null) {
+            if (projectNode == null) {
+                eh.createIndex(projectSysmlid);
+                eProject = eh.indexElement(project, projectSysmlid, ElasticHelper.ELEMENT);
+                eh.refreshIndex();
+
                 eProjectHoldingBin = eh.indexElement(projectHoldingBin, projectSysmlid, ElasticHelper.ELEMENT);
                 eViewInstanceBin = eh.indexElement(viewInstanceBin, projectSysmlid, ElasticHelper.ELEMENT);
                 eh.refreshIndex();
@@ -783,7 +786,8 @@ public class CommitUtil {
                 jmsMsg.addProperty("source", "mms");
                 sendJmsMsg(jmsMsg, TYPE_DELTA, null, projectSysmlid);
             } else {
-                pgh.updateElasticId(projectSysmlid, eProject.elasticId);
+                eh.updateById(projectNode.getElasticId(), project, projectSysmlid, ElasticHelper.ELEMENT);
+                eh.refreshIndex();
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
