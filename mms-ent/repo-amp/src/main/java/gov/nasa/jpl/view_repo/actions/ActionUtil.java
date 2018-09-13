@@ -29,7 +29,7 @@
 
 package gov.nasa.jpl.view_repo.actions;
 
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
+import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 
 import org.alfresco.repo.action.executer.MailActionExecuter;
@@ -60,7 +60,7 @@ public class ActionUtil {
         EmsScriptNode user = new EmsScriptNode(services.getPersonService().getPerson(username), services);
         String recipient = (String) user.getProperty("cm:email");
 
-        String sender = EmsNodeUtil.getHostname() + "@jpl.nasa.gov";
+        String sender = EmsConfig.get("app.email.from");
         sendEmailTo(sender, recipient, msg, subject, services);
     }
 

@@ -11,6 +11,7 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
+import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
