@@ -786,6 +786,8 @@ public class CommitUtil {
                 jmsMsg.addProperty("source", "mms");
                 sendJmsMsg(jmsMsg, TYPE_DELTA, null, projectSysmlid);
             } else {
+                project.remove(Sjm.CREATED);
+                project.remove(Sjm.CREATOR);
                 eh.updateById(projectNode.getElasticId(), project, projectSysmlid, ElasticHelper.ELEMENT);
                 eh.refreshIndex();
             }
