@@ -11,6 +11,7 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
+import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
@@ -293,7 +294,9 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
 
                 Transport.send(msg);
             } catch (SendFailedException sfe) {
+                logger.error("Could not send email: ", sfe);
             } catch (Exception e) {
+                logger.error("Sending Email Exception: ", e);
             }
 
         }
