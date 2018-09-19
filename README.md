@@ -84,6 +84,10 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 *   Start ActiveMQ service
 
 ## Running
+Note: Maven and its wrapper (mvnw) will have issues if you try doing any commands from behind a proxy.  Please set the MAVEN_OPTS variables as so:
+```
+set MAVEN_OPTS=-Dhttp.proxyHost=<your proxy> -Dhttp.proxyPort=<your proxy port> -Dhttps.proxyHost=<your proxy> -Dhttps.proxyPort=<your proxy port>
+```
 ### 1a. Running Alfresco
 1. Select file menu **Run** > **Run Configurations**
 2. Expand **Maven Build**
@@ -93,6 +97,9 @@ Use this table to check what version of the mms - mdk - ve triple you should be 
 
 ### 1b. Running Alfresco
 1. From mms-ent directory, either run `clean-run.sh`, `run.sh`, or `./mvnw install -Prun -Ddependency.surf.version=6.3`
+
+### 1c. Running Alfresco in windows
+1. From mms-ent directory, run `mvnw.cmd install -Prun -Ddependency.surf.version=6.3`
 
 ### 2. Testing Alfresco
 1. Enter http://localhost:8080/share/ at a browser's url address textbox.
