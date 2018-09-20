@@ -74,6 +74,9 @@ jobs:
       - run:
           name: Send mms mathematica client
           command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-mathematica-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-mathematica-client/3.4.0/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms matlab client
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-matlab-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-matlab-client/3.4.0/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
 
 workflows:
   version: 2

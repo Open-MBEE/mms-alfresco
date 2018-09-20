@@ -47,6 +47,14 @@
             <id>jcenter</id>
             <url>https://jcenter.bintray.com/</url>
         </pluginRepository>
+        <pluginRepository>
+            <id>bintray-openmbee-maven</id>
+            <name>bintray-plugins</name>
+            <url>https://dl.bintray.com/openmbee/maven</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
     </pluginRepositories>
     <!-- Following dependencies are needed for compiling Java code in src/main/java;
         <scope>provided</scope> is inherited for each of the following; for more
@@ -327,7 +335,6 @@
                             <output>${swagger.codegen.target}/mathematica</output>
                         </configuration>
                     </execution>
-                    <!--
                     <execution>
                         <id>matlab-codegen</id>
                         <goals>
@@ -340,7 +347,6 @@
                             <output>${swagger.codegen.target}/matlab</output>
                         </configuration>
                     </execution>
-                    -->
                 </executions>
                 <dependencies>
                     <dependency>
@@ -348,13 +354,11 @@
                         <artifactId>swagger-codegen-mathematica-client</artifactId>
                         <version>1.0.1</version>
                     </dependency>
-                    <!--
                     <dependency>
                         <groupId>org.openmbee.swagger</groupId>
                         <artifactId>swagger-codegen-matlab-client</artifactId>
-                        <version>1.0.0-SNAPSHOT</version>
+                        <version>1.0.1</version>
                     </dependency>
-                    -->
                 </dependencies>
             </plugin>
             <plugin>
