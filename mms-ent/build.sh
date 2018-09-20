@@ -9,4 +9,7 @@ else
     ./mvnw versions:set -DnewVersion=$1 -DgenerateBackupPoms=false -Ddependency.surf.version=6.3
     rm -f ../.circleci/config.yml
     sed "s/\${version}/$1/" ../.circleci/config.yml.template > ../.circleci/config.yml
+    if [[ $1 != *"SNAPSHOT"* ]];then
+        sed -i "s/libs-snapshot-local/libs-release-local/" ../.circleci/config.yml
+    fi
 fi
