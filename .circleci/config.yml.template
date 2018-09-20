@@ -70,7 +70,7 @@ jobs:
           command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-client/pom.xml' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms python client
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-python-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-python-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms_python_*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-python-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms mathematica client
           command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-mathematica-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-mathematica-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
