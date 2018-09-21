@@ -1,15 +1,11 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
-import gov.nasa.jpl.view_repo.util.NodeUtil;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 
 public class AllFlagsGet extends FlagSet {
 
     private static final String[] flags =
-            new String[] { "debug",
-
-                           "checkMmsVersions",
-
-                           "skipSvgToPng"};
+            new String[] { "debug"};
 
     @Override
 	public String[] getAllFlags() {
@@ -31,11 +27,6 @@ public class AllFlagsGet extends FlagSet {
         if (path.equalsIgnoreCase( "all" )) {
             return false;
         }
-       if (path.equalsIgnoreCase("checkMmsVersions")){
-            AbstractJavaWebScript.checkMmsVersions = val;
-        } else if (path.equalsIgnoreCase("skipSvgToPng")){
-            NodeUtil.skipSvgToPng = val;
-        }
         return true;
     }
 
@@ -49,24 +40,13 @@ public class AllFlagsGet extends FlagSet {
         if (path.equalsIgnoreCase( "all" )) {
             return true;
         }
-
-        if (path.equalsIgnoreCase("checkMmsVersions")){
-                return AbstractJavaWebScript.checkMmsVersions;
-		} else if (path.equalsIgnoreCase( "skipSvgToPng" )) {
-			return NodeUtil.skipSvgToPng;
-        }
         return false;
     }
 
     @Override
     protected boolean clear() {
         String path = getPath();
-
         if (path.equalsIgnoreCase ("debug")) {
-            return false;
-        } else if (path.equalsIgnoreCase("checkMmsVersions")){
-            return false;
-        } else if (path.equalsIgnoreCase( "skipSvgToPng" )) {
             return false;
         }
         return false;
@@ -87,11 +67,6 @@ public class AllFlagsGet extends FlagSet {
         }
         if (path.equalsIgnoreCase ("debug")) {
             return "debug";
-
-        } else if (path.equalsIgnoreCase("checkMmsVersions")){
-                return "checkMmsVersions";
-        } else if (path.equalsIgnoreCase( "skipSvgToPng")) {
-        	    return "skipSvgToPg";
         }
         return null;
     }

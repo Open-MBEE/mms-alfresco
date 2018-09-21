@@ -87,7 +87,7 @@ GetElementAtInvalidCommit
 	[Documentation]		"Try to get an element at an invalid commit."
 	[Tags]				branches		critical		090208
 	${result} =			Get	url=${ROOT}/projects/PA/refs/master/elements/300?commitId=ThisIdShouldNotExistAtAll		 headers=&{REQ_HEADER}
-	Should be Equal		${result.status_code}	   ${404}
+	Should be Equal		${result.status_code}	   ${400}
 
 BranchFromBranchAndCheckCommits
 	[Documentation]		"Create branch1, create branch 2 immediately from branch 1, getting branch history from branch 1 and branch 2 should be the same."
@@ -99,7 +99,7 @@ BranchFromBranchAndCheckCommits
 	${post_json} =		Get File		${CURDIR}/../../JsonData/PostBranch2FromBranch1.json
 	${branch_2_json} =	Post		url=${ROOT}/projects/PA/refs		data=${post_json}		headers=&{REQ_HEADER}
 	Should Be Equal		${branch_2_json.status_code}		${200}
-	Sleep				${POST_DELAY_INDEXING}
+	Sleep				${BRANCH_DELAY_INDEXING}
 	${branch_1_json} =	Get		 url=${ROOT}/projects/PA/refs/pa_branch_1/history
 	${branch_2_json} =	Get		 url=${ROOT}/projects/PA/refs/pa_branch_2/history
 	${result} =			Compare Json To Json		${branch_2_json.json()}		${branch_1_json.json()}
@@ -155,7 +155,7 @@ GetElementAtCommitBetweenDeletionAndResurrection
 	Sleep				${POST_DELAY_INDEXING}
 	# Get element at the commit and it should be deleted
 	${result} =         Get             url=${ROOT}/projects/PA/refs/master/elements/DeleteResurrectElement?commitId=${commit_id}
-	Should Be Equal		${result.status_code}		${404}
+	Should Be Equal		${result.status_code}		${410}
 	${filter} =			Create List     _commitId		nodeRefId		 versionedRefId		 _created		 read		 lastModified		 _modified		 siteCharacterizationId		 time_total		 _elasticId		 _timestamp		 _inRefIds		 id
 	Generate JSON		${TEST_NAME}		${result.json()}		${filter}
     ${compare_result} =	Compare JSON		${TEST_NAME}

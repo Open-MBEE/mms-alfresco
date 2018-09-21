@@ -1,11 +1,11 @@
 {
-    "template" : "*",
-    "settings" : {
-        "index" : {
-            "number_of_shards" : 3
+    "template": "*",
+    "settings": {
+        "index": {
+            "number_of_shards": 3
         }
     },
-    "mappings" : {
+    "mappings": {
         "artifact": {
             "properties": {
                 "id": {
@@ -40,7 +40,7 @@
                     "type": "date",
                     "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                 },
-                "_elasticId":{
+                "_elasticId": {
                     "type": "keyword"
                 }
             }
@@ -48,8 +48,8 @@
         "commit": {
             "properties": {
                 "added": {
-                    "properties" : {
-                        "id":{
+                    "properties": {
+                        "id": {
                             "type": "keyword"
                         },
                         "_elasticId": {
@@ -64,11 +64,11 @@
                     }
                 },
                 "updated": {
-                    "properties" : {
-                        "id":{
+                    "properties": {
+                        "id": {
                             "type": "keyword"
                         },
-                        "_elasticId":{
+                        "_elasticId": {
                             "type": "keyword"
                         },
                         "previousElasticId": {
@@ -80,11 +80,11 @@
                     }
                 },
                 "deleted": {
-                    "properties" : {
-                        "id":{
+                    "properties": {
+                        "id": {
                             "type": "keyword"
                         },
-                        "previousElasticId":{
+                        "previousElasticId": {
                             "type": "keyword"
                         },
                         "type": {
@@ -223,14 +223,75 @@
                     "type": "date",
                     "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                 },
-                "_elasticId":{
+                "_elasticId": {
                     "type": "keyword"
                 }
             }
         },
         "profile": {
+            "dynamic_templates": [
+                {
+                    "id_as_keywords": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": ".*(Id|Ids)",
+                        "mapping": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+                {
+                    "id_and_type": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": "(id|ids|type|uri|URI)",
+                        "mapping": {
+                            "type": "keyword"
+                        }
+                    }
+                }
+            ],
             "properties": {
                 "username": {
+                    "type": "keyword"
+                }
+            }
+        },
+        "ref": {
+            "dynamic_templates": [
+                {
+                    "id_as_keywords": {
+                        "match_mapping_type": "string",
+                        "match_pattern": "regex",
+                        "match": ".*(Id|Ids)",
+                        "mapping": {
+                            "type": "keyword"
+                        }
+                    }
+                }
+            ],
+            "properties": {
+                "status" : {
+                    "type": "keyword"
+                },
+                "_created": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                },
+                "_modified": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                },
+                "_creator": {
+                    "type": "keyword"
+                },
+                "_modifier": {
+                    "type": "keyword"
+                },
+                "type": {
+                    "type": "keyword"
+                },
+                "id": {
                     "type": "keyword"
                 }
             }

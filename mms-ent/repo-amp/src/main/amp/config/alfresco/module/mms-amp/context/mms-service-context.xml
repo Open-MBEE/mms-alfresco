@@ -192,14 +192,14 @@
         <property name="services" ref="ServiceRegistry"/>
     </bean>
 
-    <!-- Set static vars for the ServiceRegistry and Repository in NodeUtil -->
+    <!-- Set static vars for the ServiceRegistry and Repository in EmsScriptNode -->
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.NodeUtil.setServices" />
+        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.EmsScriptNode.setServices" />
         <property name="arguments" ref="ServiceRegistry"/>
     </bean>
 
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.NodeUtil.setRepository" />
+        <property name="staticMethod" value="gov.nasa.jpl.view_repo.util.EmsScriptNode.setRepository" />
         <property name="arguments" ref="repositoryHelper"/>
     </bean>
 
@@ -262,8 +262,14 @@
         <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="services" ref="ServiceRegistry" />
     </bean>
+    <bean id="webscript.gov.nasa.jpl.mms.refs.elements.moves.post"
+          class="gov.nasa.jpl.view_repo.webscripts.MovePost" parent="webscript"
+          singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
     <bean id="gov.nasa.jpl.mms.automigration" class="gov.nasa.jpl.view_repo.actions.MigrationRunner" parent="basePatch">
-        <property name="id" value="MMS MigrationRunner" />
+        <property name="id" value="MMS 3.4.0" />
         <property name="description" value="MMS Auto Migration" />
         <property name="fixesFromSchema">
             <value>0</value>

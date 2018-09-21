@@ -21,9 +21,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import gov.nasa.jpl.view_repo.util.NodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import gov.nasa.jpl.view_repo.webscripts.AbstractJavaWebScript;
 
 public class ModuleInfoGet extends DeclarativeWebScript {
     private static Logger logger = Logger.getLogger(ModuleInfoGet.class)

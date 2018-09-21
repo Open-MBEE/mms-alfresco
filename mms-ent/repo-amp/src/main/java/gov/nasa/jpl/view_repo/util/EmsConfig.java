@@ -18,7 +18,7 @@ public class EmsConfig {
         }
     }
 
-    public static void setAlfrescoProperties(Properties alfrescoProperties) throws Exception {
+    public static void setAlfrescoProperties(Properties alfrescoProperties) {
         EmsConfig.properties.putAll(alfrescoProperties);
     }
 

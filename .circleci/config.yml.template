@@ -1,0 +1,88 @@
+defaults: &defaults
+  working_directory: ~/projects
+  docker:
+    - image: circleci/openjdk:8
+
+version: 2
+jobs:
+  build_amps:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: mms-{{ checksum "mms-ent/pom.xml" }}
+
+      - run:
+          name: Run Maven Build
+          command: cd mms-ent && sh mvnw install -Pbuild && sh mvnw install -f repo-amp/target/generated-sources/swagger/java/pom.xml
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: mms-{{ checksum "mms-ent/pom.xml" }}
+
+      - run:
+          name: Clean target directory
+          command: mkdir -p mms-ent/repo-amp/target/mms-java-client && mv mms-ent/repo-amp/target/generated-sources/swagger/java/target/*.jar mms-ent/repo-amp/target/generated-sources/swagger/java/pom.xml mms-ent/repo-amp/target/mms-java-client && rm -rf mms-ent/repo-amp/target/{amp,archive-tmp,classes,generated-sources,generated-test-sources,maven-archiver,maven-status,surefire-reports,test-classes} && rm -rf mms-ent/share-amp/target/{amp,archive-tmp,classes,generated-sources,generated-test-sources,maven-archiver,maven-status,surefire-reports,test-classes}
+
+      - run:
+          name: Prepare Store Artifacts
+          command: mkdir -p tmp/artifacts
+
+      - store_artifacts:
+          path: mms-ent/repo-amp/target
+
+      - store_artifacts:
+          path: mms-ent/share-amp/target
+
+      - persist_to_workspace:
+          root: mms-ent
+          paths:
+            - repo-amp/target
+            - share-amp/target
+
+  deploy_artifacts:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: mms-ent
+      - run:
+          name: Get jfrog
+          command: curl -fL https://getcli.jfrog.io | sh
+      - run:
+          name: Set Permissions
+          command: sudo chmod +x jfrog
+      - run:
+          name: Configure jfrog
+          command: ./jfrog rt config --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_APIKEY --interactive false
+      - run:
+          name: Send mms-amp
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-amp/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms-share-amp
+          command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-share-amp/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms java client
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-client/mms-java-*.jar' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms java client
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-client/pom.xml' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms python client
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms_python_*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-python-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms mathematica client
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-mathematica-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-mathematica-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+      - run:
+          name: Send mms matlab client
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-matlab-*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-matlab-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+
+workflows:
+  version: 2
+  build-deploy-artifacts:
+    jobs:
+      - build_amps
+      - deploy_artifacts:
+          requires:
+            - build_amps

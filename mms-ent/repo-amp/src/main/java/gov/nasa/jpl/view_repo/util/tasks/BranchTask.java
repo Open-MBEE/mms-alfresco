@@ -11,6 +11,7 @@ import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
+import org.alfresco.service.ServiceRegistry;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
@@ -92,6 +93,8 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         "{\"script\": {\"inline\": \"if(ctx._source.containsKey(\\\"%1$s\\\")){ctx._source.%1$s.add(params.refId)} else {ctx._source.%1$s = [params.refId]}\", \"params\":{\"refId\":\"%2$s\"}}}";
 
     private JsonObject createBranch() {
+
+        Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 
         timer = new Timer();
         JsonObject created = JsonUtil.buildFromString(createdString);
@@ -199,7 +202,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         }
 
         try {
-            eh.updateElement(elasticId, created, projectId);
+            eh.updateById(elasticId, created, projectId, ElasticHelper.REF);
         } catch (Exception e) {
             //Do nothing
         }
@@ -291,7 +294,9 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
 
                 Transport.send(msg);
             } catch (SendFailedException sfe) {
+                logger.error("Could not send email: ", sfe);
             } catch (Exception e) {
+                logger.error("Sending Email Exception: ", e);
             }
 
         }

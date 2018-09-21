@@ -278,8 +278,11 @@ public class Migrate_3_3_0 {
                     List<FileInfo> files = fileFolderService.list(refNode.getNodeRef());
 
                     for (FileInfo file : files) {
-                        if (!file.isFolder()) {
+                        if (file != null && !file.isFolder()) {
                             VersionHistory versionHistory = versionService.getVersionHistory(file.getNodeRef());
+                            if (versionHistory == null) {
+                                continue;
+                            }
                             List<Version> versions = new ArrayList<>(versionHistory.getAllVersions());
                             ListIterator it = versions.listIterator(versions.size());
 

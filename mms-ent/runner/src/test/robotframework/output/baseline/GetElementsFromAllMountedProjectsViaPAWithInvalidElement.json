@@ -44,8 +44,7 @@
         {
             "code": 404,
             "id": "notAnElement",
-            "message": "Element notAnElement was not found",
-            "severity": "warn"
+            "message": "Element notAnElement was not found"
         }
     ]
 }

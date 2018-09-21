@@ -41,6 +41,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.tika.Tika;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.mime.MimeTypeException;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -70,6 +73,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
     protected Path filePath = null;
     protected String mimeType = null;
     protected String encoding = null;
+
+    protected Tika tika = new Tika();
+    protected TikaConfig tikaConfig = TikaConfig.getDefaultConfig();
 
     private final String NEWELEMENTS = "newElements";
 
@@ -118,7 +124,7 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
                     filePath = EmsNodeUtil.saveToFilesystem(filename, field.getInputStream());
                     content = new String(Files.readAllBytes(filePath));
-                    finalContentType = Files.probeContentType(filePath);
+                    finalContentType = tika.detect(filePath);
 
                     if (logger.isDebugEnabled()) {
                         logger.debug("filename: " + filename);
@@ -210,7 +216,9 @@ public class ArtifactPost extends AbstractJavaWebScript {
         Map<String, Object> model = new HashMap<>();
 
         // Replace with true content type
-        postJson.addProperty(Sjm.CONTENTTYPE, finalContentType);
+        if (finalContentType != null) {
+            postJson.addProperty(Sjm.CONTENTTYPE, finalContentType);
+        }
 
         String projectId = getProjectId(req);
         String refId = getRefId(req);
@@ -220,7 +228,16 @@ public class ArtifactPost extends AbstractJavaWebScript {
 
         if (validateRequest(req, status) && !siteName.isEmpty()) {
 
-            extension = FilenameUtils.getExtension(filename);
+            try {
+                extension = tikaConfig.getMimeRepository().forName(JsonUtil.getOptString(postJson, Sjm.CONTENTTYPE)).getExtension();
+            } catch (MimeTypeException mte) {
+                logger.debug(mte);
+            }
+
+            if (extension == null) {
+                extension = FilenameUtils.getExtension(filename);
+            }
+
             artifactId = postJson.get(Sjm.SYSMLID).getAsString();
 
             // Create return json:
@@ -237,13 +254,13 @@ public class ArtifactPost extends AbstractJavaWebScript {
                 // :TODO check against checksum first, md5hash(content), if matching return the previous version
 
                 if (filePath != null) {
-                    artifact = NodeUtil
+                    artifact = EmsScriptNode
                         .updateOrCreateArtifact(alfrescoId, filePath, JsonUtil.getOptString(postJson, Sjm.CONTENTTYPE),
                             siteName, projectId, refId);
                 }
 
                 if (artifact == null) {
-                    log(HttpServletResponse.SC_BAD_REQUEST, "Was not able to create the artifact!\n");
+                    log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Was not able to create the artifact!\n");
                     model.put(Sjm.RES, createResponseJson());
                 } else {
                     String url = artifact.getUrl();
@@ -252,11 +269,11 @@ public class ArtifactPost extends AbstractJavaWebScript {
                     }
                 }
             } else {
-                log(HttpServletResponse.SC_BAD_REQUEST, "artifactId not supplied or content is empty!");
+                log(Level.INFO, HttpServletResponse.SC_BAD_REQUEST, "artifactId not supplied or content is empty!");
                 model.put(Sjm.RES, createResponseJson());
             }
         } else {
-            log(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, no sitename specified or no content provided!");
+            log(Level.INFO, HttpServletResponse.SC_BAD_REQUEST, "Invalid request, no sitename specified or no content provided!");
             model.put(Sjm.RES, createResponseJson());
         }
 

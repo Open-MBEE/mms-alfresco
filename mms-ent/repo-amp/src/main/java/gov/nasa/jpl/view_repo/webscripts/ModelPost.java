@@ -104,32 +104,41 @@ public class ModelPost extends AbstractJavaWebScript {
 
         Timer timer = new Timer();
 
-        Map<String, Object> result;
-        String contentType = req.getContentType() == null ? "" : req.getContentType().toLowerCase();
+        Map<String, Object> result = new HashMap<String, Object>();
+        JsonObject postJson = new JsonObject();
 
-        result = handleElementPost(req, status, user, contentType);
+        try {
+            postJson = JsonUtil.buildFromStream(req.getContent().getInputStream()).getAsJsonObject();
+        } catch (IllegalStateException e) {
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON request");
+            result.put(Sjm.RES, createResponseJson());
+        }
+
+        if (!postJson.has(Sjm.RES)){
+            result = handleElementPost(req, postJson, status, user);
+        }
 
         printFooter(user, logger, timer);
 
         return result;
     }
 
-    protected Map<String, Object> handleElementPost(final WebScriptRequest req, final Status status, String user, String contentType) {
+    protected Map<String, Object> handleElementPost(final WebScriptRequest req, JsonObject postJson,
+        final Status status, String user) {
         JsonObject newElementsObject = new JsonObject();
         JsonObject results;
+
+        Map<String, Object> model = new HashMap<>();
+
+        String refId = getRefId(req);
+        String projectId = getProjectId(req);
         boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
         boolean withChildViews = Boolean.parseBoolean(req.getParameter("childviews"));
         boolean overwriteJson = Boolean.parseBoolean(req.getParameter("overwrite"));
 
-        String refId = getRefId(req);
-        String projectId = getProjectId(req);
-        Map<String, Object> model = new HashMap<>();
-
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
         try {
-            JsonObject postJson = JsonUtil.buildFromStream(req.getContent().getInputStream()).getAsJsonObject();
-
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("Post Data: '%s'", postJson));
             }
@@ -140,9 +149,8 @@ public class ModelPost extends AbstractJavaWebScript {
             String comment = JsonUtil.getOptString(postJson, Sjm.COMMENT);
 
             results = emsNodeUtil
-                .processPostJson(postJson.get(Sjm.ELEMENTS).getAsJsonArray(),
-                                 user, oldElasticIds, overwriteJson,
-                                 this.requestSourceApplication, comment, Sjm.ELEMENT);
+                .processPostJson(postJson.get(Sjm.ELEMENTS).getAsJsonArray(), user, oldElasticIds, overwriteJson,
+                    this.requestSourceApplication, comment, Sjm.ELEMENT);
 
             String commitId = results.get("commit").getAsJsonObject().get(Sjm.ELASTICID).getAsString();
 
@@ -165,15 +173,16 @@ public class ModelPost extends AbstractJavaWebScript {
                 Map<String, String> commitObject = emsNodeUtil.getGuidAndTimestampFromElasticId(commitId);
 
                 if (withChildViews) {
-                	JsonArray array = results.get(NEWELEMENTS).getAsJsonArray();
+                    JsonArray array = results.get(NEWELEMENTS).getAsJsonArray();
                     for (int i = 0; i < array.size(); i++) {
-                    	array.set(i, emsNodeUtil.addChildViews(array.get(i).getAsJsonObject()));
+                        array.set(i, emsNodeUtil.addChildViews(array.get(i).getAsJsonObject()));
                     }
                 }
 
                 newElementsObject.add(Sjm.ELEMENTS, extended ?
-                                      emsNodeUtil.addExtendedInformation(filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req))
-                                      : filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req));
+                    emsNodeUtil
+                        .addExtendedInformation(filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req)) :
+                    filterByPermission(results.get(NEWELEMENTS).getAsJsonArray(), req));
                 if (results.has("rejectedElements")) {
                     newElementsObject.add(Sjm.REJECTED, results.get("rejectedElements"));
                 }
@@ -182,7 +191,7 @@ public class ModelPost extends AbstractJavaWebScript {
                 newElementsObject.addProperty(Sjm.CREATOR, user);
 
                 if (prettyPrint) {
-                	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     model.put(Sjm.RES, gson.toJson(newElementsObject));
                 } else {
                     model.put(Sjm.RES, newElementsObject);

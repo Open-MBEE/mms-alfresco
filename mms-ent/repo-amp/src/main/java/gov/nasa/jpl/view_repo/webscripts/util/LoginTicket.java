@@ -35,7 +35,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import com.google.gson.JsonObject;
 
-import static gov.nasa.jpl.view_repo.util.NodeUtil.services;
+import static gov.nasa.jpl.view_repo.util.EmsScriptNode.services;
 import gov.nasa.jpl.view_repo.util.Sjm;
 
 /**
@@ -90,8 +90,8 @@ public class LoginTicket extends DeclarativeWebScript
         } catch (AuthenticationException e) {
             //status.setRedirect(true);
             status.setCode(HttpServletResponse.SC_NOT_FOUND);
-            status.setMessage("Ticket not found");
-            result.addProperty("message", "Ticket not found");
+            status.setMessage(e.getMsgId());
+            result.addProperty("message", e.getMsgId());
         }
 
         model.put(Sjm.RES, result.toString() );

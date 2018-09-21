@@ -26,8 +26,12 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import gov.nasa.jpl.mbee.util.TimeUtils;
 import java.io.IOException;
-import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -51,7 +55,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.mbee.util.Utils;
 
 /**
  * Descriptor in /view-repo/src/main/amp/config/alfresco/extension/templates/webscripts
@@ -63,8 +66,11 @@ public class ModelGet extends AbstractJavaWebScript {
 
     static Logger logger = Logger.getLogger(ModelGet.class);
 
-    private static final String ELEMENTID = "elementId";
-    private static final String COMMITID = "commitId";
+    protected static final String ELEMENTID = "elementId";
+    protected static final String ARTIFACTID = "artifactId";
+
+    protected Set<String> elementsToFind = new HashSet<>();
+    protected JsonArray deletedElementsCache = new JsonArray();
 
     public ModelGet() {
         super();
@@ -75,6 +81,10 @@ public class ModelGet extends AbstractJavaWebScript {
     }
 
     @Override protected boolean validateRequest(WebScriptRequest req, Status status) {
+        // get timestamp if specified
+        String timestamp = req.getParameter("timestamp");
+        Date dateTime = TimeUtils.dateFromTimestamp(timestamp);
+
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
@@ -82,7 +92,8 @@ public class ModelGet extends AbstractJavaWebScript {
         if (refId != null && refId.equalsIgnoreCase(NO_WORKSPACE_ID)) {
             return true;
         } else if (refId != null && !emsNodeUtil.refExists(refId)) {
-            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found", refId);
+            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Reference with id, %s not found",
+                refId + (dateTime == null ? "" : " at " + dateTime));
             return false;
         }
         return true;
@@ -98,161 +109,189 @@ public class ModelGet extends AbstractJavaWebScript {
 
     @Override protected Map<String, Object> executeImplImpl(WebScriptRequest req, Status status, Cache cache) {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-
         if (logger.isDebugEnabled()) {
             printHeader(user, logger, req);
         } else {
             printHeader(user, logger, req, true);
         }
-
         Timer timer = new Timer();
 
-        Map<String, Object> model;
+        Map<String, Object> model = new HashMap<>();
+        try {
+            if (validateRequest(req, status)) {
+                model = getModel(req);
+            }
+        } catch (IllegalStateException e) {
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "unable to get JSON object from request", e);
+        } catch (JsonParseException e) {
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON request", e);
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        if (model.isEmpty()) {
+            model.put(Sjm.RES, createResponseJson());
+        }
+        status.setCode(responseStatus.getCode());
+        printFooter(user, logger, timer);
+        return model;
+    }
+
+    protected Map<String, Object> getModel(WebScriptRequest req) throws IOException {
+        Long depth = getDepthFromRequest(req);
+        JsonObject result = handleRequest(req, depth, Sjm.ELEMENTS);
+        return finish(req, result, true, Sjm.ELEMENTS);
+    }
+
+    protected Map<String, Object> finish(WebScriptRequest req, JsonObject result, boolean single, String type) {
+        Map<String, Set<String>> errors = new HashMap<>();
+        JsonArray elementsJson = JsonUtil.getOptArray(result, type);
+        JsonObject top = new JsonObject();
+        JsonArray got = filterByPermission(elementsJson, req);
+        if (elementsJson.size() > 0) {
+            top.add(type, got);
+            if (got.size() < 1) {
+                responseStatus.setCode(HttpServletResponse.SC_FORBIDDEN);
+            }
+        } else if (!single) {
+            top.add(type, got);
+        }
+        if (deletedElementsCache.size() > 0) {
+            JsonArray deleted = filterByPermission(deletedElementsCache, req);
+            if (deleted.size() > 0) {
+                Set<String> deletedSet = new HashSet<>();
+                for (int i = 0; i < deleted.size(); i++) {
+                    deletedSet.add(deleted.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString());
+                }
+                elementsToFind.removeAll(deletedSet);
+                errors.put(Sjm.DELETED, deletedSet);
+                top.add(Sjm.DELETED, deleted);
+                if (single) {
+                    responseStatus.setCode(HttpServletResponse.SC_GONE);
+                }
+            }
+        }
+        if (!elementsToFind.isEmpty()) {
+            errors.put(Sjm.FAILED, elementsToFind);
+            if (single) {
+                responseStatus.setCode(HttpServletResponse.SC_NOT_FOUND);
+            }
+        }
+
+        JsonArray errorMessages = parseErrors(errors);
+        if (errorMessages.size() > 0) {
+            top.add("messages", errorMessages);
+        }
 
         String[] accepts = req.getHeaderValues("Accept");
         String accept = (accepts != null && accepts.length != 0) ? accepts[0] : "";
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Accept: %s", accept));
-        }
-
-        model = handleElementGet(req, status, accept);
-
-        printFooter(user, logger, timer);
-
-        return model;
-    }
-
-    protected Map<String, Object> handleElementGet(WebScriptRequest req, Status status, String accept) {
-
         Map<String, Object> model = new HashMap<>();
-        JsonObject top = new JsonObject();
-
-        if (validateRequest(req, status)) {
-            boolean isCommit = req.getParameter(COMMITID) != null && !req.getParameter(COMMITID).isEmpty();
-            try {
-                if (isCommit) {
-                    JsonArray commitJsonToArray = new JsonArray();
-                    JsonObject commitJson = handleCommitRequest(req);
-                    commitJsonToArray.add(commitJson);
-                    if (commitJson.size() == 0) {
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
-                    }
-                    if (commitJson.size() > 0) {
-                        top.add(Sjm.ELEMENTS, filterByPermission(commitJsonToArray, req));
-                    }
-                    if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
-                        log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
-                    }
-                } else {
-                    JsonArray elementsJson = handleRequest(req);
-                    if (elementsJson.size() == 0) {
-                        log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "No elements found.");
-                    }
-                    if (elementsJson.size() > 0) {
-                        top.add(Sjm.ELEMENTS, filterByPermission(elementsJson, req));
-                    }
-                    if (top.has(Sjm.ELEMENTS) && top.get(Sjm.ELEMENTS).getAsJsonArray().size() < 1) {
-                        log(Level.ERROR, HttpServletResponse.SC_FORBIDDEN, "Permission denied.");
-                    }
-                }
-                if (!Utils.isNullOrEmpty(response.toString()))
-                    top.addProperty("message", response.toString());
-            } catch (Exception e) {
-                log(Level.ERROR, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error", e);
-            }
-
-            status.setCode(responseStatus.getCode());
-        }
-        if (prettyPrint || accept.contains("webp")) {
-        	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        if (prettyPrint || accept.contains("html")) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
             model.put(Sjm.RES, gson.toJson(top));
         } else {
             model.put(Sjm.RES, top);
         }
-
         return model;
     }
 
     /**
-     * Wrapper for handling a request and getting the appropriate JSONArray of elements
+     * Wrapper for handling a request and getting the appropriate JSONArray of
+     * elements
      *
-     * @param req WebScriptRequest object
-     * @return JSONArray of elements
+     * @param req
+     * @return
+     * @throws IOException
      */
-    private JsonArray handleRequest(WebScriptRequest req) {
-        // REVIEW -- Why check for errors here if validate has already been
-        // called? Is the error checking code different? Why?
-        try {
-            String modelId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
-            String projectId = getProjectId(req);
-            String refId = getRefId(req);
-            Long depth = getDepthFromRequest(req);
-            boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
+    protected JsonObject handleRequest(WebScriptRequest req, final Long maxDepth, String type) throws IOException {
+        JsonObject requestJson = JsonUtil.buildFromString(req.getContent().getContent());
+        String templateVar = type.equals(Sjm.ELEMENTS) ? ELEMENTID : ARTIFACTID;
 
-            EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-            if (null == modelId) {
-                log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s", modelId);
-                return new JsonArray();
-            } else if (emsNodeUtil.isDeleted(modelId)) {
-                log(Level.ERROR, HttpServletResponse.SC_GONE, "Element %s is deleted", modelId);
-                return new JsonArray();
-            }
-
-            JsonObject mountsJson = new JsonObject();
-            mountsJson.addProperty(Sjm.SYSMLID, projectId);
-            mountsJson.addProperty(Sjm.REFID, refId);
-
-            JsonArray result = new JsonArray();
-            Set<String> elementsToFind = new HashSet<>();
-            elementsToFind.add(modelId);
-            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, depth, elementsToFind, result);
-            return result;
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-        return new JsonArray();
-    }
-
-    private JsonObject handleCommitRequest(WebScriptRequest req) {
-        // getElement at commit
-        String projectId = getProjectId(req);
         String refId = getRefId(req);
-        Long depth = getDepthFromRequest(req);
+        String projectId = getProjectId(req);
+        String commitId = req.getParameter(Sjm.COMMITID.replace("_", ""));
+        String elementId = req.getServiceMatch().getTemplateVars().get(templateVar);
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+        JsonArray elementsToFindJson = new JsonArray();
 
-        String elementId = req.getServiceMatch().getTemplateVars().get(ELEMENTID);
-        String commitId = req.getParameter(COMMITID);
-
-        if (emsNodeUtil.getById(elementId) != null) {
-            JsonObject element = emsNodeUtil.getElementByElementAndCommitId(commitId, elementId);
-            if (element == null || element.size() == 0) {
-                return emsNodeUtil.getElementAtCommit(elementId, commitId);
-            } else {
-                return element;
+        if (elementId != null) {
+            if (commitId != null) {
+                JsonObject element = emsNodeUtil.getByCommitId(elementId, commitId, type);
+                if (element != null && element.size() > 0) {
+                    JsonObject result = new JsonObject();
+                    JsonArray elements = new JsonArray();
+                    elements.add(element);
+                    result.add(type, elements);
+                    return result;
+                }
             }
+            JsonObject element = new JsonObject();
+            element.addProperty(Sjm.SYSMLID, elementId);
+            elementsToFindJson.add(element);
+        } else if (requestJson.has(type)) {
+            elementsToFindJson = requestJson.get(type).getAsJsonArray();
+        } else {
+            return new JsonObject();
         }
+
+        boolean extended = Boolean.parseBoolean(req.getParameter("extended"));
 
         JsonObject mountsJson = new JsonObject();
         mountsJson.addProperty(Sjm.SYSMLID, projectId);
         mountsJson.addProperty(Sjm.REFID, refId);
-        // convert commitId to timestamp
-        String commit = emsNodeUtil.getCommitObject(commitId).get(Sjm.CREATED).getAsString();
 
-        JsonArray result = new JsonArray();
-        Set<String> elementsToFind = new HashSet<>();
-        elementsToFind.add(elementId);
-        try {
-            EmsNodeUtil.handleMountSearch(mountsJson, false, false, depth, elementsToFind, result, commit, "elements");
-            if (result.size() > 0) {
-                return JsonUtil.getOptObject(result, 0);
+        JsonArray found = new JsonArray();
+        JsonObject result = new JsonObject();
+
+        for (int i = 0; i < elementsToFindJson.size(); i++) {
+            try {
+                String currentId = elementsToFindJson.get(i).getAsJsonObject().get(Sjm.SYSMLID).getAsString();
+                elementsToFind.add(currentId);
+            } catch (Exception e) {
+                // Intentionally empty
             }
-        } catch (Exception e) {
-            log(Level.ERROR, HttpServletResponse.SC_NOT_FOUND, "Could not find element %s at commit %s",
-                elementId, commitId);
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
-        return new JsonObject();
+
+        JsonObject commitObject = emsNodeUtil.getCommitObject(commitId);
+
+        String timestamp = commitObject != null && commitObject.has(Sjm.CREATED) ?
+            commitObject.get(Sjm.CREATED).getAsString() :
+            null;
+
+        if (commitId != null && commitObject == null) {
+            elementsToFind = new HashSet<>();
+            log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST, "Invalid commit id");
+        } else {
+            EmsNodeUtil.handleMountSearch(mountsJson, extended, false, maxDepth, elementsToFind, found, timestamp, type);
+        }
+
+        if (!elementsToFind.isEmpty()) {
+            JsonArray deletedElementsJson;
+            if (type.equals(Sjm.ELEMENTS)) {
+                deletedElementsJson = emsNodeUtil.getNodesBySysmlids(elementsToFind, false, true);
+            } else {
+                deletedElementsJson = emsNodeUtil.getArtifactsBySysmlids(elementsToFind, true);
+            }
+            if (timestamp != null) {
+                for (JsonElement check : deletedElementsJson) {
+                    try {
+                        Date created = EmsNodeUtil.df.parse(JsonUtil.getOptString((JsonObject) check, Sjm.CREATED));
+                        Date commitDate = EmsNodeUtil.df.parse(timestamp);
+                        if (!created.after(commitDate)) {
+                            this.deletedElementsCache.add(check);
+                        }
+                    } catch (ParseException pe) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug(pe);
+                        }
+                    }
+                }
+            } else {
+                this.deletedElementsCache = deletedElementsJson;
+            }
+        }
+        result.add(type, found);
+        return result;
     }
 
     /**
@@ -262,34 +301,27 @@ public class ModelGet extends AbstractJavaWebScript {
      * @return Depth < 0 is infinite recurse, depth = 0 is just the element (if no request
      * parameter)
      */
-    public Long getDepthFromRequest(WebScriptRequest req) {
-        Long depth = null;
+    Long getDepthFromRequest(WebScriptRequest req) {
+        long depth = 0L;
         String depthParam = req.getParameter("depth");
         if (depthParam != null) {
-            try {
-                depth = Long.parseLong(depthParam);
-                if (depth < 0) {
-                    depth = 100000L;
-                }
-            } catch (NumberFormatException nfe) {
-                // don't do any recursion, ignore the depth
-                log(Level.WARN, HttpServletResponse.SC_BAD_REQUEST, "Bad depth specified, returning depth 0");
+            depth = parseDepth(depthParam);
+        }
+
+        return getBooleanArg(req, "recurse", false) ? 100000L : depth;
+    }
+
+    Long parseDepth(String depthParam) {
+        long depth = 0L;
+        try {
+            depth = Long.parseLong(depthParam);
+            if (depth < 0) {
+                depth = 100000L;
             }
+        } catch (NumberFormatException nfe) {
+            // don't do any recursion, ignore the depth
+            log(Level.WARN, HttpServletResponse.SC_BAD_REQUEST, "Bad depth specified, returning depth 0");
         }
-
-        // recurse default is false
-        boolean recurse = getBooleanArg(req, "recurse", false);
-        // for backwards compatiblity convert recurse to infinite depth (this
-        // overrides
-        // any depth setting)
-        if (recurse) {
-            depth = 100000L;
-        }
-
-        if (depth == null) {
-            depth = 0L;
-        }
-
         return depth;
     }
 }

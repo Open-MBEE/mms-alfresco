@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.log4j.Logger;
 
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
-import gov.nasa.jpl.view_repo.util.NodeUtil;
 
 public class SitePermission {
 
@@ -57,7 +57,7 @@ public class SitePermission {
     }
 
     public static boolean isAdmin() {
-        List<String> userGroups = NodeUtil.getUserGroups(NodeUtil.getUserName());
+        List<String> userGroups = EmsScriptNode.getUserGroups(AuthenticationUtil.getRunAsUser());
         for (String adminString : adminList) {
             for (String userGroup : userGroups) {
                 if (userGroup.contains(adminString)) {

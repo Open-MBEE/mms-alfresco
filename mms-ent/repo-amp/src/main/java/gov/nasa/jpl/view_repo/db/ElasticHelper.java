@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gson.JsonElement;
 import io.searchbox.cluster.UpdateSettings;
 import io.searchbox.core.*;
 import io.searchbox.indices.DeleteIndex;
@@ -49,8 +50,9 @@ public class ElasticHelper implements ElasticsearchInterface {
 
     public static final String ELEMENT = "element";
     public static final String COMMIT = "commit";
-    private static final String PROFILE = "profile";
-    private static final String ARTIFACT = "artifact";
+    public static final String PROFILE = "profile";
+    public static final String ARTIFACT = "artifact";
+    public static final String REF = "ref";
 
     private static final String COMMIT_QUERY = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
 
@@ -128,43 +130,30 @@ public class ElasticHelper implements ElasticsearchInterface {
         client.execute(updateByQuery);
     }
 
+    public void deleteByQuery(String index, String payload, String type) throws IOException {
+        DeleteByQuery deleteByQuery =
+            new DeleteByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
+                .build();
+        client.execute(deleteByQuery);
+    }
+
     public void updateClusterSettings(String payload) throws IOException {
         UpdateSettings updateSettings = new UpdateSettings.Builder(payload).build();
         client.execute(updateSettings);
-    }
-
-    /**
-     * Gets the JSON document of element type using a elastic _id (1)
-     *
-     * @param id _id elasticsearch property          (2)
-     * @return JSONObject o or null
-     */
-    public JsonObject getElementByElasticId(String id, String index) throws IOException {
-        // Cannot use method for commit type
-        return getByElasticId(id, index, ELEMENT);
-    }
-
-    public JsonObject getProfileByElasticId(String id, String index) throws IOException {
-        // Cannot use method for commit type
-        return getByElasticId(id, index, PROFILE);
-    }
-
-    public JsonObject getElementByElasticIdArtifact(String id, String index) throws IOException {
-        // Cannot use method for commit type
-        return getByElasticId(id, index, ARTIFACT);
     }
 
     public JsonObject getByElasticId(String id, String index, String type) throws IOException {
         Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(type).build();
 
         JestResult result = client.execute(get);
-
         if (result.isSucceeded()) {
             JsonObject o = result.getJsonObject().get("_source").getAsJsonObject();
             o.add(Sjm.ELASTICID, result.getJsonObject().get("_id"));
+            if (type.equals(COMMIT)) {
+                o.add(Sjm.SYSMLID, result.getJsonObject().get("_id"));
+            }
             return o;
         }
-
         return null;
     }
 
@@ -258,42 +247,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         return array;
     }
 
-    /**
-     * Gets the JSON document of commit type using a elastic _id (1)
-     *
-     * @param id _id elasticsearch property          (2)
-     * @return JSONObject o or null
-     */
-    public JsonObject getCommitByElasticId(String id, String index) throws IOException {
-        if (id == null) {
-            return null;
-        }
-        Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(COMMIT).build();
-
-        JestResult result = client.execute(get);
-
-        if (!result.isSucceeded() && result.getResponseCode() != 404) {
-            throw new IOException(
-                    String.format("Elasticsearch error[%1$s]:%2$s",
-                            result.getResponseCode(), result.getErrorMessage()));
-        } else if (result.isSucceeded()) {
-            JsonObject o = result.getJsonObject().getAsJsonObject("_source");
-            o.add(Sjm.SYSMLID, result.getJsonObject().get("_id"));
-            return o;
-        }
-
-        return null;
-    }
-
-    public JsonObject getElementByCommitId(String elasticId, String sysmlid, String index) throws IOException {
-        return getByCommitId(elasticId, sysmlid, index, ELEMENT);
-    }
-
-    public JsonObject getArtifactByCommitId(String elasticId, String sysmlid, String index) throws IOException {
-        return getByCommitId(elasticId, sysmlid, index, ARTIFACT);
-    }
-
-    private JsonObject getByCommitId(String elasticId, String sysmlid, String index, String type) throws IOException {
+    public JsonObject getByCommitId(String elasticId, String sysmlid, String index, String type) throws IOException {
         String query = String.format(COMMIT_QUERY, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
 
         if (logger.isDebugEnabled()) {
@@ -424,26 +378,17 @@ public class ElasticHelper implements ElasticsearchInterface {
         return result.isSucceeded();
     }
 
-    public boolean updateElement(String id, JsonObject payload, String index) throws IOException {
-        JsonObject update = new JsonObject();
-        update.add("doc", payload);
-        update.addProperty("_source", true);
-        JestResult updated = client.execute(
-            new Update.Builder(update.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(ELEMENT)
-                .build());
-        return updated.isSucceeded();
-    }
-
-    public JsonObject updateProfile(String id, JsonObject payload, String index) throws IOException {
+    public JsonObject updateById(String id, JsonObject payload, String index, String type) throws IOException {
         JsonObject upsert = new JsonObject();
         upsert.add("doc", payload);
         upsert.addProperty("doc_as_upsert", true);
         upsert.addProperty("_source", true);
         JestResult res = client.execute(
-            new Update.Builder(upsert.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(PROFILE)
+            new Update.Builder(upsert.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(type)
                 .build());
-        if (res.isSucceeded())
+        if (res.isSucceeded()) {
             return res.getJsonObject().get("get").getAsJsonObject().get("_source").getAsJsonObject();
+        }
         return new JsonObject();
     }
 
@@ -542,7 +487,9 @@ public class ElasticHelper implements ElasticsearchInterface {
             return top;
         }
 
+
         if (result.getTotal() > 0) {
+            top.addProperty("total", result.getJsonObject().getAsJsonObject("hits").get("total").getAsInt());
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
             for (int i = 0; i < hits.size(); i++) {
 
@@ -573,7 +520,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param ids
      * @return JSONObject Result
      */
-    public JsonObject bulkDeleteByType(String type, ArrayList<String> ids, String index) {
+    public JsonObject bulkDeleteByType(Set<String> ids, String index, String type) {
         if (ids.isEmpty()) {
             return new JsonObject();
         }
@@ -582,9 +529,9 @@ public class ElasticHelper implements ElasticsearchInterface {
         try {
             ArrayList<Delete> deleteList = new ArrayList<>();
 
-            for (String commitId : ids) {
+            for (String elasticId : ids) {
                 deleteList.add(
-                    new Delete.Builder(commitId).type(type).index(index.toLowerCase().replaceAll("\\s+", "")).build());
+                    new Delete.Builder(elasticId).type(type).index(index.toLowerCase().replaceAll("\\s+", "")).build());
             }
             Bulk bulk = new Bulk.Builder().defaultIndex(index.toLowerCase().replaceAll("\\s+", "")).defaultIndex(type)
                 .addAction(deleteList).build();
@@ -675,7 +622,7 @@ public class ElasticHelper implements ElasticsearchInterface {
             }
             count += termLimit;
         }
-        return new JsonObject();
+        return null;
     }
 
     public Map<String, String> getDeletedElementsFromCommits(List<String> commitIds, String index) {
@@ -734,5 +681,10 @@ public class ElasticHelper implements ElasticsearchInterface {
             count += termLimit;
         }
         return deletedElements;
+    }
+
+    public static boolean containsScript(JsonObject json) {
+        String jsonString = json.toString();
+        return jsonString.contains("\"script\"");
     }
 }

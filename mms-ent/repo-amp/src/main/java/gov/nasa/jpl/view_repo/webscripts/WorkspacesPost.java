@@ -29,6 +29,7 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
+import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -113,7 +114,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                         String commitId = !JsonUtil.getOptString(o, "parentCommitId").isEmpty() ?
                                 JsonUtil.getOptString(o, "parentCommitId") : req.getParameter("commitId");
 
-                        json = createWorkSpace(projectId, sourceWorkspaceParam, newName, commitId, reqJson, user, status);
+                        json = createWorkSpace(projectId, sourceWorkspaceParam, newName, commitId, o, user, status);
                         statusCode = status.getCode();
                         if (statusCode == HttpServletResponse.SC_OK) {
                             success.add(json);
@@ -177,7 +178,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
         if (orgNode == null) {
-            log(Level.WARN, "Site Not Found", HttpServletResponse.SC_NOT_FOUND);
+            log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Site Not Found");
             status.setCode(HttpServletResponse.SC_NOT_FOUND);
             return null;
         }
@@ -188,6 +189,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         JsonObject srcJson = new JsonObject();
         String workspaceName = null;
         String desc = null;
+        JsonArray keywords = new JsonArray();
+        JsonObject metadata = new JsonObject();
         String elasticId = null;
         boolean isTag = false;
         String permission = "read";  // Default is public read permission
@@ -197,8 +200,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
         // and ignore any URL parameters:
         if (jsonObject != null) {
 
-            JsonArray jarr = jsonObject.get("refs").getAsJsonArray();
-            wsJson = jarr.get(0).getAsJsonObject();  // Will only post/update one workspace
+            wsJson = jsonObject;
             sourceWorkspaceId = JsonUtil.getOptString(wsJson, "parentRefId");
             srcJson = emsNodeUtil.getRefJson(sourceWorkspaceId);
             newWorkspaceId = JsonUtil.getOptString(wsJson, Sjm.SYSMLID, null); // alfresco id of workspace node
@@ -206,6 +208,8 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             workspaceName = JsonUtil.getOptString(wsJson, "name"); // user or auto-generated name, ems:workspace_name
             isTag = JsonUtil.getOptString(wsJson, "type", "Branch").equals("Tag");
             desc = JsonUtil.getOptString(wsJson, "description");
+            keywords = JsonUtil.getOptArray(wsJson, "keywords");
+            metadata = JsonUtil.getOptObject(wsJson, "metadata");
             permission = JsonUtil.getOptString(wsJson, "permission", "read");  // "read" or "write"
         } else {
             sourceWorkspaceId = sourceWorkId;
@@ -231,12 +235,17 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             if (desc != null && !desc.isEmpty()) {
                 wsJson.addProperty(Sjm.DESCRIPTION, desc);
             }
+            if (keywords.size() > 0) {
+                wsJson.add(Sjm.KEYWORDS, keywords);
+            }
+            if (metadata.size() > 0) {
+                wsJson.add(Sjm.METADATA, metadata);
+            }
             wsJson.addProperty(Sjm.CREATED, date);
             wsJson.addProperty(Sjm.CREATOR, user);
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
-            wsJson.addProperty("status", "creating");
-            elasticId = emsNodeUtil.insertSingleElastic(wsJson);
+            elasticId = emsNodeUtil.insertSingleElastic(wsJson, ElasticHelper.REF);
 
             if (!NO_WORKSPACE_ID.equals(sourceWorkspaceId) && srcWs == null) {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Source workspace not found.");
@@ -244,7 +253,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 return null;
             } else {
                 EmsScriptNode refContainerNode = orgNode.childByNamePath("/" + projectId + "/refs");
-                EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId, null, null);
+                EmsScriptNode dstWs = refContainerNode.createFolder(newWorkspaceId, null);
 
                 if (dstWs != null && srcWs != null) {
                     // keep history of the branch
@@ -255,13 +264,17 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                     CommitUtil.sendBranch(projectId, srcJson, wsJson, elasticId, isTag,
                         JsonUtil.getOptString(jsonObject, "source", null), commitId, services);
 
+                    if (wsJson.get("status").getAsString().equalsIgnoreCase("rejected")) {
+                        status.setCode(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+                    }
+
                     finalWorkspace = dstWs;
                 }
             }
         } else {
             // Workspace was found, so update it:
             if (existingRef.getId() != null) {
-                log(Level.INFO, "Workspace is modified", HttpServletResponse.SC_OK);
+                log(Level.INFO, HttpServletResponse.SC_OK, "Workspace is modified");
                 finalWorkspace = existingRef;
             } else {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Workspace not found.");
@@ -269,9 +282,22 @@ public class WorkspacesPost extends AbstractJavaWebScript {
                 return null;
             }
 
+            JsonObject existingWsJson = emsNodeUtil.getRefJson(newWorkspaceId);
+
+            if (wsJson.get(Sjm.COMMITID) != null) {
+                wsJson.remove(Sjm.COMMITID);
+            }
+            if (wsJson.get("parentRefId") != null) {
+                wsJson.remove("parentRefId");
+            }
+            if (wsJson.get("parentCommitId") != null) {
+                wsJson.remove("parentCommitId");
+            }
+
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
-            elasticId = emsNodeUtil.insertSingleElastic(wsJson);
+            wsJson.addProperty(Sjm.ELASTICID, existingWsJson.get(Sjm.ELASTICID).getAsString());
+            elasticId = emsNodeUtil.updateSingleElastic(wsJson, ElasticHelper.REF);
             emsNodeUtil.updateRef(newWorkspaceId, workspaceName, elasticId, isTag);
         }
 

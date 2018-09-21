@@ -57,7 +57,7 @@ public class ModelDelete extends AbstractJavaWebScript {
         JsonObject result = null;
 
         try {
-            result = handleRequest(req, status, user);
+            result = handleRequest(req, user);
             if (result != null) {
                 model.put(Sjm.RES, result);
             } else {
@@ -73,7 +73,7 @@ public class ModelDelete extends AbstractJavaWebScript {
         return model;
     }
 
-    protected JsonObject handleRequest(WebScriptRequest req, final Status status, String user) throws IOException {
+    protected JsonObject handleRequest(WebScriptRequest req, String user) throws IOException {
         JsonObject result = new JsonObject();
         String date = TimeUtils.toTimestamp(new Date().getTime());
 
