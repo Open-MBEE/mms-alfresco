@@ -424,6 +424,11 @@ public class CommitUtil {
                     pgh.deleteEdgesForNode(e.get(Sjm.SYSMLID).getAsString(), false, DbEdgeTypes.VIEW);
                     pgh.deleteEdgesForNode(e.get(Sjm.SYSMLID).getAsString(), false, DbEdgeTypes.CHILDVIEW);
 
+                    if (e.get(Sjm.SYSMLID).getAsString().equalsIgnoreCase(projectId)) {
+                        // Remove owner from project element
+                        e.remove(Sjm.OWNERID);
+                    }
+
                     if (e.has(Sjm.OWNERID) && !e.get(Sjm.OWNERID).isJsonNull() && !e.get(Sjm.SYSMLID).isJsonNull()) {
                         Pair<String, String> p =
                             new Pair<>(e.get(Sjm.OWNERID).getAsString(), e.get(Sjm.SYSMLID).getAsString());
