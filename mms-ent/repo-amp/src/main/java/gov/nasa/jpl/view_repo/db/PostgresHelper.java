@@ -1281,6 +1281,10 @@ public class PostgresHelper implements GraphInterface {
 
                     try (ResultSet rs = statement.executeQuery()) {
                         while (rs.next()) {
+                            // Project nodetype elements should not have immediate parents
+                            if (rs.getLong(1) == DbNodeTypes.PROJECT.getValue()) {
+                                return null;
+                            }
                             for (DbNodeTypes dnt : dnts) {
                                 if (dnt.getValue() == rs.getLong(1)) {
                                     return parentId;
