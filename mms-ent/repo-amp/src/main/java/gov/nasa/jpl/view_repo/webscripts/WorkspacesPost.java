@@ -245,6 +245,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.addProperty(Sjm.CREATOR, user);
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
+            wsJson.addProperty("status", "creating");
             elasticId = emsNodeUtil.insertSingleElastic(wsJson, ElasticHelper.REF);
 
             if (!NO_WORKSPACE_ID.equals(sourceWorkspaceId) && srcWs == null) {
