@@ -3,7 +3,7 @@
 
 The MMS AMP is a hosted application run atop the [community version of an Alfresco Enterprise Content Management Server](https://docs.alfresco.com/community/concepts/welcome-infocenter_community.html).  
 
-**NOTE 1: AMPs for Alfresco as built from this maven project are meant to be run by Alfresco Community Edition v5.1.g (AKA 201605-GA)**
+**NOTE 1: AMPs for Alfresco as built from this maven project are meant to be run by [Alfresco Community Edition v5.1.g (AKA 201605-GA)](https://download.alfresco.com/release/community/201605-build-00010/alfresco-community-distribution-201605.zip)**
 
 Per [ Alfresco's documentation on Modules](https://docs.alfresco.com/5.0/concepts/dev-extensions-modules-intro.html), Alfresco Module Packages (AMPs) are installed using the Module Management Tool [MMT](https://docs.alfresco.com/5.0/concepts/dev-extensions-modules-management-tool.html) jar file.  The latest version of the two AMPs you will be "exploding" into the "alfresco" and "share" WARs resident within the embedded Tomcat server are available via the download links leading to the two interdependent portions named "mms-repo.amp" and "mms-share.amp", relating to "alfresco.war" and "share.war", respectively.
 
