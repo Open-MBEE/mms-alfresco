@@ -285,12 +285,12 @@ API Documentation is located at the following endpoints:
 
 Swagger CodeGen:
 ```
-alfresco/mms
+alfresco/mms/index.html
 ```
 
 Swagger UI:
 ```
-alfresco/mms/swagger-ui
+alfresco/mms/swagger-ui/index.html
 ```
 
 Swagger YAML file:
