@@ -121,7 +121,7 @@ public class Migrate_3_4_0 {
                 for (Map<String, String> commit : commits) {
                     String commitId = commit.get("commitId");
                     if (!commitId.isEmpty()) {
-                        JsonObject commitObject = eh.getByElasticId(commitId, projectId, ElasticHelper.COMMIT);
+                        JsonObject commitObject = eh.getByInternalId(commitId, projectId, ElasticHelper.COMMIT);
                         if (commitObject != null && commitObject.has(Sjm.CREATED)) {
                             try (PreparedStatement statement = pgh.prepareStatement(updateQuery)) {
                                 Date created = df.parse(commitObject.get(Sjm.CREATED).getAsString());
