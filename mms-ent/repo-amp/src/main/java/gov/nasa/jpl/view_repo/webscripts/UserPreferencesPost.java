@@ -27,7 +27,8 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
+import gov.nasa.jpl.view_repo.db.DocStoreHelperFactory;
+import gov.nasa.jpl.view_repo.db.DocStoreHelperInterface;
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -88,14 +89,15 @@ public class UserPreferencesPost extends AbstractJavaWebScript {
                     JsonObject postJson = postJsonTop.get(Sjm.PROFILES).getAsJsonObject();
 
                     // creates a new document if one didn't exist, otherwise updates existing document
-                    JsonObject res = (new ElasticHelper()).updateById(username, postJson, elementIndex, ElasticHelper.PROFILE);
+                	DocStoreHelperInterface docStoreHelper = DocStoreHelperFactory.getDocStore();
+                    JsonObject res = docStoreHelper.updateById(username, postJson, elementIndex, DocStoreHelperInterface.PROFILE);
                     if (res != null && res.size() > 0) {
                         response.add(Sjm.PROFILES, res);
                     } else {
                         response.add("failed", res);
                     }
                 }
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
                     "Commit failed, please check server logs for failed items", e);
             }

@@ -10,8 +10,12 @@ import java.util.Map;
 import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.db.DocStoreHelperFactory;
+import gov.nasa.jpl.view_repo.db.DocStoreHelperInterface;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.db.DocStoreHelperInterface;
+import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.alfresco.repo.model.Repository;
@@ -153,10 +157,8 @@ public class ProjectDelete extends AbstractJavaWebScript {
         logger.debug("Deleting commits in Elastic");
 
         try {
-            ElasticHelper elasticHelper = new ElasticHelper();
-            elasticHelper.bulkDeleteByType(commitIds, projectId, ElasticHelper.COMMIT);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
+        	DocStoreHelperInterface docStoreHelper = DocStoreHelperFactory.getDocStore();
+            docStoreHelper.bulkDeleteByType(commitIds, projectId, ElasticHelper.COMMIT);
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
@@ -171,9 +173,9 @@ public class ProjectDelete extends AbstractJavaWebScript {
         logger.debug("Deleting elastic elements for " + projectId);
 
         try {
-            ElasticHelper elasticHelper = new ElasticHelper();
-            elasticHelper.deleteIndex(projectId);
-        } catch (IOException e) {
+        	DocStoreHelperInterface docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	docStoreHelper.deleteIndex(projectId);
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }

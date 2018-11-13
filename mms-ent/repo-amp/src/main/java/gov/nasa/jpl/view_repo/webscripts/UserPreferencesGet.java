@@ -27,7 +27,8 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
+import gov.nasa.jpl.view_repo.db.DocStoreHelperFactory;
+import gov.nasa.jpl.view_repo.db.DocStoreHelperInterface;
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -38,7 +39,6 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -84,14 +84,15 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
             try {
                 if (validateRequest(req, status)) {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
-                    JsonObject res = (new ElasticHelper()).getByElasticId(username, EmsConfig.get("elastic.index.element"), ElasticHelper.PROFILE);
+                	DocStoreHelperInterface docStoreHelper = DocStoreHelperFactory.getDocStore();
+                    JsonObject res = docStoreHelper.getByInternalId(username, EmsConfig.get("elastic.index.element"), DocStoreHelperInterface.PROFILE);
                     if (res != null && res.size() > 0) {
                         response.add(Sjm.PROFILES, res);
                     } else {
                         response.add("failed", res);
                     }
                 }
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 log(Level.ERROR, HttpServletResponse.SC_BAD_REQUEST,
                     "Commit failed, please check server logs for failed items", e);
             }

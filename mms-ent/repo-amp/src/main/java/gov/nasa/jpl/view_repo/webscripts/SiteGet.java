@@ -51,10 +51,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
+import gov.nasa.jpl.view_repo.db.DocStoreHelperFactory;
+import gov.nasa.jpl.view_repo.db.DocStoreHelperInterface;
 import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
+import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
@@ -124,15 +126,20 @@ public class SiteGet extends AbstractJavaWebScript {
      * @return json to return
      *
      * @throws IOException
+     * @throws ClassNotFoundException 
+     * @throws IllegalAccessException 
+     * @throws InstantiationException 
      */
     private JsonArray handleSite(String projectId, String refId)
-                    throws IOException {
+                    throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 
         JsonArray json = new JsonArray();
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
-        ElasticHelper eh = new ElasticHelper();
-        List<String> ids = new ArrayList<>();
+
+    	DocStoreHelperInterface docStoreHelper = DocStoreHelperFactory.getDocStore();
+
+    	List<String> ids = new ArrayList<>();
         List<String> alfs = new ArrayList<>();
 
         try {
@@ -145,7 +152,7 @@ public class SiteGet extends AbstractJavaWebScript {
             for (Node n : alfSites) {
                 alfs.add(n.getSysmlId());
             }
-            JsonArray elements = eh.getElementsFromElasticIds(ids, projectId);
+            JsonArray elements = docStoreHelper.getElementsFromElasticIds(ids, projectId);
 
             if (logger.isDebugEnabled())
                 logger.debug("handleSite: " + elements);

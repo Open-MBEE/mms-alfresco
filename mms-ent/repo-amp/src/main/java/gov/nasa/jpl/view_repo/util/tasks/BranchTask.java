@@ -3,6 +3,8 @@ package gov.nasa.jpl.view_repo.util.tasks;
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.db.ElasticHelper;
+import gov.nasa.jpl.view_repo.db.DocStoreHelperFactory;
+import gov.nasa.jpl.view_repo.db.DocStoreHelperInterface;
 import gov.nasa.jpl.view_repo.db.GraphInterface;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
@@ -69,7 +71,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
     private JsonObject branchJson = null;
 
     private transient Timer timer;
-    private transient ElasticHelper eh;
+    private transient DocStoreHelperInterface docStoreHelper;
     private transient PostgresHelper pgh;
 
     public BranchTask(String projectId, String srcId, String createdString, String elasticId, Boolean isTag,
@@ -115,7 +117,8 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         logger.info("Connected to postgres");
 
         try {
-            eh = new ElasticHelper();
+        	docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	
             pgh.createBranchFromWorkspace(created.get(Sjm.SYSMLID).getAsString(), created.get(Sjm.NAME).getAsString(),
                 elasticId, commitId, isTag);
 
@@ -188,8 +191,8 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
                 logger.debug("inRefId update: " + scriptToRun);
             }
 
-            eh.bulkUpdateElements(nodesToUpdate, scriptToRun, projectId, "element");
-            eh.bulkUpdateElements(artifactsToUpdate, scriptToRun, projectId, "artifact");
+            docStoreHelper.bulkUpdateElements(nodesToUpdate, scriptToRun, projectId, "element");
+            docStoreHelper.bulkUpdateElements(artifactsToUpdate, scriptToRun, projectId, "artifact");
 
             created.addProperty("status", "created");
 
@@ -202,7 +205,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         }
 
         try {
-            eh.updateById(elasticId, created, projectId, ElasticHelper.REF);
+        	docStoreHelper.updateById(elasticId, created, projectId, ElasticHelper.REF);
         } catch (Exception e) {
             //Do nothing
         }
