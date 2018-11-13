@@ -9,9 +9,13 @@ import java.util.Set;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
-public interface ElasticsearchInterface {
-    void init(String elasticHost);
-
+public interface DocStoreHelperInterface {
+    public static final String ELEMENT = "element";
+    public static final String COMMIT = "commit";
+    public static final String PROFILE = "profile";
+    public static final String ARTIFACT = "artifact";
+    public static final String REF = "ref";
+	
     void close();
 
     void createIndex(String index) throws IOException;
@@ -22,7 +26,7 @@ public interface ElasticsearchInterface {
 
     JsonArray getElementsFromElasticIds(List<String> ids, String index) throws IOException;
 
-    ElasticResult indexElement(JsonObject j, String index, String eType) throws IOException;
+    DocumentResult indexElement(JsonObject j, String index, String eType) throws IOException;
 
     boolean refreshIndex() throws IOException;
 
@@ -37,4 +41,11 @@ public interface ElasticsearchInterface {
     JsonObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds, String index);
 
     Map<String, String> getDeletedElementsFromCommits(List<String> commitIds, String index);
+
+    public JsonObject updateById(String id, JsonObject payload, String index, String type) throws IOException;
+    
+    public JsonObject getByInternalId(String id, String index, String type) throws IOException;
+    
+    public JsonObject getByCommitId(String id, String sysmlid, String index, String type) throws IOException;
+
 }

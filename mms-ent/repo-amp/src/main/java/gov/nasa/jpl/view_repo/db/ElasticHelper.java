@@ -40,19 +40,13 @@ import io.searchbox.params.Parameters;
  * @version 3.0
  * @since 3.0
  */
-public class ElasticHelper implements ElasticsearchInterface {
+public class ElasticHelper implements DocStoreHelperInterface {
     private static JestClient client = null;
     private static Logger logger = Logger.getLogger(ElasticHelper.class);
     private static String elementIndex = EmsConfig.get("elastic.index.element");
     private static int resultLimit = Integer.parseInt(EmsConfig.get("elastic.limit.result"));
     private static int termLimit = Integer.parseInt(EmsConfig.get("elastic.limit.term"));
     private static int readTimeout = 1000000000;
-
-    public static final String ELEMENT = "element";
-    public static final String COMMIT = "commit";
-    public static final String PROFILE = "profile";
-    public static final String ARTIFACT = "artifact";
-    public static final String REF = "ref";
 
     private static final String COMMIT_QUERY = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
 
@@ -142,7 +136,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         client.execute(updateSettings);
     }
 
-    public JsonObject getByElasticId(String id, String index, String type) throws IOException {
+    public JsonObject getByInternalId(String id, String index, String type) throws IOException {
         Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(type).build();
 
         JestResult result = client.execute(get);
@@ -313,7 +307,7 @@ public class ElasticHelper implements ElasticsearchInterface {
             		.build();
             SearchResult result = client.execute(search);
 
-            if (result != null && result.isSucceeded() && result.getTotal() > 0) {
+			if (result != null && result.isSucceeded() && result.getJsonObject().getAsJsonObject("hits").get("total").getAsLong() > 0) {
                 JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
                 for (int i = 0; i < hits.size(); i++) {
                     JsonObject o = hits.get(i).getAsJsonObject().getAsJsonObject("_source");
@@ -336,9 +330,9 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param j JSON document to index          (2)
      * @return ElasticResult result
      */
-    public ElasticResult indexElement(JsonObject j, String index, String eType) throws IOException {
+    public DocumentResult indexElement(JsonObject j, String index, String eType) throws IOException {
         // :TODO error handling
-        ElasticResult result = new ElasticResult();
+    	DocumentResult result = new DocumentResult();
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("indexElement: %s", j));
@@ -348,18 +342,18 @@ public class ElasticHelper implements ElasticsearchInterface {
             result.sysmlid = j.get(Sjm.SYSMLID).getAsString();
         }
         if (j.has(Sjm.ELASTICID)) {
-            result.elasticId = client.execute(new Index.Builder(j.toString()).id(j.get(Sjm.ELASTICID).getAsString())
+            result.internalId = client.execute(new Index.Builder(j.toString()).id(j.get(Sjm.ELASTICID).getAsString())
                 .index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build()).getId();
         } else {
-            result.elasticId = client.execute(
+            result.internalId = client.execute(
                 new Index.Builder(j.toString()).index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build())
                 .getId();
         }
-        if (result.elasticId == null) {
+        if (result.internalId == null) {
             throw new IOException("Unable to index node in elasticsearch");
         }
 
-        j.addProperty(Sjm.ELASTICID, result.elasticId);
+        j.addProperty(Sjm.ELASTICID, result.internalId);
         result.current = j;
 
         return result;

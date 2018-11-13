@@ -2,16 +2,16 @@ package gov.nasa.jpl.view_repo.db;
 
 import com.google.gson.JsonObject;
 
-public class ElasticResult {
+public class DocumentResult {
 
     public JsonObject current = null;
-    public String elasticId = null;
+    public String internalId = null;
     public String sysmlid = null;
 
     @Override
     public String toString() {
         return String.format(
-                "sysmlid: %s, elasticId: %s, current: %s",
-                sysmlid, elasticId, current);
+                "sysmlid: %s, internalId: %s, current: %s",
+                sysmlid, internalId, current);
     }
 }
