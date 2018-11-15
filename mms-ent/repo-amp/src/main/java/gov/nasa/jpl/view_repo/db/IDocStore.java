@@ -62,4 +62,5 @@ public interface IDocStore {
 
     void close();
 
+    // boolean containsScript(JsonObject json);
 }
