@@ -1,7 +1,5 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,11 +9,9 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.view_repo.db.DocStoreHelperFactory;
-import gov.nasa.jpl.view_repo.db.DocStoreHelperInterface;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
+import gov.nasa.jpl.view_repo.db.IDocStore;
+import gov.nasa.jpl.view_repo.db.ElasticImpl;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
-import gov.nasa.jpl.view_repo.db.DocStoreHelperInterface;
-import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.alfresco.repo.model.Repository;
@@ -157,15 +153,15 @@ public class ProjectDelete extends AbstractJavaWebScript {
         logger.debug("Deleting commits in Elastic");
 
         try {
-        	DocStoreHelperInterface docStoreHelper = DocStoreHelperFactory.getDocStore();
-            docStoreHelper.bulkDeleteByType(commitIds, projectId, ElasticHelper.COMMIT);
+        	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
+            docStoreHelper.bulkDeleteByType(commitIds, projectId, ElasticImpl.COMMIT);
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }
 
     /**
-     * Uses ElasticHelper to delete all elements on ElasticSearch based on the given projectId. Performs a delete
+     * Uses ElasticImpl to delete all elements on ElasticSearch based on the given projectId. Performs a delete
      * by query.
      * @param projectId
      */
@@ -173,7 +169,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
         logger.debug("Deleting elastic elements for " + projectId);
 
         try {
-        	DocStoreHelperInterface docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
         	docStoreHelper.deleteIndex(projectId);
         } catch (Exception e) {
             logger.error(e.getMessage());

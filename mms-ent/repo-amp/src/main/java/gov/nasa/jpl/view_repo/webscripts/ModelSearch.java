@@ -31,7 +31,6 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,6 +40,7 @@ import java.util.HashSet;
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.mbee.util.Utils;
+import gov.nasa.jpl.view_repo.db.ElasticImpl;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -59,7 +59,6 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
 
 
 /**
@@ -92,7 +91,7 @@ public class ModelSearch extends ModelPost {
 
         try {
             JsonObject json = JsonUtil.buildFromString(req.getContent().getContent());
-            if (!ElasticHelper.containsScript(json)) {
+            if (!ElasticImpl.containsScript(json)) {
                 JsonObject top = executeSearchRequest(req, json);
 
                 if (!Utils.isNullOrEmpty(response.toString())) {

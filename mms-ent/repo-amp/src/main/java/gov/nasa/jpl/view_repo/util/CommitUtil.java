@@ -1,6 +1,7 @@
 package gov.nasa.jpl.view_repo.util;
 
-import gov.nasa.jpl.view_repo.db.Node;
+import gov.nasa.jpl.view_repo.db.*;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -41,10 +42,7 @@ import com.google.gson.JsonNull;
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.connections.JmsConnection;
-import gov.nasa.jpl.view_repo.db.DocStoreHelperFactory;
-import gov.nasa.jpl.view_repo.db.DocStoreHelperInterface;
-import gov.nasa.jpl.view_repo.db.DocumentResult;
-import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.db.IDocStore;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbCommitTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
@@ -74,7 +72,7 @@ public class CommitUtil {
 
     private static final String HOLDING_BIN_PREFIX = "holding_bin_";
 
-    private static DocStoreHelperInterface docStoreHelper = null;
+    private static IDocStore docStoreHelper = null;
     private static JmsConnection jmsConnection = null;
 
     private static String user = null;
@@ -288,7 +286,7 @@ public class CommitUtil {
                 }
                 try {
                 	docStoreHelper.indexElement(delta.get("commit").getAsJsonObject(), projectId,
-                			DocStoreHelperInterface.COMMIT); //initial commit may fail to read back but does get indexed
+                			IDocStore.COMMIT); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
@@ -561,7 +559,7 @@ public class CommitUtil {
                 }
                 try {
                 	docStoreHelper.indexElement(delta.get("commit").getAsJsonObject(), projectId,
-                			DocStoreHelperInterface.COMMIT); //initial commit may fail to read back but does get indexed
+                			IDocStore.COMMIT); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
@@ -599,7 +597,7 @@ public class CommitUtil {
      */
     public static boolean updateNullEdges(List<String> updateParents, String projectId) {
         try {
-        	DocStoreHelperInterface docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
 
         	Set<String> updateSet = new HashSet<>(updateParents);
             String owner = HOLDING_BIN_PREFIX + projectId;
@@ -660,19 +658,19 @@ public class CommitUtil {
         String defaultIndex = EmsConfig.get("elastic.index.element");
 
         try {
-        	DocStoreHelperInterface docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
 
             if (!pgh.orgExists(orgId)) {
                 pgh.createOrganization(orgId, orgName);
                 docStoreHelper.createIndex(defaultIndex);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
-                DocumentResult result = docStoreHelper.indexElement(orgJson, defaultIndex, DocStoreHelperInterface.ELEMENT);
+                DocumentResult result = docStoreHelper.indexElement(orgJson, defaultIndex, IDocStore.ELEMENT);
                 return result.current;
             } else {
                 pgh.updateOrganization(orgId, orgName);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
-                if (docStoreHelper.updateById(orgId, orgJson, defaultIndex, DocStoreHelperInterface.ELEMENT).size() > 0 && docStoreHelper.refreshIndex()) {
-                    return docStoreHelper.getByInternalId(orgId, defaultIndex, DocStoreHelperInterface.ELEMENT);
+                if (docStoreHelper.updateById(orgId, orgJson, defaultIndex, IDocStore.ELEMENT).size() > 0 && docStoreHelper.refreshIndex()) {
+                    return docStoreHelper.getByInternalId(orgId, defaultIndex, IDocStore.ELEMENT);
                 }
             }
 
@@ -757,18 +755,18 @@ public class CommitUtil {
         viewInstanceBin.addProperty(Sjm.VISIBILITY, "public");
 
         try {
-        	DocStoreHelperInterface docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
 
         	Node projectNode = pgh.getNodeFromSysmlId(projectSysmlid);
 
             // only insert if the project does not exist already
             if (projectNode == null) {
             	docStoreHelper.createIndex(projectSysmlid);
-                eProject = docStoreHelper.indexElement(project, projectSysmlid, DocStoreHelperInterface.ELEMENT);
+                eProject = docStoreHelper.indexElement(project, projectSysmlid, IDocStore.ELEMENT);
                 docStoreHelper.refreshIndex();
 
-                eProjectHoldingBin = docStoreHelper.indexElement(projectHoldingBin, projectSysmlid, DocStoreHelperInterface.ELEMENT);
-                eViewInstanceBin = docStoreHelper.indexElement(viewInstanceBin, projectSysmlid, DocStoreHelperInterface.ELEMENT);
+                eProjectHoldingBin = docStoreHelper.indexElement(projectHoldingBin, projectSysmlid, IDocStore.ELEMENT);
+                eViewInstanceBin = docStoreHelper.indexElement(viewInstanceBin, projectSysmlid, IDocStore.ELEMENT);
                 docStoreHelper.refreshIndex();
 
                 pgh.insertNode(eProject.internalId, eProject.sysmlid, DbNodeTypes.PROJECT);
@@ -791,7 +789,7 @@ public class CommitUtil {
             } else {
                 project.remove(Sjm.CREATED);
                 project.remove(Sjm.CREATOR);
-                docStoreHelper.updateById(projectNode.getElasticId(), project, projectSysmlid, DocStoreHelperInterface.ELEMENT);
+                docStoreHelper.updateById(projectNode.getElasticId(), project, projectSysmlid, IDocStore.ELEMENT);
                 docStoreHelper.refreshIndex();
             }
         } catch (Exception e) {

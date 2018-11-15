@@ -100,6 +100,12 @@
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.marklogic/marklogic-client-api -->
+        <dependency>
+            <groupId>com.marklogic</groupId>
+            <artifactId>marklogic-client-api</artifactId>
+            <version>4.1.1</version>
+        </dependency>
         <!-- required for mapping slf4j to log4j -->
         <dependency>
             <groupId>org.slf4j</groupId>

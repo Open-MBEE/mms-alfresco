@@ -36,6 +36,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.db.IDocStore;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -52,11 +53,9 @@ import com.google.gson.JsonParseException;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.db.DocStoreHelperFactory;
-import gov.nasa.jpl.view_repo.db.DocStoreHelperInterface;
 import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
-import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
@@ -126,9 +125,9 @@ public class SiteGet extends AbstractJavaWebScript {
      * @return json to return
      *
      * @throws IOException
-     * @throws ClassNotFoundException 
-     * @throws IllegalAccessException 
-     * @throws InstantiationException 
+     * @throws ClassNotFoundException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
      */
     private JsonArray handleSite(String projectId, String refId)
                     throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -137,7 +136,7 @@ public class SiteGet extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
 
-    	DocStoreHelperInterface docStoreHelper = DocStoreHelperFactory.getDocStore();
+    	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
 
     	List<String> ids = new ArrayList<>();
         List<String> alfs = new ArrayList<>();

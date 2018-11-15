@@ -30,9 +30,9 @@ pg.limit.select=1000
 pg.secured=false
 
 #Document Store Settings
-#docstore.name for Elastic Search: 	gov.nasa.jpl.view_repo.db.ElasticHelper
-#docstore.name for Mark Logic:		gov.nasa.jpl.view_repo.db.MarkLogicHelper
-docstore.name=gov.nasa.jpl.view_repo.db.ElasticHelper
+#docstore.name for Elastic Search: 	gov.nasa.jpl.view_repo.db.ElasticImpl
+#docstore.name for Mark Logic:		gov.nasa.jpl.view_repo.db.MarkLogicImpl
+docstore.name=gov.nasa.jpl.view_repo.db.ElasticImpl
 
 #Mark Logic Settings
 marklogic.host=xxx.com

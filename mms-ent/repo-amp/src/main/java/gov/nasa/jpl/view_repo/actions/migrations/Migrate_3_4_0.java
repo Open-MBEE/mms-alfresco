@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import gov.nasa.jpl.mbee.util.Pair;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
+import gov.nasa.jpl.view_repo.db.ElasticImpl;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
@@ -43,7 +43,7 @@ public class Migrate_3_4_0 {
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_4_0");
         PostgresHelper pgh = new PostgresHelper();
-        ElasticHelper eh = new ElasticHelper();
+        ElasticImpl eh = new ElasticImpl();
 
         JsonObject mappingTemplate = new JsonObject();
 
@@ -59,8 +59,8 @@ public class Migrate_3_4_0 {
             mappingTemplate = JsonUtil.buildFromString(s.next());
             eh.applyTemplate(mappingTemplate.toString());
         }
-        eh.updateMapping(EmsConfig.get("elastic.index.element"), ElasticHelper.PROFILE,
-            mappingTemplate.get("mappings").getAsJsonObject().get(ElasticHelper.PROFILE).getAsJsonObject().toString());
+        eh.updateMapping(EmsConfig.get("elastic.index.element"), ElasticImpl.PROFILE,
+            mappingTemplate.get("mappings").getAsJsonObject().get(ElasticImpl.PROFILE).getAsJsonObject().toString());
         List<Map<String, String>> orgs = pgh.getOrganizations(null);
 
         for (Map<String, String> org : orgs) {
@@ -71,8 +71,8 @@ public class Migrate_3_4_0 {
                 pgh.setProject(projectId);
 
                 if (mappingTemplate.isJsonObject()) {
-                    eh.updateMapping(projectId, ElasticHelper.REF,
-                        mappingTemplate.get("mappings").getAsJsonObject().get(ElasticHelper.REF).getAsJsonObject().toString());
+                    eh.updateMapping(projectId, ElasticImpl.REF,
+                        mappingTemplate.get("mappings").getAsJsonObject().get(ElasticImpl.REF).getAsJsonObject().toString());
                 }
 
                 List<Pair<String, String>> allRefs = pgh.getRefsElastic(true);
@@ -107,12 +107,12 @@ public class Migrate_3_4_0 {
                             delQuery.get("query").getAsJsonObject().get("constant_score").getAsJsonObject()
                                 .get("filter").getAsJsonObject().get("terms").getAsJsonObject()
                                 .add(Sjm.SYSMLID, deleteSet);
-                            eh.deleteByQuery(projectId, delQuery.toString(), ElasticHelper.ELEMENT);
+                            eh.deleteByQuery(projectId, delQuery.toString(), ElasticImpl.ELEMENT);
                         }
 
                         if (!refsToMove.isEmpty()) {
-                            eh.bulkIndexElements(insertPayload, "added", true, projectId, ElasticHelper.REF);
-                            eh.updateByQuery(projectId, updateMasterRef, ElasticHelper.REF);
+                            eh.bulkIndexElements(insertPayload, "added", true, projectId, ElasticImpl.REF);
+                            eh.updateByQuery(projectId, updateMasterRef, ElasticImpl.REF);
                         }
                     }
                 }
@@ -121,7 +121,7 @@ public class Migrate_3_4_0 {
                 for (Map<String, String> commit : commits) {
                     String commitId = commit.get("commitId");
                     if (!commitId.isEmpty()) {
-                        JsonObject commitObject = eh.getByInternalId(commitId, projectId, ElasticHelper.COMMIT);
+                        JsonObject commitObject = eh.getByInternalId(commitId, projectId, ElasticImpl.COMMIT);
                         if (commitObject != null && commitObject.has(Sjm.CREATED)) {
                             try (PreparedStatement statement = pgh.prepareStatement(updateQuery)) {
                                 Date created = df.parse(commitObject.get(Sjm.CREATED).getAsString());

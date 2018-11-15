@@ -3,11 +3,8 @@ package gov.nasa.jpl.view_repo.actions.migrations;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import gov.nasa.jpl.mbee.util.Pair;
-import gov.nasa.jpl.view_repo.db.Artifact;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
-import gov.nasa.jpl.view_repo.db.GraphInterface;
-import gov.nasa.jpl.view_repo.db.Node;
-import gov.nasa.jpl.view_repo.db.PostgresHelper;
+import gov.nasa.jpl.view_repo.db.*;
+import gov.nasa.jpl.view_repo.db.ElasticImpl;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
@@ -79,7 +76,7 @@ public class Migrate_3_3_0 {
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_3_0");
         PostgresHelper pgh = new PostgresHelper();
-        ElasticHelper eh = new ElasticHelper();
+        ElasticImpl eh = new ElasticImpl();
 
         // Temporarily increase max_compilations_per_minute
         eh.updateClusterSettings(transientSettings);
@@ -382,7 +379,7 @@ public class Migrate_3_3_0 {
                                             commitObject.addProperty(Sjm.PROJECTID, projectId);
                                             commitObject.addProperty(Sjm.REFID, refId);
 
-                                            eh.indexElement(commitObject, projectId, ElasticHelper.COMMIT);
+                                            eh.indexElement(commitObject, projectId, ElasticImpl.COMMIT);
 
                                             logger.debug("Indexed JSON: " + commitObject);
                                         } else {
@@ -455,7 +452,7 @@ public class Migrate_3_3_0 {
         return noErrors;
     }
 
-    public static JsonArray getArtifactsAtCommit(String commitId, PostgresHelper pgh, ElasticHelper eh,
+    public static JsonArray getArtifactsAtCommit(String commitId, PostgresHelper pgh, ElasticImpl eh,
         String projectId) {
         JsonArray artifacts = new JsonArray();
         JsonObject pastElement = null;
