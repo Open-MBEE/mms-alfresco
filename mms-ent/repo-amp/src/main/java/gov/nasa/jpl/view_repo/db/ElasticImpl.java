@@ -687,11 +687,6 @@ public class ElasticImpl implements IDocStore {
         logger.warn("ES JEST client has been closed");
     }
 
-    public static boolean containsScript(JsonObject json) {
-        String jsonString = json.toString();
-        return jsonString.contains("\"script\"");
-    }
-
     /**
      * Helper method for making bulkAPI requests                       (1)
      *

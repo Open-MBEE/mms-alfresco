@@ -154,7 +154,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
 
         try {
         	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
-            docStoreHelper.bulkDeleteByType(commitIds, projectId, ElasticImpl.COMMIT);
+            docStoreHelper.bulkDeleteByType(commitIds, projectId, IDocStore.COMMIT);
         } catch (Exception e) {
             logger.error(e.getMessage());
         }

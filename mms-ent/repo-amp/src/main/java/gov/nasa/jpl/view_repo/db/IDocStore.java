@@ -61,6 +61,4 @@ public interface IDocStore {
     JsonObject bulkDeleteByType(Set<String> ids, String index, String type);
 
     void close();
-
-    // boolean containsScript(JsonObject json);
 }

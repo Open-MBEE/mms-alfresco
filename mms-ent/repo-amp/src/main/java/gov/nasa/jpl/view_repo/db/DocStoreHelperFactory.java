@@ -6,7 +6,7 @@ public class DocStoreHelperFactory
 {
 	public static IDocStore getDocStore() throws ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
-		String docStoreHelperImplementationName = EmsConfig.get("docstore.name");
+		String docStoreHelperImplementationName = EmsConfig.get("docstore.impl");
 		Class<?> docStoreHelperImplementation = Class.forName(docStoreHelperImplementationName);
 		IDocStore docStoreHelper = (IDocStore) docStoreHelperImplementation.newInstance();
 

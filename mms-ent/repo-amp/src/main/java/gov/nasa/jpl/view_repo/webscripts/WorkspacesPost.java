@@ -36,6 +36,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import gov.nasa.jpl.view_repo.db.IDocStore;
 import gov.nasa.jpl.view_repo.webscripts.util.SitePermission;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -245,7 +246,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.addProperty(Sjm.CREATOR, user);
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
-            elasticId = emsNodeUtil.insertSingleElastic(wsJson, ElasticImpl.REF);
+            elasticId = emsNodeUtil.insertSingleElastic(wsJson, IDocStore.REF);
 
             if (!NO_WORKSPACE_ID.equals(sourceWorkspaceId) && srcWs == null) {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Source workspace not found.");
@@ -297,7 +298,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
             wsJson.addProperty(Sjm.ELASTICID, existingWsJson.get(Sjm.ELASTICID).getAsString());
-            elasticId = emsNodeUtil.updateSingleElastic(wsJson, ElasticImpl.REF);
+            elasticId = emsNodeUtil.updateSingleElastic(wsJson, IDocStore.REF);
             emsNodeUtil.updateRef(newWorkspaceId, workspaceName, elasticId, isTag);
         }
 

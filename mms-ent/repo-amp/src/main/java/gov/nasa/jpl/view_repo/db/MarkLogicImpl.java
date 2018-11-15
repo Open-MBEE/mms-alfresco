@@ -106,7 +106,9 @@ public class MarkLogicImpl implements IDocStore
     }
 
     @Override
-    public JsonObject searchLiteral(JsonObject queryJson) throws IOException {
+    public JsonObject searchLiteral(JsonObject queryJson) throws IOException
+    {
+        // TODO Auto-generated method stub
         return null;
     }
 
@@ -123,7 +125,7 @@ public class MarkLogicImpl implements IDocStore
         if (!mainRestClient.checkIfDBExists(convertDBName(name)))
         {
             //TODO: figure out the port assignment
-            mainRestClient.craeteDatabase(convertDBName(name), 8011);
+            mainRestClient.createDatabase(convertDBName(name), 8011);
         }
     }
 

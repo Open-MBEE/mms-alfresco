@@ -379,7 +379,7 @@ public class Migrate_3_3_0 {
                                             commitObject.addProperty(Sjm.PROJECTID, projectId);
                                             commitObject.addProperty(Sjm.REFID, refId);
 
-                                            eh.indexElement(commitObject, projectId, ElasticImpl.COMMIT);
+                                            eh.indexElement(commitObject, projectId, IDocStore.COMMIT);
 
                                             logger.debug("Indexed JSON: " + commitObject);
                                         } else {

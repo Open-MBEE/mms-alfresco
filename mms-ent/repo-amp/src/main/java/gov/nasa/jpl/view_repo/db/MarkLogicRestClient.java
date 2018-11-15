@@ -69,7 +69,7 @@ public class MarkLogicRestClient
 			HttpRequestBase request = buildHttpRequest(HttpRequestType.GET, uri);
 			CloseableHttpClient httpclient = HttpClients.createDefault();
 			CloseableHttpResponse response = httpclient.execute(request);
-			
+
 			if (response.getStatusLine().getStatusCode() == 200)
 			{
 				return true;
@@ -111,7 +111,7 @@ public class MarkLogicRestClient
 			HttpRequestBase request = buildHttpRequest(HttpRequestType.DELETE, uri);
 			CloseableHttpClient httpclient = HttpClients.createDefault();
 			CloseableHttpResponse response = httpclient.execute(request);
-			
+
 			if (response.getStatusLine().getStatusCode() == 200)
 			{
 				return;
@@ -125,9 +125,9 @@ public class MarkLogicRestClient
 
 		return;
 	}
-	
+
 	// create new database and Rest service at specified port
-	public void craeteDatabase(String name, int port)
+	public void createDatabase(String name, int port)
 	{
 		final AtomicReference<Integer> responseCode = new AtomicReference<>();
 		final AtomicReference<String> responseBody = new AtomicReference<>();

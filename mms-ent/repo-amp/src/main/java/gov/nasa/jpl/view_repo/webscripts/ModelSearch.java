@@ -91,7 +91,7 @@ public class ModelSearch extends ModelPost {
 
         try {
             JsonObject json = JsonUtil.buildFromString(req.getContent().getContent());
-            if (!ElasticImpl.containsScript(json)) {
+            if (!containsScript(json)) {
                 JsonObject top = executeSearchRequest(req, json);
 
                 if (!Utils.isNullOrEmpty(response.toString())) {
@@ -204,5 +204,10 @@ public class ModelSearch extends ModelPost {
     private JsonObject getGrandOwnerJson(String projectId, String refId, String sysmlId) {
         return getJsonBySysmlId(projectId, refId,
         		JsonUtil.getOptString(getJsonBySysmlId(projectId, refId, sysmlId), Sjm.OWNERID));
+    }
+
+    private static boolean containsScript(JsonObject json) {
+        String jsonString = json.toString();
+        return jsonString.contains("\"script\"");
     }
 }

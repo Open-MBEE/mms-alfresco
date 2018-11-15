@@ -28,6 +28,7 @@ package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.db.ElasticImpl;
+import gov.nasa.jpl.view_repo.db.IDocStore;
 import gov.nasa.jpl.view_repo.util.Acm;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
@@ -241,7 +242,7 @@ public class ProjectPost extends AbstractJavaWebScript {
                 masterWs.addProperty("type", "Branch");
                 // :TODO going to have to check that index doesn't exist if ES doesn't already do this
                 emsNodeUtil.insertProjectIndex(projectId);
-                String elasticId = emsNodeUtil.insertSingleElastic(masterWs, ElasticImpl.REF);
+                String elasticId = emsNodeUtil.insertSingleElastic(masterWs, IDocStore.REF);
                 emsNodeUtil.insertRef(NO_WORKSPACE_ID, NO_WORKSPACE_ID, elasticId, false);
             }
 
