@@ -36,7 +36,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.db.IDocStore;
+import gov.nasa.jpl.view_repo.db.DocStoreInterface;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -52,7 +52,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.db.DocStoreHelperFactory;
+import gov.nasa.jpl.view_repo.db.DocStoreFactory;
 import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
@@ -136,7 +136,7 @@ public class SiteGet extends AbstractJavaWebScript {
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         String orgId = emsNodeUtil.getOrganizationFromProject(projectId);
 
-    	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
+    	DocStoreInterface docStoreHelper = DocStoreFactory.getDocStore();
 
     	List<String> ids = new ArrayList<>();
         List<String> alfs = new ArrayList<>();

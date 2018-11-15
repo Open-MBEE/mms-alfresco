@@ -42,7 +42,7 @@ import com.google.gson.JsonNull;
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.TimeUtils;
 import gov.nasa.jpl.view_repo.connections.JmsConnection;
-import gov.nasa.jpl.view_repo.db.IDocStore;
+import gov.nasa.jpl.view_repo.db.DocStoreInterface;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbCommitTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbEdgeTypes;
 import gov.nasa.jpl.view_repo.db.GraphInterface.DbNodeTypes;
@@ -72,7 +72,7 @@ public class CommitUtil {
 
     private static final String HOLDING_BIN_PREFIX = "holding_bin_";
 
-    private static IDocStore docStoreHelper = null;
+    private static DocStoreInterface docStoreHelper = null;
     private static JmsConnection jmsConnection = null;
 
     private static String user = null;
@@ -286,7 +286,7 @@ public class CommitUtil {
                 }
                 try {
                 	docStoreHelper.indexElement(delta.get("commit").getAsJsonObject(), projectId,
-                			IDocStore.COMMIT); //initial commit may fail to read back but does get indexed
+                			DocStoreInterface.COMMIT); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
@@ -559,7 +559,7 @@ public class CommitUtil {
                 }
                 try {
                 	docStoreHelper.indexElement(delta.get("commit").getAsJsonObject(), projectId,
-                			IDocStore.COMMIT); //initial commit may fail to read back but does get indexed
+                			DocStoreInterface.COMMIT); //initial commit may fail to read back but does get indexed
                 } catch (Exception e) {
                     logger.error(String.format("%s", LogUtil.getStackTrace(e)));
                 }
@@ -597,7 +597,7 @@ public class CommitUtil {
      */
     public static boolean updateNullEdges(List<String> updateParents, String projectId) {
         try {
-        	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	DocStoreInterface docStoreHelper = DocStoreFactory.getDocStore();
 
         	Set<String> updateSet = new HashSet<>(updateParents);
             String owner = HOLDING_BIN_PREFIX + projectId;
@@ -627,7 +627,7 @@ public class CommitUtil {
 
         JsonObject jmsPayload = new JsonObject();
         try {
-        	docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	docStoreHelper = DocStoreFactory.getDocStore();
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -658,19 +658,19 @@ public class CommitUtil {
         String defaultIndex = EmsConfig.get("elastic.index.element");
 
         try {
-        	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	DocStoreInterface docStoreHelper = DocStoreFactory.getDocStore();
 
             if (!pgh.orgExists(orgId)) {
                 pgh.createOrganization(orgId, orgName);
                 docStoreHelper.createIndex(defaultIndex);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
-                DocumentResult result = docStoreHelper.indexElement(orgJson, defaultIndex, IDocStore.ELEMENT);
+                DocumentResult result = docStoreHelper.indexElement(orgJson, defaultIndex, DocStoreInterface.ELEMENT);
                 return result.current;
             } else {
                 pgh.updateOrganization(orgId, orgName);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
-                if (docStoreHelper.updateById(orgId, orgJson, defaultIndex, IDocStore.ELEMENT).size() > 0 && docStoreHelper.refreshIndex()) {
-                    return docStoreHelper.getByInternalId(orgId, defaultIndex, IDocStore.ELEMENT);
+                if (docStoreHelper.updateById(orgId, orgJson, defaultIndex, DocStoreInterface.ELEMENT).size() > 0 && docStoreHelper.refreshIndex()) {
+                    return docStoreHelper.getByInternalId(orgId, defaultIndex, DocStoreInterface.ELEMENT);
                 }
             }
 
@@ -755,18 +755,18 @@ public class CommitUtil {
         viewInstanceBin.addProperty(Sjm.VISIBILITY, "public");
 
         try {
-        	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	DocStoreInterface docStoreHelper = DocStoreFactory.getDocStore();
 
         	Node projectNode = pgh.getNodeFromSysmlId(projectSysmlid);
 
             // only insert if the project does not exist already
             if (projectNode == null) {
             	docStoreHelper.createIndex(projectSysmlid);
-                eProject = docStoreHelper.indexElement(project, projectSysmlid, IDocStore.ELEMENT);
+                eProject = docStoreHelper.indexElement(project, projectSysmlid, DocStoreInterface.ELEMENT);
                 docStoreHelper.refreshIndex();
 
-                eProjectHoldingBin = docStoreHelper.indexElement(projectHoldingBin, projectSysmlid, IDocStore.ELEMENT);
-                eViewInstanceBin = docStoreHelper.indexElement(viewInstanceBin, projectSysmlid, IDocStore.ELEMENT);
+                eProjectHoldingBin = docStoreHelper.indexElement(projectHoldingBin, projectSysmlid, DocStoreInterface.ELEMENT);
+                eViewInstanceBin = docStoreHelper.indexElement(viewInstanceBin, projectSysmlid, DocStoreInterface.ELEMENT);
                 docStoreHelper.refreshIndex();
 
                 pgh.insertNode(eProject.internalId, eProject.sysmlid, DbNodeTypes.PROJECT);
@@ -789,7 +789,7 @@ public class CommitUtil {
             } else {
                 project.remove(Sjm.CREATED);
                 project.remove(Sjm.CREATOR);
-                docStoreHelper.updateById(projectNode.getElasticId(), project, projectSysmlid, IDocStore.ELEMENT);
+                docStoreHelper.updateById(projectNode.getElasticId(), project, projectSysmlid, DocStoreInterface.ELEMENT);
                 docStoreHelper.refreshIndex();
             }
         } catch (Exception e) {

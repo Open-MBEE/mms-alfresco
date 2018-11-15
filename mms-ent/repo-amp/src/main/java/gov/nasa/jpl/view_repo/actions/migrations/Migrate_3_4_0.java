@@ -4,9 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import gov.nasa.jpl.mbee.util.Pair;
-import gov.nasa.jpl.view_repo.db.DocStoreHelperFactory;
-import gov.nasa.jpl.view_repo.db.ElasticImpl;
-import gov.nasa.jpl.view_repo.db.IDocStore;
+import gov.nasa.jpl.view_repo.db.DocStoreFactory;
+import gov.nasa.jpl.view_repo.db.DocStoreInterface;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
@@ -46,8 +45,8 @@ public class Migrate_3_4_0 {
         logger.info("Running Migrate_3_4_0");
         PostgresHelper pgh = new PostgresHelper();
 
-        DocStoreHelperFactory docStoreFactory = new DocStoreHelperFactory();
-        IDocStore ds = docStoreFactory.getDocStore();
+        DocStoreFactory docStoreFactory = new DocStoreFactory();
+        DocStoreInterface ds = docStoreFactory.getDocStore();
 
         JsonObject mappingTemplate = new JsonObject();
 
@@ -64,8 +63,8 @@ public class Migrate_3_4_0 {
             ds.applyTemplate(mappingTemplate.toString());
         }
         ds.updateMapping(EmsConfig.get("elastic.index.element"),
-                IDocStore.PROFILE,
-                mappingTemplate.get("mappings").getAsJsonObject().get(IDocStore.PROFILE).getAsJsonObject().toString()
+                DocStoreInterface.PROFILE,
+                mappingTemplate.get("mappings").getAsJsonObject().get(DocStoreInterface.PROFILE).getAsJsonObject().toString()
         );
 
         List<Map<String, String>> orgs = pgh.getOrganizations(null);
@@ -78,8 +77,8 @@ public class Migrate_3_4_0 {
                 pgh.setProject(projectId);
 
                 if (mappingTemplate.isJsonObject()) {
-                    ds.updateMapping(projectId, IDocStore.REF,
-                        mappingTemplate.get("mappings").getAsJsonObject().get(IDocStore.REF).getAsJsonObject().toString());
+                    ds.updateMapping(projectId, DocStoreInterface.REF,
+                        mappingTemplate.get("mappings").getAsJsonObject().get(DocStoreInterface.REF).getAsJsonObject().toString());
                 }
 
                 List<Pair<String, String>> allRefs = pgh.getRefsElastic(true);
@@ -114,12 +113,12 @@ public class Migrate_3_4_0 {
                             delQuery.get("query").getAsJsonObject().get("constant_score").getAsJsonObject()
                                 .get("filter").getAsJsonObject().get("terms").getAsJsonObject()
                                 .add(Sjm.SYSMLID, deleteSet);
-                            ds.deleteByQuery(projectId, delQuery.toString(), IDocStore.ELEMENT);
+                            ds.deleteByQuery(projectId, delQuery.toString(), DocStoreInterface.ELEMENT);
                         }
 
                         if (!refsToMove.isEmpty()) {
-                            ds.bulkIndexElements(insertPayload, "added", true, projectId, IDocStore.REF);
-                            ds.updateByQuery(projectId, updateMasterRef, IDocStore.REF);
+                            ds.bulkIndexElements(insertPayload, "added", true, projectId, DocStoreInterface.REF);
+                            ds.updateByQuery(projectId, updateMasterRef, DocStoreInterface.REF);
                         }
                     }
                 }
@@ -128,7 +127,7 @@ public class Migrate_3_4_0 {
                 for (Map<String, String> commit : commits) {
                     String commitId = commit.get("commitId");
                     if (!commitId.isEmpty()) {
-                        JsonObject commitObject = ds.getByInternalId(commitId, projectId, IDocStore.COMMIT);
+                        JsonObject commitObject = ds.getByInternalId(commitId, projectId, DocStoreInterface.COMMIT);
                         if (commitObject != null && commitObject.has(Sjm.CREATED)) {
                             try (PreparedStatement statement = pgh.prepareStatement(updateQuery)) {
                                 Date created = df.parse(commitObject.get(Sjm.CREATED).getAsString());

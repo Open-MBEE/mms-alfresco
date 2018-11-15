@@ -3,7 +3,7 @@ package gov.nasa.jpl.view_repo.util.tasks;
 import gov.nasa.jpl.mbee.util.Pair;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.db.*;
-import gov.nasa.jpl.view_repo.db.IDocStore;
+import gov.nasa.jpl.view_repo.db.DocStoreInterface;
 import gov.nasa.jpl.view_repo.util.CommitUtil;
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
@@ -67,7 +67,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
     private JsonObject branchJson = null;
 
     private transient Timer timer;
-    private transient IDocStore docStoreHelper;
+    private transient DocStoreInterface docStoreHelper;
     private transient PostgresHelper pgh;
 
     public BranchTask(String projectId, String srcId, String createdString, String elasticId, Boolean isTag,
@@ -113,7 +113,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         logger.info("Connected to postgres");
 
         try {
-        	docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	docStoreHelper = DocStoreFactory.getDocStore();
 
             pgh.createBranchFromWorkspace(created.get(Sjm.SYSMLID).getAsString(), created.get(Sjm.NAME).getAsString(),
                 elasticId, commitId, isTag);
@@ -201,7 +201,7 @@ public class BranchTask implements Callable<JsonObject>, Serializable {
         }
 
         try {
-        	docStoreHelper.updateById(elasticId, created, projectId, IDocStore.REF);
+        	docStoreHelper.updateById(elasticId, created, projectId, DocStoreInterface.REF);
         } catch (Exception e) {
             //Do nothing
         }

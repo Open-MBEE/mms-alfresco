@@ -39,7 +39,7 @@ import io.searchbox.params.Parameters;
  * @version 3.0
  * @since 3.0
  */
-public class ElasticImpl implements IDocStore {
+public class ElasticImpl implements DocStoreInterface {
     private static JestClient client = null;
     private static Logger logger = Logger.getLogger(ElasticImpl.class);
     private static String elementIndex = EmsConfig.get("elastic.index.element");

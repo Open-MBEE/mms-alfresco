@@ -17,7 +17,7 @@ import com.marklogic.client.query.QueryManager;
 
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 
-public class MarkLogicImpl implements IDocStore
+public class MarkLogicImpl implements DocStoreInterface
 {
 	private static Logger logger = Logger.getLogger(MarkLogicImpl.class);
 

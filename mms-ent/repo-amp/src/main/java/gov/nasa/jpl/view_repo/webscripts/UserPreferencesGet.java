@@ -27,8 +27,8 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
 import gov.nasa.jpl.mbee.util.Timer;
-import gov.nasa.jpl.view_repo.db.DocStoreHelperFactory;
-import gov.nasa.jpl.view_repo.db.IDocStore;
+import gov.nasa.jpl.view_repo.db.DocStoreFactory;
+import gov.nasa.jpl.view_repo.db.DocStoreInterface;
 import gov.nasa.jpl.view_repo.util.*;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -84,8 +84,8 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
             try {
                 if (validateRequest(req, status)) {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
-                	IDocStore docStoreHelper = DocStoreHelperFactory.getDocStore();
-                    JsonObject res = docStoreHelper.getByInternalId(username, EmsConfig.get("elastic.index.element"), IDocStore.PROFILE);
+                	DocStoreInterface docStoreHelper = DocStoreFactory.getDocStore();
+                    JsonObject res = docStoreHelper.getByInternalId(username, EmsConfig.get("elastic.index.element"), DocStoreInterface.PROFILE);
                     if (res != null && res.size() > 0) {
                         response.add(Sjm.PROFILES, res);
                     } else {

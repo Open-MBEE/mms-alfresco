@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class EmsNodeUtil {
 
-    private IDocStore docStoreHelper = null;
+    private DocStoreInterface docStoreHelper = null;
     private PostgresHelper pgh = null;
     private String projectId = null;
     private String workspaceName = "master";
@@ -48,7 +48,7 @@ public class EmsNodeUtil {
 
     public EmsNodeUtil() {
         try {
-        	docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	docStoreHelper = DocStoreFactory.getDocStore();
             pgh = new PostgresHelper();
             switchWorkspace("master");
         } catch (Exception e) {
@@ -58,7 +58,7 @@ public class EmsNodeUtil {
 
     public EmsNodeUtil(String projectId, String workspaceName) {
         try {
-        	docStoreHelper = DocStoreHelperFactory.getDocStore();
+        	docStoreHelper = DocStoreFactory.getDocStore();
             pgh = new PostgresHelper();
             switchProject(projectId);
             switchWorkspace(workspaceName);
@@ -89,7 +89,7 @@ public class EmsNodeUtil {
         List<Map<String, String>> organizations = pgh.getOrganizations(orgId);
         for (Map<String, String> n : organizations) {
             try {
-                JsonObject current = docStoreHelper.getByInternalId(n.get(ORG_ID), EmsConfig.get("elastic.index.element"), IDocStore.ELEMENT);
+                JsonObject current = docStoreHelper.getByInternalId(n.get(ORG_ID), EmsConfig.get("elastic.index.element"), DocStoreInterface.ELEMENT);
                 if (current != null) {
                     orgs.add(current);
                 } else {
@@ -199,7 +199,7 @@ public class EmsNodeUtil {
 
     public JsonObject getByCommitId(String sysmlid, String commitId, String type) {
         try {
-            return docStoreHelper.getByCommitId(commitId, sysmlid, projectId, type.contains("element") ? IDocStore.ELEMENT : IDocStore.ARTIFACT);
+            return docStoreHelper.getByCommitId(commitId, sysmlid, projectId, type.contains("element") ? DocStoreInterface.ELEMENT : DocStoreInterface.ARTIFACT);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -230,7 +230,7 @@ public class EmsNodeUtil {
         String elasticId = pgh.getElasticIdFromSysmlId(sysmlid);
         if (elasticId != null) {
             try {
-                JsonObject result = docStoreHelper.getByInternalId(elasticId, projectId, IDocStore.ELEMENT);
+                JsonObject result = docStoreHelper.getByInternalId(elasticId, projectId, DocStoreInterface.ELEMENT);
                 if (result != null) {
                     result.addProperty(Sjm.PROJECTID, this.projectId);
                     result.addProperty(Sjm.REFID, this.workspaceName);
@@ -329,7 +329,7 @@ public class EmsNodeUtil {
         Map<String, String> refInfo = pgh.getRefElastic(refId);
         if (refInfo != null) {
             try {
-                jObj = docStoreHelper.getByInternalId(refInfo.get("elasticId"), projectId, IDocStore.REF);
+                jObj = docStoreHelper.getByInternalId(refInfo.get("elasticId"), projectId, DocStoreInterface.REF);
                 jObj.addProperty("parentRefId",
                     (refInfo.get("parent").equals("")) ? "noParent" : refInfo.get("parent"));
                 jObj.addProperty("type", (refInfo.get("isTag").equals("true")) ? "tag" : "branch");
@@ -1527,7 +1527,7 @@ public class EmsNodeUtil {
 
     public JsonObject getCommitObject(String commitId) {
         try {
-            return docStoreHelper.getByInternalId(commitId, projectId, IDocStore.COMMIT);
+            return docStoreHelper.getByInternalId(commitId, projectId, DocStoreInterface.COMMIT);
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
         }

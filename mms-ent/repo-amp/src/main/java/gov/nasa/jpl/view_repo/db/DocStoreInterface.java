@@ -9,7 +9,7 @@ import java.util.Set;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
-public interface IDocStore {
+public interface DocStoreInterface {
     public static final String ELEMENT = "element";
     public static final String COMMIT = "commit";
     public static final String PROFILE = "profile";
