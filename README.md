@@ -1,16 +1,21 @@
 # Model Management System
+[![Language Grade: Java](https://img.shields.io/lgtm/grade/java/g/Open-MBEE/mms.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Open-MBEE/mms/context:java) [![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
 
-<!--- Comment the download links until we can display them better or something --->
-<!--- [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-amp/_latestVersion) mms-amp --->
+The MMS AMP is a hosted application run atop the [community version of an Alfresco Enterprise Content Management Server](https://docs.alfresco.com/community/concepts/welcome-infocenter_community.html).  
 
-<!--- [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-share-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-share-amp/_latestVersion) mms-share-amp --->
+**NOTE 1: AMPs for Alfresco as built from this maven project are meant to be run by [Alfresco Community Edition v5.1.g (AKA 201605-GA)](https://download.alfresco.com/release/community/201605-build-00010/alfresco-community-distribution-201605.zip)**
+
+Per [ Alfresco's documentation on Modules](https://docs.alfresco.com/5.0/concepts/dev-extensions-modules-intro.html), Alfresco Module Packages (AMPs) are installed using the Module Management Tool [MMT](https://docs.alfresco.com/5.0/concepts/dev-extensions-modules-management-tool.html) jar file.  The latest version of the two AMPs you will be "exploding" into the "alfresco" and "share" WARs resident within the embedded Tomcat server are available via the download links leading to the two interdependent portions named "mms-repo.amp" and "mms-share.amp", relating to "alfresco.war" and "share.war", respectively.
+
+[ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-amp/_latestVersion) of the alfresco WAR related portion of the "MMS" Alfresco module.
+
+[ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-share-amp/images/download.svg)](https://bintray.com/openmbee/maven/mms-share-amp/_latestVersion) of the share WAR related portion of the "MMS" Alfresco Module.
+
+In tandem with the EMS-Webapp (colloquially known as the View Editor), and the Magicdraw Development Kit (MDK) for MagicDraw client and Teamwork Cloud users; this github repo serves as a one-stop shop to set up the Model Management Server per the 
+[MMS-MDK-VE Compatibility Matrix](https://github.com/Open-MBEE/open-mbee.github.io/blob/master/compat%20matrix.pdf).
 
 
- [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-amp/images/download.svg) ](https://bintray.com/openmbee/maven/mms-amp/_latestVersion) [![Language Grade: Java](https://img.shields.io/lgtm/grade/java/g/Open-MBEE/mms.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Open-MBEE/mms/context:java) [![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
 
-**AMP for Alfresco (5.1.g AKA 201605-GA)**
-
-Use this table to check what version of the mms - mdk - ve triple you should be using: [Compatibility Matrix](https://github.com/Open-MBEE/open-mbee.github.io/blob/master/compat%20matrix.pdf)
 ## Developer Setup
 
 ### Dependencies

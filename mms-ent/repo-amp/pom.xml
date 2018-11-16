@@ -10,7 +10,7 @@
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
         <artifactId>mms-ent</artifactId>
-        <version>3.4.0</version>
+        <version>3.4.1</version>
     </parent>
 
     <properties>
@@ -132,7 +132,7 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>1.18</version>
+            <version>1.19.1</version>
         </dependency>
         <!-- apache chemistry opencmis CLIENT -->
         <dependency>
