@@ -246,7 +246,7 @@ public class WorkspacesPost extends AbstractJavaWebScript {
             wsJson.addProperty(Sjm.MODIFIED, date);
             wsJson.addProperty(Sjm.MODIFIER, user);
             wsJson.addProperty("status", "creating");
-            elasticId = emsNodeUtil.insertSingleElastic(wsJson, ElasticHelper.REF);
+            elasticId = emsNodeUtil.insertSingleElastic(wsJson, DocStoreInterface.REF);
 
             if (!NO_WORKSPACE_ID.equals(sourceWorkspaceId) && srcWs == null) {
                 log(Level.WARN, HttpServletResponse.SC_NOT_FOUND, "Source workspace not found.");
