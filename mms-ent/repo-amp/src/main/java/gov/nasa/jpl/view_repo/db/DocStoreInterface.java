@@ -20,19 +20,15 @@ public interface DocStoreInterface {
 
     JsonObject getByCommitId(String id, String sysmlid, String index, String type) throws IOException;
 
-    JsonObject getCommitBoolShouldQuery(String sysmlid);
-
     JsonArray getCommitHistory(String sysmlid, String index) throws IOException;
 
-    JsonArray getElementsFromElasticIds(List<String> ids, String index) throws IOException;
+    JsonArray getElementsFromDocStoreIds(List<String> ids, String index) throws IOException;
 
     JsonObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds, String index);
 
     Map<String, String> getDeletedElementsFromCommits(List<String> commitIds, String index);
 
     JsonObject search(JsonObject queryJson) throws IOException;
-
-    JsonObject searchLiteral(JsonObject queryJson) throws IOException;
 
     DocumentResult indexElement(JsonObject j, String index, String eType) throws IOException;
 

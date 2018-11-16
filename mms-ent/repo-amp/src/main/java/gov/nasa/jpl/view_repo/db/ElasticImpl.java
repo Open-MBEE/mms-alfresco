@@ -123,42 +123,6 @@ public class ElasticImpl implements DocStoreInterface {
     }
 
     /**
-     * Gets the JSON document of a bool : should commit query
-     * result printed as Json looks like:
-     * {
-     *   "bool":{"should":[{"term":{"added.id":sysmlid}},
-     *                     {"term":{"updated.id":sysmlid}},
-     *                     {"term":{"deleted.id":sysmlid}}]}
-     * }
-     * @param sysmlid the sysmlid to add to the term search
-     * @return JsonObject o
-     */
-    @Override
-    public JsonObject getCommitBoolShouldQuery(String sysmlid) {
-        JsonObject query = new JsonObject();
-        JsonObject bool = new JsonObject();
-        query.add("bool", bool);
-        JsonArray should = new JsonArray();
-        bool.add("should", should);
-        JsonObject term1 = new JsonObject();
-        term1.addProperty("added.id", sysmlid);
-        JsonObject term2 = new JsonObject();
-        term2.addProperty("updated.id", sysmlid);
-        JsonObject term3 = new JsonObject();
-        term3.addProperty("deleted.id", sysmlid);
-        JsonObject term = new JsonObject();
-        term.add("term", term1);
-        should.add(term);
-        term = new JsonObject();
-        term.add("term", term2);
-        should.add(term);
-        term = new JsonObject();
-        term.add("term", term3);
-        should.add(term);
-        return query;
-    }
-
-    /**
      * Returns the commit history of a element                           (1)
      * <p> Returns a JSONArray of objects that look this:
      * {
@@ -215,13 +179,48 @@ public class ElasticImpl implements DocStoreInterface {
     }
 
     /**
+     * Gets the JSON document of a bool : should commit query
+     * result printed as Json looks like:
+     * {
+     *   "bool":{"should":[{"term":{"added.id":sysmlid}},
+     *                     {"term":{"updated.id":sysmlid}},
+     *                     {"term":{"deleted.id":sysmlid}}]}
+     * }
+     * @param sysmlid the sysmlid to add to the term search
+     * @return JsonObject o
+     */
+    private JsonObject getCommitBoolShouldQuery(String sysmlid) {
+        JsonObject query = new JsonObject();
+        JsonObject bool = new JsonObject();
+        query.add("bool", bool);
+        JsonArray should = new JsonArray();
+        bool.add("should", should);
+        JsonObject term1 = new JsonObject();
+        term1.addProperty("added.id", sysmlid);
+        JsonObject term2 = new JsonObject();
+        term2.addProperty("updated.id", sysmlid);
+        JsonObject term3 = new JsonObject();
+        term3.addProperty("deleted.id", sysmlid);
+        JsonObject term = new JsonObject();
+        term.add("term", term1);
+        should.add(term);
+        term = new JsonObject();
+        term.add("term", term2);
+        should.add(term);
+        term = new JsonObject();
+        term.add("term", term3);
+        should.add(term);
+        return query;
+    }
+
+    /**
      * A paginated search for a list of elasticsearch _id's, returns empty JSONArray if passed empty list  (1)
      *
      * @param ids list of elasticsearch _id(s) to find          (2)
      * @return JSONArray elements or empty array
      */
     @Override
-    public JsonArray getElementsFromElasticIds(List<String> ids, String index) throws IOException {
+    public JsonArray getElementsFromDocStoreIds(List<String> ids, String index) throws IOException {
         // :TODO can be cleaned up with the getAPI
         int count = 0;
         JsonArray elements = new JsonArray();
@@ -442,13 +441,6 @@ public class ElasticImpl implements DocStoreInterface {
             top.add("aggregations", aggs);
         }
         return top;
-    }
-
-    @Override
-    public JsonObject searchLiteral(JsonObject queryJson) throws IOException {
-        Search search = new Search.Builder(queryJson.toString()).build();
-        SearchResult result = client.execute(search);
-        return result.getJsonObject();
     }
 
     /**

@@ -151,7 +151,7 @@ public class SiteGet extends AbstractJavaWebScript {
             for (Node n : alfSites) {
                 alfs.add(n.getSysmlId());
             }
-            JsonArray elements = docStoreHelper.getElementsFromElasticIds(ids, projectId);
+            JsonArray elements = docStoreHelper.getElementsFromDocStoreIds(ids, projectId);
 
             if (logger.isDebugEnabled())
                 logger.debug("handleSite: " + elements);

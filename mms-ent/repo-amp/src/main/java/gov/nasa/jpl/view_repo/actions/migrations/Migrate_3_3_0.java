@@ -241,7 +241,7 @@ public class Migrate_3_3_0 {
                             }
                         }
 
-                        JsonArray propertyElasticElements = eh.getElementsFromElasticIds(propertyElasticIds, projectId);
+                        JsonArray propertyElasticElements = eh.getElementsFromDocStoreIds(propertyElasticIds, projectId);
                         for (int i = 0; i < propertyElasticElements.size(); i++) {
                             JsonObject propertyNodeElastic = propertyElasticElements.get(i).getAsJsonObject();
                             if (CommitUtil.isPartProperty(propertyNodeElastic) && propertyNodeElastic.has(Sjm.TYPEID)
@@ -497,7 +497,7 @@ public class Migrate_3_3_0 {
             }
 
             try {
-                JsonArray artifactElastic = eh.getElementsFromElasticIds(artifactElasticIds, projectId);
+                JsonArray artifactElastic = eh.getElementsFromDocStoreIds(artifactElasticIds, projectId);
                 for (int i = 0; i < artifactElastic.size(); i++) {
                     artifacts.add(artifactElastic.get(i).getAsJsonObject());
                 }

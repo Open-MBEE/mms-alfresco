@@ -24,7 +24,7 @@ public class MarkLogicImpl implements DocStoreInterface
 	Map<String, MarkLogicDBInfo> dbInfo;
 	private MarkLogicRestClient mainRestClient = null;
 
-	public MarkLogicImpl()
+	public MarkLogicImpl() throws IOException
 	{
 		dbInfo = new HashMap<String, MarkLogicDBInfo>();
 
@@ -64,11 +64,6 @@ public class MarkLogicImpl implements DocStoreInterface
     }
 
     @Override
-    public JsonObject getCommitBoolShouldQuery(String sysmlid) {
-        return null;
-    }
-
-    @Override
     public JsonArray getCommitHistory(String sysmlid, String name) throws IOException
     {
         QueryManager queryMgr = dbInfo.get(name).getQueryManager();
@@ -77,7 +72,7 @@ public class MarkLogicImpl implements DocStoreInterface
     }
 
     @Override
-    public JsonArray getElementsFromElasticIds(List<String> ids, String name) throws IOException
+    public JsonArray getElementsFromDocStoreIds(List<String> ids, String name) throws IOException
     {
         // TODO Auto-generated method stub
         return null;
@@ -100,13 +95,6 @@ public class MarkLogicImpl implements DocStoreInterface
 
     @Override
     public JsonObject search(JsonObject queryJson) throws IOException
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public JsonObject searchLiteral(JsonObject queryJson) throws IOException
     {
         // TODO Auto-generated method stub
         return null;

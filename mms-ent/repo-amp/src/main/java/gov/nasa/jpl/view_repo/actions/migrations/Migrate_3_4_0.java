@@ -62,7 +62,7 @@ public class Migrate_3_4_0 {
             mappingTemplate = JsonUtil.buildFromString(s.next());
             ds.applyTemplate(mappingTemplate.toString());
         }
-        ds.updateMapping(EmsConfig.get("elastic.index.element"),
+        ds.updateMapping(EmsConfig.get("elastic.index.element"), // TODO mms
                 DocStoreInterface.PROFILE,
                 mappingTemplate.get("mappings").getAsJsonObject().get(DocStoreInterface.PROFILE).getAsJsonObject().toString()
         );
@@ -95,7 +95,7 @@ public class Migrate_3_4_0 {
                     List<String> refIds = new ArrayList<>();
                     refIds.addAll(refsToMove);
 
-                    JsonArray refs = ds.getElementsFromElasticIds(refIds, projectId);
+                    JsonArray refs = ds.getElementsFromDocStoreIds(refIds, projectId);
 
                     if (refs.size() > 0) {
                         for (int i = 0; i < refs.size(); i++) {

@@ -260,7 +260,7 @@ public class EmsNodeUtil {
     public JsonArray getJsonByElasticIds(List<String> elasticIds, boolean withChildViews) {
         JsonArray elementsFromElastic = new JsonArray();
         try {
-            elementsFromElastic = docStoreHelper.getElementsFromElasticIds(elasticIds, projectId);
+            elementsFromElastic = docStoreHelper.getElementsFromDocStoreIds(elasticIds, projectId);
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -348,7 +348,7 @@ public class EmsNodeUtil {
             elasticIds.add(ref.second);
         }
         try {
-            result = docStoreHelper.getElementsFromElasticIds(elasticIds, projectId);
+            result = docStoreHelper.getElementsFromDocStoreIds(elasticIds, projectId);
         } catch (IOException e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -388,7 +388,7 @@ public class EmsNodeUtil {
 
         try {
             List<String> childrenList = new ArrayList<>(children);
-            JsonArray childs = docStoreHelper.getElementsFromElasticIds(childrenList, projectId);
+            JsonArray childs = docStoreHelper.getElementsFromDocStoreIds(childrenList, projectId);
             JsonArray result = new JsonArray();
             for (int i = 0; i < childs.size(); i++) {
                 JsonObject current = childs.get(i).getAsJsonObject();
@@ -499,7 +499,7 @@ public class EmsNodeUtil {
 
         JsonArray docJson = new JsonArray();
         try {
-            docJson = docStoreHelper.getElementsFromElasticIds(docElasticIds, projectId);
+            docJson = docStoreHelper.getElementsFromDocStoreIds(docElasticIds, projectId);
         } catch (IOException e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -1536,7 +1536,7 @@ public class EmsNodeUtil {
 
     public JsonArray getCommitObjects(List<String> commitIds) {
         try {
-            return docStoreHelper.getElementsFromElasticIds(commitIds, projectId);
+            return docStoreHelper.getElementsFromDocStoreIds(commitIds, projectId);
         } catch (IOException e) {
             logger.debug(String.format("%s", LogUtil.getStackTrace(e)));
         }
@@ -1783,11 +1783,11 @@ public class EmsNodeUtil {
             }
 
             try {
-                JsonArray elems = docStoreHelper.getElementsFromElasticIds(elasticIds, projectId);
+                JsonArray elems = docStoreHelper.getElementsFromDocStoreIds(elasticIds, projectId);
                 for (int i = 0; i < elems.size(); i++) {
                     elements.add(elems.get(i));
                 }
-                JsonArray artifactElastic = docStoreHelper.getElementsFromElasticIds(artifactElasticIds, projectId);
+                JsonArray artifactElastic = docStoreHelper.getElementsFromDocStoreIds(artifactElasticIds, projectId);
                 for (int i = 0; i < artifactElastic.size(); i++) {
                     artifacts.add(artifactElastic.get(i));
                 }
