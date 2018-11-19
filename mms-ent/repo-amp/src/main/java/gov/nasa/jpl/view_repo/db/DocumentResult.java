@@ -5,13 +5,13 @@ import com.google.gson.JsonObject;
 public class DocumentResult {
 
     public JsonObject current = null;
-    public String internalId = null;
+    public String elasticId = null;
     public String sysmlid = null;
 
     @Override
     public String toString() {
         return String.format(
-                "sysmlid: %s, internalId: %s, current: %s",
-                sysmlid, internalId, current);
+                "sysmlid: %s, elasticId: %s, current: %s",
+                sysmlid, elasticId, current);
     }
 }

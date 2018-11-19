@@ -16,7 +16,7 @@ public interface DocStoreInterface {
     public static final String ARTIFACT = "artifact";
     public static final String REF = "ref";
 
-    JsonObject getByInternalId(String id, String index, String type) throws IOException;
+    JsonObject getByElasticId(String id, String index, String type) throws IOException;
 
     JsonObject getByCommitId(String id, String sysmlid, String index, String type) throws IOException;
 

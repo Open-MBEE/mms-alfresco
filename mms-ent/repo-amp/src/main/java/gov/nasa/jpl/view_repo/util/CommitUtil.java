@@ -675,7 +675,7 @@ public class CommitUtil {
                 pgh.updateOrganization(orgId, orgName);
                 orgJson.addProperty(Sjm.ELASTICID, orgId);
                 if (docStoreHelper.updateById(orgId, orgJson, defaultIndex, DocStoreInterface.ELEMENT).size() > 0 && docStoreHelper.refreshIndex()) {
-                    return docStoreHelper.getByInternalId(orgId, defaultIndex, DocStoreInterface.ELEMENT);
+                    return docStoreHelper.getByElasticId(orgId, defaultIndex, DocStoreInterface.ELEMENT);
                 }
             }
 
@@ -774,10 +774,10 @@ public class CommitUtil {
                 eViewInstanceBin = docStoreHelper.indexElement(viewInstanceBin, projectSysmlid, DocStoreInterface.ELEMENT);
                 docStoreHelper.refreshIndex();
 
-                pgh.insertNode(eProject.internalId, eProject.sysmlid, DbNodeTypes.PROJECT);
-                pgh.insertNode(eProjectHoldingBin.internalId, HOLDING_BIN_PREFIX + projectSysmlid,
+                pgh.insertNode(eProject.elasticId, eProject.sysmlid, DbNodeTypes.PROJECT);
+                pgh.insertNode(eProjectHoldingBin.elasticId, HOLDING_BIN_PREFIX + projectSysmlid,
                     DbNodeTypes.HOLDINGBIN);
-                pgh.insertNode(eViewInstanceBin.internalId, "view_instances_bin_" + projectSysmlid,
+                pgh.insertNode(eViewInstanceBin.elasticId, "view_instances_bin_" + projectSysmlid,
                     DbNodeTypes.HOLDINGBIN);
 
                 pgh.insertEdge(projectSysmlid, eProjectHoldingBin.sysmlid, DbEdgeTypes.CONTAINMENT);
@@ -806,13 +806,13 @@ public class CommitUtil {
 
     // make sure only one branch is made at a time
     public static synchronized JsonObject sendBranch(String projectId, JsonObject src, JsonObject created,
-        String internalId, Boolean isTag, String source, ServiceRegistry services) {
-        return sendBranch(projectId, src, created, internalId, isTag, source, null, services);
+        String elasticId, Boolean isTag, String source, ServiceRegistry services) {
+        return sendBranch(projectId, src, created, elasticId, isTag, source, null, services);
     }
 
     // make sure only one branch is made at a time
     public static synchronized JsonObject sendBranch(String projectId, JsonObject src, JsonObject created,
-        String internalId, Boolean isTag, String source, String commitId, ServiceRegistry services) {
+        String elasticId, Boolean isTag, String source, String commitId, ServiceRegistry services) {
         // FIXME: need to include branch in commit history
         JsonObject branchJson = new JsonObject();
 
@@ -828,7 +828,7 @@ public class CommitUtil {
         }
 
         BranchTask task =
-            new BranchTask(projectId, srcId, created.toString(), internalId, isTag, source, commitId, user);
+            new BranchTask(projectId, srcId, created.toString(), elasticId, isTag, source, commitId, user);
 
         created.addProperty("status", "creating");
 

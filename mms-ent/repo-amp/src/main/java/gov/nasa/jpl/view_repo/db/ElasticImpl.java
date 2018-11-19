@@ -143,7 +143,7 @@ public class ElasticImpl implements DocStoreInterface {
     }
 
     @Override
-    public JsonObject getByInternalId(String id, String index, String type) throws IOException {
+    public JsonObject getByElasticId(String id, String index, String type) throws IOException {
         Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(type).build();
 
         JestResult result = client.execute(get);
@@ -352,18 +352,18 @@ public class ElasticImpl implements DocStoreInterface {
             result.sysmlid = j.get(Sjm.SYSMLID).getAsString();
         }
         if (j.has(Sjm.ELASTICID)) {
-            result.internalId = client.execute(new Index.Builder(j.toString()).id(j.get(Sjm.ELASTICID).getAsString())
+            result.elasticId = client.execute(new Index.Builder(j.toString()).id(j.get(Sjm.ELASTICID).getAsString())
                 .index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build()).getId();
         } else {
-            result.internalId = client.execute(
+            result.elasticId = client.execute(
                 new Index.Builder(j.toString()).index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build())
                 .getId();
         }
-        if (result.internalId == null) {
+        if (result.elasticId == null) {
             throw new IOException("Unable to index node in elasticsearch");
         }
 
-        j.addProperty(Sjm.ELASTICID, result.internalId);
+        j.addProperty(Sjm.ELASTICID, result.elasticId);
         result.current = j;
 
         return result;

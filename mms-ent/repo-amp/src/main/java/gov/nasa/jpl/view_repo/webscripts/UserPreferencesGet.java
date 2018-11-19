@@ -85,7 +85,7 @@ public class UserPreferencesGet extends AbstractJavaWebScript {
                 if (validateRequest(req, status)) {
                     EmsNodeUtil emsNodeUtil = new EmsNodeUtil();
                 	DocStoreInterface docStoreHelper = DocStoreFactory.getDocStore();
-                    JsonObject res = docStoreHelper.getByInternalId(username, EmsConfig.get("elastic.index.element"), DocStoreInterface.PROFILE);
+                    JsonObject res = docStoreHelper.getByElasticId(username, EmsConfig.get("elastic.index.element"), DocStoreInterface.PROFILE);
                     if (res != null && res.size() > 0) {
                         response.add(Sjm.PROFILES, res);
                     } else {
