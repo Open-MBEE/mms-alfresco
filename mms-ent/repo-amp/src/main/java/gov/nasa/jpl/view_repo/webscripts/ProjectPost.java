@@ -241,7 +241,7 @@ public class ProjectPost extends AbstractJavaWebScript {
                 masterWs.addProperty("type", "Branch");
                 // :TODO going to have to check that index doesn't exist if ES doesn't already do this
                 emsNodeUtil.insertProjectIndex(projectId);
-                String elasticId = emsNodeUtil.insertSingleElastic(masterWs, DocStoreInterface.REF);
+                String elasticId = emsNodeUtil.insertSingleDoc(masterWs, DocStoreInterface.REF);
                 emsNodeUtil.insertRef(NO_WORKSPACE_ID, NO_WORKSPACE_ID, elasticId, false);
             }
 

@@ -30,18 +30,8 @@ pg.limit.select=1000
 pg.secured=false
 
 #Document Store Settings
-#docstore.name for Elastic Search: 	gov.nasa.jpl.view_repo.db.ElasticImpl
-#docstore.name for Mark Logic:		gov.nasa.jpl.view_repo.db.MarkLogicImpl
-docstore.name=gov.nasa.jpl.view_repo.db.ElasticImpl
-
-#Mark Logic Settings
-marklogic.host=xxx.com
-marklogic.confManager.port=8002
-#the core DB contains port info for each sub-database
-marklogic.mms-core.name=MMS-Core
-marklogic.mms-core.port=8033
-marklogic.username=XXX
-marklogic.password=XXX
+#docstore.impl for Elastic Search: 	gov.nasa.jpl.view_repo.db.ElasticImpl
+docstore.impl=gov.nasa.jpl.view_repo.db.ElasticImpl
 
 #Elasticsearch Settings
 elastic.host=http://localhost:9200

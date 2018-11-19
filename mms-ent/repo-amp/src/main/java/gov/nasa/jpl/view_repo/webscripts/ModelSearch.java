@@ -40,7 +40,6 @@ import java.util.HashSet;
 import javax.servlet.http.HttpServletResponse;
 
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.db.ElasticImpl;
 import gov.nasa.jpl.view_repo.util.Sjm;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;

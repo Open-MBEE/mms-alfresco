@@ -1551,7 +1551,7 @@ public class EmsNodeUtil {
         }
     }
 
-    public String insertSingleElastic(JsonObject o, String type) {
+    public String insertSingleDoc(JsonObject o, String type) {
         try {
             DocumentResult r = docStoreHelper.indexElement(o, projectId, type);
             return r.internalId;
@@ -1561,7 +1561,7 @@ public class EmsNodeUtil {
         return null;
     }
 
-    public String updateSingleElastic(JsonObject o, String type) {
+    public String updateSingleDoc(JsonObject o, String type) {
         try {
             if (o.has(Sjm.ELASTICID)) {
                 JsonObject r = docStoreHelper.updateById(o.get(Sjm.ELASTICID).getAsString(), o, projectId, type);

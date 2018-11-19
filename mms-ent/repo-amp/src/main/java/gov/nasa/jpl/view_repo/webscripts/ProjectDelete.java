@@ -160,7 +160,7 @@ public class ProjectDelete extends AbstractJavaWebScript {
     }
 
     /**
-     * Uses ElasticImpl to delete all elements on ElasticSearch based on the given projectId. Performs a delete
+     * Uses DocStoreInterface to delete all elements on ElasticSearch based on the given projectId. Performs a delete
      * by query.
      * @param projectId
      */

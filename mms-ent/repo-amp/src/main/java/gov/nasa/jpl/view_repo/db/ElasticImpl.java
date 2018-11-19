@@ -49,16 +49,7 @@ public class ElasticImpl implements DocStoreInterface {
 
     private static final String COMMIT_QUERY = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
 
-
-    public ElasticImpl() throws IOException {
-
-        if (client == null) {
-            logger.debug("Initializing Elastic client");
-            init(EmsConfig.get("elastic.host"));
-        }
-    }
-
-    private void init(String elasticHost) {
+    public void init(String elasticHost) {
 
         JestClientFactory factory = new JestClientFactory(){
             @Override
@@ -82,6 +73,75 @@ public class ElasticImpl implements DocStoreInterface {
         logger.warn(String.format("ElasticSearch connected to: %s", elasticHost));
     }
 
+    public void close() {
+
+        client.shutdownClient();
+        logger.warn("ES JEST client has been closed");
+    }
+
+    public ElasticImpl() throws IOException {
+
+        if (client == null) {
+            logger.debug("Initializing Elastic client");
+            init(EmsConfig.get("elastic.host"));
+        }
+    }
+
+    /**
+     * Creates elasticsearch index if it doesn't exist        (1)
+     *
+     * @param index name of the index to create           (2)
+     */
+    @Override
+    public void createIndex(String index) throws IOException {
+        boolean indexExists =
+            client.execute(new IndicesExists.Builder(index.toLowerCase().replaceAll("\\s+", "")).build()).isSucceeded();
+        if (!indexExists) {
+            client.execute(new CreateIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build());
+        }
+    }
+
+    @Override
+    public void deleteIndex(String index) throws IOException {
+        DeleteIndex indexExists = new DeleteIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build();
+        client.execute(indexExists);
+    }
+
+    @Override
+    public void applyTemplate(String template) throws IOException {
+        PutTemplate.Builder putTemplateBuilder =
+            new PutTemplate.Builder("template", template);
+        client.execute(putTemplateBuilder.build());
+    }
+
+    @Override
+    public void updateMapping(String index, String type, String mapping) throws IOException {
+        PutMapping.Builder putMappingBuilder = new PutMapping.Builder(index.toLowerCase().replaceAll("\\s+", ""), type, mapping);
+        client.execute(putMappingBuilder.build());
+    }
+
+    @Override
+    public void updateByQuery(String index, String payload, String type) throws IOException {
+        UpdateByQuery updateByQuery =
+            new UpdateByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
+                .build();
+        client.execute(updateByQuery);
+    }
+
+    @Override
+    public void deleteByQuery(String index, String payload, String type) throws IOException {
+        DeleteByQuery deleteByQuery =
+            new DeleteByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
+                .build();
+        client.execute(deleteByQuery);
+    }
+
+    @Override
+    public void updateClusterSettings(String payload) throws IOException {
+        UpdateSettings updateSettings = new UpdateSettings.Builder(payload).build();
+        client.execute(updateSettings);
+    }
+
     @Override
     public JsonObject getByInternalId(String id, String index, String type) throws IOException {
         Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(type).build();
@@ -98,28 +158,39 @@ public class ElasticImpl implements DocStoreInterface {
         return null;
     }
 
-    @Override
-    public JsonObject getByCommitId(String elasticId, String sysmlid, String index, String type) throws IOException {
-        String query = String.format(COMMIT_QUERY, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Search Query %s", query));
-        }
-
-        Search search = new Search.Builder(query).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
-            .addType(type).build();
-        SearchResult result = client.execute(search);
-
-        if (result.isSucceeded()) {
-            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-            if (hits.size() > 0) {
-                JsonObject o = hits.get(0).getAsJsonObject().getAsJsonObject("_source").getAsJsonObject();
-                o.add(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id"));
-                return o;
-            }
-        }
-
-        return null;
+    /**
+     * Gets the JSON document of a bool : should commit query
+     * result printed as Json looks like:
+     * {
+     *   "bool":{"should":[{"term":{"added.id":sysmlid}},
+     *                     {"term":{"updated.id":sysmlid}},
+     *                     {"term":{"deleted.id":sysmlid}}]}
+     * }
+     * @param sysmlid the sysmlid to add to the term search
+     * @return JsonObject o
+     */
+    private JsonObject getCommitBoolShouldQuery(String sysmlid) {
+        JsonObject query = new JsonObject();
+        JsonObject bool = new JsonObject();
+        query.add("bool", bool);
+        JsonArray should = new JsonArray();
+        bool.add("should", should);
+        JsonObject term1 = new JsonObject();
+        term1.addProperty("added.id", sysmlid);
+        JsonObject term2 = new JsonObject();
+        term2.addProperty("updated.id", sysmlid);
+        JsonObject term3 = new JsonObject();
+        term3.addProperty("deleted.id", sysmlid);
+        JsonObject term = new JsonObject();
+        term.add("term", term1);
+        should.add(term);
+        term = new JsonObject();
+        term.add("term", term2);
+        should.add(term);
+        term = new JsonObject();
+        term.add("term", term3);
+        should.add(term);
+        return query;
     }
 
     /**
@@ -178,39 +249,28 @@ public class ElasticImpl implements DocStoreInterface {
         return array;
     }
 
-    /**
-     * Gets the JSON document of a bool : should commit query
-     * result printed as Json looks like:
-     * {
-     *   "bool":{"should":[{"term":{"added.id":sysmlid}},
-     *                     {"term":{"updated.id":sysmlid}},
-     *                     {"term":{"deleted.id":sysmlid}}]}
-     * }
-     * @param sysmlid the sysmlid to add to the term search
-     * @return JsonObject o
-     */
-    private JsonObject getCommitBoolShouldQuery(String sysmlid) {
-        JsonObject query = new JsonObject();
-        JsonObject bool = new JsonObject();
-        query.add("bool", bool);
-        JsonArray should = new JsonArray();
-        bool.add("should", should);
-        JsonObject term1 = new JsonObject();
-        term1.addProperty("added.id", sysmlid);
-        JsonObject term2 = new JsonObject();
-        term2.addProperty("updated.id", sysmlid);
-        JsonObject term3 = new JsonObject();
-        term3.addProperty("deleted.id", sysmlid);
-        JsonObject term = new JsonObject();
-        term.add("term", term1);
-        should.add(term);
-        term = new JsonObject();
-        term.add("term", term2);
-        should.add(term);
-        term = new JsonObject();
-        term.add("term", term3);
-        should.add(term);
-        return query;
+    @Override
+    public JsonObject getByCommitId(String elasticId, String sysmlid, String index, String type) throws IOException {
+        String query = String.format(COMMIT_QUERY, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Search Query %s", query));
+        }
+
+        Search search = new Search.Builder(query).addIndex(index.toLowerCase().replaceAll("\\s+", ""))
+            .addType(type).build();
+        SearchResult result = client.execute(search);
+
+        if (result.isSucceeded()) {
+            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+            if (hits.size() > 0) {
+                JsonObject o = hits.get(0).getAsJsonObject().getAsJsonObject("_source").getAsJsonObject();
+                o.add(Sjm.ELASTICID, hits.get(0).getAsJsonObject().get("_id"));
+                return o;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -219,7 +279,6 @@ public class ElasticImpl implements DocStoreInterface {
      * @param ids list of elasticsearch _id(s) to find          (2)
      * @return JSONArray elements or empty array
      */
-    @Override
     public JsonArray getElementsFromDocStoreIds(List<String> ids, String index) throws IOException {
         // :TODO can be cleaned up with the getAPI
         int count = 0;
@@ -272,6 +331,235 @@ public class ElasticImpl implements DocStoreInterface {
 
         return elements;
 
+    }
+
+    /**
+     * Index single JSON document by type                         (1)
+     *
+     * @param j JSON document to index          (2)
+     * @return ElasticResult result
+     */
+    @Override
+    public DocumentResult indexElement(JsonObject j, String index, String eType) throws IOException {
+        // :TODO error handling
+        DocumentResult result = new DocumentResult();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("indexElement: %s", j));
+        }
+
+        if (j.has(Sjm.SYSMLID)) {
+            result.sysmlid = j.get(Sjm.SYSMLID).getAsString();
+        }
+        if (j.has(Sjm.ELASTICID)) {
+            result.internalId = client.execute(new Index.Builder(j.toString()).id(j.get(Sjm.ELASTICID).getAsString())
+                .index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build()).getId();
+        } else {
+            result.internalId = client.execute(
+                new Index.Builder(j.toString()).index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build())
+                .getId();
+        }
+        if (result.internalId == null) {
+            throw new IOException("Unable to index node in elasticsearch");
+        }
+
+        j.addProperty(Sjm.ELASTICID, result.internalId);
+        result.current = j;
+
+        return result;
+    }
+
+    /**
+     * refresh the index                         (1)
+     *
+     * @return Boolean isRefreshed
+     */
+    //:TODO refactor with project indexes
+    @Override
+    public boolean refreshIndex() throws IOException {
+        Refresh refresh = new Refresh.Builder().addIndex(elementIndex).build();
+        JestResult result = client.execute(refresh);
+
+        return result.isSucceeded();
+    }
+
+    @Override
+    public JsonObject updateById(String id, JsonObject payload, String index, String type) throws IOException {
+        JsonObject upsert = new JsonObject();
+        upsert.add("doc", payload);
+        upsert.addProperty("doc_as_upsert", true);
+        upsert.addProperty("_source", true);
+        JestResult res = client.execute(
+            new Update.Builder(upsert.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(type)
+                .build());
+        if (res.isSucceeded()) {
+            return res.getJsonObject().get("get").getAsJsonObject().get("_source").getAsJsonObject();
+        }
+        return new JsonObject();
+    }
+
+    /**
+     * Index multiple JSON documents by type using the BulkAPI                        (1)
+     *
+     * @param bulkElements documents to index          (2)
+     * @param operation    checks for CRUD operation, does not delete documents
+     * @return ElasticResult e
+     */
+    @Override
+    public boolean bulkIndexElements(JsonArray bulkElements, String operation, boolean refresh, String index, String type)
+        throws IOException {
+        int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
+        // BulkableAction is generic
+        ArrayList<BulkableAction> actions = new ArrayList<>();
+        JsonArray currentList = new JsonArray();
+        for (int i = 0; i < bulkElements.size(); i++) {
+            JsonObject curr = bulkElements.get(i).getAsJsonObject();
+            if (operation.equals("delete")) {
+                continue;
+            } else {
+                actions.add(new Index.Builder(curr.toString())
+                    .id(curr.get(Sjm.ELASTICID).getAsString())
+                    .build());
+                currentList.add(curr);
+            }
+            if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.size() - 1)) {
+                BulkResult result = insertBulk(actions, refresh, index.toLowerCase().replaceAll("\\s+", ""), type);
+                if (!result.isSucceeded()) {
+                    logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
+                    logger.error(String.format("Failed items JSON: %s", currentList));
+                    for (BulkResult.BulkResultItem item : result.getFailedItems()) {
+                        logger.error(String.format("Failed item: %s", item.error));
+                    }
+                    return false;
+                }
+                actions.clear();
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean bulkUpdateElements(Set<String> elements, String payload, String index, String type)
+        throws IOException {
+        int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
+        ArrayList<BulkableAction> actions = new ArrayList<>();
+        JsonArray currentList = new JsonArray();
+
+        int i = 0;
+        for (String id : elements) {
+            actions.add(new Update.Builder(payload).id(id).build());
+            currentList.add(id);
+
+            if ((((i + 1) % limit) == 0 && i != 0) || i == (elements.size() - 1)) {
+                BulkResult result = insertBulk(actions, false, index.toLowerCase().replaceAll("\\s+", ""), type);
+                if (!result.isSucceeded()) {
+                    logger.error(String.format("Elastic Bulk Update Error: %s", result.getErrorMessage()));
+                    logger.error(String.format("Failed items JSON: %s", currentList));
+                    for (BulkResult.BulkResultItem item : result.getFailedItems()) {
+                        logger.error(String.format("Failed item: %s", item.error));
+                    }
+                }
+                actions.clear();
+            }
+            i++;
+        }
+        return true;
+    }
+
+    /**
+     * Helper method for making bulkAPI requests                       (1)
+     *
+     * @param actions (2)
+     * @return returns result of bulk index
+     */
+    private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh, String index, String type)
+        throws IOException {
+        Bulk bulk = new Bulk.Builder().defaultIndex(index).defaultType(type).addAction(actions)
+            .setParameter(Parameters.REFRESH, refresh).build();
+        return client.execute(bulk);
+    }
+
+    @Override
+    // :TODO has to be set to accept multiple indexes as well.  Will need VE changes
+    public JsonObject search(JsonObject queryJson) throws IOException {
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Search Query %s", queryJson.toString()));
+        }
+
+        JsonObject top = new JsonObject();
+        JsonArray elements = new JsonArray();
+
+        Search search = new Search.Builder(queryJson.toString()).build();
+        SearchResult result = client.execute(search);
+
+        if (result == null) {
+            return top;
+        }
+
+
+        if (result.getTotal() > 0) {
+            top.addProperty("total", result.getJsonObject().getAsJsonObject("hits").get("total").getAsInt());
+            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+            for (int i = 0; i < hits.size(); i++) {
+
+                JsonObject o = hits.get(i).getAsJsonObject().getAsJsonObject("_source");
+
+                elements.add(o);
+            }
+        }
+        top.add("elements", elements);
+        if (result.getJsonObject().has("aggregations")) {
+            JsonObject aggs = result.getJsonObject().getAsJsonObject("aggregations");
+            top.add("aggregations", aggs);
+        }
+        return top;
+    }
+
+    public JsonObject searchLiteral(JsonObject queryJson) throws IOException {
+        Search search = new Search.Builder(queryJson.toString()).build();
+        SearchResult result = client.execute(search);
+        return result.getJsonObject();
+    }
+
+    /**
+     * Takes a type and array list of string ids. Creates a Bulk object and adds a list of actions. Then performs a bulk
+     * delete. Returns the JSONObject of the result.
+     *
+     * @param type
+     * @param ids
+     * @return JSONObject Result
+     */
+    @Override
+    public JsonObject bulkDeleteByType(Set<String> ids, String index, String type) {
+        if (ids.isEmpty()) {
+            return new JsonObject();
+        }
+
+        JestResult result = null;
+        try {
+            ArrayList<Delete> deleteList = new ArrayList<>();
+
+            for (String elasticId : ids) {
+                deleteList.add(
+                    new Delete.Builder(elasticId).type(type).index(index.toLowerCase().replaceAll("\\s+", "")).build());
+            }
+            Bulk bulk = new Bulk.Builder().defaultIndex(index.toLowerCase().replaceAll("\\s+", "")).defaultIndex(type)
+                .addAction(deleteList).build();
+
+            result = client.execute(bulk);
+
+            if (!result.isSucceeded()) {
+                logger.error("Delete Failed!");
+                logger.error(result.getErrorMessage());
+            }
+        } catch (Exception e) {
+            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
+        }
+        JsonObject o = new JsonObject();
+        if (result != null) {
+            o = result.getJsonObject();
+        }
+        return o;
     }
 
     /**
@@ -407,288 +695,8 @@ public class ElasticImpl implements DocStoreInterface {
         return deletedElements;
     }
 
-    @Override
-    // :TODO has to be set to accept multiple indexes as well.  Will need VE changes
-    public JsonObject search(JsonObject queryJson) throws IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Search Query %s", queryJson.toString()));
-        }
-
-        JsonObject top = new JsonObject();
-        JsonArray elements = new JsonArray();
-
-        Search search = new Search.Builder(queryJson.toString()).build();
-        SearchResult result = client.execute(search);
-
-        if (result == null) {
-            return top;
-        }
-
-
-        if (result.getTotal() > 0) {
-            top.addProperty("total", result.getJsonObject().getAsJsonObject("hits").get("total").getAsInt());
-            JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
-            for (int i = 0; i < hits.size(); i++) {
-
-                JsonObject o = hits.get(i).getAsJsonObject().getAsJsonObject("_source");
-
-                elements.add(o);
-            }
-        }
-        top.add("elements", elements);
-        if (result.getJsonObject().has("aggregations")) {
-            JsonObject aggs = result.getJsonObject().getAsJsonObject("aggregations");
-            top.add("aggregations", aggs);
-        }
-        return top;
-    }
-
-    /**
-     * Index single JSON document by type                         (1)
-     *
-     * @param j JSON document to index          (2)
-     * @return ElasticResult result
-     */
-    @Override
-    public DocumentResult indexElement(JsonObject j, String index, String eType) throws IOException {
-        // :TODO error handling
-        DocumentResult result = new DocumentResult();
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("indexElement: %s", j));
-        }
-
-        if (j.has(Sjm.SYSMLID)) {
-            result.sysmlid = j.get(Sjm.SYSMLID).getAsString();
-        }
-        if (j.has(Sjm.ELASTICID)) {
-            result.internalId = client.execute(new Index.Builder(j.toString()).id(j.get(Sjm.ELASTICID).getAsString())
-                .index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build()).getId();
-        } else {
-            result.internalId = client.execute(
-                new Index.Builder(j.toString()).index(index.toLowerCase().replaceAll("\\s+", "")).type(eType).build())
-                .getId();
-        }
-        if (result.internalId == null) {
-            throw new IOException("Unable to index node in elasticsearch");
-        }
-
-        j.addProperty(Sjm.ELASTICID, result.internalId);
-        result.current = j;
-
-        return result;
-    }
-
-    /**
-     * Creates elasticsearch index if it doesn't exist        (1)
-     *
-     * @param index name of the index to create           (2)
-     */
-    @Override
-    public void createIndex(String index) throws IOException {
-        boolean indexExists =
-            client.execute(new IndicesExists.Builder(index.toLowerCase().replaceAll("\\s+", "")).build()).isSucceeded();
-        if (!indexExists) {
-            client.execute(new CreateIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build());
-        }
-    }
-
-    /**
-     * refresh the index                         (1)
-     *
-     * @return Boolean isRefreshed
-     */
-    //:TODO refactor with project indexes
-    @Override
-    public boolean refreshIndex() throws IOException {
-        Refresh refresh = new Refresh.Builder().addIndex(elementIndex).build();
-        JestResult result = client.execute(refresh);
-
-        return result.isSucceeded();
-    }
-
-    /**
-     * Index multiple JSON documents by type using the BulkAPI                        (1)
-     *
-     * @param bulkElements documents to index          (2)
-     * @param operation    checks for CRUD operation, does not delete documents
-     * @return ElasticResult e
-     */
-    @Override
-    public boolean bulkIndexElements(JsonArray bulkElements, String operation, boolean refresh, String index, String type)
-        throws IOException {
-        int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
-        // BulkableAction is generic
-        ArrayList<BulkableAction> actions = new ArrayList<>();
-        JsonArray currentList = new JsonArray();
-        for (int i = 0; i < bulkElements.size(); i++) {
-            JsonObject curr = bulkElements.get(i).getAsJsonObject();
-            if (operation.equals("delete")) {
-                continue;
-            } else {
-                actions.add(new Index.Builder(curr.toString())
-                    .id(curr.get(Sjm.ELASTICID).getAsString())
-                    .build());
-                currentList.add(curr);
-            }
-            if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.size() - 1)) {
-                BulkResult result = insertBulk(actions, refresh, index.toLowerCase().replaceAll("\\s+", ""), type);
-                if (!result.isSucceeded()) {
-                    logger.error(String.format("Elastic Bulk Insert Error: %s", result.getErrorMessage()));
-                    logger.error(String.format("Failed items JSON: %s", currentList));
-                    for (BulkResult.BulkResultItem item : result.getFailedItems()) {
-                        logger.error(String.format("Failed item: %s", item.error));
-                    }
-                    return false;
-                }
-                actions.clear();
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public void applyTemplate(String template) throws IOException {
-        PutTemplate.Builder putTemplateBuilder =
-            new PutTemplate.Builder("template", template);
-        client.execute(putTemplateBuilder.build());
-    }
-
-    @Override
-    public void updateMapping(String index, String type, String mapping) throws IOException {
-        PutMapping.Builder putMappingBuilder = new PutMapping.Builder(index.toLowerCase().replaceAll("\\s+", ""), type, mapping);
-        client.execute(putMappingBuilder.build());
-    }
-
-    @Override
-    public void updateByQuery(String index, String payload, String type) throws IOException {
-        UpdateByQuery updateByQuery =
-            new UpdateByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
-                .build();
-        client.execute(updateByQuery);
-    }
-
-    @Override
-    public void updateClusterSettings(String payload) throws IOException {
-        UpdateSettings updateSettings = new UpdateSettings.Builder(payload).build();
-        client.execute(updateSettings);
-    }
-
-
-    @Override
-    public JsonObject updateById(String id, JsonObject payload, String index, String type) throws IOException {
-        JsonObject upsert = new JsonObject();
-        upsert.add("doc", payload);
-        upsert.addProperty("doc_as_upsert", true);
-        upsert.addProperty("_source", true);
-        JestResult res = client.execute(
-            new Update.Builder(upsert.toString()).id(id).index(index.toLowerCase().replaceAll("\\s+", "")).type(type)
-                .build());
-        if (res.isSucceeded()) {
-            return res.getJsonObject().get("get").getAsJsonObject().get("_source").getAsJsonObject();
-        }
-        return new JsonObject();
-    }
-
-    @Override
-    public boolean bulkUpdateElements(Set<String> elements, String payload, String index, String type)
-        throws IOException {
-        int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
-        ArrayList<BulkableAction> actions = new ArrayList<>();
-        JsonArray currentList = new JsonArray();
-
-        int i = 0;
-        for (String id : elements) {
-            actions.add(new Update.Builder(payload).id(id).build());
-            currentList.add(id);
-
-            if ((((i + 1) % limit) == 0 && i != 0) || i == (elements.size() - 1)) {
-                BulkResult result = insertBulk(actions, false, index.toLowerCase().replaceAll("\\s+", ""), type);
-                if (!result.isSucceeded()) {
-                    logger.error(String.format("Elastic Bulk Update Error: %s", result.getErrorMessage()));
-                    logger.error(String.format("Failed items JSON: %s", currentList));
-                    for (BulkResult.BulkResultItem item : result.getFailedItems()) {
-                        logger.error(String.format("Failed item: %s", item.error));
-                    }
-                }
-                actions.clear();
-            }
-            i++;
-        }
-        return true;
-    }
-
-    @Override
-    public void deleteIndex(String index) throws IOException {
-        DeleteIndex indexExists = new DeleteIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build();
-        client.execute(indexExists);
-    }
-
-    @Override
-    public void deleteByQuery(String index, String payload, String type) throws IOException {
-        DeleteByQuery deleteByQuery =
-            new DeleteByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
-                .build();
-        client.execute(deleteByQuery);
-    }
-
-    /**
-     * Takes a type and array list of string ids. Creates a Bulk object and adds a list of actions. Then performs a bulk
-     * delete. Returns the JSONObject of the result.
-     *
-     * @param type
-     * @param ids
-     * @return JSONObject Result
-     */
-    @Override
-    public JsonObject bulkDeleteByType(Set<String> ids, String index, String type) {
-        if (ids.isEmpty()) {
-            return new JsonObject();
-        }
-
-        JestResult result = null;
-        try {
-            ArrayList<Delete> deleteList = new ArrayList<>();
-
-            for (String elasticId : ids) {
-                deleteList.add(
-                    new Delete.Builder(elasticId).type(type).index(index.toLowerCase().replaceAll("\\s+", "")).build());
-            }
-            Bulk bulk = new Bulk.Builder().defaultIndex(index.toLowerCase().replaceAll("\\s+", "")).defaultIndex(type)
-                .addAction(deleteList).build();
-
-            result = client.execute(bulk);
-
-            if (!result.isSucceeded()) {
-                logger.error("Delete Failed!");
-                logger.error(result.getErrorMessage());
-            }
-        } catch (Exception e) {
-            logger.error(String.format("%s", LogUtil.getStackTrace(e)));
-        }
-        JsonObject o = new JsonObject();
-        if (result != null) {
-            o = result.getJsonObject();
-        }
-        return o;
-    }
-
-    public void close() {
-
-        client.shutdownClient();
-        logger.warn("ES JEST client has been closed");
-    }
-
-    /**
-     * Helper method for making bulkAPI requests                       (1)
-     *
-     * @param actions (2)
-     * @return returns result of bulk index
-     */
-    private BulkResult insertBulk(List<BulkableAction> actions, boolean refresh, String index, String type)
-        throws IOException {
-        Bulk bulk = new Bulk.Builder().defaultIndex(index).defaultType(type).addAction(actions)
-            .setParameter(Parameters.REFRESH, refresh).build();
-        return client.execute(bulk);
+    public static boolean containsScript(JsonObject json) {
+        String jsonString = json.toString();
+        return jsonString.contains("\"script\"");
     }
 }
