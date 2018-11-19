@@ -339,7 +339,7 @@ public class ElasticImpl implements DocStoreInterface {
      * Index single JSON document by type                         (1)
      *
      * @param j JSON document to index          (2)
-     * @return ElasticResult result
+     * @return DocumentResult result
      */
     @Override
     public DocumentResult indexElement(JsonObject j, String index, String eType) throws IOException {
