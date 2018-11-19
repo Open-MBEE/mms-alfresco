@@ -73,6 +73,7 @@ public class ElasticImpl implements DocStoreInterface {
         logger.warn(String.format("ElasticSearch connected to: %s", elasticHost));
     }
 
+    @Override
     public void close() {
 
         client.shutdownClient();
@@ -273,6 +274,7 @@ public class ElasticImpl implements DocStoreInterface {
         return null;
     }
 
+    @Override
     /**
      * A paginated search for a list of elasticsearch _id's, returns empty JSONArray if passed empty list  (1)
      *
