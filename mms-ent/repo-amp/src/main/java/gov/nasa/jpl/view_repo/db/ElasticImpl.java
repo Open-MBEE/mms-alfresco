@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.gson.JsonElement;
 import io.searchbox.cluster.UpdateSettings;
 import io.searchbox.core.*;
 import io.searchbox.indices.DeleteIndex;
@@ -40,19 +39,13 @@ import io.searchbox.params.Parameters;
  * @version 3.0
  * @since 3.0
  */
-public class ElasticHelper implements ElasticsearchInterface {
+public class ElasticImpl implements DocStoreInterface {
     private static JestClient client = null;
-    private static Logger logger = Logger.getLogger(ElasticHelper.class);
+    private static Logger logger = Logger.getLogger(ElasticImpl.class);
     private static String elementIndex = EmsConfig.get("elastic.index.element");
     private static int resultLimit = Integer.parseInt(EmsConfig.get("elastic.limit.result"));
     private static int termLimit = Integer.parseInt(EmsConfig.get("elastic.limit.term"));
     private static int readTimeout = 1000000000;
-
-    public static final String ELEMENT = "element";
-    public static final String COMMIT = "commit";
-    public static final String PROFILE = "profile";
-    public static final String ARTIFACT = "artifact";
-    public static final String REF = "ref";
 
     private static final String COMMIT_QUERY = "{\"query\":{\"bool\":{\"filter\":[{\"term\":{\"%1$s\":\"%2$s\"}},{\"term\":{\"%3$s\":\"%4$s\"}}]}}}";
 
@@ -80,13 +73,14 @@ public class ElasticHelper implements ElasticsearchInterface {
         logger.warn(String.format("ElasticSearch connected to: %s", elasticHost));
     }
 
+    @Override
     public void close() {
 
         client.shutdownClient();
         logger.warn("ES JEST client has been closed");
     }
 
-    public ElasticHelper() throws IOException {
+    public ElasticImpl() throws IOException {
 
         if (client == null) {
             logger.debug("Initializing Elastic client");
@@ -99,6 +93,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      *
      * @param index name of the index to create           (2)
      */
+    @Override
     public void createIndex(String index) throws IOException {
         boolean indexExists =
             client.execute(new IndicesExists.Builder(index.toLowerCase().replaceAll("\\s+", "")).build()).isSucceeded();
@@ -107,22 +102,26 @@ public class ElasticHelper implements ElasticsearchInterface {
         }
     }
 
+    @Override
     public void deleteIndex(String index) throws IOException {
         DeleteIndex indexExists = new DeleteIndex.Builder(index.toLowerCase().replaceAll("\\s+", "")).build();
         client.execute(indexExists);
     }
 
+    @Override
     public void applyTemplate(String template) throws IOException {
         PutTemplate.Builder putTemplateBuilder =
             new PutTemplate.Builder("template", template);
         client.execute(putTemplateBuilder.build());
     }
 
+    @Override
     public void updateMapping(String index, String type, String mapping) throws IOException {
         PutMapping.Builder putMappingBuilder = new PutMapping.Builder(index.toLowerCase().replaceAll("\\s+", ""), type, mapping);
         client.execute(putMappingBuilder.build());
     }
 
+    @Override
     public void updateByQuery(String index, String payload, String type) throws IOException {
         UpdateByQuery updateByQuery =
             new UpdateByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
@@ -130,6 +129,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         client.execute(updateByQuery);
     }
 
+    @Override
     public void deleteByQuery(String index, String payload, String type) throws IOException {
         DeleteByQuery deleteByQuery =
             new DeleteByQuery.Builder(payload).addIndex(index.toLowerCase().replaceAll("\\s+", "")).addType(type)
@@ -137,11 +137,13 @@ public class ElasticHelper implements ElasticsearchInterface {
         client.execute(deleteByQuery);
     }
 
+    @Override
     public void updateClusterSettings(String payload) throws IOException {
         UpdateSettings updateSettings = new UpdateSettings.Builder(payload).build();
         client.execute(updateSettings);
     }
 
+    @Override
     public JsonObject getByElasticId(String id, String index, String type) throws IOException {
         Get get = new Get.Builder(index.toLowerCase().replaceAll("\\s+", ""), id).type(type).build();
 
@@ -168,7 +170,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param sysmlid the sysmlid to add to the term search
      * @return JsonObject o
      */
-    public JsonObject getCommitBoolShouldQuery(String sysmlid) {
+    private JsonObject getCommitBoolShouldQuery(String sysmlid) {
         JsonObject query = new JsonObject();
         JsonObject bool = new JsonObject();
         query.add("bool", bool);
@@ -205,6 +207,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param sysmlid sysmlId     (3)
      * @return JSONArray array or empty json array
      */
+    @Override
     public JsonArray getCommitHistory(String sysmlid, String index) throws IOException {
 
         JsonObject query = new JsonObject();
@@ -230,7 +233,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         if (result.isSucceeded() && result.getTotal() > 0) {
             JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
             for (int i = 0; i < hits.size(); i++) {
-            	JsonObject o = new JsonObject();
+                JsonObject o = new JsonObject();
                 JsonObject record = hits.get(i).getAsJsonObject().getAsJsonObject("_source");
                 o.add(Sjm.SYSMLID, hits.get(i).getAsJsonObject().get("_id"));
                 o.add(Sjm.CREATED, record.get(Sjm.CREATED));
@@ -242,11 +245,12 @@ public class ElasticHelper implements ElasticsearchInterface {
             }
         } else if (!result.isSucceeded()) {
             throw new IOException(String.format("Elasticsearch error[%1$s]:%2$s",
-            		result.getResponseCode(), result.getErrorMessage()));
+                result.getResponseCode(), result.getErrorMessage()));
         }
         return array;
     }
 
+    @Override
     public JsonObject getByCommitId(String elasticId, String sysmlid, String index, String type) throws IOException {
         String query = String.format(COMMIT_QUERY, Sjm.COMMITID, elasticId, Sjm.SYSMLID, sysmlid);
 
@@ -270,13 +274,14 @@ public class ElasticHelper implements ElasticsearchInterface {
         return null;
     }
 
+    @Override
     /**
      * A paginated search for a list of elasticsearch _id's, returns empty JSONArray if passed empty list  (1)
      *
      * @param ids list of elasticsearch _id(s) to find          (2)
      * @return JSONArray elements or empty array
      */
-    public JsonArray getElementsFromElasticIds(List<String> ids, String index) throws IOException {
+    public JsonArray getElementsFromDocStoreIds(List<String> ids, String index) throws IOException {
         // :TODO can be cleaned up with the getAPI
         int count = 0;
         JsonArray elements = new JsonArray();
@@ -309,11 +314,11 @@ public class ElasticHelper implements ElasticsearchInterface {
             }
 
             Search search = new Search.Builder(queryJson.toString())
-            		.addIndex(index.toLowerCase().replaceAll("\\s+",""))
-            		.build();
+                .addIndex(index.toLowerCase().replaceAll("\\s+",""))
+                .build();
             SearchResult result = client.execute(search);
 
-            if (result != null && result.isSucceeded() && result.getTotal() > 0) {
+            if (result != null && result.isSucceeded() && result.getJsonObject().getAsJsonObject("hits").get("total").getAsLong() > 0) {
                 JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
                 for (int i = 0; i < hits.size(); i++) {
                     JsonObject o = hits.get(i).getAsJsonObject().getAsJsonObject("_source");
@@ -334,11 +339,12 @@ public class ElasticHelper implements ElasticsearchInterface {
      * Index single JSON document by type                         (1)
      *
      * @param j JSON document to index          (2)
-     * @return ElasticResult result
+     * @return DocumentResult result
      */
-    public ElasticResult indexElement(JsonObject j, String index, String eType) throws IOException {
+    @Override
+    public DocumentResult indexElement(JsonObject j, String index, String eType) throws IOException {
         // :TODO error handling
-        ElasticResult result = new ElasticResult();
+        DocumentResult result = new DocumentResult();
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("indexElement: %s", j));
@@ -371,6 +377,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @return Boolean isRefreshed
      */
     //:TODO refactor with project indexes
+    @Override
     public boolean refreshIndex() throws IOException {
         Refresh refresh = new Refresh.Builder().addIndex(elementIndex).build();
         JestResult result = client.execute(refresh);
@@ -378,6 +385,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         return result.isSucceeded();
     }
 
+    @Override
     public JsonObject updateById(String id, JsonObject payload, String index, String type) throws IOException {
         JsonObject upsert = new JsonObject();
         upsert.add("doc", payload);
@@ -399,6 +407,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param operation    checks for CRUD operation, does not delete documents
      * @return ElasticResult e
      */
+    @Override
     public boolean bulkIndexElements(JsonArray bulkElements, String operation, boolean refresh, String index, String type)
         throws IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
@@ -411,8 +420,8 @@ public class ElasticHelper implements ElasticsearchInterface {
                 continue;
             } else {
                 actions.add(new Index.Builder(curr.toString())
-                		.id(curr.get(Sjm.ELASTICID).getAsString())
-                		.build());
+                    .id(curr.get(Sjm.ELASTICID).getAsString())
+                    .build());
                 currentList.add(curr);
             }
             if ((((i + 1) % limit) == 0 && i != 0) || i == (bulkElements.size() - 1)) {
@@ -431,6 +440,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         return true;
     }
 
+    @Override
     public boolean bulkUpdateElements(Set<String> elements, String payload, String index, String type)
         throws IOException {
         int limit = Integer.parseInt(EmsConfig.get("elastic.limit.insert"));
@@ -471,6 +481,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         return client.execute(bulk);
     }
 
+    @Override
     // :TODO has to be set to accept multiple indexes as well.  Will need VE changes
     public JsonObject search(JsonObject queryJson) throws IOException {
         if (logger.isDebugEnabled()) {
@@ -520,6 +531,7 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param ids
      * @return JSONObject Result
      */
+    @Override
     public JsonObject bulkDeleteByType(Set<String> ids, String index, String type) {
         if (ids.isEmpty()) {
             return new JsonObject();
@@ -560,8 +572,9 @@ public class ElasticHelper implements ElasticsearchInterface {
      * @param timestamp
      * @return
      */
+    @Override
     public JsonObject getElementsLessThanOrEqualTimestamp(String sysmlId, String timestamp, List<String> refsCommitIds,
-        String index) {
+                                                          String index) {
         // Create filter array
         int count = 0;
         while (count < refsCommitIds.size()) {
@@ -625,6 +638,7 @@ public class ElasticHelper implements ElasticsearchInterface {
         return null;
     }
 
+    @Override
     public Map<String, String> getDeletedElementsFromCommits(List<String> commitIds, String index) {
         int count = 0;
         Map<String, String> deletedElements = new HashMap<>();

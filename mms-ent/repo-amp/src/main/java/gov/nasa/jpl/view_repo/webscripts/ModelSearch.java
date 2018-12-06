@@ -31,7 +31,6 @@
 
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -59,7 +58,6 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
 import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
 
 
 /**
@@ -92,7 +90,7 @@ public class ModelSearch extends ModelPost {
 
         try {
             JsonObject json = JsonUtil.buildFromString(req.getContent().getContent());
-            if (!ElasticHelper.containsScript(json)) {
+            if (!containsScript(json)) {
                 JsonObject top = executeSearchRequest(req, json);
 
                 if (!Utils.isNullOrEmpty(response.toString())) {
@@ -205,5 +203,10 @@ public class ModelSearch extends ModelPost {
     private JsonObject getGrandOwnerJson(String projectId, String refId, String sysmlId) {
         return getJsonBySysmlId(projectId, refId,
         		JsonUtil.getOptString(getJsonBySysmlId(projectId, refId, sysmlId), Sjm.OWNERID));
+    }
+
+    private static boolean containsScript(JsonObject json) {
+        String jsonString = json.toString();
+        return jsonString.contains("\"script\"");
     }
 }

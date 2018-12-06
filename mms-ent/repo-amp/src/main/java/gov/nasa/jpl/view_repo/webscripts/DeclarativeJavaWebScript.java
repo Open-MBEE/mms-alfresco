@@ -195,9 +195,12 @@ public class DeclarativeJavaWebScript extends AbstractWebScript {
         for (int i = 0; i < projects.size(); i++) {
             JsonObject project = JsonUtil.getOptObject(projects, i);
             if (project.has("orgId")) {
+                String projectId = project.has(Sjm.SYSMLID) ? project.get(Sjm.SYSMLID).getAsString() : null;
                 Boolean perm = SitePermission.hasPermission(
                                 project.get("orgId").getAsString(),
-                                project.get(Sjm.SYSMLID).getAsString(), null, Permission.READ);
+                                projectId,
+                                null,
+                                Permission.READ);
                 if (perm != null && perm) {
                     result.add(project);
                 }

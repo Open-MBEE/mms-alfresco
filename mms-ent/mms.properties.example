@@ -29,6 +29,10 @@ pg.limit.insert=5000
 pg.limit.select=1000
 pg.secured=false
 
+#Document Store Settings
+#docstore.impl for Elastic Search: 	gov.nasa.jpl.view_repo.db.ElasticImpl
+docstore.impl=gov.nasa.jpl.view_repo.db.ElasticImpl
+
 #Elasticsearch Settings
 elastic.host=http://localhost:9200
 elastic.index.element=mms
