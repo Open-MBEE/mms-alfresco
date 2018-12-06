@@ -15,7 +15,7 @@ jobs:
 
       - run:
           name: Run Maven Build
-          command: cd mms-ent && sh mvnw install -Pbuild && sh mvnw install -f repo-amp/target/generated-sources/swagger/java/pom.xml
+          command: cd mms-ent && sh mvnw install -Pbuild -Dmaven.test.skip=true && sh mvnw install -Dmaven.test.skip=true -f repo-amp/target/generated-sources/swagger/java/pom.xml
 
       - save_cache:
           paths:
@@ -64,10 +64,7 @@ jobs:
           command: ./jfrog rt u 'mms-ent/share-amp/target/*.amp' libs-snapshot-local/gov/nasa/jpl/mms/mms-share-amp/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms java client
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-client/mms-java-*.jar' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
-      - run:
-          name: Send mms java client
-          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-client/pom.xml' libs-snapshot-local/gov/nasa/jpl/mms/mms-java-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
+          command: ./jfrog rt u 'mms-ent/repo-amp/target/mms-java-client/mms-java-*.jar' libs-snapshot-local/org/openmbee/mms/mms-java-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
       - run:
           name: Send mms python client
           command: ./jfrog rt u 'mms-ent/repo-amp/target/mms_python_*.zip' libs-snapshot-local/gov/nasa/jpl/mms/mms-python-client/${version}/ --build-name=mms-circleci --build-number=$CIRCLE_BUILD_NUM --flat=true
