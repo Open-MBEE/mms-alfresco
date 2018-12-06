@@ -1640,6 +1640,10 @@ public class EmsNodeUtil {
     @SuppressWarnings("unchecked")
     private static boolean isEquivalent(Map<String, Object> map1, Map<String, Object> map2) {
         for (Map.Entry<String, Object> entry : map1.entrySet()) {
+            if (!map2.containsKey(entry.getKey())) {
+                return false;
+            }
+
             Object value1 = entry.getValue();
             Object value2 = map2.get(entry.getKey());
             if (logger.isDebugEnabled()) {

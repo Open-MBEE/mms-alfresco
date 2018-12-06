@@ -14,6 +14,7 @@ mms.properties
 /solr-config/target/*
 /repo/overlays/*
 /share/overlays/*
+/repo-amp/conda/output*
 /runner/src/test/robotframework/libraries/*
 *.log
 *.log.*

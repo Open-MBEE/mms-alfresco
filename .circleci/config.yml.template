@@ -15,7 +15,7 @@ jobs:
 
       - run:
           name: Run Maven Build
-          command: cd mms-ent && sh mvnw install -Pbuild && sh mvnw install -f repo-amp/target/generated-sources/swagger/java/pom.xml
+          command: cd mms-ent && sh mvnw install -Pbuild -Dmaven.test.skip=true && sh mvnw install -Dmaven.test.skip=true -f repo-amp/target/generated-sources/swagger/java/pom.xml
 
       - save_cache:
           paths:
