@@ -1,5 +1,12 @@
 package gov.nasa.jpl.view_repo.db;
 
+import com.google.gson.JsonPrimitive;
+import gov.nasa.jpl.mbee.util.Pair;
+import gov.nasa.jpl.view_repo.util.EmsConfig;
+import gov.nasa.jpl.view_repo.util.EmsScriptNode;
+import gov.nasa.jpl.view_repo.util.LogUtil;
+import gov.nasa.jpl.view_repo.util.Sjm;
+import java.sql.Array;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,6 +17,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -17,16 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.google.gson.JsonPrimitive;
-import gov.nasa.jpl.view_repo.util.Sjm;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
-
-import gov.nasa.jpl.mbee.util.Pair;
-import gov.nasa.jpl.view_repo.util.EmsConfig;
-import gov.nasa.jpl.view_repo.util.LogUtil;
-import gov.nasa.jpl.view_repo.util.EmsScriptNode;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
 
@@ -147,7 +147,7 @@ public class PostgresHelper implements GraphInterface {
         } else {
             this.workspaceId = "";
             workspaceId = sanitizeRefId(workspaceId);
-            try (PreparedStatement query = getConn().prepareStatement("SELECT refId FROM refs WHERE refId = ?");) {
+            try (PreparedStatement query = prepareStatement("SELECT refId FROM refs WHERE refId = ?");) {
                 query.setString(1, workspaceId);
                 try (ResultSet rs = query.executeQuery()) {
                     if (rs.next()) {
@@ -603,7 +603,7 @@ public class PostgresHelper implements GraphInterface {
             query.append(" AND deleted = false");
         }
 
-        try (PreparedStatement statement = getConn().prepareStatement(query.toString())) {
+        try (PreparedStatement statement = prepareStatement(query.toString())) {
             statement.setInt(1, type.getValue());
 
             try (ResultSet rs = statement.executeQuery()) {
@@ -626,7 +626,7 @@ public class PostgresHelper implements GraphInterface {
 
         StringBuilder query =
             new StringBuilder("SELECT * FROM \"nodes" + workspaceId + "\" WHERE deleted = false ORDER BY id");
-        try (PreparedStatement statement = getConn().prepareStatement(query.toString())) {
+        try (PreparedStatement statement = prepareStatement(query.toString())) {
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
                     result.add(resultSetToNode(rs));
@@ -738,7 +738,7 @@ public class PostgresHelper implements GraphInterface {
     }
 
     public boolean edgeExists(String parent, String child, DbEdgeTypes dbet) {
-        try (PreparedStatement query = getConn().prepareStatement(
+        try (PreparedStatement query = prepareStatement(
             "SELECT id FROM \"edges" + workspaceId + "\" WHERE parent = (SELECT id FROM \"nodes" + workspaceId
                 + "\" WHERE sysmlid = ?) AND child = (SELECT id FROM \"nodes" + workspaceId
                 + "\" WHERE sysmlid = ?) AND edgetype = ?")) {
@@ -766,29 +766,18 @@ public class PostgresHelper implements GraphInterface {
         return getElasticIdsFromSysmlIds(sysmlids, withDeleted, "artifacts");
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> getElasticIdsFromSysmlIds(List<String> sysmlids, boolean withDeleted, String type) {
-        List<String> elasticIds = new ArrayList<>();
         if (sysmlids == null || sysmlids.isEmpty()) {
-            return elasticIds;
+            return new ArrayList<>();
         }
 
-        String query = String.format("SELECT elasticid FROM \"%s%s\" WHERE sysmlid IN (%s)", type, workspaceId,
-            "'" + String.join("','", sysmlids) + "'");
+        String query = String.format("SELECT elasticid FROM \"%s%s\" WHERE sysmlid = ANY (?)", type, workspaceId);
         if (!withDeleted) {
-            query += "AND deleted = false";
+            query += " AND deleted = false";
         }
 
-        try (ResultSet rs = execQuery(query)) {
-            while (rs.next()) {
-                elasticIds.add(rs.getString(1));
-            }
-        } catch (SQLException e) {
-            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
-        } finally {
-            close();
-        }
-
-        return elasticIds;
+        return new ArrayList(getCollectionFromCollection(sysmlids, query));
     }
 
     public Node getNodeFromSysmlId(String sysmlId) {
@@ -808,7 +797,7 @@ public class PostgresHelper implements GraphInterface {
         if (!withDeleted) {
             queryString.append(" AND deleted = false");
         }
-        try (PreparedStatement query = getConn().prepareStatement(queryString.toString())) {
+        try (PreparedStatement query = prepareStatement(queryString.toString())) {
             query.setString(1, sysmlId);
 
             try (ResultSet rs = query.executeQuery()) {
@@ -891,6 +880,38 @@ public class PostgresHelper implements GraphInterface {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
+    public Set<String> filterListByDeleted(Collection<String> sysmlids, String type) {
+        Set<String> deletedIds = new HashSet<>();
+        if (sysmlids == null || sysmlids.isEmpty()) {
+            return deletedIds;
+        }
+
+        String query = String.format("SELECT sysmlid FROM \"%s%s\" WHERE sysmlid = ANY (?) AND deleted = true", type, workspaceId);
+
+        return new HashSet(getCollectionFromCollection(sysmlids, query));
+    }
+
+    public Collection<String> getCollectionFromCollection(Collection<String> sysmlids, String query) {
+        Collection<String> resultingIds = new ArrayList<>();
+        try (PreparedStatement ps = prepareStatement(query)) {
+            String[] ids = new String[sysmlids.size()];
+            ids = sysmlids.toArray(ids);
+            Array arrayIds = getConn().createArrayOf("varchar", ids);
+            ps.setArray(1, arrayIds);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    resultingIds.add(rs.getString(1));
+                }
+            }
+        } catch (SQLException e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+        return resultingIds;
+    }
+
     public String insertCommit(String elasticId, DbCommitTypes type, String creator) {
         return insertCommit(elasticId, type, creator, null);
     }
@@ -943,7 +964,7 @@ public class PostgresHelper implements GraphInterface {
             if (rs.next()) {
                 return rs.getString(1);
             } else {
-                try (PreparedStatement statement = getConn().prepareStatement(String.format(
+                try (PreparedStatement statement = prepareStatement(String.format(
                     "SELECT commits.elasticid FROM refs LEFT JOIN commits ON refs.parentcommit = commits.id WHERE refs.refid = '%s'",
                     workspaceId))) {
                     try (ResultSet nrs = statement.executeQuery()) {
@@ -977,7 +998,7 @@ public class PostgresHelper implements GraphInterface {
 
     public void executeBulkStatements(String query, List<List<Object>> values) {
         int limit = Integer.parseInt(EmsConfig.get("pg.limit.insert"));
-        try (PreparedStatement statement = getConn().prepareStatement(query)) {
+        try (PreparedStatement statement = prepareStatement(query)) {
             int count = 0;
             for (int i = 0; i < values.size(); i++) {
                 List<Object> value = values.get(i);

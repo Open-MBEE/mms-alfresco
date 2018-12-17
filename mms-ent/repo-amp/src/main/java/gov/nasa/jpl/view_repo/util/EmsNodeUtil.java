@@ -558,6 +558,8 @@ public class EmsNodeUtil {
             convertToMap(getNodesBySysmlids(sysmlids, false, true)) :
             convertToMap(getArtifactsBySysmlids(sysmlids, true));
 
+        Set<String> deletedSet = pgh.filterListByDeleted(sysmlids, (!type.equals("Artifact")) ? "nodes" : "artifacts");
+
         for (int i = 0; i < elements.size(); i++) {
             JsonObject o = elements.get(i).getAsJsonObject();
             String sysmlid = JsonUtil.getOptString(o, Sjm.SYSMLID);
@@ -570,8 +572,8 @@ public class EmsNodeUtil {
             boolean updated = false;
             Map<Integer, String> rejected = new HashMap<>();
             if (!added) {
-                if (!overwriteJson) {
-                    if (isUpdated(o, existingMap.get(sysmlid), rejected)) {
+                if (!overwriteJson || deletedSet.contains(sysmlid)) {
+                    if (deletedSet.contains(sysmlid) || isUpdated(o, existingMap.get(sysmlid), rejected)) {
                         updated = diffUpdateJson(o, existingMap.get(sysmlid), rejected);
                     }
                 } else {
