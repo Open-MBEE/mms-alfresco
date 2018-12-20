@@ -1,9 +1,9 @@
 {
     "elements": [
         {
-            "documentation": "Element that will be resurrected",
+            "documentation": "Element that will be deleted",
             "id": "DeleteElement",
-            "name": "Resurrected Element",
+            "name": "Deleted Element",
             "ownerId": "PA",
             "type": "Property",
             "isDerived": false,

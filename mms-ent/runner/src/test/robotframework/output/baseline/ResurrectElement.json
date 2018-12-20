@@ -9,10 +9,10 @@
             "_modifier": "admin",
             "_projectId": "PA",
             "_refId": "master",
-            "documentation": "Element that will be resurrected",
+            "documentation": "Element that will be deleted",
             "id": "DeleteElement",
             "isDerived": false,
-            "name": "Resurrected Element",
+            "name": "Deleted Element",
             "ownerId": "PA",
             "type": "Property",
             "value": [
