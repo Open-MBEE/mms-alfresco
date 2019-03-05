@@ -297,3 +297,16 @@ Swagger YAML file:
 ```
 alfresco/mms/mms.swagger.yaml
 ```
+
+## Migrations after 3.2
+For versions after 3.2, most notably 3.3.0, an automigration step has been included to run necessary migrations automatically during the initial startup of alfresco after the upgrade. Should this migration fail for any reason, you can trigger the migration manually by accessing the following endpoint:
+```
+alfresco/service/migrate/{targetVersion}
+```
+
+where {targetVersion} is the version that you are upgrading to. Example:
+```
+alfresco/service/migrate/3.3.0
+```
+
+This operation is idempotent and can be safely run multiple times.
