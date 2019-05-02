@@ -44,6 +44,6 @@
 </@>
 
 <@markup id="html">
-   <div id="above-share-header"><span class="blink-you">Please move files to <a href="https://alfresco.jpl.nasa.gov" style="color: white;" target="_blank">OCIO's Alfresco</a></span></div>
+   <div id="above-share-header"><span>For Alfresco Share, use <a href="https://alfresco.jpl.nasa.gov" style="color: white; text-decoration: underline;" target="_blank">OCIO's Alfresco</a>. FAQ found <a href="https://wiki.jpl.nasa.gov/x/XCGxEQ" style="color: white; text-decoration: underline;" target="_blank">here</a></span></div>
    <div id="share-header"></div>
 </@>
