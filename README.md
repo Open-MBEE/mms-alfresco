@@ -12,7 +12,7 @@ Per [ Alfresco's documentation on Modules](https://docs.alfresco.com/5.0/concept
 [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-share-amp/images/download.svg)](https://bintray.com/openmbee/maven/mms-share-amp/_latestVersion) of the share WAR related portion of the "MMS" Alfresco Module.
 
 In tandem with the EMS-Webapp (colloquially known as the View Editor), and the Magicdraw Development Kit (MDK) for MagicDraw client and Teamwork Cloud users; this github repo serves as a one-stop shop to set up the Model Management Server per the 
-[MMS-MDK-VE Compatibility Matrix](https://github.com/Open-MBEE/open-mbee.github.io/blob/master/compat%20matrix.pdf).
+[MMS-MDK-VE Compatibility Matrix](https://github.com/Open-MBEE/open-mbee.github.io/wiki/Compatibilities).
 
 
 
@@ -22,7 +22,7 @@ In tandem with the EMS-Webapp (colloquially known as the View Editor), and the M
 * ElasticSearch 5.x (Up to 5.5)
 * PostgreSQL 9.x (Up to 9.4 is using PostgreSQL for Alfresco)
 
-### Optional Dependencies
+### Optional Dependencies (optional if using MDK 3.3.3+, only needed for VE realtime updates)
 * ActiveMQ 5.X
 
 ### 1a. Using Intellij
