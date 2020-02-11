@@ -27,7 +27,7 @@
         <repository>
             <id>spring</id>
             <name>Spring Maven Repository</name>
-            <url>http://repo.spring.io/plugins-release/</url>
+            <url>https://repo.spring.io/plugins-release/</url>
         </repository>
         <repository>
             <id>alfresco-public</id>
