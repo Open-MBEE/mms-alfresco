@@ -310,3 +310,25 @@ alfresco/service/migrate/3.3.0
 ```
 
 This operation is idempotent and can be safely run multiple times.
+
+## Deployment Requirements
+For deploying MMS and VE five machines are recommended + 1 optional TeamWorkCloud machine.
+
+The given configuration below are in terms of AWS instances which define required CPU and RAM, assuming CentOS as operating system.
+
+Data is stored using Amazon EBS volumes, where 100GB is a good start.
+
+For Postgres Amazon's RDS service is used, where 10-15 GB is a good start.
+
+The minimal configuration (can handle about 300k elements) is
+- 1x t3.large for MMS (8GB)
+- 1x t3.large for RDS postgres service (8GB)
+- 3x t3.medium for Elastic cluster (4GB), t3.large for better performance.
+- 1x AWS elb service -  load balancer for elastic cluster
++ EBS storage for data (100 GB)
+
+For a single machine configuration you need one which is powerful enough to cover the above.
+
+A 64 GB configuration can hold about 2 billion elements but might be slow, so you might want to switch to a powerful CPU configuration:
+
+t3.xlarge -> r5.large -> r5.xlarge
