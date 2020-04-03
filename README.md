@@ -1,5 +1,5 @@
 # Model Management System
-[![Language Grade: Java](https://img.shields.io/lgtm/grade/java/g/Open-MBEE/mms.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Open-MBEE/mms/context:java) [![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
+[![Language Grade: Java](https://img.shields.io/lgtm/grade/java/g/Open-MBEE/mms-alfresco.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Open-MBEE/mms-alfresco/context:java) [![CircleCI](https://circleci.com/gh/Open-MBEE/mms-alfresco.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms-alfresco)
 
 The MMS AMP is a hosted application run atop the [community version of an Alfresco Enterprise Content Management Server](https://docs.alfresco.com/community/concepts/welcome-infocenter_community.html).  
 
