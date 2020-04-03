@@ -65,7 +65,7 @@ See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.1/conc
     * Create a `mms` database (will be referenced by pg.name)
 
 #### 5. Upload Schemas for ElasticSearch and Postgres
-1. download [mapping_template.json](https://raw.githubusercontent.com/Open-MBEE/mms/develop/mms-ent/repo-amp/src/main/resources/mapping_template.json), [mms_mappings.sh](https://raw.githubusercontent.com/Open-MBEE/mms/develop/mms-ent/repo-amp/src/main/resources/mms_mappings.sh) and [mms.sql](https://raw.githubusercontent.com/Open-MBEE/mms/develop/mms-ent/repo-amp/src/main/resources/mms.sql) and save all to the same directory
+1. download [mapping_template.json](https://raw.githubusercontent.com/Open-MBEE/mms-alfresco/develop/mms-ent/repo-amp/src/main/resources/mapping_template.json), [mms_mappings.sh](https://raw.githubusercontent.com/Open-MBEE/mms-alfresco/develop/mms-ent/repo-amp/src/main/resources/mms_mappings.sh) and [mms.sql](https://raw.githubusercontent.com/Open-MBEE/mms-alfresco/develop/mms-ent/repo-amp/src/main/resources/mms.sql) and save all to the same directory
 1.  Run `mms_mappings.sh`
 
     `bash mms_mappings.sh`
@@ -96,7 +96,7 @@ See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.1/conc
 1. You may want to run activemq as a service.
        
 #### 7. Installing MMS
-1. Grab the latest [mms-amp](https://github.com/Open-MBEE/mms/releases/download/3.4.2/mms-amp-3.4.2.amp) and [mms-share-amp](https://github.com/Open-MBEE/mms/releases/download/3.4.2/mms-share-amp-3.4.2.amp) from the [github release page](https://github.com/Open-MBEE/mms/releases):
+1. Grab the latest [mms-amp](https://github.com/Open-MBEE/mms-alfresco/releases/download/3.4.2/mms-amp-3.4.2.amp) and [mms-share-amp](https://github.com/Open-MBEE/mms-alfresco/releases/download/3.4.2/mms-share-amp-3.4.2.amp) from the [github release page](https://github.com/Open-MBEE/mms/releases):
 
 1. Change to the tomcat webapps directory, where alfresco.war and share.war is located, then do
 
@@ -104,7 +104,7 @@ See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.1/conc
 
     `java -jar ../bin/alfresco-mmt.jar install $YOUR_PATH/mms-share-amp.amp share.war -force`
         
-1. Create and edit the mms.properties file in the $TOMCAT_HOME/shared/classes directory (You can copy [mms.properties.example](https://raw.githubusercontent.com/Open-MBEE/mms/develop/mms-ent/mms.properties.example) and update as appropriate)
+1. Create and edit the mms.properties file in the $TOMCAT_HOME/shared/classes directory (You can copy [mms.properties.example](https://raw.githubusercontent.com/Open-MBEE/mms-alfresco/develop/mms-ent/mms.properties.example) and update as appropriate)
         
     * app.user and app.pass should be set to the alfresco admin user that you set up
     
