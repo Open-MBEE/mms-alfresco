@@ -96,7 +96,7 @@ See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.1/conc
 1. You may want to run activemq as a service.
        
 #### 7. Installing MMS
-1. Grab the latest [mms-amp](https://github.com/Open-MBEE/mms-alfresco/releases/download/3.4.2/mms-amp-3.4.2.amp) and [mms-share-amp](https://github.com/Open-MBEE/mms-alfresco/releases/download/3.4.2/mms-share-amp-3.4.2.amp) from the [github release page](https://github.com/Open-MBEE/mms/releases):
+1. Grab the latest [mms-amp](https://github.com/Open-MBEE/mms-alfresco/releases/download/3.4.2/mms-amp-3.4.2.amp) and [mms-share-amp](https://github.com/Open-MBEE/mms-alfresco/releases/download/3.4.2/mms-share-amp-3.4.2.amp) from the [github release page](https://github.com/Open-MBEE/mms-alfresco/releases):
 
 1. Change to the tomcat webapps directory, where alfresco.war and share.war is located, then do
 
