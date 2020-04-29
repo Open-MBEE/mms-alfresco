@@ -332,3 +332,7 @@ For a single machine configuration you need one which is powerful enough to cove
 A 64 GB configuration can hold about 2 billion elements but might be slow, so you might want to switch to a powerful CPU configuration:
 
 t3.xlarge -> r5.large -> r5.xlarge
+
+## Contributing
+
+To learn how you can get involved in a variety of ways, please see [Contibuting to OpenMBEE](https://www.openmbee.org/contribute).
