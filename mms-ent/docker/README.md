@@ -1,8 +1,8 @@
-# Docker MMS README
+# MMS Docker README
 
-Build docker image
+Build Docker image
 ```
-docker build . -t mms-image
+docker build . -t openmbee/mms
 ```
 
 To run the container:
@@ -15,45 +15,46 @@ To run the container:
 ```
 -p 8080:8080
 ```
+Formatted as `[ip|hostname]:port`, e.g. `127.0.0.1:5432` or `postgres.openmbee.org:5432`
 
 Set the PostgreSQL info:
 
 - Host address.
 ```
--e PG_HOST={PG_ID_ADDR} 
+-e PG_HOST=${PG_HOST}
 ```
 
 - PostgreSQL User
 ```
--e PG_DB_USER=${PG_USER}
+-e PG_DB_USER=${PG_DB_USER}
 ```
 
 - User Password
 ```
--e PG_DB_PASS={PG_PASS} 
+-e PG_DB_PASS=${PG_DB_PASS} 
 ```
 
-- ElasticSearch Host
+- Elasticsearch Host
 ```
--e ES_HOST={PG_ID_ADDR}
+-e ES_HOST=${ES_HOST}
 ```
 
 Example running the container
 ```
-docker run --mount source=mmsvol,target=/mnt/alf_data -p 8080:8080 -e PG_HOST={PG_ID_ADDR} -e PG_DB_NAME=mms -e PG_DB_USER=${PG_USER} -e PG_DB_PASS={PG_PASS} -e ES_HOST={PG_ID_ADDR} -d mms-image
+docker run --mount source=mmsvol,target=/mnt/alf_data -p 8080:8080 -e PG_HOST=${PG_HOST} -e PG_DB_NAME=mms -e PG_DB_USER=${PG_DB_USER} -e PG_DB_PASS=${PG_DB_PASS} -e ES_HOST=${ES_HOST} -d openmbee/mms
 ```
 
-Example for initializing Postgres in docker
+Example for initializing PostgreSQL in Docker
 
 ```
-docker run -d --name postgres-docker --publish=5432:5432 -e POSTGRES_USER=${PG_USER} -e POSTGRES_PASSWORD=${PG_PASS} postgres:9.4-alpine
-docker exec -it postgres-docker psql -h localhost -U postgres -c "ALTER ROLE ${PG_USER} CREATEDB"
-docker exec -it postgres-docker createdb -h localhost -U ${PG_USER} alfresco
-docker exec -it postgres-docker createdb -h localhost -U ${PG_USER} mms
-docker exec -it postgres-docker psql -h localhost -U ${PG_USER} -d mms -c "create table if not exists organizations (   id bigserial primary key,   orgId text not null,   orgName text not null,   constraint unique_organizations unique(orgId, orgName) ); create index orgId on organizations(orgId);  create table projects (   id bigserial primary key,   projectId text not null,   orgId integer references organizations(id),   name text not null,   location text not null,   constraint unique_projects unique(orgId, projectId) ); create index projectIdIndex on projects(projectid);"
+docker run -d --name postgres-docker --publish=5432:5432 -e POSTGRES_USER=${PG_DB_USER} -e POSTGRES_PASSWORD=${PG_DB_PASS} postgres:9.4-alpine
+docker exec -it postgres-docker psql -h localhost -U postgres -c "ALTER ROLE ${PG_DB_USER} CREATEDB"
+docker exec -it postgres-docker createdb -h localhost -U ${PG_DB_USER} alfresco
+docker exec -it postgres-docker createdb -h localhost -U ${PG_DB_USER} mms
+docker exec -it postgres-docker psql -h localhost -U ${PG_DB_USER} -d mms -c "create table if not exists organizations (   id bigserial primary key,   orgId text not null,   orgName text not null,   constraint unique_organizations unique(orgId, orgName) ); create index orgId on organizations(orgId);  create table projects (   id bigserial primary key,   projectId text not null,   orgId integer references organizations(id),   name text not null,   location text not null,   constraint unique_projects unique(orgId, projectId) ); create index projectIdIndex on projects(projectid);"
 ```
 
-Example for initializing Elasticsearch in docker
+Example for initializing Elasticsearch in Docker
 ```
 docker run -d --name elasticsearch-docker --publish=9200:9200 elasticsearch:5.5-alpine
 curl -XPUT http://localhost:9200/_template/template -d @repo-amp/src/main/resources/mapping_template.json
