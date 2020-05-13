@@ -15,7 +15,6 @@ To run the container:
 ```
 -p 8080:8080
 ```
-Formatted as `[ip|hostname]:port`, e.g. `127.0.0.1:5432` or `postgres.openmbee.org:5432`
 
 Set the PostgreSQL info:
 
@@ -23,6 +22,7 @@ Set the PostgreSQL info:
 ```
 -e PG_HOST=${PG_HOST}
 ```
+Formatted as `[ip|hostname]:port`, e.g. `127.0.0.1:5432` or `postgres.openmbee.org:5432`
 
 - PostgreSQL User
 ```
