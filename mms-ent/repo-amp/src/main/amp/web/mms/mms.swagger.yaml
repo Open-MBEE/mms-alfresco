@@ -660,6 +660,10 @@ paths:
               schema:
                   $ref: "#/definitions/Elements"
               required: true
+            - in: "query"
+              name: "overwrite"
+              description: "overwrite existing json"
+              type: "boolean"
             responses:
                 200:
                     description: "OK"
