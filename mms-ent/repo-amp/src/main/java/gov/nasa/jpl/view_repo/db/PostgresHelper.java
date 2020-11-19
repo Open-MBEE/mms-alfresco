@@ -620,7 +620,7 @@ public class PostgresHelper implements GraphInterface {
         return result;
     }
 
-    public List<String> getAllNodes() {
+    public List<String> getAllNodes(boolean sysmlid) {
         List<Node> result = new ArrayList<>();
         List<String> ids = new ArrayList<>();
 
@@ -632,7 +632,11 @@ public class PostgresHelper implements GraphInterface {
                     result.add(resultSetToNode(rs));
                 }
             }
-            ids = result.stream().map(Node::getElasticId).collect(Collectors.toList());
+            if (sysmlid) {
+                ids = result.stream().map(Node::getSysmlId).collect(Collectors.toList());
+            } else {
+                ids = result.stream().map(Node::getElasticId).collect(Collectors.toList());
+            }
         } catch (Exception e) {
             logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
         } finally {

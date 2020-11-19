@@ -93,7 +93,7 @@ public class ModelsGet extends ModelGet {
         JsonObject result = new JsonObject();
 
         if (commitId == null) {
-            List<String> elementsToFindJson = emsNodeUtil.getModel();
+            List<String> elementsToFindJson = emsNodeUtil.getModel(false);
             JsonArray elements = emsNodeUtil.getJsonByElasticIds(elementsToFindJson, false);
             result.add(Sjm.ELEMENTS, elements);
         } else {
