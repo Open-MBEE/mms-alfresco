@@ -64,12 +64,25 @@
             <groupId>${alfresco.groupId}</groupId>
             <artifactId>alfresco-repository</artifactId>
             <version>${alfresco.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.social</groupId>
+                    <artifactId>spring-social-facebook</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>${alfresco.groupId}</groupId>
             <artifactId>alfresco-remote-api</artifactId>
             <version>${alfresco.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.social</groupId>
+                    <artifactId>spring-social-facebook</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.searchbox</groupId>
@@ -146,12 +159,6 @@
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-commons-impl</artifactId>
             <version>0.11.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.social</groupId>
-            <artifactId>spring-social-facebook</artifactId>
-            <version>1.1.1.RELEASE</version>
             <scope>provided</scope>
         </dependency>
         <!-- Temporary dependencies for connecting directly to JMS -->
