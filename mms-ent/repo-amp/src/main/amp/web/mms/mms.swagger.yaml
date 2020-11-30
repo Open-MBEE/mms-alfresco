@@ -2,7 +2,7 @@ swagger: "2.0"
 basePath: "/alfresco/service"
 info:
     description: "Model Management System (MMS) is a version control system for structured data. It exposes model information through RESTful web services that can be used for CRUD operations, branching, and tagging of the model repository."
-    version: "3.3.0"
+    version: "3.4.3"
     title: "Model Management Service"
     license:
         name: "Apache 2.0"
@@ -660,6 +660,10 @@ paths:
               schema:
                   $ref: "#/definitions/Elements"
               required: true
+            - in: "query"
+              name: "overwrite"
+              description: "overwrite existing json"
+              type: "boolean"
             responses:
                 200:
                     description: "OK"
@@ -1194,6 +1198,40 @@ paths:
                     $ref: "#/responses/InternalServerError"
                 default:
                     $ref: "#/responses/Default"
+    /projects/{project_id}/refs/{ref_id}/elementIds:
+        parameters:
+        - name: "project_id"
+          in: "path"
+          required: true
+          description: "project identifier"
+          type: "string"
+        - name: "ref_id"
+          in: "path"
+          required: true
+          description: "ref identifier"
+          type: "string"
+        get:
+            tags:
+            - "other"
+            summary: "Get element ids"
+            description: ""
+            operationId: "getElementIds"
+            responses:
+                200:
+                    description: "OK"
+                    schema:
+                        $ref: "#/definitions/ElementIds"
+                401:
+                    $ref: "#/responses/Unauthorized"
+                403:
+                    $ref: "#/responses/Forbidden"
+                404:
+                    $ref: "#/responses/NotFound"
+                500:
+                    $ref: "#/responses/InternalServerError"
+                default:
+                    $ref: "#/responses/Default"
+
 responses:
     OK:
         description: "OK"
@@ -1279,6 +1317,13 @@ definitions:
                 type: "string"
         additionalProperties:
             type: "object"
+    ElementId:
+        type: "object"
+        required:
+        - "id"
+        properties:
+            id:
+                type: "string"
     Rejection:
         type: "object"
         required:
@@ -1418,6 +1463,18 @@ definitions:
                 type: "array"
                 items:
                     $ref: "#/definitions/Element"
+    ElementIds:
+        type: "object"
+        required:
+        - "elements"
+        - "commitId"
+        properties:
+            elements:
+                type: "array"
+                items:
+                    $ref: "#/definitions/ElementId"
+            commitId:
+                type: "string"
     ConvertRequest:
         type: "object"
         required:

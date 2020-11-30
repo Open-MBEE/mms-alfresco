@@ -19,6 +19,13 @@
         <property name="services" ref="ServiceRegistry" />
     </bean>
 
+    <bean id="webscript.gov.nasa.jpl.mms.refs.elements.elementids.get"
+        class="gov.nasa.jpl.view_repo.webscripts.ModelIdsGet" parent="webscript"
+        singleton="false">
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="services" ref="ServiceRegistry" />
+    </bean>
+
     <bean id="webscript.gov.nasa.jpl.mms.refs.elements.elements.delete"
         class="gov.nasa.jpl.view_repo.webscripts.ModelDelete" parent="webscript"
         singleton="false">

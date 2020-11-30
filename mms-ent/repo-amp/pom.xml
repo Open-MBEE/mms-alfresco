@@ -10,7 +10,7 @@
     <parent>
         <groupId>gov.nasa.jpl.mbee</groupId>
         <artifactId>mms-ent</artifactId>
-        <version>3.4.2</version>
+        <version>3.4.3-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -64,12 +64,25 @@
             <groupId>${alfresco.groupId}</groupId>
             <artifactId>alfresco-repository</artifactId>
             <version>${alfresco.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.social</groupId>
+                    <artifactId>spring-social-facebook</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>${alfresco.groupId}</groupId>
             <artifactId>alfresco-remote-api</artifactId>
             <version>${alfresco.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.social</groupId>
+                    <artifactId>spring-social-facebook</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.searchbox</groupId>

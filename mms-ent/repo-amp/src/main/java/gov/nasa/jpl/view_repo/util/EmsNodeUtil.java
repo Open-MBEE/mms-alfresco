@@ -1933,11 +1933,11 @@ public class EmsNodeUtil {
         return result;
     }
 
-    public List<String> getModel() {
+    public List<String> getModel(boolean sysmlid) {
         List<String> model = new ArrayList();
 
         try {
-            model = pgh.getAllNodes();
+            model = pgh.getAllNodes(sysmlid);
 
         } catch (Exception e) {
             logger.error(String.format("%s", LogUtil.getStackTrace(e)));
