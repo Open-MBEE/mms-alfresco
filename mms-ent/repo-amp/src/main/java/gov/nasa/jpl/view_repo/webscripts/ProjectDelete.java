@@ -1,7 +1,5 @@
 package gov.nasa.jpl.view_repo.webscripts;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
+import gov.nasa.jpl.view_repo.db.DocStoreFactory;
+import gov.nasa.jpl.view_repo.db.DocStoreInterface;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.EmsScriptNode;
@@ -153,17 +152,15 @@ public class ProjectDelete extends AbstractJavaWebScript {
         logger.debug("Deleting commits in Elastic");
 
         try {
-            ElasticHelper elasticHelper = new ElasticHelper();
-            elasticHelper.bulkDeleteByType(commitIds, projectId, ElasticHelper.COMMIT);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
+        	DocStoreInterface docStoreHelper = DocStoreFactory.getDocStore();
+            docStoreHelper.bulkDeleteByType(commitIds, projectId, DocStoreInterface.COMMIT);
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }
 
     /**
-     * Uses ElasticHelper to delete all elements on ElasticSearch based on the given projectId. Performs a delete
+     * Uses DocStoreInterface to delete all elements on ElasticSearch based on the given projectId. Performs a delete
      * by query.
      * @param projectId
      */
@@ -171,9 +168,9 @@ public class ProjectDelete extends AbstractJavaWebScript {
         logger.debug("Deleting elastic elements for " + projectId);
 
         try {
-            ElasticHelper elasticHelper = new ElasticHelper();
-            elasticHelper.deleteIndex(projectId);
-        } catch (IOException e) {
+        	DocStoreInterface docStoreHelper = DocStoreFactory.getDocStore();
+        	docStoreHelper.deleteIndex(projectId);
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }

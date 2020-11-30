@@ -72,7 +72,7 @@ See: [Alfresco Documentation on Installation](https://docs.alfresco.com/5.1/conc
     * Execute `mms-ent/repo-amp/src/main/resources/mms.sql`
        * e.g.: `psql -h localhost -p 5432 -U mms -d mms -v schema=public < mms-ent/repo-amp/src/main/resources/mms.sql`
        
-## Install ActiveMQ (Optional, depending on MDK version)
+## Install ActiveMQ (Optional if using MDK 3.3.3 and above, only used for VE realtime updates)
 1. Get activemq binaries:
     * `wget http://www.us.apache.org/dist/activemq/5.12.1/apache-activemq-5.12.1-bin.tar.gz`
     * `tar -zxvf apache-activemq*.tar.gz`

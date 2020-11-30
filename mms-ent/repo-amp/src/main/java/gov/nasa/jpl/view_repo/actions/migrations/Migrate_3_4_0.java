@@ -4,7 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import gov.nasa.jpl.mbee.util.Pair;
-import gov.nasa.jpl.view_repo.db.ElasticHelper;
+import gov.nasa.jpl.view_repo.db.DocStoreFactory;
+import gov.nasa.jpl.view_repo.db.DocStoreInterface;
 import gov.nasa.jpl.view_repo.db.PostgresHelper;
 import gov.nasa.jpl.view_repo.util.EmsConfig;
 import gov.nasa.jpl.view_repo.util.JsonUtil;
@@ -43,12 +44,14 @@ public class Migrate_3_4_0 {
     public static boolean apply(ServiceRegistry services) throws Exception {
         logger.info("Running Migrate_3_4_0");
         PostgresHelper pgh = new PostgresHelper();
-        ElasticHelper eh = new ElasticHelper();
+
+        DocStoreFactory docStoreFactory = new DocStoreFactory();
+        DocStoreInterface ds = docStoreFactory.getDocStore();
 
         JsonObject mappingTemplate = new JsonObject();
 
         // Temporarily increase max_compilations_per_minute
-        eh.updateClusterSettings(transientSettings);
+        ds.updateClusterSettings(transientSettings);
 
         boolean noErrors = true;
 
@@ -57,10 +60,13 @@ public class Migrate_3_4_0 {
         Scanner s = new Scanner(resourceAsStream).useDelimiter("\\A");
         if (s.hasNext()) {
             mappingTemplate = JsonUtil.buildFromString(s.next());
-            eh.applyTemplate(mappingTemplate.toString());
+            ds.applyTemplate(mappingTemplate.toString());
         }
-        eh.updateMapping(EmsConfig.get("elastic.index.element"), ElasticHelper.PROFILE,
-            mappingTemplate.get("mappings").getAsJsonObject().get(ElasticHelper.PROFILE).getAsJsonObject().toString());
+        ds.updateMapping(EmsConfig.get("elastic.index.element"), // TODO mms
+                DocStoreInterface.PROFILE,
+                mappingTemplate.get("mappings").getAsJsonObject().get(DocStoreInterface.PROFILE).getAsJsonObject().toString()
+        );
+
         List<Map<String, String>> orgs = pgh.getOrganizations(null);
 
         for (Map<String, String> org : orgs) {
@@ -71,8 +77,8 @@ public class Migrate_3_4_0 {
                 pgh.setProject(projectId);
 
                 if (mappingTemplate.isJsonObject()) {
-                    eh.updateMapping(projectId, ElasticHelper.REF,
-                        mappingTemplate.get("mappings").getAsJsonObject().get(ElasticHelper.REF).getAsJsonObject().toString());
+                    ds.updateMapping(projectId, DocStoreInterface.REF,
+                        mappingTemplate.get("mappings").getAsJsonObject().get(DocStoreInterface.REF).getAsJsonObject().toString());
                 }
 
                 List<Pair<String, String>> allRefs = pgh.getRefsElastic(true);
@@ -89,7 +95,7 @@ public class Migrate_3_4_0 {
                     List<String> refIds = new ArrayList<>();
                     refIds.addAll(refsToMove);
 
-                    JsonArray refs = eh.getElementsFromElasticIds(refIds, projectId);
+                    JsonArray refs = ds.getElementsFromDocStoreIds(refIds, projectId);
 
                     if (refs.size() > 0) {
                         for (int i = 0; i < refs.size(); i++) {
@@ -107,12 +113,12 @@ public class Migrate_3_4_0 {
                             delQuery.get("query").getAsJsonObject().get("constant_score").getAsJsonObject()
                                 .get("filter").getAsJsonObject().get("terms").getAsJsonObject()
                                 .add(Sjm.SYSMLID, deleteSet);
-                            eh.deleteByQuery(projectId, delQuery.toString(), ElasticHelper.ELEMENT);
+                            ds.deleteByQuery(projectId, delQuery.toString(), DocStoreInterface.ELEMENT);
                         }
 
                         if (!refsToMove.isEmpty()) {
-                            eh.bulkIndexElements(insertPayload, "added", true, projectId, ElasticHelper.REF);
-                            eh.updateByQuery(projectId, updateMasterRef, ElasticHelper.REF);
+                            ds.bulkIndexElements(insertPayload, "added", true, projectId, DocStoreInterface.REF);
+                            ds.updateByQuery(projectId, updateMasterRef, DocStoreInterface.REF);
                         }
                     }
                 }
@@ -121,7 +127,7 @@ public class Migrate_3_4_0 {
                 for (Map<String, String> commit : commits) {
                     String commitId = commit.get("commitId");
                     if (!commitId.isEmpty()) {
-                        JsonObject commitObject = eh.getByElasticId(commitId, projectId, ElasticHelper.COMMIT);
+                        JsonObject commitObject = ds.getByElasticId(commitId, projectId, DocStoreInterface.COMMIT);
                         if (commitObject != null && commitObject.has(Sjm.CREATED)) {
                             try (PreparedStatement statement = pgh.prepareStatement(updateQuery)) {
                                 Date created = df.parse(commitObject.get(Sjm.CREATED).getAsString());
@@ -140,7 +146,6 @@ public class Migrate_3_4_0 {
                 }
             }
         }
-
         return noErrors;
     }
 }

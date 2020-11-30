@@ -2,7 +2,7 @@ package gov.nasa.jpl.view_repo.db;
 
 import com.google.gson.JsonObject;
 
-public class ElasticResult {
+public class DocumentResult {
 
     public JsonObject current = null;
     public String elasticId = null;

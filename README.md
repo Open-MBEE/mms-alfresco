@@ -1,5 +1,5 @@
 # Model Management System
-[![Language Grade: Java](https://img.shields.io/lgtm/grade/java/g/Open-MBEE/mms.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Open-MBEE/mms/context:java) [![CircleCI](https://circleci.com/gh/Open-MBEE/mms.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms)
+[![Language Grade: Java](https://img.shields.io/lgtm/grade/java/g/Open-MBEE/mms-alfresco.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Open-MBEE/mms-alfresco/context:java) [![CircleCI](https://circleci.com/gh/Open-MBEE/mms-alfresco.svg?style=svg)](https://circleci.com/gh/Open-MBEE/mms-alfresco)
 
 The MMS AMP is a hosted application run atop the [community version of an Alfresco Enterprise Content Management Server](https://docs.alfresco.com/community/concepts/welcome-infocenter_community.html).  
 
@@ -12,7 +12,7 @@ Per [ Alfresco's documentation on Modules](https://docs.alfresco.com/5.0/concept
 [ ![Download](https://api.bintray.com/packages/openmbee/maven/mms-share-amp/images/download.svg)](https://bintray.com/openmbee/maven/mms-share-amp/_latestVersion) of the share WAR related portion of the "MMS" Alfresco Module.
 
 In tandem with the EMS-Webapp (colloquially known as the View Editor), and the Magicdraw Development Kit (MDK) for MagicDraw client and Teamwork Cloud users; this github repo serves as a one-stop shop to set up the Model Management Server per the 
-[MMS-MDK-VE Compatibility Matrix](https://github.com/Open-MBEE/open-mbee.github.io/blob/master/compat%20matrix.pdf).
+[MMS-MDK-VE Compatibility Matrix](https://github.com/Open-MBEE/open-mbee.github.io/wiki/Compatibilities).
 
 
 
@@ -22,7 +22,7 @@ In tandem with the EMS-Webapp (colloquially known as the View Editor), and the M
 * ElasticSearch 5.x (Up to 5.5)
 * PostgreSQL 9.x (Up to 9.4 is using PostgreSQL for Alfresco)
 
-### Optional Dependencies
+### Optional Dependencies (optional if using MDK 3.3.3+, only needed for VE realtime updates)
 * ActiveMQ 5.X
 
 ### 1a. Using Intellij
@@ -297,3 +297,42 @@ Swagger YAML file:
 ```
 alfresco/mms/mms.swagger.yaml
 ```
+
+## Migrations after 3.2
+For versions after 3.2, most notably 3.3.0, an automigration step has been included to run necessary migrations automatically during the initial startup of alfresco after the upgrade. Should this migration fail for any reason, you can trigger the migration manually by accessing the following endpoint:
+```
+alfresco/service/migrate/{targetVersion}
+```
+
+where {targetVersion} is the version that you are upgrading to. Example:
+```
+alfresco/service/migrate/3.3.0
+```
+
+This operation is idempotent and can be safely run multiple times.
+
+## Deployment Requirements
+For deploying MMS and VE five machines are recommended + 1 optional TeamWorkCloud machine.
+
+The given configuration below are in terms of AWS instances which define required CPU and RAM, assuming CentOS as operating system.
+
+Data is stored using Amazon EBS volumes, where 100GB is a good start.
+
+For Postgres Amazon's RDS service is used, where 10-15 GB is a good start.
+
+The minimal configuration (can handle about 300k elements) is
+- 1x t3.large for MMS (8GB)
+- 1x t3.large for RDS postgres service (8GB)
+- 3x t3.medium for Elastic cluster (4GB), t3.large for better performance.
+- 1x AWS elb service -  load balancer for elastic cluster
++ EBS storage for data (100 GB)
+
+For a single machine configuration you need one which is powerful enough to cover the above.
+
+A 64 GB configuration can hold about 2 billion elements but might be slow, so you might want to switch to a powerful CPU configuration:
+
+t3.xlarge -> r5.large -> r5.xlarge
+
+## Contributing
+
+To learn how you can get involved in a variety of ways, please see [Contibuting to OpenMBEE](https://www.openmbee.org/contribute).
