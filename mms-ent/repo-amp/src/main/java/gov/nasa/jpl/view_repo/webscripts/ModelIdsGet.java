@@ -4,12 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.db.GraphInterface;
-import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +18,6 @@ import org.apache.log4j.Logger;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-
-import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
-import gov.nasa.jpl.view_repo.util.Sjm;
 
 public class ModelIdsGet extends ModelGet {
 
@@ -86,7 +79,7 @@ public class ModelIdsGet extends ModelGet {
         String commit = req.getParameter(Sjm.COMMITID.replace("_", ""));
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
-        if (commit.isEmpty()) {
+        if (commit == null || commit.isEmpty()) {
             commit = emsNodeUtil.getHeadCommit();
         }
 
