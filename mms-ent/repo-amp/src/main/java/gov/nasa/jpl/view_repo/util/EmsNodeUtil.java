@@ -1807,11 +1807,15 @@ public class EmsNodeUtil {
     }
     public List<String> getModelIdsAtCommit(String commitId) {
         List<String> result = new ArrayList<>();
-        ArrayList<String> refsCommitsIds = new ArrayList<>();
         Map<String, Object> commit = pgh.getCommit(commitId);
         if (commit != null) {
-            String refId = commit.get(Sjm.REFID).toString();
             for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
+                if ((boolean) n.get("deleted")) {
+                    if (((Date) n.get(Sjm.TIMESTAMP)).getTime() >= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
+                        result.add((String) n.get(Sjm.SYSMLID));
+                    }
+                    continue;
+                }
                 result.add((String) n.get(Sjm.SYSMLID));
             }
         }
