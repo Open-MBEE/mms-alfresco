@@ -6,6 +6,7 @@ import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,11 +80,14 @@ public class ModelIdsGet extends ModelGet {
         String commit = req.getParameter(Sjm.COMMITID.replace("_", ""));
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
 
+        List<String> sysmlIds;
         if (commit == null || commit.isEmpty()) {
             commit = emsNodeUtil.getHeadCommit();
+            sysmlIds = emsNodeUtil.getModel(true);
+        } else {
+            sysmlIds = emsNodeUtil.getModelIdsAtCommit(commit);
         }
 
-        List<String> sysmlIds = emsNodeUtil.getModelIdsAtCommit(commit);
         JsonArray array = new JsonArray();
         JsonObject result = new JsonObject();
         for (String s: sysmlIds) {

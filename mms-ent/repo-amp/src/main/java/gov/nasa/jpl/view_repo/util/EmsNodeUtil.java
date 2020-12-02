@@ -1811,7 +1811,7 @@ public class EmsNodeUtil {
         if (commit != null) {
             for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
                 if ((boolean) n.get("deleted")) {
-                    if (((Date) n.get(Sjm.TIMESTAMP)).getTime() >= ((Date) commit.get(Sjm.TIMESTAMP)).getTime()) {
+                    if (!commitId.equals(n.get("lastCommit")) && ((Timestamp) n.get(Sjm.TIMESTAMP)).after((Timestamp) commit.get(Sjm.TIMESTAMP))) {
                         result.add((String) n.get(Sjm.SYSMLID));
                     }
                     continue;
