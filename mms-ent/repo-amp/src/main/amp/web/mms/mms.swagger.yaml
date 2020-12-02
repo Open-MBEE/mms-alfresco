@@ -1210,6 +1210,10 @@ paths:
           required: true
           description: "ref identifier"
           type: "string"
+        - in: "query"
+          name: "commitId"
+          description: ""
+          type: "string"
         get:
             tags:
             - "other"

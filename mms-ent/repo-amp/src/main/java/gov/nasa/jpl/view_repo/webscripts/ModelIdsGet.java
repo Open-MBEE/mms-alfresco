@@ -80,9 +80,13 @@ public class ModelIdsGet extends ModelGet {
     private JsonObject getAllElementIds(WebScriptRequest req) {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
+        String commit = req.getParameter(Sjm.COMMITID.replace("_", ""));
+        if (commit.isEmpty()) {
+            commit = emsNodeUtil.getHeadCommit();
+        }
+
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        String commit = emsNodeUtil.getHeadCommit();
-        List<String> sysmlIds = emsNodeUtil.getModel(true);
+        List<String> sysmlIds = emsNodeUtil.getModelAtCommit(commit);
         JsonArray array = new JsonArray();
         JsonObject result = new JsonObject();
         for (String s: sysmlIds) {
