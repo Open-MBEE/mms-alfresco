@@ -84,11 +84,12 @@ public class ModelIdsGet extends ModelGet {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
         String commit = req.getParameter(Sjm.COMMITID.replace("_", ""));
+        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
+
         if (commit.isEmpty()) {
             commit = emsNodeUtil.getHeadCommit();
         }
 
-        EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
         List<String> sysmlIds = emsNodeUtil.getModelAtCommit(commit);
         JsonArray array = new JsonArray();
         JsonObject result = new JsonObject();
