@@ -1812,7 +1812,7 @@ public class EmsNodeUtil {
         if (commit != null) {
             String refId = commit.get(Sjm.REFID).toString();
             for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
-                result.add(n.get(Sjm.SYSMLID));
+                result.add((String) n.get(Sjm.SYSMLID));
             }
         }
         return result;
