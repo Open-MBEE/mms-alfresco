@@ -1805,6 +1805,18 @@ public class EmsNodeUtil {
         }
         return result;
     }
+    public List<String> getModelIdsAtCommit(String commitId) {
+        List<String> result = new ArrayList<>();
+        ArrayList<String> refsCommitsIds = new ArrayList<>();
+        Map<String, Object> commit = pgh.getCommit(commitId);
+        if (commit != null) {
+            String refId = commit.get(Sjm.REFID).toString();
+            for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
+                result.add(n.get(Sjm.SYSMLID));
+            }
+        }
+        return result;
+    }
 
     public void processElementForModelAtCommit(Map<String, Object> element, Map<String, String> deletedElementIds,
         Map<String, Object> commit, String commitId, List<String> refsCommitsIds, JsonArray elements,

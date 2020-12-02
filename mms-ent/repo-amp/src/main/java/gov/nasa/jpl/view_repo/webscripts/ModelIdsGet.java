@@ -90,7 +90,7 @@ public class ModelIdsGet extends ModelGet {
             commit = emsNodeUtil.getHeadCommit();
         }
 
-        List<String> sysmlIds = emsNodeUtil.getModelAtCommit(commit);
+        List<String> sysmlIds = emsNodeUtil.getModelIdsAtCommit(commit);
         JsonArray array = new JsonArray();
         JsonObject result = new JsonObject();
         for (String s: sysmlIds) {
