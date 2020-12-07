@@ -1806,6 +1806,27 @@ public class EmsNodeUtil {
         return result;
     }
 
+    public List<String> getModelIdsAtCommit(String commitId) {
+        List<String> result = new ArrayList<>();
+        Map<String, Object> commit = pgh.getCommit(commitId);
+        if (commit != null) {
+            // project and holding bin nodes
+            for (Map<String, Object> n : pgh.getAllNodesWithoutLastCommitTimestamp()) {
+                result.add((String) n.get(Sjm.SYSMLID));
+            }
+            for (Map<String, Object> n : pgh.getAllNodesWithLastCommitTimestamp()) {
+                if ((boolean) n.get("deleted")) {
+                    if (!commitId.equals(n.get("lastCommit")) && ( n.get(Sjm.TIMESTAMP) != null && ((Timestamp) n.get(Sjm.TIMESTAMP)).after((Timestamp) commit.get(Sjm.TIMESTAMP)))) {
+                        result.add((String) n.get(Sjm.SYSMLID));
+                    }
+                    continue;
+                }
+                result.add((String) n.get(Sjm.SYSMLID));
+            }
+        }
+        return result;
+    }
+
     public void processElementForModelAtCommit(Map<String, Object> element, Map<String, String> deletedElementIds,
         Map<String, Object> commit, String commitId, List<String> refsCommitsIds, JsonArray elements,
         List<String> elasticIds) {

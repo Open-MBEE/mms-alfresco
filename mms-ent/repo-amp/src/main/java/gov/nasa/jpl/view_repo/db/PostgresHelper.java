@@ -709,6 +709,30 @@ public class PostgresHelper implements GraphInterface {
         return result;
     }
 
+    public List<Map<String, Object>> getAllNodesWithoutLastCommitTimestamp() {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        try {
+            ResultSet rs = execQuery(String.format(
+                "SELECT nodes%1$s.id, nodes%1$s.elasticid, nodes%1$s.sysmlid "
+                    + "FROM nodes%1$s "
+                    + "WHERE nodes%1$s.lastcommit IS NULL AND deleted IS NOT TRUE;", workspaceId));
+
+            while (rs.next()) {
+                Map<String, Object> node = new HashMap<>();
+                node.put(Sjm.ELASTICID, rs.getString(2));
+                node.put(Sjm.SYSMLID, rs.getString(3));
+                result.add(node);
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("%s", LogUtil.getStackTrace(e)));
+        } finally {
+            close();
+        }
+
+        return result;
+    }
+
     public boolean isDeleted(String sysmlid) {
         try (PreparedStatement query = getConn()
             .prepareStatement("SELECT id FROM \"nodes" + workspaceId + "\" WHERE sysmlid = ? AND deleted = true")) {

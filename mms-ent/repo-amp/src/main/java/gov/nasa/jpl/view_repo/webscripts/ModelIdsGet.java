@@ -4,12 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import gov.nasa.jpl.mbee.util.Timer;
 import gov.nasa.jpl.mbee.util.Utils;
-import gov.nasa.jpl.view_repo.db.GraphInterface;
-import gov.nasa.jpl.view_repo.db.Node;
 import gov.nasa.jpl.view_repo.util.EmsNodeUtil;
 import gov.nasa.jpl.view_repo.util.Sjm;
-import java.io.IOException;
-import java.sql.SQLException;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,9 +77,17 @@ public class ModelIdsGet extends ModelGet {
     private JsonObject getAllElementIds(WebScriptRequest req) {
         String refId = getRefId(req);
         String projectId = getProjectId(req);
+        String commit = req.getParameter(Sjm.COMMITID.replace("_", ""));
         EmsNodeUtil emsNodeUtil = new EmsNodeUtil(projectId, refId);
-        String commit = emsNodeUtil.getHeadCommit();
-        List<String> sysmlIds = emsNodeUtil.getModel(true);
+
+        List<String> sysmlIds;
+        if (commit == null || commit.isEmpty()) {
+            commit = emsNodeUtil.getHeadCommit();
+            sysmlIds = emsNodeUtil.getModel(true);
+        } else {
+            sysmlIds = emsNodeUtil.getModelIdsAtCommit(commit);
+        }
+
         JsonArray array = new JsonArray();
         JsonObject result = new JsonObject();
         for (String s: sysmlIds) {
