@@ -37,6 +37,8 @@ public class JmsConnection implements ConnectionInterface {
     private String projectId = null;
 
     private static Map<String, ConnectionInfo> connectionMap = null;
+    private JsonObject json;
+    private gov.nasa.jpl.view_repo.connections.JmsConnection.ConnectionInfo ci;
 
     protected static Map<String, ConnectionInfo> getConnectionMap() {
         if (connectionMap == null || connectionMap.isEmpty()) {
@@ -298,6 +300,14 @@ public class JmsConnection implements ConnectionInterface {
             ci.ctxFactory = json.get("ctxFactory").isJsonNull() ?
                 null : json.get("ctxFactory").getAsString();
         }
+        connectUser(json, ci);
+
+        getConnectionMap().put(eventType, ci);
+    }
+
+    private void connectUser(JsonObject json, gov.nasa.jpl.view_repo.connections.JmsConnection.ConnectionInfo ci) {
+        this.json = json;
+        this.ci = ci;
         if (json.has("password")) {
             ci.password = json.get("password").isJsonNull() ?
                 null : json.get("password").getAsString();
@@ -324,8 +334,6 @@ public class JmsConnection implements ConnectionInterface {
                 }
             }
         }
-
-        getConnectionMap().put(eventType, ci);
     }
 
 }
