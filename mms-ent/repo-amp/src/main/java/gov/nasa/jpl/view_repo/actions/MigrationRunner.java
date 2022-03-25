@@ -33,7 +33,7 @@ public class MigrationRunner extends AbstractPatch {
     public ServiceRegistry services;
     public RegistryService registryService;
 
-    private static final String REGISTRY_PATH_MODULES = "modules";
+    private static final String PATH_MODULES = "modules";
     private static final String REGISTRY_PROPERTY_CURRENT_VERSION = "currentVersion";
     private static final String MODULE_ID = "mms-amp";
 
@@ -86,8 +86,8 @@ public class MigrationRunner extends AbstractPatch {
     @SuppressWarnings("unchecked")
     public static void runMigration(ModuleVersionNumber migrationFor, ServiceRegistry services) {
         try {
-            Class clazz = Class.forName("gov.nasa.jpl.view_repo.actions.migrations." + versionToClassname(migrationFor));
-            Method method = clazz.getMethod("apply", ServiceRegistry.class);
+            Class classObj = Class.forName("gov.nasa.jpl.view_repo.actions.migrations." + versionToClassname(migrationFor));
+            Method method = classObj.getMethod("apply", ServiceRegistry.class);
             logger.info("Invoking migration for: " + migrationFor);
             method.invoke(null, services);
         } catch (ClassNotFoundException cnfe) {
@@ -106,7 +106,7 @@ public class MigrationRunner extends AbstractPatch {
 
         RegistryKey moduleKeyCurrentVersion = new RegistryKey(
                 ModuleComponentHelper.URI_MODULES_1_0,
-                REGISTRY_PATH_MODULES, MODULE_ID, REGISTRY_PROPERTY_CURRENT_VERSION);
+            PATH_MODULES, MODULE_ID, REGISTRY_PROPERTY_CURRENT_VERSION);
         Serializable versionCurrent = registryService.getProperty(moduleKeyCurrentVersion);
 
         if (versionCurrent != null) {
