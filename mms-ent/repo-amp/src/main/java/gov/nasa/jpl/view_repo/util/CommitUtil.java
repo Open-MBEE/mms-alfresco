@@ -81,20 +81,7 @@ public class CommitUtil {
 
     private static HazelcastInstance hzInstance = null;
 
-    public static void setJmsConnection(JmsConnection jmsConnection) {
-        if (logger.isInfoEnabled()) {
-            logger.info("Setting jms");
-        }
-        CommitUtil.jmsConnection = jmsConnection;
-    }
 
-    public static void initHazelcastClient() {
-        if (hzInstance == null) {
-            Config config = new Config();
-            config.getNetworkConfig().setPort(5901).setPortAutoIncrement(true);
-            hzInstance = Hazelcast.newHazelcastInstance(config);
-        }
-    }
 
     private static void initHazelcastQueue(String name) {
         Config config = hzInstance.getConfig();

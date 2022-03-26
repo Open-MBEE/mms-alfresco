@@ -37,6 +37,23 @@ public class JmsConnection implements ConnectionInterface {
     private String projectId = null;
 
     private static Map<String, ConnectionInfo> connectionMap = null;
+    private JsonObject json;
+    private gov.nasa.jpl.view_repo.connections.JmsConnection.ConnectionInfo ci;
+
+    public static void setJmsConnection(JmsConnection jmsConnection) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Setting jms");
+        }
+        CommitUtil.jmsConnection = jmsConnection;
+    }
+
+    public static void initHazelcastClient() {
+        if (hzInstance == null) {
+            Config config = new Config();
+            config.getNetworkConfig().setPort(5901).setPortAutoIncrement(true);
+            hzInstance = Hazelcast.newHazelcastInstance(config);
+        }
+    }
 
     protected static Map<String, ConnectionInfo> getConnectionMap() {
         if (connectionMap == null || connectionMap.isEmpty()) {
@@ -63,30 +80,6 @@ public class JmsConnection implements ConnectionInterface {
         public String uri = "tcp://localhost:61616";
         public ConnectionFactory connectionFactory = null;
         public DestinationType destType = DestinationType.TOPIC;
-
-        public ConnectionInfo() {
-        	if (EmsConfig.get("jms.ctxfactory") != null) {
-        		ctxFactory = EmsConfig.get("jms.ctxfactory");
-        		System.out.println(ctxFactory);
-        	}
-        	if (EmsConfig.get("jms.connfactory") != null) {
-        		connFactory = EmsConfig.get("jms.connfactory");
-        		System.out.println(connFactory);
-        	}
-        	if (EmsConfig.get("jms.username") != null) {
-        		username = EmsConfig.get("jms.username");
-        	}
-        	if (EmsConfig.get("jms.password") != null) {
-        		password = EmsConfig.get("jms.password");
-        	}
-        	if (EmsConfig.get("jms.destination") != null) {
-        		destination = EmsConfig.get("jms.destination");
-        	}
-        	if (EmsConfig.get("jms.uri") != null) {
-        		uri = EmsConfig.get("jms.uri");
-        	}
-        }
-    }
 
 
     protected boolean init(String eventType) {
@@ -298,6 +291,14 @@ public class JmsConnection implements ConnectionInterface {
             ci.ctxFactory = json.get("ctxFactory").isJsonNull() ?
                 null : json.get("ctxFactory").getAsString();
         }
+        connectUser(json, ci);
+
+        getConnectionMap().put(eventType, ci);
+    }
+
+    private void connectUser(JsonObject json, gov.nasa.jpl.view_repo.connections.JmsConnection.ConnectionInfo ci) {
+        this.json = json;
+        this.ci = ci;
         if (json.has("password")) {
             ci.password = json.get("password").isJsonNull() ?
                 null : json.get("password").getAsString();
@@ -324,8 +325,6 @@ public class JmsConnection implements ConnectionInterface {
                 }
             }
         }
-
-        getConnectionMap().put(eventType, ci);
     }
 
 }
