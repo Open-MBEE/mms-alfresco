@@ -40,6 +40,21 @@ public class JmsConnection implements ConnectionInterface {
     private JsonObject json;
     private gov.nasa.jpl.view_repo.connections.JmsConnection.ConnectionInfo ci;
 
+    public static void setJmsConnection(JmsConnection jmsConnection) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Setting jms");
+        }
+        CommitUtil.jmsConnection = jmsConnection;
+    }
+
+    public static void initHazelcastClient() {
+        if (hzInstance == null) {
+            Config config = new Config();
+            config.getNetworkConfig().setPort(5901).setPortAutoIncrement(true);
+            hzInstance = Hazelcast.newHazelcastInstance(config);
+        }
+    }
+
     protected static Map<String, ConnectionInfo> getConnectionMap() {
         if (connectionMap == null || connectionMap.isEmpty()) {
             connectionMap = new HashMap<String, ConnectionInfo>();
